@@ -1,0 +1,5 @@
+taskkill /f /t /im "BlueSoleil.exe"
+taskkill /f /t /im "BlueSoleilCS.exe"
+taskkill /f /t /im "BsHelpCS.exe"
+taskkill /f /t /im "BtTray.exe"
+start "BlueSoleil" "C:\Program Files (x86)\IVT Corporation\BlueSoleil\BlueSoleil.exe"

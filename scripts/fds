@@ -1,0 +1,9 @@
+#!/bin/bash
+# date_time=$(date '+%Y%m%d%H%M')
+# out_str="$1_$date_time"
+# echo $out_str
+
+set -x
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+python $DIR/../printDateTime.py  file_path=$1 prefix=$2
+

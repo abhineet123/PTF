@@ -1,0 +1,7 @@
+#!/bin/bash -v
+if [ "$#" -ne 1 ]; then
+   git --work-tree=~/PTF pull origin master
+else
+  git --work-tree=~/PTF -C $1 pull origin master
+fi
+

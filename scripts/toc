@@ -1,0 +1,7 @@
+#!/bin/bash
+set -x
+
+gh-md-toc --insert $1
+DIR=$(dirname "$1")
+rm  -rf ${DIR}/*.orig.*
+rm  -rf ${DIR}/*.toc.*

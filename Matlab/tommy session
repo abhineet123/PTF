@@ -1,0 +1,33 @@
+<NotepadPlus>
+    <Session activeView="0">
+        <mainView activeIndex="1">
+            <File firstVisibleLine="1857" xOffset="0" scrollWidth="15652" startPos="194067" endPos="194071" selMode="0" lang="Matlab" encoding="-1" filename="E:\UofA\Thesis\Code\TrackingFramework\Matlab\genericConfigsAM_gd.m" backupFilePath="" originalFileLastModifTimestamp="1482198673">
+                <Mark line="2" />
+                <Mark line="25" />
+                <Mark line="119" />
+                <Mark line="187" />
+                <Mark line="343" />
+                <Mark line="598" />
+                <Mark line="621" />
+                <Mark line="1193" />
+                <Mark line="1213" />
+                <Mark line="1305" />
+                <Mark line="1351" />
+                <Mark line="1505" />
+                <Mark line="1660" />
+                <Mark line="1735" />
+                <Mark line="2326" />
+            </File>
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="15652" startPos="56655" endPos="56692" selMode="0" lang="Matlab" encoding="-1" filename="E:\UofA\Thesis\Code\TrackingFramework\Matlab\genericConfigsAM_stochastic.m" backupFilePath="" originalFileLastModifTimestamp="1482209850">
+                <Mark line="449" />
+            </File>
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="15652" startPos="766" endPos="766" selMode="0" lang="Matlab" encoding="-1" filename="E:\UofA\Thesis\Code\TrackingFramework\Matlab\genericConfigsSM.m" backupFilePath="" originalFileLastModifTimestamp="1481504338" />
+        </mainView>
+        <subView activeIndex="0">
+            <File firstVisibleLine="3135" xOffset="0" scrollWidth="2548" startPos="318283" endPos="320242" selMode="0" lang="Matlab" encoding="-1" filename="E:\UofA\Thesis\Code\TrackingFramework\Matlab\genericConfigsAM.m" backupFilePath="" originalFileLastModifTimestamp="1481907561" />
+            <File firstVisibleLine="216" xOffset="0" scrollWidth="2548" startPos="19376" endPos="19414" selMode="0" lang="Matlab" encoding="-1" filename="E:\UofA\Thesis\Code\TrackingFramework\Matlab\genericConfigsAMf.m" backupFilePath="" originalFileLastModifTimestamp="1476474831" />
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="2548" startPos="520" endPos="559" selMode="0" lang="Normal Text" encoding="-1" filename="C:\Users\Tommy\AppData\Local\Temp\Temp1_resh_grid_rkl_eslm10rLMS25p10Ki5t_ssd_scv_rscv_zncc_ncc_ssim_spss_riu_50r_30i_4u_subseq10.zip\list.txt" backupFilePath="" originalFileLastModifTimestamp="1480225278" />
+            <File firstVisibleLine="0" xOffset="0" scrollWidth="2548" startPos="500" endPos="537" selMode="0" lang="Normal Text" encoding="-1" filename="C:\Users\Tommy\AppData\Local\Temp\Temp1_resh_grides10rLMS25p10Ki5t_ssd_scv_rscv_zncc_ncc_ssim_spss_riu_ngf_50r_30i_4u_subseq10.zip\list.txt" backupFilePath="" originalFileLastModifTimestamp="1478139142" />
+        </subView>
+    </Session>
+</NotepadPlus>

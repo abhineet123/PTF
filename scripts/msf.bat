@@ -1,0 +1,1 @@
+python "%~dp0\..\moveSubfolders.py" src_dir=%1 dst_dir=%2

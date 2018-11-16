@@ -1,0 +1,1 @@
+wscript.exe %~dp0\invis.vbs vwm2.bat %*
