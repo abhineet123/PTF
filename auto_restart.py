@@ -163,6 +163,7 @@ if __name__ == '__main__':
                 server.ehlo()
                 server.login(fromaddr, email_auth[2])
                 text = msg.as_string()
+                print('Sending email to {} from {}'.format(toaddr, fromaddr))
                 server.sendmail(fromaddr, toaddr, text)
 
         f = codecs.open(settings_path, "rb").read()
