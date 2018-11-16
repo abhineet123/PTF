@@ -1,4 +1,4 @@
-Welcome to the home of **Python Tracking Framework (PTF)** - a collection of registration based trackers (like IC, ESM, NN, PF and L1) along with related (and unrelated) utilities implemented in Python and Cython. Supporting Matlab scripts, mostly for tracker evaluation are also included.
+Welcome to the home of **Python Tracking Framework (PTF)** - a collection of registration based trackers (like IC, ESM, NN, PF and L1) along with related (and unrelated) utilities implemented in Python and Cython. Supporting Matlab scripts, mostly for tracker evaluation, are also included.
 
 Prerequisites:
 ==============
