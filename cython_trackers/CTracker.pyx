@@ -82,7 +82,7 @@ class CTracker:
         for iter in xrange(self.max_iters):
             sampled_img = sample_pts_all(img_old, self.resx, self.resy, self.current_warp, self.MModel)
             if self.use_scv:
-                if self.intensity_map == None: self.intensity_map = scv_intensity_map(sampled_img, self.template)
+                if self.intensity_map is None: self.intensity_map = scv_intensity_map(sampled_img, self.template)
                 sampled_img = scv_expected_img(sampled_img, self.intensity_map)
             error = np.asarray(sampled_img - self.template).reshape(-1,1)
             J = np.asmatrix(self.J[mask[:,0]>0, :])

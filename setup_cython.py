@@ -7,7 +7,16 @@ import numpy as np
 '''
 set python2 as the default one if python3 is also present
 
+SET VS90COMNTOOLS=%VS140COMNTOOLS%
+
+or
+
 SET VS90COMNTOOLS=%VS100COMNTOOLS%
+
+or similar
+
+depending on VS version
+
 python setup_cython.py build_ext --inplace
 python ImageDirectoryTracking.py --esm "G:\UofA\Thesis\#Code\Datasets\Human\nl_bookI_s3\*.jpg" Results
 '''
