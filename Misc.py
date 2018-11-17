@@ -292,6 +292,9 @@ def processArguments(args, params):
         if not arg[1] or not arg[0] or arg[1] == '#':
             continue
 
+        if arg[0].startswith('--'):
+            arg[0] = arg[0][2:]
+
         if isinstance(params[arg[0]], (list, tuple)):
             # if not ',' in arg[1]:
             #     print('Invalid argument provided for list: {:s}'.format(arg[1]))

@@ -1,40 +1,30 @@
 import fnmatch
 import os
 import sys
+from Misc import processArguments
 
-src_dir = '.'
-src_substr = '4u'
-dst_substr = ''
-recursive_search = 1
-include_folders = 0
-replace_existing = 0
-show_names = 1
+params = {
+    'src_dir': '',
+    'src_substr': '4u',
+    'dst_substr': '',
+    'recursive_search': 0,
+    'include_folders': 0,
+    'replace_existing': 0,
+    'show_names': 1,
+}
+
+processArguments(sys.argv[1:], params)
+src_dir = params['src_dir']
+src_substr = params['src_substr']
+dst_substr = params['dst_substr']
+recursive_search = params['recursive_search']
+include_folders = params['include_folders']
+replace_existing = params['replace_existing']
+show_names = params['show_names']
+
 add_as_prefix = 0
 add_as_suffix = 0
 remove_files = 0
-
-arg_id = 1
-if len(sys.argv) > arg_id:
-    src_substr = sys.argv[arg_id]
-    arg_id += 1
-if len(sys.argv) > arg_id:
-    dst_substr = sys.argv[arg_id]
-    arg_id += 1
-if len(sys.argv) > arg_id:
-    recursive_search = int(sys.argv[arg_id])
-    arg_id += 1
-if len(sys.argv) > arg_id:
-    include_folders = int(sys.argv[arg_id])
-    arg_id += 1
-if len(sys.argv) > arg_id:
-    replace_existing = int(sys.argv[arg_id])
-    arg_id += 1
-if len(sys.argv) > arg_id:
-    show_names = int(sys.argv[arg_id])
-    arg_id += 1
-if len(sys.argv) > arg_id:
-    src_dir = sys.argv[arg_id]
-    arg_id += 1
 
 src_dir = os.path.abspath(src_dir)
 dst_substr_orig = dst_substr
