@@ -1,7 +1,7 @@
 import cv2
 import sys
 import os, shutil
-
+from pprint import pprint
 from Misc import processArguments, sortKey, resizeAR, stackImages
 
 params = {
@@ -37,7 +37,7 @@ height = params['height']
 fps = params['fps']
 codec = params['codec']
 ext = params['ext']
-grid_size = params['grid_res']
+grid_size = params['grid_size']
 borderless = params['borderless']
 preserve_order = params['preserve_order']
 
@@ -49,10 +49,6 @@ if len(_src_path) == 1:
     if os.path.isdir(_src_path):
         src_file_list = [os.path.join(_src_path, k) for k in os.listdir(_src_path) for _ext in vid_exts if
                          k.endswith(_ext)]
-        n_videos = len(src_file_list)
-        if n_videos <= 0:
-            raise SystemError('No input videos found')
-        print('n_videos: {}'.format(n_videos))
         src_file_list.sort(key=sortKey)
     else:
         src_file_list = [x.strip() for x in open(_src_path).readlines() if x.strip()]
@@ -71,6 +67,10 @@ if save_dir and not os.path.isdir(save_dir):
     os.makedirs(save_dir)
 
 n_videos = len(src_file_list)
+if n_videos <= 0:
+    raise SystemError('No input videos found')
+print('n_videos: {}:\n'.format(n_videos))
+pprint(src_file_list)
 
 if not grid_size:
     grid_size = None
@@ -112,6 +112,8 @@ frame_id = start_id
 pause_after_frame = 0
 video_out = None
 
+out_n_frames = min(n_frames_list)
+
 while True:
 
     images = []
@@ -139,7 +141,8 @@ while True:
 
     video_out.write(out_img)
     if show_img:
-        cv2.imshow('stacked', out_img)
+        out_img_disp = resizeAR(out_img, 1920, 1080)
+        cv2.imshow('stacked', out_img_disp)
         k = cv2.waitKey(1 - pause_after_frame) & 0xFF
         if k == ord('q') or k == 27:
             break
@@ -147,8 +150,11 @@ while True:
             pause_after_frame = 1 - pause_after_frame
 
     frame_id += 1
-    sys.stdout.write('\rDone {:d} frames '.format(frame_id - start_id))
+    sys.stdout.write('\rDone {:d}/{:d} frames '.format(frame_id - start_id, out_n_frames))
     sys.stdout.flush()
+
+    if frame_id >= out_n_frames:
+        break
 
 sys.stdout.write('\n')
 sys.stdout.flush()
