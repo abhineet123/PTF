@@ -70,14 +70,14 @@ save_dir = os.path.dirname(dst_path)
 if save_dir and not os.path.isdir(save_dir):
     os.makedirs(save_dir)
 
+n_videos = len(src_file_list)
+
 if not grid_size:
     grid_size = None
 else:
     grid_size = [int(x) for x in grid_size.split('x')]
-    if len(grid_size) != 2:
+    if len(grid_size) != 2 or grid_size[0]*grid_size[1] != n_videos:
         raise IOError('Invalid grid_size: {}'.format(grid_size))
-
-n_videos = len(src_file_list)
 
 n_frames_list = []
 cap_list = []
