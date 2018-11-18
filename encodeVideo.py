@@ -12,8 +12,7 @@ params = {
     'del_src': 0,
     'start_id': 0,
     'n_frames': 0,
-    'width': 0,
-    'height': 0,
+    'res': '',
     'fps': 30,
     'codec': 'H264',
     'ext': 'mkv',
@@ -27,11 +26,14 @@ show_img = params['show_img']
 del_src = params['del_src']
 start_id = params['start_id']
 n_frames = params['n_frames']
-width = params['width']
-height = params['height']
+res = params['res']
 fps = params['fps']
 codec = params['codec']
 ext = params['ext']
+
+height = width = 0
+if res:
+    width, height = [int(x) for x in res.split('x')]
 
 print('Reading source videos from: {}'.format(_src_path))
 vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv']
