@@ -3591,14 +3591,22 @@ def putTextWithBackground(img, text, fmt=None):
         except IndexError:
             pass
 
-    enable_bkg = any([k < 0 for k in bgr_col])
+    disable_bkg = any([k < 0 for k in bgr_col])
+
+    # print('font_id: {}'.format(font_id))
+    # print('loc: {}'.format(loc))
+    # print('size: {}'.format(size))
+    # print('thickness: {}'.format(thickness))
+    # print('col: {}'.format(col))
+    # print('bgr_col: {}'.format(bgr_col))
+    # print('disable_bkg: {}'.format(disable_bkg))
 
     font = font_types[font_id]
 
     text_offset_x, text_offset_y = loc
-    if enable_bkg:
+    if not disable_bkg:
         (text_width, text_height) = cv2.getTextSize(text, font, fontScale=size, thickness=thickness)[0]
-        box_coords = ((text_offset_x, text_offset_y), (text_offset_x + text_width - 2, text_offset_y - text_height - 2))
+        box_coords = ((text_offset_x, text_offset_y+5), (text_offset_x + text_width, text_offset_y - text_height))
         cv2.rectangle(img, box_coords[0], box_coords[1], bgr_col, cv2.FILLED)
     cv2.putText(img, text, loc, font, size, col, thickness)
 
@@ -3674,7 +3682,7 @@ def stackImages(img_list, grid_size=None, stack_order=0, borderless=1,
                 # print(curr_img.shape[:2])
 
                 if curr_ann:
-                    putTextWithBackground(curr_img, curr_ann, ann_fmt=ann_fmt)
+                    putTextWithBackground(curr_img, curr_ann, fmt=ann_fmt)
 
                 if not borderless:
                     curr_img = resizeAR(curr_img, width, height)

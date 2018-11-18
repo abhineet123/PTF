@@ -17,7 +17,7 @@ params = {
     'n_frames': 0,
     'ann_size': 2,
     # font_type,loc(x,y),size,thickness,col(r,g,b),bgr_col(r,g,b)
-    'ann_fmt': (0, 5, 15, 1, 1, 255, 255, 255, 0, 0, 0),
+    'ann_fmt': (0, 5, 45, 3, 2, 255, 255, 255, 0, 0, 0),
     'preserve_order': 1,
     'borderless': 0,
     'width': 0,
@@ -26,6 +26,7 @@ params = {
     'codec': 'H264',
     'ext': 'mkv',
     'grid_size': '',
+    'resize_factor': 1.0,
 }
 
 processArguments(sys.argv[1:], params)
@@ -47,6 +48,7 @@ grid_size = params['grid_size']
 borderless = params['borderless']
 preserve_order = params['preserve_order']
 ann_fmt = params['ann_fmt']
+resize_factor = params['resize_factor']
 
 vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv']
 
@@ -148,6 +150,8 @@ while True:
 
     out_img = stackImages(images, grid_size, borderless=borderless, preserve_order=preserve_order,
                           annotations=annotations, ann_fmt=ann_fmt)
+    if resize_factor != 1:
+        out_img = cv2.resize(out_img, (0,0), fx=resize_factor, fy=resize_factor)
 
     if video_out is None:
         dst_height, dst_width = out_img.shape[:2]
@@ -158,6 +162,7 @@ while True:
             raise IOError('Output video file could not be opened: {}'.format(dst_path))
 
         print('Saving {}x{} output video to {}'.format(dst_width, dst_height, dst_path))
+
 
     video_out.write(out_img)
     if show_img:
