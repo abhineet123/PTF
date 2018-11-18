@@ -313,12 +313,16 @@ def processArguments(args, params):
                         _val_parsed = float(_val)
                     except ValueError:
                         _val_parsed = _val if _val else None
+                        if _val_parsed == '__n__':
+                            _val_parsed = ''
 
                 if _val_parsed is not None:
                     arg_vals_parsed.append(_val_parsed)
             params[arg[0]] = arg_vals_parsed
         else:
             params[arg[0]] = type(params[arg[0]])(arg[1])
+            if isinstance(params[arg[0]], str) and params[arg[0]] == '__n__':
+                params[arg[0]] = ''
 
 
 def resizeAR(src_img, width, height, return_factors=False):
