@@ -3558,7 +3558,7 @@ def is_square(apositiveint):
     return True
 
 
-def putTextWithBackground(img, text, fmt=None, enable_bkg=1):
+def putTextWithBackground(img, text, fmt=None):
     font_types = {
         0: cv2.FONT_HERSHEY_COMPLEX_SMALL,
         1: cv2.FONT_HERSHEY_COMPLEX,
@@ -3586,6 +3586,8 @@ def putTextWithBackground(img, text, fmt=None, enable_bkg=1):
             bgr_col = fmt[8:]
         except IndexError:
             pass
+
+    enable_bkg = any([k < 0 for k in bgr_col])
 
     font = font_types[font_id]
 
