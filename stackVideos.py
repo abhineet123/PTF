@@ -6,6 +6,7 @@ from Misc import processArguments, sortKey, resizeAR, stackImages
 
 params = {
     'src_paths': [],
+    'annotations': [],
     'root_dir': '',
     'save_path': '',
     'img_ext': 'jpg',
@@ -25,6 +26,7 @@ params = {
 
 processArguments(sys.argv[1:], params)
 _src_path = params['src_paths']
+annotations = params['annotations']
 root_dir = params['root_dir']
 save_path = params['save_path']
 img_ext = params['img_ext']
@@ -69,14 +71,14 @@ if save_dir and not os.path.isdir(save_dir):
 n_videos = len(src_file_list)
 if n_videos <= 0:
     raise SystemError('No input videos found')
-print('n_videos: {}:\n'.format(n_videos))
+print('Stacking: {} videos:'.format(n_videos))
 pprint(src_file_list)
 
 if not grid_size:
     grid_size = None
 else:
     grid_size = [int(x) for x in grid_size.split('x')]
-    if len(grid_size) != 2 or grid_size[0]*grid_size[1] != n_videos:
+    if len(grid_size) != 2 or grid_size[0] * grid_size[1] != n_videos:
         raise IOError('Invalid grid_size: {}'.format(grid_size))
 
 n_frames_list = []
@@ -114,6 +116,17 @@ video_out = None
 
 out_n_frames = min(n_frames_list)
 
+if annotations:
+    if len(annotations) != n_videos:
+        raise IOError('Invalid annotations: {}'.format(annotations))
+    for i in range(n_videos):
+        if annotations[i] == '__n__':
+            annotations[i] = ''
+    print('Adding annotations:')
+    pprint(annotations)
+else:
+    annotations = None
+
 while True:
 
     images = []
@@ -127,7 +140,8 @@ while True:
     if len(images) != n_videos:
         break
 
-    out_img = stackImages(images, grid_size, borderless=borderless, preserve_order=preserve_order)
+    out_img = stackImages(images, grid_size, borderless=borderless, preserve_order=preserve_order,
+                          annotations=annotations)
 
     if video_out is None:
         dst_height, dst_width = out_img.shape[:2]

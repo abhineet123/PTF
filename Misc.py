@@ -222,7 +222,7 @@ def sortKey(fname, only_basename=1):
     else:
         # remove extension
         fname = os.path.join(os.path.dirname(fname),
-            os.path.splitext(os.path.basename(fname))[0])
+                             os.path.splitext(os.path.basename(fname))[0])
         fname_list = fname.split(os.sep)
         # print('fname_list: ', fname_list)
         out_name = ''
@@ -3562,7 +3562,8 @@ def is_square(apositiveint):
 
 
 def stackImages(img_list, grid_size=None, stack_order=0, borderless=1,
-                preserve_order=0, return_idx=0):
+                preserve_order=0, return_idx=0, annotations=None,
+                ann_size=1, ann_col=(255, 255, 255), ann_font=cv2.FONT_HERSHEY_COMPLEX_SMALL):
     n_images = len(img_list)
     if grid_size is None:
         n_cols = n_rows = int(np.ceil(np.sqrt(n_images)))
@@ -3604,6 +3605,7 @@ def stackImages(img_list, grid_size=None, stack_order=0, borderless=1,
     stack_idx = []
     stack_locations = []
     start_row = 0
+    curr_ann = ''
     for row_id in range(n_rows):
         start_id = n_cols * row_id
         curr_row = None
@@ -3623,8 +3625,13 @@ def stackImages(img_list, grid_size=None, stack_order=0, borderless=1,
                     img_idx_id += 1
 
                 curr_img = img_list[_curr_img_id]
+                if annotations:
+                    curr_ann = annotations[_curr_img_id]
                 stack_idx.append(_curr_img_id)
                 # print(curr_img.shape[:2])
+
+                if curr_ann:
+                    cv2.putText(curr_img, curr_ann, (5, 15), ann_font, ann_size, ann_col)
 
                 if not borderless:
                     curr_img = resizeAR(curr_img, width, height)
@@ -3651,11 +3658,11 @@ def stackImages(img_list, grid_size=None, stack_order=0, borderless=1,
                 curr_row = resizeAR(curr_row, stacked_img.shape[1], 0)
                 new_start_col = 0
                 for _i in range(n_cols):
-                    _start_row, _start_col, _end_row, _end_col = stack_locations[_i-n_cols]
+                    _start_row, _start_col, _end_row, _end_col = stack_locations[_i - n_cols]
                     _w, _h = _end_col - _start_col, _end_row - _start_row
                     w_resized, h_resized = _w / resize_factor, _h / resize_factor
-                    stack_locations[_i-n_cols] = (
-                    _start_row, new_start_col, _start_row + h_resized, new_start_col + w_resized)
+                    stack_locations[_i - n_cols] = (
+                        _start_row, new_start_col, _start_row + h_resized, new_start_col + w_resized)
                     new_start_col += w_resized
             # print('curr_row.shape: ', curr_row.shape)
             # print('stacked_img.shape: ', stacked_img.shape)
