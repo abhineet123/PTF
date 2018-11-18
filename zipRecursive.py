@@ -51,6 +51,9 @@ if __name__ == '__main__':
                         for (dirpath, dirnames, filenames) in os.walk(root_dir, followlinks=True)]
         sub_dirs += [os.path.relpath(item, root_base_dir) for sublist in sub_dirs_gen for item in sublist]
 
+    if len(dir_pattern) == 1 and not dir_pattern[0]:
+        dir_pattern = []
+        
     if dir_pattern:
         print('Restricting search to folders containing:{}'.format(dir_pattern))
         check = lambda x: all([k in x for k in dir_pattern])
