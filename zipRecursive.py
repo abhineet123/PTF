@@ -37,6 +37,11 @@ if __name__ == '__main__':
     print('file_pattern: {}'.format(file_pattern))
     print('root_base_dir: {}'.format(root_base_dir))
 
+    if not out_name:
+        dir_names = root_base_dir.split(os.sep)
+        for _dir in dir_names:
+            out_name = '{}_{}'.format(out_name, _dir) if out_name else _dir
+
     root_base_dir = os.path.abspath(root_base_dir)
     sub_dirs = []
     for root_dir in root_dirs:
@@ -65,10 +70,7 @@ if __name__ == '__main__':
     # print('zip_paths:\n')
     # pprint(zip_paths)
 
-    if not out_name:
-        dir_names = root_base_dir.split(os.sep)
-        for _dir in dir_names:
-            out_name = '{}_{}'.format(out_name, _dir) if out_name else _dir
+
 
     if postfix:
         out_name = '{}_{}'.format(out_name, postfix)
