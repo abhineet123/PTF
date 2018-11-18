@@ -66,7 +66,9 @@ if __name__ == '__main__':
     # pprint(zip_paths)
 
     if not out_name:
-        out_name = os.path.basename(root_base_dir)
+        dir_names = root_base_dir.split(os.sep)
+        for _dir in dir_names:
+            out_name = '{}_{}'.format(out_name, _dir) if out_name else _dir
 
     if postfix:
         out_name = '{}_{}'.format(out_name, postfix)
