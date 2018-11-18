@@ -14,6 +14,9 @@ params = {
     'del_src': 0,
     'start_id': 0,
     'n_frames': 0,
+    'ann_size': 2,
+    # font_type,loc(x,y),size,thickness,col(r,g,b),bgr_col(r,g,b)
+    'ann_fmt': (0, 5, 15, 1, 1, 255, 255, 255, 0, 0, 0),
     'preserve_order': 1,
     'borderless': 0,
     'width': 0,
@@ -42,6 +45,7 @@ ext = params['ext']
 grid_size = params['grid_size']
 borderless = params['borderless']
 preserve_order = params['preserve_order']
+ann_fmt = params['ann_fmt']
 
 vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv']
 
@@ -141,7 +145,7 @@ while True:
         break
 
     out_img = stackImages(images, grid_size, borderless=borderless, preserve_order=preserve_order,
-                          annotations=annotations)
+                          annotations=annotations, ann_fmt=ann_fmt)
 
     if video_out is None:
         dst_height, dst_width = out_img.shape[:2]

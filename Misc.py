@@ -3558,12 +3558,49 @@ def is_square(apositiveint):
     return True
 
 
+def putTextWithBackground(img, text, fmt=None, enable_bkg=1):
+    font_types = {
+        0: cv2.FONT_HERSHEY_COMPLEX_SMALL,
+        1: cv2.FONT_HERSHEY_COMPLEX,
+        2: cv2.FONT_HERSHEY_DUPLEX,
+        3: cv2.FONT_HERSHEY_PLAIN,
+        4: cv2.FONT_HERSHEY_SCRIPT_COMPLEX,
+        5: cv2.FONT_HERSHEY_SCRIPT_SIMPLEX,
+        6: cv2.FONT_HERSHEY_SIMPLEX,
+        7: cv2.FONT_HERSHEY_TRIPLEX,
+        8: cv2.FONT_ITALIC,
+    }
+    loc = (5, 15)
+    size = 1
+    thickness = 1
+    col = (255, 255, 255)
+    bgr_col = (0, 0, 0)
+    font_id = 0
+
+    if fmt is not None:
+        try:
+            font_id = fmt[0]
+            loc = fmt[1:3]
+            size, thickness = fmt[3:5]
+            col = fmt[5:8]
+            bgr_col = fmt[8:]
+        except IndexError:
+            pass
+
+    font = font_types[font_id]
+
+    text_offset_x, text_offset_y = loc
+    if enable_bkg:
+        (text_width, text_height) = cv2.getTextSize(text, font, fontScale=size, thickness=thickness)[0]
+        box_coords = ((text_offset_x, text_offset_y), (text_offset_x + text_width - 2, text_offset_y - text_height - 2))
+        cv2.rectangle(img, box_coords[0], box_coords[1], bgr_col, cv2.FILLED)
+    cv2.putText(img, text, loc, font, size, col, thickness)
+
+
 # import gmpy
-
-
 def stackImages(img_list, grid_size=None, stack_order=0, borderless=1,
                 preserve_order=0, return_idx=0, annotations=None,
-                ann_size=1, ann_col=(255, 255, 255), ann_font=cv2.FONT_HERSHEY_COMPLEX_SMALL):
+                ann_fmt=(0, 5, 15, 1, 1, 255, 255, 255, 0, 0, 0)):
     n_images = len(img_list)
     if grid_size is None:
         n_cols = n_rows = int(np.ceil(np.sqrt(n_images)))
@@ -3631,7 +3668,7 @@ def stackImages(img_list, grid_size=None, stack_order=0, borderless=1,
                 # print(curr_img.shape[:2])
 
                 if curr_ann:
-                    cv2.putText(curr_img, curr_ann, (5, 15), ann_font, ann_size, ann_col)
+                    putTextWithBackground(curr_img, curr_ann, ann_fmt=ann_fmt)
 
                 if not borderless:
                     curr_img = resizeAR(curr_img, width, height)
