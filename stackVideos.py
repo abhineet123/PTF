@@ -2,6 +2,7 @@ import cv2
 import sys
 import os, shutil
 from pprint import pprint
+from datetime import datetime
 from Misc import processArguments, sortKey, resizeAR, stackImages
 
 params = {
@@ -64,7 +65,8 @@ else:
     src_file_list = _src_path
 
 if not save_path:
-    dst_path = os.path.join(os.path.dirname(src_file_list[0]), 'stacked.' + ext)
+    dst_path = os.path.join(os.path.dirname(src_file_list[0]), 'stacked',
+                            '{}.{}'.format(datetime.now().strftime("%y%m%d_%H%M%S"), ext))
 else:
     dst_path = save_path
 

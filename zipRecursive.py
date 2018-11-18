@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
     if len(dir_pattern) == 1 and not dir_pattern[0]:
         dir_pattern = []
-        
+
     if dir_pattern:
         print('Restricting search to folders containing:{}'.format(dir_pattern))
         check = lambda x: all([k in x for k in dir_pattern])
@@ -72,8 +72,6 @@ if __name__ == '__main__':
 
     # print('zip_paths:\n')
     # pprint(zip_paths)
-
-
 
     if postfix:
         out_name = '{}_{}'.format(out_name, postfix)
