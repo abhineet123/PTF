@@ -7,7 +7,7 @@ from Misc import processArguments
 if __name__ == '__main__':
     params = {
         'root_dir': '.',
-        'file_pattern': '*.txt',
+        'file_pattern': ['*.txt'],
         'dir_pattern': [],
         'out_name': '',
         'postfix': '',
@@ -56,8 +56,7 @@ if __name__ == '__main__':
 
     if dir_pattern:
         print('Restricting search to folders containing:{}'.format(dir_pattern))
-        check = lambda x: all([k in x for k in dir_pattern])
-        sub_dirs = [x for x in sub_dirs if check(x)]
+        sub_dirs = [x for x in sub_dirs if all([k in x for k in dir_pattern])]
 
     print('sub_dirs:\n')
     pprint(sub_dirs)
@@ -65,8 +64,9 @@ if __name__ == '__main__':
     sub_dirs.append('.')
     zip_paths = ''
     for _dir in sub_dirs:
-        current_path = os.path.join(_dir, file_pattern) if file_pattern else _dir
-        zip_paths = '{} {}'.format(zip_paths, current_path) if zip_paths else current_path
+        for _pattern in file_pattern:
+            current_path = os.path.join(_dir, _pattern) if _pattern else _dir
+            zip_paths = '{} {}'.format(zip_paths, current_path) if zip_paths else current_path
 
     # zip_paths.replace(root_dir, '')
 
