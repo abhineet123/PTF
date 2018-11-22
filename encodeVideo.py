@@ -88,7 +88,6 @@ for src_path in src_file_list:
             raise AssertionError('Invalid n_frames {} for video with {} frames'.format(n_frames, total_frames))
         dst_n_frames = n_frames
 
-
     if height <= 0 or width <= 0:
         dst_height, dst_width = _height, _width
     else:
@@ -102,7 +101,7 @@ for src_path in src_file_list:
 
     print('Saving {}x{} output video to {}'.format(dst_width, dst_height, dst_path))
 
-    frame_id = start_id
+    frame_id = 0
     pause_after_frame = 0
     while True:
 
@@ -110,6 +109,9 @@ for src_path in src_file_list:
         if not ret:
             print('\nFrame {:d} could not be read'.format(frame_id + 1))
             break
+
+        if frame_id < start_id:
+            continue
 
         image = resizeAR(image, dst_width, dst_height)
 

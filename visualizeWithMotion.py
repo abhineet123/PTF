@@ -376,9 +376,10 @@ if __name__ == '__main__':
             # print('stack_locations: {}'.format(stack_locations))
 
         src_height, src_width, n_channels = src_img.shape
-        if mode == 1 and src_height < src_width:
-            src_img = np.rot90(src_img)
-            src_height, src_width, n_channels = src_img.shape
+
+        # if mode == 1 and src_height < src_width:
+        #     src_img = np.rot90(src_img)
+        #     src_height, src_width, n_channels = src_img.shape
 
         src_aspect_ratio = float(src_width) / float(src_height)
 
