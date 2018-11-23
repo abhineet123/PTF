@@ -614,6 +614,13 @@ if __name__ == '__main__':
         end_col = dst_width - col_diff
 
 
+    def minimizeWindow():
+        try:
+            win_handle = ctypes.windll.user32.FindWindowW(None, win_name)
+            ctypes.windll.user32.ShowWindow(win_handle, 6)
+        except:
+            print('Window minimization unavailable')
+
     def mouseHandler(event, x, y, flags=None, param=None):
         global img_id, row_offset, col_offset, lc_start_t, rc_start_t, end_exec, fullscreen, \
             direction, target_height, prev_pos, prev_win_pos, speed, old_speed, min_height, min_height_ratio, n_images, src_images
@@ -1024,14 +1031,12 @@ if __name__ == '__main__':
             transition_interval += 1
             print('Setting transition interval to: {}'.format(transition_interval))
         elif k == ord('m') or k == ord('M'):
-            win_handle = ctypes.windll.user32.FindWindowW(None, win_name)
-            ctypes.windll.user32.ShowWindow(win_handle, 6)
+            minimizeWindow()
         elif k == ord('w'):
             set_wallpaper = 1 - set_wallpaper
             if set_wallpaper:
-                win_handle = ctypes.windll.user32.FindWindowW(None, win_name)
-                ctypes.windll.user32.ShowWindow(win_handle, 6)
-            loadImage()
+                minimizeWindow()
+                loadImage()
         elif k == ord(','):
             height -= 5
             if height < 10:
