@@ -70,7 +70,9 @@ if not save_path:
     dst_path = os.path.join(os.path.dirname(src_file_list[0]), 'stacked',
                             '{}.{}'.format(datetime.now().strftime("%y%m%d_%H%M%S"), ext))
 else:
-    dst_path = save_path
+    out_seq_name, out_ext = os.path.splitext(os.path.basename(save_path))
+    dst_path = os.path.join(os.path.dirname(save_path), '{}_{}.{}'.format(
+        out_seq_name, datetime.now().strftime("%y%m%d_%H%M%S"), out_ext))
 
 save_dir = os.path.dirname(dst_path)
 if save_dir and not os.path.isdir(save_dir):

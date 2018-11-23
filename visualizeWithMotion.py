@@ -3,10 +3,13 @@ import cv2
 import sys, time, random, glob
 import numpy as np
 # from multiprocessing import Pool, Process
-from Misc import processArguments, sortKey, stackImages
+from Misc import processArguments, sortKey, stackImages, resizeAR
 import psutil
 import inspect
 from datetime import datetime
+
+import ctypes
+SPI_SETDESKWALLPAPER = 20
 
 win_utils_available = 1
 try:
@@ -70,6 +73,7 @@ params = {
     'double_click_interval': 0.1,
     'n_images': 1,
     'borderless': 1,
+    'set_wallpaper': 0,
 }
 
 if __name__ == '__main__':
@@ -99,6 +103,13 @@ if __name__ == '__main__':
     double_click_interval = params['double_click_interval']
     n_images = params['n_images']
     borderless = params['borderless']
+    set_wallpaper = params['set_wallpaper']
+
+    if set_wallpaper:
+        try:
+            set_wallpaper_func = ctypes.windll.user32.SystemParametersInfoW
+        except:
+            set_wallpaper = 0
 
     old_speed = speed
     speed = 0
@@ -374,6 +385,11 @@ if __name__ == '__main__':
             src_img, stack_idx, stack_locations = stackImages(src_images, grid_size, borderless=borderless,
                                                               return_idx=1)
             # print('stack_locations: {}'.format(stack_locations))
+
+        if set_wallpaper:
+            src_img_desktop = resizeAR(src_img, 1920, 1080)
+            cv2.imwrite('H:\\temp.bmp', src_img_desktop)
+            set_wallpaper_func(SPI_SETDESKWALLPAPER, 0, 'H:\\temp.bmp', 0)
 
         src_height, src_width, n_channels = src_img.shape
 
@@ -972,6 +988,8 @@ if __name__ == '__main__':
             if not reversed_pos:
                 cv2.moveWindow(win_name, win_offset_x + monitors[curr_monitor][0],
                                win_offset_y + monitors[curr_monitor][1])
+        elif k == ord('w'):
+            set_wallpaper = 1 - set_wallpaper
         elif k == ord(','):
             height -= 5
             if height < 10:
