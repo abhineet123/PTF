@@ -53,7 +53,12 @@ for src_path in src_file_list:
     seq_name = os.path.splitext(os.path.basename(src_path))[0]
 
     if not save_path:
-        dst_path = os.path.join(os.path.dirname(src_path), seq_name + '.' + ext)
+        dst_seq_name = seq_name
+        if start_id > 0:
+            dst_seq_name = '{}_{}'.format(dst_seq_name, start_id)
+        if n_frames > 0:
+            dst_seq_name = '{}_{}'.format(dst_seq_name, start_id + n_frames)
+        dst_path = os.path.join(os.path.dirname(src_path), dst_seq_name + '.' + ext)
     else:
         dst_path = save_path
 
@@ -101,6 +106,9 @@ for src_path in src_file_list:
 
     print('Saving {}x{} output video to {}'.format(dst_width, dst_height, dst_path))
 
+    if start_id > 0:
+        print('Starting from frame_id {}'.format(start_id))
+
     frame_id = 0
     pause_after_frame = 0
     while True:
@@ -110,7 +118,9 @@ for src_path in src_file_list:
             print('\nFrame {:d} could not be read'.format(frame_id + 1))
             break
 
-        if frame_id < start_id:
+        frame_id += 1
+
+        if frame_id <= start_id:
             continue
 
         image = resizeAR(image, dst_width, dst_height)
@@ -125,7 +135,6 @@ for src_path in src_file_list:
 
         video_out.write(image)
 
-        frame_id += 1
         sys.stdout.write('\rDone {:d} frames '.format(frame_id - start_id))
         sys.stdout.flush()
 
