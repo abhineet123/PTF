@@ -8,7 +8,6 @@ import psutil
 import inspect
 from datetime import datetime
 
-import ctypes
 SPI_SETDESKWALLPAPER = 20
 
 win_utils_available = 1
@@ -24,6 +23,11 @@ try:
     # https://msdn.microsoft.com/en-us/library/ms633505
     winID = windll.user32.GetForegroundWindow()
     print("This is your current window ID: {}".format(winID))
+
+    user32 = windll.user32
+    screensize = user32.GetSystemMetrics(78), user32.GetSystemMetrics(79)
+
+    print("screensize: {}".format(screensize))
 
 
     class POINT(Structure):
@@ -65,7 +69,7 @@ params = {
     'mode': 0,
     'auto_progress': 0,
     'max_switches': 1,
-    'max_duration': 30,
+    'transition_interval': 30,
     'random_mode': 0,
     'recursive': 1,
     'fullscreen': 0,
@@ -95,7 +99,7 @@ if __name__ == '__main__':
     mode = params['mode']
     auto_progress = params['auto_progress']
     max_switches = params['max_switches']
-    max_duration = params['max_duration']
+    transition_interval = params['transition_interval']
     random_mode = params['random_mode']
     recursive = params['recursive']
     fullscreen = params['fullscreen']
@@ -105,11 +109,26 @@ if __name__ == '__main__':
     borderless = params['borderless']
     set_wallpaper = params['set_wallpaper']
 
-    if set_wallpaper:
-        try:
-            set_wallpaper_func = ctypes.windll.user32.SystemParametersInfoW
-        except:
-            set_wallpaper = 0
+    wp_id = 0
+    try:
+        import ctypes
+        win_wallpaper_func = ctypes.windll.user32.SystemParametersInfoA
+        orig_wp_fname = ctypes.create_string_buffer(500)
+        SPI_GETDESKWALLPAPER = 0x0073
+        orig_wp_fname_res = win_wallpaper_func(SPI_GETDESKWALLPAPER, 500, orig_wp_fname, 0)
+        # print("orig_wp_fname_res: {}".format(orig_wp_fname_res))
+        # print("orig_wp_fname raw: {}".format(orig_wp_fname.raw))
+        print("orig_wp_fname value: {}".format(orig_wp_fname.value))
+        # print("orig_wp_fname: {}".format(orig_wp_fname))
+
+        orig_wp_fname=orig_wp_fname.value.decode("utf-8")
+        orig_wp = cv2.imread(orig_wp_fname)
+
+        win_wallpaper_func = ctypes.windll.user32.SystemParametersInfoW
+
+    except BaseException as e:
+        print('Wallpaper functionality unavailable: {}'.format(e))
+        set_wallpaper = 0
 
     old_speed = speed
     speed = 0
@@ -330,7 +349,7 @@ if __name__ == '__main__':
         global src_img_ar, start_row, end_row, start_col, end_col, dst_height, dst_width, n_switches, img_id, direction
         global target_height, target_width, min_height, start_col, end_col, height_ratio, img_fname, start_time
         global src_start_row, src_start_col, src_end_row, src_end_col, aspect_ratio, \
-            src_images, img_fnames, stack_idx, stack_locations, src_img
+            src_images, img_fnames, stack_idx, stack_locations, src_img, wp_id
 
         if set_grid_size:
             setGridSize()
@@ -387,9 +406,17 @@ if __name__ == '__main__':
             # print('stack_locations: {}'.format(stack_locations))
 
         if set_wallpaper:
+            wp_id = (wp_id + 1) % 100
+            wp_fname = 'H:\\vwm\\temp_{}.bmp'.format(wp_id)
             src_img_desktop = resizeAR(src_img, 1920, 1080)
-            cv2.imwrite('H:\\temp.bmp', src_img_desktop)
-            set_wallpaper_func(SPI_SETDESKWALLPAPER, 0, 'H:\\temp.bmp', 0)
+            src_img_desktop_full = np.zeros((screensize[1], screensize[0], 3), dtype=np.uint8)
+            wp_start_row = screensize[1] - 1080
+            wp_end_row = screensize[1]
+            wp_start_col = 0
+            wp_end_col = 1920
+            src_img_desktop_full[wp_start_row:wp_end_row, wp_start_col:wp_end_col, :] = src_img_desktop
+            cv2.imwrite(wp_fname, src_img_desktop_full)
+            win_wallpaper_func(SPI_SETDESKWALLPAPER, 0, wp_fname, 0)
 
         src_height, src_width, n_channels = src_img.shape
 
@@ -666,13 +693,13 @@ if __name__ == '__main__':
                     setOffsetDiff(-pos_diff_x, -pos_diff_y)
             elif event == cv2.EVENT_MOUSEWHEEL:
                 keys_to_flags = {
-                    'ctrl': (7864328,-7864312),
-                    'alt': (7864352,-7864288),
-                    'shift': (7864336,-7864304),
-                    'ctrl+alt': (7864360,-7864280),
-                    'ctrl+shift': (7864344,-7864296),
-                    'alt+shift': (7864368,-7864272),
-                    'ctrl+alt+shift': (7864376,-7864264),
+                    'ctrl': (7864328, -7864312),
+                    'alt': (7864352, -7864288),
+                    'shift': (7864336, -7864304),
+                    'ctrl+alt': (7864360, -7864280),
+                    'ctrl+shift': (7864344, -7864296),
+                    'alt+shift': (7864368, -7864272),
+                    'ctrl+alt+shift': (7864376, -7864264),
                 }
 
                 # flags_str = '{0:b}'.format(flags)
@@ -682,7 +709,7 @@ if __name__ == '__main__':
 
                 # _delta = cv2.getMouseWheelDelta(flags)
                 if flags > 0:
-                    if flags == keys_to_flags['alt'][0] :
+                    if flags == keys_to_flags['alt'][0]:
                         height += 5
                         loadImage()
                         pass
@@ -709,7 +736,7 @@ if __name__ == '__main__':
                         else:
                             loadImage(-1)
                 else:
-                    if flags == keys_to_flags['alt'][1] :
+                    if flags == keys_to_flags['alt'][1]:
                         height -= 5
                         if height < 10:
                             height = 10
@@ -988,6 +1015,14 @@ if __name__ == '__main__':
             if not reversed_pos:
                 cv2.moveWindow(win_name, win_offset_x + monitors[curr_monitor][0],
                                win_offset_y + monitors[curr_monitor][1])
+        elif k == ord('t'):
+            transition_interval -= 1
+            if transition_interval < 0:
+                transition_interval = 0
+            print('Setting transition interval to: {}'.format(transition_interval))
+        elif k == ord('T'):
+            transition_interval += 1
+            print('Setting transition interval to: {}'.format(transition_interval))
         elif k == ord('w'):
             set_wallpaper = 1 - set_wallpaper
         elif k == ord(','):
@@ -1120,7 +1155,7 @@ if __name__ == '__main__':
 
         if speed == 0 and auto_progress:
             end_time = time.time()
-            if end_time - start_time >= max_duration:
+            if end_time - start_time >= transition_interval:
                 loadImage(1)
 
         # print('end_row: ', end_row)
@@ -1130,3 +1165,5 @@ if __name__ == '__main__':
         # print('\n')
 
     cv2.destroyWindow(win_name)
+    if set_wallpaper:
+        win_wallpaper_func(SPI_SETDESKWALLPAPER, 0, orig_wp_fname, 0)
