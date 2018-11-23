@@ -69,7 +69,7 @@ params = {
     'mode': 0,
     'auto_progress': 0,
     'max_switches': 1,
-    'transition_interval': 30,
+    'transition_interval': 5,
     'random_mode': 0,
     'recursive': 1,
     'fullscreen': 0,
@@ -929,7 +929,7 @@ if __name__ == '__main__':
 
         if k == 27 or end_exec:
             break
-        elif k == 13 or k == ord('m'):
+        elif k == 13:
             changeMode()
         elif k == ord('g'):
             # grid transpose
@@ -977,11 +977,11 @@ if __name__ == '__main__':
             else:
                 print('Borderless stitching disabled')
             loadImage()
-        elif k == ord('m'):
+        elif k == ord('n'):
             max_switches -= 1
             if max_switches < 1:
                 max_switches = 1
-        elif k == ord('n'):
+        elif k == ord('N'):
             max_switches += 1
         elif k == ord('1'):
             curr_monitor = 0
@@ -1023,8 +1023,15 @@ if __name__ == '__main__':
         elif k == ord('T'):
             transition_interval += 1
             print('Setting transition interval to: {}'.format(transition_interval))
+        elif k == ord('m') or k == ord('M'):
+            win_handle = ctypes.windll.user32.FindWindowW(None, win_name)
+            ctypes.windll.user32.ShowWindow(win_handle, 6)
         elif k == ord('w'):
             set_wallpaper = 1 - set_wallpaper
+            if set_wallpaper:
+                win_handle = ctypes.windll.user32.FindWindowW(None, win_name)
+                ctypes.windll.user32.ShowWindow(win_handle, 6)
+            loadImage()
         elif k == ord(','):
             height -= 5
             if height < 10:
