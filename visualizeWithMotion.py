@@ -2,7 +2,6 @@ import os
 import cv2
 import sys, time, random, glob
 import numpy as np
-# from multiprocessing import Pool, Process
 from Misc import processArguments, sortKey, stackImages, resizeAR
 import psutil
 import inspect
@@ -78,6 +77,8 @@ params = {
     'n_images': 1,
     'borderless': 1,
     'set_wallpaper': 0,
+    'n_wallpapers': 1000,
+    'wallpaper_dir': 'wwm',
 }
 
 if __name__ == '__main__':
@@ -108,6 +109,8 @@ if __name__ == '__main__':
     n_images = params['n_images']
     borderless = params['borderless']
     set_wallpaper = params['set_wallpaper']
+    wallpaper_dir = params['wallpaper_dir']
+    n_wallpapers = params['n_wallpapers']
 
     wp_id = 0
     try:
@@ -272,6 +275,10 @@ if __name__ == '__main__':
     log_file = os.path.join(log_dir, 'vwm_log.txt')
     print('Saving log to {}'.format(log_file))
 
+    wallpaper_path = os.path.join(log_dir, wallpaper_dir)
+    if not os.path.isdir(wallpaper_path):
+        os.makedirs(wallpaper_path)
+    print('Saving wallpapers to {}'.format(wallpaper_path))
 
     def createWindow():
         global mode
@@ -406,8 +413,8 @@ if __name__ == '__main__':
             # print('stack_locations: {}'.format(stack_locations))
 
         if set_wallpaper:
-            wp_id = (wp_id + 1) % 100
-            wp_fname = 'H:\\vwm\\temp_{}.bmp'.format(wp_id)
+            wp_id = (wp_id + 1) % n_wallpapers
+            wp_fname = os.path.join(wallpaper_path, 'wallpaper_{}.jpg'.format(wp_id))
             src_img_desktop = resizeAR(src_img, 1920, 1080)
             src_img_desktop_full = np.zeros((screensize[1], screensize[0], 3), dtype=np.uint8)
             wp_start_row = screensize[1] - 1080
