@@ -388,6 +388,7 @@ if __name__ == '__main__':
                 if img_id >= total_frames:
                     img_id -= total_frames
                     if n_images > 1 and set_wallpaper and random_mode:
+                        print('Resetting randomisation')
                         src_file_list_rand = list(np.random.permutation(src_file_list))
                 elif img_id < 0:
                     img_id += total_frames
