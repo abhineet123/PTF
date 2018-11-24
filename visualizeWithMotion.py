@@ -113,6 +113,7 @@ if __name__ == '__main__':
     wp_id = 0
     try:
         import ctypes
+
         win_wallpaper_func = ctypes.windll.user32.SystemParametersInfoA
         orig_wp_fname = ctypes.create_string_buffer(500)
         SPI_GETDESKWALLPAPER = 0x0073
@@ -124,7 +125,7 @@ if __name__ == '__main__':
         print("orig_wp_fname value: {}".format(orig_wp_fname.value))
         # print("orig_wp_fname: {}".format(orig_wp_fname))
 
-        orig_wp_fname=orig_wp_fname.value.decode("utf-8")
+        orig_wp_fname = orig_wp_fname.value.decode("utf-8")
         # orig_wp = cv2.imread(orig_wp_fname)
 
         win_wallpaper_func = ctypes.windll.user32.SystemParametersInfoW
@@ -280,6 +281,7 @@ if __name__ == '__main__':
         os.makedirs(wallpaper_path)
     print('Saving wallpapers to {}'.format(wallpaper_path))
 
+
     def createWindow():
         global mode
 
@@ -356,7 +358,7 @@ if __name__ == '__main__':
         global src_img_ar, start_row, end_row, start_col, end_col, dst_height, dst_width, n_switches, img_id, direction
         global target_height, target_width, min_height, start_col, end_col, height_ratio, img_fname, start_time
         global src_start_row, src_start_col, src_end_row, src_end_col, aspect_ratio, \
-            src_images, img_fnames, stack_idx, stack_locations, src_img, wp_id
+            src_images, img_fnames, stack_idx, stack_locations, src_img, wp_id, src_file_list_rand
 
         if set_grid_size:
             setGridSize()
@@ -385,6 +387,8 @@ if __name__ == '__main__':
 
                 if img_id >= total_frames:
                     img_id -= total_frames
+                    if n_images > 1 and set_wallpaper and random_mode:
+                        src_file_list_rand = list(np.random.permutation(src_file_list))
                 elif img_id < 0:
                     img_id += total_frames
 
@@ -627,6 +631,7 @@ if __name__ == '__main__':
             ctypes.windll.user32.ShowWindow(win_handle, 6)
         except:
             print('Window minimization unavailable')
+
 
     def mouseHandler(event, x, y, flags=None, param=None):
         global img_id, row_offset, col_offset, lc_start_t, rc_start_t, end_exec, fullscreen, \
