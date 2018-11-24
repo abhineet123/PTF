@@ -49,6 +49,7 @@ borderless = params['borderless']
 preserve_order = params['preserve_order']
 ann_fmt = params['ann_fmt']
 resize_factor = params['resize_factor']
+out_n_frames = params['out_n_frames']
 
 vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv']
 
@@ -124,7 +125,13 @@ frame_id = start_id
 pause_after_frame = 0
 video_out = None
 
-out_n_frames = min(n_frames_list)
+min_n_frames = min(n_frames_list)
+
+if n_frames <= 0:
+    n_frames = min_n_frames
+else:
+    if min_n_frames < n_frames:
+        raise IOError('Invalid n_frames: {} for sequence list with min_n_frames: {}'.format(n_frames, min_n_frames))
 
 if annotations:
     if len(annotations) != n_videos:
@@ -150,10 +157,15 @@ while True:
     if len(images) != n_videos:
         break
 
+    frame_id += 1
+
+    if frame_id <= start_id:
+        break
+
     out_img = stackImages(images, grid_size, borderless=borderless, preserve_order=preserve_order,
                           annotations=annotations, ann_fmt=ann_fmt)
     if resize_factor != 1:
-        out_img = cv2.resize(out_img, (0,0), fx=resize_factor, fy=resize_factor)
+        out_img = cv2.resize(out_img, (0, 0), fx=resize_factor, fy=resize_factor)
 
     if video_out is None:
         dst_height, dst_width = out_img.shape[:2]
@@ -165,7 +177,6 @@ while True:
 
         print('Saving {}x{} output video to {}'.format(dst_width, dst_height, dst_path))
 
-
     video_out.write(out_img)
     if show_img:
         out_img_disp = resizeAR(out_img, 1920, 1080)
@@ -176,11 +187,10 @@ while True:
         elif k == 32:
             pause_after_frame = 1 - pause_after_frame
 
-    frame_id += 1
-    sys.stdout.write('\rDone {:d}/{:d} frames '.format(frame_id - start_id, out_n_frames))
+    sys.stdout.write('\rDone {:d}/{:d} frames '.format(frame_id - start_id, n_frames))
     sys.stdout.flush()
 
-    if frame_id >= out_n_frames:
+    if frame_id - start_id >= n_frames:
         break
 
 sys.stdout.write('\n')
