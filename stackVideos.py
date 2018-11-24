@@ -49,7 +49,6 @@ borderless = params['borderless']
 preserve_order = params['preserve_order']
 ann_fmt = params['ann_fmt']
 resize_factor = params['resize_factor']
-out_n_frames = params['out_n_frames']
 
 vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv']
 
