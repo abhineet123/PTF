@@ -7,8 +7,6 @@ import psutil
 import inspect
 from datetime import datetime
 
-SPI_SETDESKWALLPAPER = 20
-
 win_utils_available = 1
 try:
     import winUtils
@@ -118,6 +116,8 @@ if __name__ == '__main__':
         win_wallpaper_func = ctypes.windll.user32.SystemParametersInfoA
         orig_wp_fname = ctypes.create_string_buffer(500)
         SPI_GETDESKWALLPAPER = 0x0073
+        SPI_SETDESKWALLPAPER = 20
+
         orig_wp_fname_res = win_wallpaper_func(SPI_GETDESKWALLPAPER, 500, orig_wp_fname, 0)
         # print("orig_wp_fname_res: {}".format(orig_wp_fname_res))
         # print("orig_wp_fname raw: {}".format(orig_wp_fname.raw))
@@ -125,7 +125,7 @@ if __name__ == '__main__':
         # print("orig_wp_fname: {}".format(orig_wp_fname))
 
         orig_wp_fname=orig_wp_fname.value.decode("utf-8")
-        orig_wp = cv2.imread(orig_wp_fname)
+        # orig_wp = cv2.imread(orig_wp_fname)
 
         win_wallpaper_func = ctypes.windll.user32.SystemParametersInfoW
 
