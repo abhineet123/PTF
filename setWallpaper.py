@@ -100,7 +100,17 @@ img_id = src_file_list.index(img_fname)
 exit_program = 0
 
 
-def loadImage():
+def loadImage(diff=0):
+    global img_id, src_file_list_rand
+    img_id += diff
+    if img_id >= total_frames:
+        img_id -= total_frames
+        if random_mode:
+            print('Resetting randomisation')
+            src_file_list_rand = list(np.random.permutation(src_file_list))
+    if img_id < 0:
+        img_id = total_frames - 1
+
     if random_mode:
         src_img_fname = src_file_list_rand[img_id]
     else:
@@ -108,7 +118,7 @@ def loadImage():
 
     src_img_fname = os.path.abspath(src_img_fname)
 
-    print('src_img_fname: {}'.format(src_img_fname))
+    # print('src_img_fname: {}'.format(src_img_fname))
     win_wallpaper_func(SPI_SETDESKWALLPAPER, 0, src_img_fname, 0)
 
 
@@ -133,20 +143,11 @@ def exit_callback():
 
 
 def next_callback():
-    global img_id
-    img_id += 1
-    if img_id >= total_frames:
-        img_id = 0
-    loadImage()
+    loadImage(1)
 
 
 def prev_callback():
-    global img_id
-    print('Exiting')
-    img_id -= 1
-    if img_id < 0:
-        img_id = total_frames - 1
-    loadImage()
+    loadImage(-1)
 
 
 def kb_callback(key_struct):
@@ -171,12 +172,9 @@ if random_mode:
     src_file_list_rand = list(np.random.permutation(src_file_list))
 
 start_t = time.time()
-
+img_id -= 1
 while not exit_program:
-    loadImage()
-    img_id += 1
-    if img_id >= total_frames:
-        img_id = 0
+    loadImage(1)
     while time.time() - start_t < transition_interval:
         continue
     start_t = time.time()
