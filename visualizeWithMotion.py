@@ -2,7 +2,7 @@ import os
 import cv2
 import sys, time, random, glob
 import numpy as np
-from Misc import processArguments, sortKey, stackImages, resizeAR
+from Misc import processArguments, sortKey, stackImages, resizeAR, addBorder
 import psutil
 import inspect
 from datetime import datetime
@@ -136,6 +136,7 @@ if __name__ == '__main__':
 
     old_speed = speed
     speed = 0
+    is_paused = 1
     monitors = [
         [0, 0],
         [-1920, 0],
@@ -198,6 +199,7 @@ if __name__ == '__main__':
     src_images = []
     img_fnames = []
     win_offset_x = win_offset_y = 0
+    top_border = bottom_border = 0
 
     img_id = 0
     if os.path.isdir(src_path):
@@ -358,11 +360,13 @@ if __name__ == '__main__':
         global src_img_ar, start_row, end_row, start_col, end_col, dst_height, dst_width, n_switches, img_id, direction
         global target_height, target_width, min_height, start_col, end_col, height_ratio, img_fname, start_time
         global src_start_row, src_start_col, src_end_row, src_end_col, aspect_ratio, \
-            src_images, img_fnames, stack_idx, stack_locations, src_img, wp_id, src_file_list_rand
+            src_images, img_fnames, stack_idx, stack_locations, src_img, wp_id, src_file_list_rand, top_border, bottom_border
 
         if set_grid_size:
             setGridSize()
 
+        if _type != 0:
+            top_border = bottom_border = 0
         aspect_ratio = float(width) / float(height)
 
         if _type != 0 or not src_images:
@@ -412,6 +416,10 @@ if __name__ == '__main__':
 
         if n_images == 1:
             src_img = src_images[0]
+            if top_border > 0:
+                src_img = addBorder(src_img, top_border, 0)
+            if bottom_border > 0:
+                src_img = addBorder(src_img, bottom_border, 1)
         else:
             src_img, stack_idx, stack_locations = stackImages(src_images, grid_size, borderless=borderless,
                                                               return_idx=1)
@@ -637,7 +645,7 @@ if __name__ == '__main__':
     def mouseHandler(event, x, y, flags=None, param=None):
         global img_id, row_offset, col_offset, lc_start_t, rc_start_t, end_exec, fullscreen, \
             direction, target_height, prev_pos, prev_win_pos, speed, old_speed, min_height, min_height_ratio, n_images, src_images
-        global win_offset_x, win_offset_y, width, height
+        global win_offset_x, win_offset_y, width, height, top_border, bottom_border
         reset_prev_pos = reset_prev_win_pos = True
         try:
             if event == cv2.EVENT_MBUTTONDBLCLK:
@@ -751,8 +759,15 @@ if __name__ == '__main__':
                             col_offset -= end_col + col_offset - dst_width
                     else:
                         if n_images == 1:
-                            increaseSpeed()
-                            # motionStep(1)
+                            if is_paused:
+                                top_border -= 5
+                                if top_border < 0:
+                                    top_border = 0
+                                bottom_border += 5
+                                loadImage()
+                            else:
+                                increaseSpeed()
+                                # motionStep(1)
                         else:
                             loadImage(-1)
                 else:
@@ -781,8 +796,15 @@ if __name__ == '__main__':
                             col_offset = -start_col
                     else:
                         if n_images == 1:
-                            decreaseSpeed()
-                            # motionStep(1)
+                            if is_paused:
+                                bottom_border -= 5
+                                if bottom_border < 0:
+                                    bottom_border = 0
+                                top_border += 5
+                                loadImage()
+                            else:
+                                decreaseSpeed()
+                                # motionStep(1)
                         else:
                             loadImage(1)
             if reset_prev_pos and reset_prev_win_pos:
@@ -1024,6 +1046,7 @@ if __name__ == '__main__':
             cv2.moveWindow(win_name, win_offset_x + monitors[4][0], win_offset_y + monitors[4][1])
             # createWindow()
         elif k == 32:
+            is_paused = 1 - is_paused
             if speed == 0:
                 speed = old_speed
             else:

@@ -3562,6 +3562,27 @@ def is_square(apositiveint):
     return True
 
 
+def addBorder(img, border_size, border_type):
+    img_h, img_w = img.shape[:2]
+    out_img_h, out_img_w = img_h, img_w
+    start_row = start_col = 0
+    if border_type == 0:
+        out_img_h += border_size
+        start_row += border_size
+    elif border_type == 1:
+        out_img_h += border_size
+    elif border_type == 2:
+        out_img_w += border_size
+        start_col += border_size
+    elif border_type == 3:
+        out_img_w += border_size
+
+    out_img = np.zeros((out_img_h, out_img_w, 3), dtype=np.uint8)
+    out_img[start_row:start_row+img_h, start_col:start_col+img_w, :] = img
+    return out_img
+
+
+
 def putTextWithBackground(img, text, fmt=None):
     font_types = {
         0: cv2.FONT_HERSHEY_COMPLEX_SMALL,
@@ -3606,7 +3627,7 @@ def putTextWithBackground(img, text, fmt=None):
     text_offset_x, text_offset_y = loc
     if not disable_bkg:
         (text_width, text_height) = cv2.getTextSize(text, font, fontScale=size, thickness=thickness)[0]
-        box_coords = ((text_offset_x, text_offset_y+5), (text_offset_x + text_width, text_offset_y - text_height))
+        box_coords = ((text_offset_x, text_offset_y + 5), (text_offset_x + text_width, text_offset_y - text_height))
         cv2.rectangle(img, box_coords[0], box_coords[1], bgr_col, cv2.FILLED)
     cv2.putText(img, text, loc, font, size, col, thickness)
 

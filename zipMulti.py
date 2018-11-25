@@ -48,6 +48,7 @@ if __name__ == '__main__':
     zip_cmd = '{:s} {:s}'.format(zip_cmd, zip_path)
 
     os.system(zip_cmd)
+    os.system('unzip -l {}'.format(out_name))
 
     if scp_dst:
         scp_cmd = 'scp {} {}:~/'.format(out_name, scp_dst)

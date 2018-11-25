@@ -85,6 +85,7 @@ if __name__ == '__main__':
     # print('\nrunning: {}\n'.format(zip_cmd))
     # subprocess.call(zip_cmd)
     os.system(zip_cmd)
+    os.system('unzip -l {}'.format(out_name))
 
     if scp_dst:
         scp_cmd = 'cd {:s} && scp {} {}:~/'.format(root_base_dir, out_name, scp_dst)

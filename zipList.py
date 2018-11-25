@@ -54,6 +54,8 @@ if __name__ == '__main__':
     print('\nrunning: {}\n'.format(zip_cmd))
     os.system(zip_cmd)
 
+    os.system('unzip -l {}'.format(out_name))
+
     if scp_dst:
         scp_cmd = 'scp {} {}:~/'.format(out_name, scp_dst)
         print('\nrunning: {}\n'.format(scp_cmd))
@@ -65,6 +67,7 @@ if __name__ == '__main__':
         mv_cmd = 'mv {:s} ~'.format(out_name)
         print('\nrunning: {}\n'.format(mv_cmd))
         os.system(mv_cmd)
+
 
     print('out_name:\n {}'.format(out_name))
 

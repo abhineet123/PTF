@@ -131,8 +131,8 @@ def inc_callback():
 def dec_callback():
     global transition_interval
     transition_interval -= 1
-    if transition_interval < 1:
-        transition_interval = 1
+    if transition_interval < 0:
+        transition_interval = 0
     print('Setting transition interval to: {}'.format(transition_interval))
 
 
@@ -175,8 +175,10 @@ start_t = time.time()
 img_id -= 1
 while not exit_program:
     loadImage(1)
-    while time.time() - start_t < transition_interval:
-        continue
+    while True:
+        if exit_program or transition_interval > 0 and time.time() - start_t < transition_interval:
+            break
+
     start_t = time.time()
 
 win_wallpaper_func(SPI_SETDESKWALLPAPER, 0, orig_wp_fname, 0)
