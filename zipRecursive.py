@@ -66,7 +66,7 @@ if __name__ == '__main__':
                         for (dirpath, dirnames, filenames) in os.walk(root_dir, followlinks=True)]
         sub_dirs += [os.path.relpath(item, root_base_dir) for sublist in sub_dirs_gen for item in sublist]
 
-    sub_dirs = filter_func(filter_func)
+    sub_dirs = filter_func(sub_dirs)
 
     print('sub_dirs:\n')
     pprint(sub_dirs)
