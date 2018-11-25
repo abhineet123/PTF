@@ -13,6 +13,7 @@ if __name__ == '__main__':
         'postfix': '',
         'switches': '-rq',
         'scp_dst': '',
+        'include_all': 1,
     }
     processArguments(sys.argv[1:], params)
     _root_dir = params['root_dir']
@@ -22,6 +23,7 @@ if __name__ == '__main__':
     postfix = params['postfix']
     switches = params['switches']
     scp_dst = params['scp_dst']
+    include_all = params['include_all']
 
     if os.path.isdir(_root_dir):
         root_dirs = [_root_dir]
@@ -37,6 +39,19 @@ if __name__ == '__main__':
     print('file_pattern: {}'.format(file_pattern))
     print('root_base_dir: {}'.format(root_base_dir))
 
+    if len(dir_pattern) == 1 and not dir_pattern[0]:
+        dir_pattern = []
+
+    if dir_pattern:
+        if include_all:
+            print('Restricting search to folders containing all of: {}'.format(dir_pattern))
+            filter_func = lambda _sub_dirs: [x for x in _sub_dirs if all([k in x for k in dir_pattern])]
+        else:
+            print('Restricting search to folders containing any of: {}'.format(dir_pattern))
+            filter_func = lambda _sub_dirs: [x for x in _sub_dirs if any([k in x for k in dir_pattern])]
+    else:
+        filter_func = lambda _sub_dirs: _sub_dirs
+
     if not out_name:
         dir_names = root_base_dir.split(os.sep)
         for _dir in dir_names:
@@ -51,12 +66,7 @@ if __name__ == '__main__':
                         for (dirpath, dirnames, filenames) in os.walk(root_dir, followlinks=True)]
         sub_dirs += [os.path.relpath(item, root_base_dir) for sublist in sub_dirs_gen for item in sublist]
 
-    if len(dir_pattern) == 1 and not dir_pattern[0]:
-        dir_pattern = []
-
-    if dir_pattern:
-        print('Restricting search to folders containing:{}'.format(dir_pattern))
-        sub_dirs = [x for x in sub_dirs if all([k in x for k in dir_pattern])]
+    sub_dirs = filter_func(filter_func)
 
     print('sub_dirs:\n')
     pprint(sub_dirs)
