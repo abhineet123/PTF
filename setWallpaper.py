@@ -3,7 +3,7 @@ import keyboard
 import sys
 import os, time
 
-from Misc import processArguments, sortKey, resizeAR
+from Misc import processArguments, sortKey
 
 params = {
     'src_path': '.',
@@ -13,7 +13,7 @@ params = {
     'del_src': 0,
     'start_id': 0,
     'n_frames': 0,
-    'transition_interval': 5,
+    'transition_interval': 10,
     'random_mode': 1,
     'recursive': 1,
     'width': 0,
@@ -109,7 +109,7 @@ def loadImage(diff=0):
             print('Resetting randomisation')
             src_file_list_rand = list(np.random.permutation(src_file_list))
     if img_id < 0:
-        img_id = total_frames - 1
+        img_id = 0
 
     if random_mode:
         src_img_fname = src_file_list_rand[img_id]
@@ -174,9 +174,10 @@ if random_mode:
 start_t = time.time()
 img_id -= 1
 while not exit_program:
+    # print('img_id: {}'.format(img_id))
     loadImage(1)
     while True:
-        if exit_program or transition_interval > 0 and time.time() - start_t < transition_interval:
+        if exit_program or (transition_interval > 0 and time.time() - start_t > transition_interval):
             break
 
     start_t = time.time()

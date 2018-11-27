@@ -76,7 +76,7 @@ params = {
     'borderless': 1,
     'set_wallpaper': 0,
     'n_wallpapers': 1000,
-    'wallpaper_dir': 'wwm',
+    'wallpaper_dir': 'vwm',
 }
 
 if __name__ == '__main__':
