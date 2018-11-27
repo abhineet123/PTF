@@ -171,15 +171,13 @@ if random_mode:
     print('Random mode enabled')
     src_file_list_rand = list(np.random.permutation(src_file_list))
 
-start_t = time.time()
 img_id -= 1
 while not exit_program:
     # print('img_id: {}'.format(img_id))
     loadImage(1)
-    while True:
-        if exit_program or (transition_interval > 0 and time.time() - start_t > transition_interval):
-            break
 
-    start_t = time.time()
+    if exit_program:
+        break
+    time.sleep(transition_interval)
 
 win_wallpaper_func(SPI_SETDESKWALLPAPER, 0, orig_wp_fname, 0)
