@@ -10,6 +10,7 @@ from datetime import datetime
 win_utils_available = 1
 try:
     import winUtils
+
     print('winUtils is available')
 except ImportError as e:
     win_utils_available = 0
@@ -429,12 +430,25 @@ if __name__ == '__main__':
         if set_wallpaper:
             wp_id = (wp_id + 1) % n_wallpapers
             wp_fname = os.path.join(wallpaper_path, 'wallpaper_{}.jpg'.format(wp_id))
-            src_img_desktop = resizeAR(src_img, 1920, 1080)
+
+            if set_wallpaper == 1:
+                src_img_desktop = resizeAR(src_img, 1920, 1080)
+                wp_start_row = screensize[1] - 1080
+                wp_end_row = screensize[1]
+                wp_start_col = 0
+                wp_end_col = 1920
+            else:
+                src_img_desktop = resizeAR(src_img, 1920, 2160)
+                wp_start_row = 0
+                wp_end_row = screensize[1]
+                if screensize[0] >= 3840:
+                    wp_start_col = 1920
+                    wp_end_col = 3840
+                else:
+                    wp_start_col = 0
+                    wp_end_col = 1920
+
             src_img_desktop_full = np.zeros((screensize[1], screensize[0], 3), dtype=np.uint8)
-            wp_start_row = screensize[1] - 1080
-            wp_end_row = screensize[1]
-            wp_start_col = 0
-            wp_end_col = 1920
             src_img_desktop_full[wp_start_row:wp_end_row, wp_start_col:wp_end_col, :] = src_img_desktop
             cv2.imwrite(wp_fname, src_img_desktop_full)
             win_wallpaper_func(SPI_SETDESKWALLPAPER, 0, wp_fname, 0)
@@ -1069,8 +1083,13 @@ if __name__ == '__main__':
             print('Setting transition interval to: {}'.format(transition_interval))
         elif k == ord('m') or k == ord('M'):
             minimizeWindow()
+        elif k == ord('W'):
+            set_wallpaper = 0 if set_wallpaper else 2
+            if set_wallpaper:
+                minimizeWindow()
+                loadImage()
         elif k == ord('w'):
-            set_wallpaper = 1 - set_wallpaper
+            set_wallpaper = 0 if set_wallpaper else 1
             if set_wallpaper:
                 minimizeWindow()
                 loadImage()
