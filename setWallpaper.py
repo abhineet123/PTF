@@ -3,6 +3,9 @@ import keyboard
 import sys
 import os, time
 
+from threading import Event
+interrupt_wait = Event()
+
 from Misc import processArguments, sortKey
 
 params = {
@@ -123,32 +126,47 @@ def loadImage(diff=0):
 
 
 def inc_callback():
-    global transition_interval
+    global transition_interval, img_id
     transition_interval += 1
     print('Setting transition interval to: {}'.format(transition_interval))
+    img_id -= 1
+    interrupt_wait.set()
 
 
 def dec_callback():
-    global transition_interval
+    global transition_interval, img_id
     transition_interval -= 1
-    if transition_interval < 0:
-        transition_interval = 0
+    if transition_interval < 1:
+        transition_interval = 1
     print('Setting transition interval to: {}'.format(transition_interval))
+    img_id -= 1
+    interrupt_wait.set()
 
+def inc_callback2():
+    global transition_interval, img_id
+    transition_interval = 1000
+    print('Setting transition interval to: {}'.format(transition_interval))
+    img_id -= 1
+    interrupt_wait.set()
+
+def dec_callback2():
+    global transition_interval, img_id
+    transition_interval = 1
+    print('Setting transition interval to: {}'.format(transition_interval))
+    img_id -= 1
+    interrupt_wait.set()
 
 def exit_callback():
     global exit_program
     print('Exiting')
     exit_program = 1
-
+    interrupt_wait.set()
 
 def next_callback():
     loadImage(1)
 
-
 def prev_callback():
     loadImage(-1)
-
 
 def kb_callback(key_struct):
     global exit_program
@@ -166,7 +184,8 @@ keyboard.add_hotkey('ctrl+alt+right', next_callback)
 keyboard.add_hotkey('ctrl+alt+left', prev_callback)
 keyboard.add_hotkey('ctrl+alt+up', inc_callback)
 keyboard.add_hotkey('ctrl+alt+down', dec_callback)
-
+keyboard.add_hotkey('ctrl+alt+shift+up', inc_callback2)
+keyboard.add_hotkey('ctrl+alt+shift+down', dec_callback2)
 if random_mode:
     print('Random mode enabled')
     src_file_list_rand = list(np.random.permutation(src_file_list))
@@ -175,9 +194,10 @@ img_id -= 1
 while not exit_program:
     # print('img_id: {}'.format(img_id))
     loadImage(1)
-
+    interrupt_wait.wait(transition_interval)
+    # time.sleep(transition_interval)
     if exit_program:
         break
-    time.sleep(transition_interval)
+    interrupt_wait.clear()
 
 win_wallpaper_func(SPI_SETDESKWALLPAPER, 0, orig_wp_fname, 0)
