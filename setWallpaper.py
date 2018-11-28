@@ -1,9 +1,11 @@
 import numpy as np
 import keyboard
 import sys
-import os, time
-
+import os
+import cv2
+import ctypes
 from threading import Event
+
 interrupt_wait = Event()
 
 from Misc import processArguments, sortKey
@@ -44,8 +46,6 @@ random_mode = params['random_mode']
 transition_interval = params['transition_interval']
 
 try:
-    import ctypes
-
     win_wallpaper_func = ctypes.windll.user32.SystemParametersInfoA
     orig_wp_fname = ctypes.create_string_buffer(500)
     SPI_GETDESKWALLPAPER = 0x0073
@@ -100,8 +100,13 @@ if img_fname is None:
 
 img_id = src_file_list.index(img_fname)
 
-exit_program = 0
+src_img = cv2.imread(img_fname)
+img_h, img_w = src_img.shape[:2]
+wallpaper_size = (img_w, img_h)
 
+print("wallpaper_size: {}".format(wallpaper_size))
+
+exit_program = 0
 
 def loadImage(diff=0):
     global img_id, src_file_list_rand
@@ -120,6 +125,14 @@ def loadImage(diff=0):
         src_img_fname = src_file_list[img_id]
 
     src_img_fname = os.path.abspath(src_img_fname)
+
+    user32 = ctypes.windll.user32
+    screen_size = user32.GetSystemMetrics(78), user32.GetSystemMetrics(79)
+
+    if wallpaper_size != screen_size:
+        print('Mismatch detected between wallpaper size: {} and screen size: {}'.format(wallpaper_size, screen_size))
+        exit_callback()
+        return
 
     # print('src_img_fname: {}'.format(src_img_fname))
     win_wallpaper_func(SPI_SETDESKWALLPAPER, 0, src_img_fname, 0)

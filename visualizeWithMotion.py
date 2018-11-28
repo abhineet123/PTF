@@ -10,6 +10,7 @@ from datetime import datetime
 win_utils_available = 1
 try:
     import winUtils
+    print('winUtils is available')
 except ImportError as e:
     win_utils_available = 0
     print('Failed to import winUtils: {}'.format(e))
