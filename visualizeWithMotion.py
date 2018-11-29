@@ -431,22 +431,33 @@ if __name__ == '__main__':
             wp_id = (wp_id + 1) % n_wallpapers
             wp_fname = os.path.join(wallpaper_path, 'wallpaper_{}.jpg'.format(wp_id))
 
+            wp_width = 1920
             if set_wallpaper == 1:
-                src_img_desktop = resizeAR(src_img, 1920, 1080)
+                if screensize[0] == 1920 and screensize[1] == 1080:
+                    wp_border = 30
+                else:
+                    wp_border = 0
+                wp_height = 1080
                 wp_start_row = screensize[1] - 1080
-                wp_end_row = screensize[1]
                 wp_start_col = 0
-                wp_end_col = 1920
             else:
-                src_img_desktop = resizeAR(src_img, 1920, 2160)
+                wp_border = 30
+                wp_height = screensize[1]
                 wp_start_row = 0
-                wp_end_row = screensize[1]
-                if screensize[0] >= 3840:
+                if screensize[0] > 3840:
                     wp_start_col = 1920
-                    wp_end_col = 3840
                 else:
                     wp_start_col = 0
-                    wp_end_col = 1920
+
+            if wp_border:
+                wp_height_ratio = float(src_img.shape[0]) / float(wp_height)
+                src_border = int(wp_border * wp_height_ratio)
+                src_img = addBorder(src_img, src_border, 4)
+
+            src_img_desktop = resizeAR(src_img, wp_width, wp_height)
+            src_img = addBorder(src_img, bottom_border, 1)
+            wp_end_col = wp_start_col + src_img_desktop.shape[1]
+            wp_end_row = wp_start_row + src_img_desktop.shape[0]
 
             src_img_desktop_full = np.zeros((screensize[1], screensize[0], 3), dtype=np.uint8)
             src_img_desktop_full[wp_start_row:wp_end_row, wp_start_col:wp_end_col, :] = src_img_desktop

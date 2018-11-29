@@ -3576,6 +3576,9 @@ def addBorder(img, border_size, border_type):
         start_col += border_size
     elif border_type == 3:
         out_img_w += border_size
+    elif border_type == 4:
+        out_img_h += 2*border_size
+        start_row += border_size
 
     out_img = np.zeros((out_img_h, out_img_w, 3), dtype=np.uint8)
     out_img[start_row:start_row+img_h, start_col:start_col+img_w, :] = img
