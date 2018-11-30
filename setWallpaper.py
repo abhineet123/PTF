@@ -45,6 +45,9 @@ recursive = params['recursive']
 random_mode = params['random_mode']
 transition_interval = params['transition_interval']
 
+MAX_TRANSITION_INTERVAL = 1000
+MIN_TRANSITION_INTERVAL = 1
+
 try:
     win_wallpaper_func = ctypes.windll.user32.SystemParametersInfoA
     orig_wp_fname = ctypes.create_string_buffer(500)
@@ -61,6 +64,8 @@ try:
 except BaseException as e:
     raise SystemError('Wallpaper functionality unavailable: {}'.format(e))
 src_file_list = []
+
+old_transition_interval = transition_interval
 
 for src_path in _src_path:
     img_id = 0
@@ -158,15 +163,25 @@ def dec_callback():
     interrupt_wait.set()
 
 def inc_callback2():
-    global transition_interval, img_id
-    transition_interval = 1000
+    global transition_interval, old_transition_interval, img_id
+    if transition_interval==MAX_TRANSITION_INTERVAL:
+        transition_interval = old_transition_interval
+    else:
+        old_transition_interval = transition_interval
+        transition_interval = MAX_TRANSITION_INTERVAL
     print('Setting transition interval to: {}'.format(transition_interval))
     img_id -= 1
     interrupt_wait.set()
 
 def dec_callback2():
-    global transition_interval, img_id
-    transition_interval = 1
+    global transition_interval, old_transition_interval, img_id
+
+    if transition_interval==MIN_TRANSITION_INTERVAL:
+        transition_interval = old_transition_interval
+    else:
+        old_transition_interval = transition_interval
+        transition_interval = MIN_TRANSITION_INTERVAL
+
     print('Setting transition interval to: {}'.format(transition_interval))
     img_id -= 1
     interrupt_wait.set()
