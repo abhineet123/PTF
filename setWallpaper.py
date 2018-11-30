@@ -11,7 +11,7 @@ interrupt_wait = Event()
 from Misc import processArguments, sortKey
 
 params = {
-    'src_path': '.',
+    'src_path': ['.'],
     'save_path': '',
     'img_ext': 'jpg',
     'show_img': 1,
@@ -29,7 +29,7 @@ params = {
 }
 
 processArguments(sys.argv[1:], params)
-src_path = params['src_path']
+_src_path = params['src_path']
 save_path = params['save_path']
 img_ext = params['img_ext']
 show_img = params['show_img']
@@ -60,29 +60,31 @@ try:
 
 except BaseException as e:
     raise SystemError('Wallpaper functionality unavailable: {}'.format(e))
+src_file_list = []
 
-img_id = 0
-if os.path.isdir(src_path):
-    src_dir = src_path
-    img_fname = None
-elif os.path.isfile(src_path):
-    src_dir = os.path.dirname(src_path)
-    img_fname = src_path
-else:
-    raise IOError('Invalid source path: {}'.format(src_path))
+for src_path in _src_path:
+    img_id = 0
+    if os.path.isdir(src_path):
+        src_dir = src_path
+        img_fname = None
+    elif os.path.isfile(src_path):
+        src_dir = os.path.dirname(src_path)
+        img_fname = src_path
+    else:
+        raise IOError('Invalid source path: {}'.format(src_path))
 
-print('Reading source images from: {}'.format(src_dir))
+    print('Reading source images from: {}'.format(src_dir))
 
-img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff', '.gif')
+    img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff', '.gif')
 
-if recursive:
-    src_file_gen = [[os.path.join(dirpath, f) for f in filenames if
-                     os.path.splitext(f.lower())[1] in img_exts]
-                    for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
-    src_file_list = [item for sublist in src_file_gen for item in sublist]
-else:
-    src_file_list = [os.path.join(src_dir, k) for k in os.listdir(src_dir) if
-                     os.path.splitext(k.lower())[1] in img_exts]
+    if recursive:
+        src_file_gen = [[os.path.join(dirpath, f) for f in filenames if
+                         os.path.splitext(f.lower())[1] in img_exts]
+                        for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
+        src_file_list += [item for sublist in src_file_gen for item in sublist]
+    else:
+        src_file_list += [os.path.join(src_dir, k) for k in os.listdir(src_dir) if
+                         os.path.splitext(k.lower())[1] in img_exts]
 
 total_frames = len(src_file_list)
 if total_frames <= 0:

@@ -3566,19 +3566,22 @@ def addBorder(img, border_size, border_type):
     img_h, img_w = img.shape[:2]
     out_img_h, out_img_w = img_h, img_w
     start_row = start_col = 0
-    if border_type == 0:
+    if border_type == 'top':
         out_img_h += border_size
         start_row += border_size
-    elif border_type == 1:
+    elif border_type == 'bottom':
         out_img_h += border_size
-    elif border_type == 2:
+    elif border_type == 'left':
         out_img_w += border_size
         start_col += border_size
-    elif border_type == 3:
+    elif border_type == 'right':
         out_img_w += border_size
-    elif border_type == 4:
+    elif border_type == 'top_and_bottom':
         out_img_h += 2*border_size
         start_row += border_size
+    elif border_type == 'left_and_right':
+        out_img_w += 2*border_size
+        start_col += border_size
 
     out_img = np.zeros((out_img_h, out_img_w, 3), dtype=np.uint8)
     out_img[start_row:start_row+img_h, start_col:start_col+img_w, :] = img
