@@ -432,18 +432,17 @@ if __name__ == '__main__':
             screensize = user32.GetSystemMetrics(78), user32.GetSystemMetrics(79)
 
             wp_width = 1920
-            border_type = 'top_and_bottom'
+
             if set_wallpaper == 1:
                 if screensize[0] == 1920 and screensize[1] == 1080:
                     wp_border = 30
+
                 else:
                     wp_border = 0
                 wp_height = 1080
                 wp_start_row = screensize[1] - 1080
                 wp_start_col = 0
             else:
-                if n_images == 1 or grid_size[0] % 2 == 1:
-                    border_type = 'bottom'
                 wp_border = 30
                 wp_height = screensize[1]
                 wp_start_row = 0
@@ -453,6 +452,10 @@ if __name__ == '__main__':
                     wp_start_col = 0
 
             if wp_border:
+                if n_images == 1 or grid_size[0] % 2 == 1:
+                    border_type = 'bottom'
+                else:
+                    border_type = 'top_and_bottom'
                 wp_height_ratio = float(src_img.shape[0]) / float(wp_height)
                 src_border = int(wp_border * wp_height_ratio)
                 src_img = addBorder(src_img, src_border, border_type)
