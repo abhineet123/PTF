@@ -10,6 +10,7 @@ params = {
     'recursive_search': 0,
     'include_folders': 0,
     'replace_existing': 0,
+    'include_ext': 0,
     'show_names': 1,
 }
 
@@ -20,6 +21,7 @@ dst_substr = params['dst_substr']
 recursive_search = params['recursive_search']
 include_folders = params['include_folders']
 replace_existing = params['replace_existing']
+include_ext = params['include_ext']
 show_names = params['show_names']
 
 add_as_prefix = 0
@@ -66,6 +68,11 @@ elif include_folders == 2:
 else:
     print 'Not searching for folders'
 
+if include_ext:
+    print('Including file extensions as well')
+else:
+    print('Excluding file extensions')
+
 src_file_paths = []
 for root, dirnames, filenames in os.walk(src_dir):
     if include_folders:
@@ -95,9 +102,13 @@ for src_path in src_file_paths:
     elif add_as_suffix:
         dst_path = os.path.join(src_dir, '{:s}{:s}{:s}'.format(src_fname_no_ext, dst_substr, src_ext))
     else:
-        dst_fname_no_ext = src_fname_no_ext.replace(src_substr, dst_substr)
-        dst_path = os.path.join(src_dir, '{:s}{:s}'.format(dst_fname_no_ext, src_ext))
-        # dst_path = src_path.replace(src_substr, dst_substr)
+        if include_ext:
+            dst_fname = src_fname.replace(src_substr, dst_substr)
+            dst_path = os.path.join(src_dir, dst_fname)
+        else:
+            dst_fname_no_ext = src_fname_no_ext.replace(src_substr, dst_substr)
+            dst_path = os.path.join(src_dir, '{:s}{:s}'.format(dst_fname_no_ext, src_ext))
+            # dst_path = src_path.replace(src_substr, dst_substr)
 
     src_fname_dir = os.path.dirname(src_path)
     dst_fname_dir = os.path.dirname(dst_path)
