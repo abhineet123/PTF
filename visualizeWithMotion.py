@@ -436,7 +436,6 @@ if __name__ == '__main__':
             if set_wallpaper == 1:
                 if screensize[0] == 1920 and screensize[1] == 1080:
                     wp_border = 30
-
                 else:
                     wp_border = 0
                 wp_height = 1080
@@ -446,7 +445,7 @@ if __name__ == '__main__':
                 wp_border = 30
                 wp_height = screensize[1]
                 wp_start_row = 0
-                if screensize[0] > 3840:
+                if screensize[0] >= 3840:
                     wp_start_col = 1920
                 else:
                     wp_start_col = 0
