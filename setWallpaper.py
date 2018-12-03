@@ -89,7 +89,7 @@ for src_path in _src_path:
         src_file_list += [item for sublist in src_file_gen for item in sublist]
     else:
         src_file_list += [os.path.join(src_dir, k) for k in os.listdir(src_dir) if
-                         os.path.splitext(k.lower())[1] in img_exts]
+                          os.path.splitext(k.lower())[1] in img_exts]
 
 total_frames = len(src_file_list)
 if total_frames <= 0:
@@ -114,6 +114,7 @@ wallpaper_size = (img_w, img_h)
 print("wallpaper_size: {}".format(wallpaper_size))
 
 exit_program = 0
+
 
 def loadImage(diff=0):
     global img_id, src_file_list_rand
@@ -162,9 +163,10 @@ def dec_callback():
     img_id -= 1
     interrupt_wait.set()
 
+
 def inc_callback2():
     global transition_interval, old_transition_interval, img_id
-    if transition_interval==MAX_TRANSITION_INTERVAL:
+    if transition_interval == MAX_TRANSITION_INTERVAL:
         transition_interval = old_transition_interval
     else:
         old_transition_interval = transition_interval
@@ -173,10 +175,11 @@ def inc_callback2():
     img_id -= 1
     interrupt_wait.set()
 
+
 def dec_callback2():
     global transition_interval, old_transition_interval, img_id
 
-    if transition_interval==MIN_TRANSITION_INTERVAL:
+    if transition_interval == MIN_TRANSITION_INTERVAL:
         transition_interval = old_transition_interval
     else:
         old_transition_interval = transition_interval
@@ -186,27 +189,23 @@ def dec_callback2():
     img_id -= 1
     interrupt_wait.set()
 
+
 def exit_callback():
     global exit_program
     print('Exiting')
     exit_program = 1
     interrupt_wait.set()
 
+
 def next_callback():
     loadImage(1)
+
 
 def prev_callback():
     loadImage(-1)
 
-def kb_callback(key_struct):
-    global exit_program
-    k = key_struct.name
-    # print('key_struct: {}'.format(key_struct))
-    print('scan_code: {}'.format(key_struct.scan_code))
-    print('name: {}'.format(k))
-    if k == 'esc':
-        print('Exiting')
-        exit_program = 1
+
+
 
 
 keyboard.add_hotkey('ctrl+alt+esc', exit_callback)

@@ -5,7 +5,11 @@ import numpy as np
 from Misc import processArguments, sortKey, stackImages, resizeAR, addBorder
 import psutil
 import inspect
+import keyboard
 from datetime import datetime
+from threading import Event
+
+interrupt_wait = Event()
 
 win_utils_available = 1
 try:
@@ -77,7 +81,9 @@ params = {
     'borderless': 1,
     'set_wallpaper': 0,
     'n_wallpapers': 1000,
+    'wallpaper_root_dir': '',
     'wallpaper_dir': 'vwm',
+    'wallpaper_mode': 0,
 }
 
 if __name__ == '__main__':
@@ -108,7 +114,9 @@ if __name__ == '__main__':
     n_images = params['n_images']
     borderless = params['borderless']
     set_wallpaper = params['set_wallpaper']
+    wallpaper_root_dir = params['wallpaper_root_dir']
     wallpaper_dir = params['wallpaper_dir']
+    wallpaper_mode = params['wallpaper_mode']
     n_wallpapers = params['n_wallpapers']
 
     wp_id = 0
@@ -279,7 +287,9 @@ if __name__ == '__main__':
     log_file = os.path.join(log_dir, 'vwm_log.txt')
     print('Saving log to {}'.format(log_file))
 
-    wallpaper_path = os.path.join(log_dir, wallpaper_dir)
+    if not wallpaper_root_dir:
+        wallpaper_root_dir = log_dir
+    wallpaper_path = os.path.join(wallpaper_root_dir, wallpaper_dir)
     if not os.path.isdir(wallpaper_path):
         os.makedirs(wallpaper_path)
     print('Saving wallpapers to {}'.format(wallpaper_path))
@@ -429,7 +439,8 @@ if __name__ == '__main__':
             # print('stack_locations: {}'.format(stack_locations))
 
         if set_wallpaper:
-            wp_id = (wp_id + 1) % n_wallpapers
+            if not wallpaper_mode:
+                wp_id = (wp_id + 1) % n_wallpapers
             wp_fname = os.path.join(wallpaper_path, 'wallpaper_{}.jpg'.format(wp_id))
             screensize = user32.GetSystemMetrics(78), user32.GetSystemMetrics(79)
 
@@ -674,6 +685,12 @@ if __name__ == '__main__':
         except:
             print('Window minimization unavailable')
 
+    def maximizeWindow():
+        try:
+            win_handle = ctypes.windll.user32.FindWindowW(None, win_name)
+            ctypes.windll.user32.ShowWindow(win_handle, 1)
+        except:
+            print('Window minimization unavailable')
 
     def mouseHandler(event, x, y, flags=None, param=None):
         global img_id, row_offset, col_offset, lc_start_t, rc_start_t, end_exec, fullscreen, \
@@ -907,6 +924,37 @@ if __name__ == '__main__':
     win_name = 'VWM'
     createWindow()
 
+
+    def kb_callback(_params, _type):
+        print('_params: {}'.format(_params))
+        print('_type: {}'.format(_type))
+
+        if _type == 0:
+            print('exiting...')
+            _params[0] = 1
+            interrupt_wait.set()
+        elif _type == 1:
+            loadImage(1)
+        elif _type == 2:
+            loadImage(-1)
+        elif _type == 3:
+            _params[1] = 1 - _params[1]
+            if _params[1]:
+                print('wallpaper mode enabled')
+                minimizeWindow()
+            else:
+                print('wallpaper mode disabled')
+                maximizeWindow()
+            interrupt_wait.set()
+        elif _type == 4:
+            pass
+
+    kb_params = [0, wallpaper_mode]
+    keyboard.add_hotkey('ctrl+alt+esc', kb_callback, args=(kb_params, 0))
+    keyboard.add_hotkey('ctrl+alt+right', kb_callback, args=(kb_params, 1))
+    keyboard.add_hotkey('ctrl+alt+left', kb_callback, args=(kb_params, 2))
+    keyboard.add_hotkey('ctrl+alt+w', kb_callback, args=(kb_params, 3))
+
     # if hotkeys_available:
     #     def handle_win_f3():
     #         print('Minimizing window')
@@ -929,6 +977,18 @@ if __name__ == '__main__':
     loadImage(set_grid_size=1)
 
     while True:
+        exit_program = kb_params[0]
+        wallpaper_mode = kb_params[1]
+
+        if exit_program:
+            break
+
+        if wallpaper_mode:
+            interrupt_wait.wait(transition_interval)
+            interrupt_wait.clear()
+            loadImage(1)
+            continue
+
         _row_offset, _col_offset = row_offset, col_offset
         if end_row + _row_offset > dst_height:
             _row_offset -= end_row + row_offset - dst_height
