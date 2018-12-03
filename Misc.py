@@ -3643,6 +3643,8 @@ def stackImages(img_list, grid_size=None, stack_order=0, borderless=1,
                 preserve_order=0, return_idx=0, annotations=None,
                 ann_fmt=(0, 5, 15, 1, 1, 255, 255, 255, 0, 0, 0)):
     n_images = len(img_list)
+    print('grid_size: {}'.format(grid_size))
+
     if grid_size is None:
         n_cols = n_rows = int(np.ceil(np.sqrt(n_images)))
     else:
@@ -3665,6 +3667,9 @@ def stackImages(img_list, grid_size=None, stack_order=0, borderless=1,
     img_heights_sort_idx = np.argsort(-img_heights)
     row_start_idx = img_heights_sort_idx[:n_rows]
     img_idx = img_heights_sort_idx[n_rows:]
+    print('img_heights: {}'.format(img_heights))
+    print('img_heights_sort_idx: {}'.format(img_heights_sort_idx))
+    print('img_idx: {}'.format(img_idx))
 
     # grid_size = [n_rows, n_cols]
     img_size = img_list[shape_img_id].shape

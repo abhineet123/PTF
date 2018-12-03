@@ -353,7 +353,9 @@ if __name__ == '__main__':
                 n_rows = 2
                 n_cols = int(n_images / 2)
             else:
-                n_cols = n_rows = int(np.ceil(np.sqrt(n_images)))
+                n_rows = 1
+                n_cols = n_images
+                # n_cols = n_rows = int(np.ceil(np.sqrt(n_images)))
         grid_size = (n_rows, n_cols)
 
 
