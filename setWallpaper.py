@@ -205,9 +205,6 @@ def prev_callback():
     loadImage(-1)
 
 
-
-
-
 keyboard.add_hotkey('ctrl+alt+esc', exit_callback)
 keyboard.add_hotkey('ctrl+alt+right', next_callback)
 keyboard.add_hotkey('ctrl+alt+left', prev_callback)
