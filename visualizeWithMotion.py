@@ -28,9 +28,10 @@ try:
     print("This is your current window ID: {}".format(winID))
 
     user32 = windll.user32
+
+
     # screensize = user32.GetSystemMetrics(78), user32.GetSystemMetrics(79)
     # print("screensize: {}".format(screensize))
-
 
     class POINT(Structure):
         _fields_ = [("x", c_long), ("y", c_long)]
@@ -81,8 +82,7 @@ params = {
     'borderless': 1,
     'set_wallpaper': 0,
     'n_wallpapers': 1000,
-    'wallpaper_root_dir': '',
-    'wallpaper_dir': 'vwm',
+    'wallpaper_dir': '',
     'wallpaper_mode': 0,
 }
 
@@ -114,10 +114,12 @@ if __name__ == '__main__':
     n_images = params['n_images']
     borderless = params['borderless']
     set_wallpaper = params['set_wallpaper']
-    wallpaper_root_dir = params['wallpaper_root_dir']
     wallpaper_dir = params['wallpaper_dir']
     wallpaper_mode = params['wallpaper_mode']
     n_wallpapers = params['n_wallpapers']
+
+    if wallpaper_mode and not set_wallpaper:
+        set_wallpaper = 1
 
     wp_id = 0
     try:
@@ -287,12 +289,11 @@ if __name__ == '__main__':
     log_file = os.path.join(log_dir, 'vwm_log.txt')
     print('Saving log to {}'.format(log_file))
 
-    if not wallpaper_root_dir:
-        wallpaper_root_dir = log_dir
-    wallpaper_path = os.path.join(wallpaper_root_dir, wallpaper_dir)
-    if not os.path.isdir(wallpaper_path):
-        os.makedirs(wallpaper_path)
-    print('Saving wallpapers to {}'.format(wallpaper_path))
+    if not wallpaper_dir:
+        wallpaper_dir = os.path.join(log_dir, 'vwm')
+    if not os.path.isdir(wallpaper_dir):
+        os.makedirs(wallpaper_dir)
+    print('Saving wallpapers to {}'.format(wallpaper_dir))
 
 
     def createWindow():
@@ -441,7 +442,7 @@ if __name__ == '__main__':
         if set_wallpaper:
             if not wallpaper_mode:
                 wp_id = (wp_id + 1) % n_wallpapers
-            wp_fname = os.path.join(wallpaper_path, 'wallpaper_{}.jpg'.format(wp_id))
+            wp_fname = os.path.join(wallpaper_dir, 'wallpaper_{}.jpg'.format(wp_id))
             screensize = user32.GetSystemMetrics(78), user32.GetSystemMetrics(79)
 
             wp_width = 1920
@@ -685,12 +686,14 @@ if __name__ == '__main__':
         except:
             print('Window minimization unavailable')
 
+
     def maximizeWindow():
         try:
             win_handle = ctypes.windll.user32.FindWindowW(None, win_name)
             ctypes.windll.user32.ShowWindow(win_handle, 1)
         except:
             print('Window minimization unavailable')
+
 
     def mouseHandler(event, x, y, flags=None, param=None):
         global img_id, row_offset, col_offset, lc_start_t, rc_start_t, end_exec, fullscreen, \
@@ -921,40 +924,85 @@ if __name__ == '__main__':
             pass
 
 
-    win_name = 'VWM'
-    createWindow()
+    time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+    win_name = 'VWM_{}_{}'.format(os.path.basename(os.path.abspath(src_path)),
+                                  time_stamp)
+    if not wallpaper_mode:
+        createWindow()
 
 
-    def kb_callback(_params, _type):
-        print('_params: {}'.format(_params))
+    def kb_callback(_type):
+        global set_wallpaper, n_images, wallpaper_mode, exit_program, borderless
+        # print('_params: {}'.format(_params))
         print('_type: {}'.format(_type))
 
         if _type == 0:
             print('exiting...')
-            _params[0] = 1
+            exit_program = 1
             interrupt_wait.set()
         elif _type == 1:
             loadImage(1)
         elif _type == 2:
             loadImage(-1)
         elif _type == 3:
-            _params[1] = 1 - _params[1]
-            if _params[1]:
+            wallpaper_mode = 1 - wallpaper_mode
+            if wallpaper_mode:
+                set_wallpaper = 1
                 print('wallpaper mode enabled')
-                minimizeWindow()
+                cv2.destroyWindow(win_name)
+                # minimizeWindow()
             else:
                 print('wallpaper mode disabled')
-                maximizeWindow()
+                createWindow()
+                # maximizeWindow()
             interrupt_wait.set()
         elif _type == 4:
-            pass
+            wallpaper_mode = 1 - wallpaper_mode
+            if wallpaper_mode:
+                set_wallpaper = 2
+                print('wallpaper mode enabled')
+                cv2.destroyWindow(win_name)
+            else:
+                print('wallpaper mode disabled')
+                createWindow()
+            interrupt_wait.set()
+        elif _type == 5:
+            n_images += 1
+            loadImage(1, 1)
+        elif _type == 6:
+            n_images -= 1
+            if n_images < 1:
+                n_images = 1
+            loadImage(1, 1)
+        elif _type == 7:
+            borderless = 1 - borderless
+            if borderless:
+                print('Borderless stitching enabled')
+            else:
+                print('Borderless stitching disabled')
+        elif _type == 8:
+            n_images = 4
+            loadImage(1, 1)
+        elif _type == 9:
+            n_images = 6
+            loadImage(1, 1)
+        elif _type == 10:
+            n_images = 1
+            loadImage(1, 1)
 
-    kb_params = [0, wallpaper_mode]
-    keyboard.add_hotkey('ctrl+alt+esc', kb_callback, args=(kb_params, 0))
-    keyboard.add_hotkey('ctrl+alt+right', kb_callback, args=(kb_params, 1))
-    keyboard.add_hotkey('ctrl+alt+left', kb_callback, args=(kb_params, 2))
-    keyboard.add_hotkey('ctrl+alt+w', kb_callback, args=(kb_params, 3))
 
+    # kb_params = [0, wallpaper_mode]
+    keyboard.add_hotkey('ctrl+alt+esc', kb_callback, args=(0,))
+    keyboard.add_hotkey('ctrl+alt+right', kb_callback, args=(1,))
+    keyboard.add_hotkey('ctrl+alt+left', kb_callback, args=(2,))
+    keyboard.add_hotkey('ctrl+alt+w', kb_callback, args=(3,))
+    keyboard.add_hotkey('ctrl+alt+shift+w', kb_callback, args=(4,))
+    keyboard.add_hotkey('ctrl+alt+=', kb_callback, args=(5,))
+    keyboard.add_hotkey('ctrl+alt+-', kb_callback, args=(6,))
+    keyboard.add_hotkey('ctrl+alt+b', kb_callback, args=(7,))
+    keyboard.add_hotkey('ctrl+alt+4', kb_callback, args=(8,))
+    keyboard.add_hotkey('ctrl+alt+6', kb_callback, args=(9,))
+    keyboard.add_hotkey('ctrl+alt+1', kb_callback, args=(10,))
     # if hotkeys_available:
     #     def handle_win_f3():
     #         print('Minimizing window')
@@ -975,13 +1023,13 @@ if __name__ == '__main__':
 
     img_id += n_images - 1
     loadImage(set_grid_size=1)
+    exit_program = 0
 
-    while True:
-        exit_program = kb_params[0]
-        wallpaper_mode = kb_params[1]
-
-        if exit_program:
-            break
+    while not exit_program:
+        # exit_program = kb_params[0]
+        # wallpaper_mode = kb_params[1]
+        # if exit_program:
+        #     break
 
         if wallpaper_mode:
             interrupt_wait.wait(transition_interval)
@@ -1310,6 +1358,7 @@ if __name__ == '__main__':
 
         # print('\n')
 
-    cv2.destroyWindow(win_name)
+    if not wallpaper_mode:
+        cv2.destroyWindow(win_name)
     if set_wallpaper:
         win_wallpaper_func(SPI_SETDESKWALLPAPER, 0, orig_wp_fname, 0)
