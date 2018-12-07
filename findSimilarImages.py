@@ -37,7 +37,7 @@ def check_for_similar_images(_filename, paths, methodName="Hellinger", n_results
     img_hist = cv2.calcHist([image], [0, 1, 2], None, [8, 8, 8],
                             [0, 256, 0, 256, 0, 256])
     cv2.normalize(img_hist, img_hist).flatten()
-    print('img_hist: {}'.format(img_hist))
+    # print('img_hist: {}'.format(img_hist))
 
     n_files = n_skips = 0
 
