@@ -1243,61 +1243,75 @@ if __name__ == '__main__':
             loadImage()
         elif k == ord('+'):
             n_images += 1
+            img_id -= 1
             loadImage(1, 1)
         elif k == ord('-'):
             n_images -= 1
             if n_images < 1:
                 n_images = 1
+            img_id -= 1
             loadImage(1, 1)
         elif k == ord('='):
             predef_n_image_id = (predef_n_image_id + 1) % n_predef_n_images
             n_images = predef_n_images[predef_n_image_id]
+            img_id -= 1
             loadImage(1, 1)
         elif k == ord('_'):
             predef_n_image_id -= 1
             if predef_n_image_id < 0:
                 predef_n_image_id = n_predef_n_images - 1
             n_images = predef_n_images[predef_n_image_id]
+            img_id -= 1
             loadImage(1, 1)
         elif k == ord('!'):
             predef_n_image_id = 0
             n_images = predef_n_images[predef_n_image_id]
+            img_id -= 1
             loadImage(1, 1)
         elif k == ord('@'):
             predef_n_image_id = 1
             n_images = predef_n_images[predef_n_image_id]
+            img_id -= 1
             loadImage(1, 1)
         elif k == ord('#'):
             predef_n_image_id = 2
             n_images = predef_n_images[predef_n_image_id]
+            img_id -= 1
             loadImage(1, 1)
         elif k == ord('$'):
             predef_n_image_id = 3
             n_images = predef_n_images[predef_n_image_id]
+            img_id -= 1
             loadImage(1, 1)
         elif k == ord('%'):
             predef_n_image_id = 4
             n_images = predef_n_images[predef_n_image_id]
+            img_id -= 1
             loadImage(1, 1)
         elif k == ord('^'):
             predef_n_image_id = 5
             n_images = predef_n_images[predef_n_image_id]
+            img_id -= 1
             loadImage(1, 1)
         elif k == ord('&'):
             predef_n_image_id = 6
             n_images = predef_n_images[predef_n_image_id]
+            img_id -= 1
             loadImage(1, 1)
         elif k == ord('*'):
             predef_n_image_id = 7
             n_images = predef_n_images[predef_n_image_id]
+            img_id -= 1
             loadImage(1, 1)
         elif k == ord('('):
             predef_n_image_id = 8
             n_images = predef_n_images[predef_n_image_id]
+            img_id -= 1
             loadImage(1, 1)
         elif k == ord(')'):
             predef_n_image_id = 9
             n_images = predef_n_images[predef_n_image_id]
+            img_id -= 1
             loadImage(1, 1)
         elif k == ord('i'):
             direction = -direction

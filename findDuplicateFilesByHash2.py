@@ -61,7 +61,7 @@ def check_for_duplicates(paths, _delete_file, _file_type, _filename='', hash=has
                         print("\nDuplicate found: {} and {}".format(full_path, duplicate))
                         del_path = duplicate
                     n_duplicates += 1
-                    if _delete_file:
+                    if os.path.isfile(del_path) and _delete_file:
                         print('Deleting {}'.format(del_path))
                         os.remove(del_path)
                 elif not _filename:
