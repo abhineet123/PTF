@@ -989,6 +989,9 @@ if __name__ == '__main__':
         elif _type == 10:
             n_images = 1
             loadImage(1, 1)
+        elif _type == 11:
+            n_images = 2
+            loadImage(1, 1)
 
 
     def add_hotkeys():
@@ -1001,9 +1004,10 @@ if __name__ == '__main__':
         keyboard.add_hotkey('ctrl+alt+=', kb_callback, args=(5,))
         keyboard.add_hotkey('ctrl+alt+-', kb_callback, args=(6,))
         keyboard.add_hotkey('ctrl+alt+b', kb_callback, args=(7,))
-        keyboard.add_hotkey('ctrl+alt+4', kb_callback, args=(8,))
-        keyboard.add_hotkey('ctrl+alt+6', kb_callback, args=(9,))
-        keyboard.add_hotkey('ctrl+alt+1', kb_callback, args=(10,))
+        keyboard.add_hotkey('ctrl+alt+$', kb_callback, args=(8,))
+        keyboard.add_hotkey('ctrl+alt+^', kb_callback, args=(9,))
+        keyboard.add_hotkey('ctrl+alt+!', kb_callback, args=(10,))
+        keyboard.add_hotkey('ctrl+alt+@', kb_callback, args=(11,))
 
     def remove_hotkeys():
         keyboard.remove_hotkey('ctrl+alt+esc')
@@ -1236,10 +1240,10 @@ if __name__ == '__main__':
             if set_wallpaper:
                 minimizeWindow()
                 loadImage()
-        elif k == ord('e'):
+        elif k == ord('e') or k == ord('E'):
             wallpaper_mode = 1 - wallpaper_mode
             if wallpaper_mode:
-                set_wallpaper = 2
+                set_wallpaper = 2 if k == ord('E') else 1
                 print('wallpaper mode enabled')
                 cv2.destroyWindow(win_name)
                 add_hotkeys()
@@ -1400,7 +1404,10 @@ if __name__ == '__main__':
 
         # print('\n')
 
-    if not wallpaper_mode:
+    if wallpaper_mode:
+        remove_hotkeys()
+    else:
         cv2.destroyWindow(win_name)
+
     if set_wallpaper:
         win_wallpaper_func(SPI_SETDESKWALLPAPER, 0, orig_wp_fname, 0)
