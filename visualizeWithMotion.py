@@ -931,7 +931,7 @@ if __name__ == '__main__':
         createWindow()
 
     MAX_TRANSITION_INTERVAL = 1000
-    MIN_TRANSITION_INTERVAL = 1
+    MIN_TRANSITION_INTERVAL = 2
 
     old_transition_interval = transition_interval
 
