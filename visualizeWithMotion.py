@@ -930,9 +930,16 @@ if __name__ == '__main__':
     if not wallpaper_mode:
         createWindow()
 
+    MAX_TRANSITION_INTERVAL = 1000
+    MIN_TRANSITION_INTERVAL = 1
+
+    old_transition_interval = transition_interval
+
 
     def kb_callback(_type):
         global set_wallpaper, n_images, wallpaper_mode, exit_program, borderless, img_id
+        global old_transition_interval, transition_interval
+
         # print('_params: {}'.format(_params))
         print('_type: {}'.format(_type))
 
@@ -995,7 +1002,32 @@ if __name__ == '__main__':
         elif _type == 11:
             n_images = 2
             loadImage(1, 1)
-
+        elif _type == 12:
+            if n_images == 1:
+                print('"' + os.path.abspath(img_fname) + '"')
+            else:
+                print()
+                for _idx in stack_idx:
+                    print('"' + os.path.abspath(img_fnames[_idx]) + '"')
+                print()
+        elif _type == 13:
+            if transition_interval == MAX_TRANSITION_INTERVAL:
+                transition_interval = old_transition_interval
+            else:
+                old_transition_interval = transition_interval
+                transition_interval = MAX_TRANSITION_INTERVAL
+            print('Setting transition interval to: {}'.format(transition_interval))
+            img_id -= n_images
+            interrupt_wait.set()
+        elif _type == 14:
+            if transition_interval == MIN_TRANSITION_INTERVAL:
+                transition_interval = old_transition_interval
+            else:
+                old_transition_interval = transition_interval
+                transition_interval = MIN_TRANSITION_INTERVAL
+            print('Setting transition interval to: {}'.format(transition_interval))
+            img_id -= n_images
+            interrupt_wait.set()
 
     def add_hotkeys():
         # kb_params = [0, wallpaper_mode]
@@ -1011,6 +1043,9 @@ if __name__ == '__main__':
         keyboard.add_hotkey('ctrl+alt+^', kb_callback, args=(9,))
         keyboard.add_hotkey('ctrl+alt+!', kb_callback, args=(10,))
         keyboard.add_hotkey('ctrl+alt+@', kb_callback, args=(11,))
+        keyboard.add_hotkey('ctrl+alt+)', kb_callback, args=(12,))
+        keyboard.add_hotkey('ctrl+alt+up', kb_callback, args=(13,))
+        keyboard.add_hotkey('ctrl+alt+down', kb_callback, args=(14,))
 
     def remove_hotkeys():
         keyboard.remove_hotkey('ctrl+alt+esc')
@@ -1025,6 +1060,9 @@ if __name__ == '__main__':
         keyboard.remove_hotkey('ctrl+alt+^')
         keyboard.remove_hotkey('ctrl+alt+!')
         keyboard.remove_hotkey('ctrl+alt+@')
+        keyboard.remove_hotkey('ctrl+alt+)')
+        keyboard.remove_hotkey('ctrl+alt+up')
+        keyboard.remove_hotkey('ctrl+alt+down')
     # if hotkeys_available:
     #     def handle_win_f3():
     #         print('Minimizing window')
