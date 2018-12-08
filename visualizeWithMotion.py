@@ -932,7 +932,7 @@ if __name__ == '__main__':
 
 
     def kb_callback(_type):
-        global set_wallpaper, n_images, wallpaper_mode, exit_program, borderless
+        global set_wallpaper, n_images, wallpaper_mode, exit_program, borderless, img_id
         # print('_params: {}'.format(_params))
         print('_type: {}'.format(_type))
 
@@ -941,9 +941,12 @@ if __name__ == '__main__':
             exit_program = 1
             interrupt_wait.set()
         elif _type == 1:
-            loadImage(1)
+            # loadImage(1)
+            interrupt_wait.set()
         elif _type == 2:
-            loadImage(-1)
+            # loadImage(-1)
+            img_id -= 2 * n_images
+            interrupt_wait.set()
         elif _type == 3:
             wallpaper_mode = 1 - wallpaper_mode
             if wallpaper_mode:
@@ -1018,9 +1021,10 @@ if __name__ == '__main__':
         keyboard.remove_hotkey('ctrl+alt+=')
         keyboard.remove_hotkey('ctrl+alt+-')
         keyboard.remove_hotkey('ctrl+alt+b')
-        keyboard.remove_hotkey('ctrl+alt+4')
-        keyboard.remove_hotkey('ctrl+alt+6')
-        keyboard.remove_hotkey('ctrl+alt+1')
+        keyboard.remove_hotkey('ctrl+alt+$')
+        keyboard.remove_hotkey('ctrl+alt+^')
+        keyboard.remove_hotkey('ctrl+alt+!')
+        keyboard.remove_hotkey('ctrl+alt+@')
     # if hotkeys_available:
     #     def handle_win_f3():
     #         print('Minimizing window')
