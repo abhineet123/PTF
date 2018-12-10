@@ -5,13 +5,14 @@ from Misc import processArguments
 
 params = {
     'src_dir': '',
-    'src_substr': '4u',
+    'src_substr': '',
     'dst_substr': '',
     'recursive_search': 0,
     'include_folders': 0,
     'replace_existing': 0,
     'include_ext': 0,
     'show_names': 1,
+    'convert_to_lowercase': 0,
 }
 
 processArguments(sys.argv[1:], params)
@@ -23,14 +24,18 @@ include_folders = params['include_folders']
 replace_existing = params['replace_existing']
 include_ext = params['include_ext']
 show_names = params['show_names']
+convert_to_lowercase = params['convert_to_lowercase']
 
 add_as_prefix = 0
 add_as_suffix = 0
 remove_files = 0
+rename_files = 0
 
 src_dir = os.path.abspath(src_dir)
 dst_substr_orig = dst_substr
 
+if src_substr == '__all__' or src_substr == '__a__':
+    src_substr = ''
 if src_substr == '__prefix__' or src_substr == '__pf__':
     src_substr = ''
     add_as_prefix = 1
@@ -47,6 +52,9 @@ if dst_substr == '__none__' or dst_substr == '__n__':
     dst_substr = ''
 if dst_substr_orig == '__root__' or dst_substr_orig == '__rf__':
     dst_substr = 'root folder name'
+
+if convert_to_lowercase:
+    print 'Converting to lower case'
 
 if add_as_prefix:
     print 'Adding {:s} as prefix'.format(dst_substr)
@@ -104,9 +112,13 @@ for src_path in src_file_paths:
     else:
         if include_ext:
             dst_fname = src_fname.replace(src_substr, dst_substr)
+            if convert_to_lowercase:
+                dst_fname = dst_fname.lower()
             dst_path = os.path.join(src_dir, dst_fname)
         else:
             dst_fname_no_ext = src_fname_no_ext.replace(src_substr, dst_substr)
+            if convert_to_lowercase:
+                dst_fname_no_ext = dst_fname_no_ext.lower()
             dst_path = os.path.join(src_dir, '{:s}{:s}'.format(dst_fname_no_ext, src_ext))
             # dst_path = src_path.replace(src_substr, dst_substr)
 
