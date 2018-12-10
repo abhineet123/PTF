@@ -2,6 +2,7 @@ import fnmatch
 import os
 import sys
 from Misc import processArguments
+import inspect
 
 params = {
     'src_dir': '',
@@ -13,6 +14,7 @@ params = {
     'include_ext': 0,
     'show_names': 1,
     'convert_to_lowercase': 0,
+    'write_log': 1,
 }
 
 processArguments(sys.argv[1:], params)
@@ -25,6 +27,7 @@ replace_existing = params['replace_existing']
 include_ext = params['include_ext']
 show_names = params['show_names']
 convert_to_lowercase = params['convert_to_lowercase']
+write_log = params['write_log']
 
 add_as_prefix = 0
 add_as_suffix = 0
@@ -81,6 +84,17 @@ if include_ext:
 else:
     print('Excluding file extensions')
 
+script_filename = inspect.getframeinfo(inspect.currentframe()).filename
+script_path = os.path.dirname(os.path.abspath(script_filename))
+
+if write_log:
+    log_dir = os.path.join(script_path, 'log')
+    if not os.path.isdir(log_dir):
+        os.makedirs(log_dir)
+    log_file = os.path.join(log_dir, 'rrep_log.txt')
+    print('Saving log to {}'.format(log_file))
+    log_fid = open(log_file, 'w')
+
 src_file_paths = []
 for root, dirnames, filenames in os.walk(src_dir):
     if include_folders:
@@ -133,6 +147,8 @@ for src_path in src_file_paths:
 
     if show_names:
         print 'renaming {:s} to {:s}'.format(src_path, dst_path)
+    if write_log:
+        log_fid.write('{}\t{}\n'.format(src_path, dst_path))
     if os.path.exists(dst_path):
         if replace_existing:
             print 'Destination file: {:s} already exists. Removing it...'.format(dst_path)
@@ -142,3 +158,6 @@ for src_path in src_file_paths:
             continue
     os.rename(src_path, dst_path)
     # print matches
+
+    if write_log:
+        log_fid.close()

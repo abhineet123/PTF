@@ -370,6 +370,11 @@ def str2num(s):
     except ValueError:
         return float(s)
 
+def print_and_write(_str, fname=None):
+    sys.stdout.write(_str + '\n')
+    sys.stdout.flush()
+    if fname is not None:
+        open(fname, 'a').write(_str + '\n')
 
 def printMatrixToFile(mat, mat_name, fname, fmt='{:15.9f}', mode='w', sep='\t'):
     fid = open(fname, mode)

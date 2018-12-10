@@ -96,6 +96,13 @@ else:
 #     if not os.path.isdir(log_dir):
 #         os.makedirs(log_dir)
 #     print('Saving log to {}'.format(log_dir))
+if write_log:
+    log_dir = os.path.join(script_path, 'log')
+    if not os.path.isdir(log_dir):
+        os.makedirs(log_dir)
+    log_file = os.path.join(log_dir, 'rseq_log.txt')
+    print('Saving log to {}'.format(log_file))
+    log_fid = open(log_file, 'w')
 
 for seq_root_dir in seq_root_dirs:
     print 'Processing: {}'.format(seq_root_dir)
@@ -110,14 +117,6 @@ for seq_root_dir in seq_root_dirs:
     seq_id = seq_start_id
     file_count = 1
     n_files = len(src_file_names)
-
-    if write_log:
-        log_dir = os.path.join(script_path, 'log')
-        if not os.path.isdir(log_dir):
-            os.makedirs(log_dir)
-        log_file = os.path.join(log_dir, 'rseq_log.txt')
-        print('Saving log to {}'.format(log_file))
-        log_fid = open(log_file, 'w')
 
     for src_fname in src_file_names:
         filename, file_extension = os.path.splitext(src_fname)
