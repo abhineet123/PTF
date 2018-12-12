@@ -9,6 +9,7 @@ params = {
     'out_file': 'mfsf_log.txt',
     'folder_name': '.',
     'prefix': '',
+    'include_folders': 0,
 }
 processArguments(sys.argv[1:], params)
 dst_path = params['dst_path']
@@ -16,6 +17,7 @@ file_ext = params['file_ext']
 out_file = params['out_file']
 folder_name = params['folder_name']
 prefix = params['prefix']
+include_folders = params['include_folders']
 
 dst_path = os.path.abspath(dst_path)
 
@@ -37,15 +39,27 @@ try:
 except:
     subfolders.sort()
 
+if include_folders == 1:
+    print('Searching for folders too')
+elif include_folders == 2:
+    print('Searching only for folders')
+else:
+    print('Not searching for folders')
+
 total_files = 0
 out_fid = open(out_file, 'w')
 files = []
 empty_folders = []
 for subfolder in subfolders:
     subfolders_path = os.path.join(folder_name, subfolder)
-    src_files = [f for f in os.listdir(subfolders_path) if os.path.isfile(os.path.join(subfolders_path, f))]
-    if file_ext:
-        src_files = [f for f in src_files if f.endswith(file_ext)]
+    src_files = []
+    if include_folders != 2:
+        src_files += [f for f in os.listdir(subfolders_path) if os.path.isfile(os.path.join(subfolders_path, f))]
+        if file_ext:
+            src_files = [f for f in src_files if f.endswith(file_ext)]
+    if include_folders:
+        src_files += [f for f in os.listdir(subfolders_path) if os.path.isdir(os.path.join(subfolders_path, f))]
+
     src_files.sort(key=sortKey)
     n_files = len(src_files)
 
@@ -60,13 +74,13 @@ for subfolder in subfolders:
             shutil.move(src_path, _dst_path)
             out_fid.write('{}\t{}\n'.format(src_path, _dst_path))
         except shutil.Error as e:
-            print('Failure: {}'.format(e))
+            print('shutil.Error Failure: {}'.format(e))
             continue
         except OSError as e:
-            print('Failure: {}'.format(e))
+            print('OSError Failure: {}'.format(e))
             continue
         except BaseException as e:
-            print('Failure: {}'.format(e))
+            print('BaseException Failure: {}'.format(e))
             continue
         total_files += 1
 
