@@ -1,5 +1,6 @@
 import os
 import sys, shutil
+from pprint import pprint
 
 from Misc import processArguments, sortKey
 
@@ -87,6 +88,7 @@ for subfolder in subfolders:
             continue
         total_files += 1
 
-
+print('subfolders:')
+pprint(subfolders)
 print('total_files: {}'.format(total_files))
 out_fid.close()
