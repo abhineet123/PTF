@@ -46,6 +46,9 @@ elif include_folders == 2:
 else:
     print('Not searching for folders')
 
+if file_ext=='__n__':
+    file_ext = ''
+
 total_files = 0
 out_fid = open(out_file, 'w')
 files = []
