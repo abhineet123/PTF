@@ -11,6 +11,7 @@ params = {
     'folder_name': '.',
     'prefix': '',
     'include_folders': 0,
+    'exceptions': [],
 }
 processArguments(sys.argv[1:], params)
 dst_path = params['dst_path']
@@ -19,6 +20,7 @@ out_file = params['out_file']
 folder_name = params['folder_name']
 prefix = params['prefix']
 include_folders = params['include_folders']
+exceptions = params['exceptions']
 
 dst_path = os.path.abspath(dst_path)
 
@@ -47,7 +49,7 @@ elif include_folders == 2:
 else:
     print('Not searching for folders')
 
-if file_ext=='__n__':
+if file_ext == '__n__':
     file_ext = ''
 
 total_files = 0
@@ -63,6 +65,9 @@ for subfolder in subfolders:
             src_files = [f for f in src_files if f.endswith(file_ext)]
     if include_folders:
         src_files += [f for f in os.listdir(subfolders_path) if os.path.isdir(os.path.join(subfolders_path, f))]
+
+    if exceptions:
+        src_files = [f for f in src_files if not any([f in k for k in exceptions])]
 
     src_files.sort(key=sortKey)
     n_files = len(src_files)
