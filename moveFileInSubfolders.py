@@ -67,7 +67,7 @@ for subfolder in subfolders:
         src_files += [f for f in os.listdir(subfolders_path) if os.path.isdir(os.path.join(subfolders_path, f))]
 
     if exceptions:
-        src_files = [f for f in src_files if not any([f in k for k in exceptions])]
+        src_files = [f for f in src_files if not any([k in f for k in exceptions])]
 
     src_files.sort(key=sortKey)
     n_files = len(src_files)
