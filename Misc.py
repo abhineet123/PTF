@@ -1,6 +1,6 @@
 __author__ = 'Tommy'
 import os
-import sys
+import sys, re
 
 try:
     import cv2
@@ -242,13 +242,20 @@ def sortKey(fname, only_basename=1):
             if not key:
                 key = '{:012d}'.format(int(s))
             else:
-                key = '{}_{:012d}'.format(key, int(s))
+                key = '{}-{:012d}'.format(key, int(s))
         else:
+            try:
+                nums = [int(k) for k in re.findall(r'\d+', s)]
+                # print('\ts: {}\t nums: {}\n'.format(s, nums))
+                for num in nums:
+                    s = s.replace(str(num), '{:012d}'.format(num))
+            except ValueError:
+                pass
             if not key:
                 key = s
             else:
-                key = '{}_{}'.format(key, s)
-    # print('fname: {}\n key: {}\n'.format(fname, key))
+                key = '{}-{}'.format(key, s)
+    # print('fname: {}\t key: {}\n'.format(fname, key))
     return key
 
 

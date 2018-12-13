@@ -63,6 +63,8 @@ if seq_start_id < 0:
         src_file_names = [f for f in os.listdir(seq_prefix) if
                           os.path.isfile(os.path.join(seq_prefix, f)) and f != 'Thumbs.db']
         src_file_names.sort(key=sortKey)
+        # print 'src_file_names: {}'.format(src_file_names)
+
         seq_prefix = os.path.splitext(src_file_names[-1])[0]
         print('Found sequence prefix {}'.format(seq_prefix))
     split_str = seq_prefix.split('_')
