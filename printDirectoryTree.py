@@ -10,12 +10,14 @@ params = {
     'markdown_mode': 0,
     'exts_to_include': [],
     'strings_to_exclude': [],
+    'fix_weird_text': 0,
 }
 processArguments(sys.argv[1:], params)
 start_path = params['start_path']
 markdown_mode = params['markdown_mode']
 exts_to_include = params['exts_to_include']
 strings_to_exclude = params['strings_to_exclude']
+fix_weird_text = params['fix_weird_text']
 
 time_stamp = datetime.now().strftime("%y%m%d %H%M%S")
 
@@ -59,6 +61,9 @@ for root, dirs, files in os.walk(start_path):
         else:
             _text = '{}\t{}\n'.format(subindent, f)
         out_text += _text
+
+if fix_weird_text:
+    out_text = out_text.replace('?', 'fi')
 
 try:
     pyperclip.copy(out_text)
