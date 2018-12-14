@@ -159,5 +159,5 @@ for src_path in src_file_paths:
     os.rename(src_path, dst_path)
     # print matches
 
-    if write_log:
-        log_fid.close()
+if write_log:
+    log_fid.close()
