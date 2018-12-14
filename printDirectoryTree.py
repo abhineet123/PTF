@@ -10,7 +10,7 @@ params = {
     'markdown_mode': 0,
     'exts_to_include': [],
     'strings_to_exclude': [],
-    'fix_weird_text': 0,
+    'fix_weird_text': 1,
 }
 processArguments(sys.argv[1:], params)
 start_path = params['start_path']
