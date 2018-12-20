@@ -47,6 +47,8 @@ elif src_substr == '__suffix__' or src_substr == '__sf__':
     add_as_suffix = 1
 elif src_substr == '__space__' or src_substr == '__sp__':
     src_substr = ' '
+if src_substr == '__none__' or src_substr == '__n__':
+    src_substr = ''
 if dst_substr == '__remove__' or dst_substr == '__rm__':
     remove_files = 1
 if dst_substr == '__space__' or dst_substr == '__sp__':
@@ -145,18 +147,24 @@ for src_path in src_file_paths:
     #         os.rename(src_fname_dir, dst_fname_dir)
     #     dst_fname = src_fname.replace(src_substr, dst_substr)
 
-    if show_names:
-        print 'renaming {:s} to {:s}'.format(src_path, dst_path)
+
     if write_log:
         log_fid.write('{}\t{}\n'.format(src_path, dst_path))
-    if os.path.exists(dst_path):
+    if os.path.isfile(dst_path) and os.path.exists(dst_path):
         if replace_existing:
-            print 'Destination file: {:s} already exists. Removing it...'.format(dst_path)
-            os.remove(dst_path)
+            if src_path != dst_path:
+                print 'Destination file: {:s} already exists. Removing it...'.format(dst_path)
+                os.remove(dst_path)
         else:
             print 'Destination file: {:s} already exists. Skipping it...'.format(dst_path)
             continue
-    os.rename(src_path, dst_path)
+    if src_path != dst_path:
+        if show_names:
+            print 'renaming {:s} to {:s}'.format(src_path, dst_path)
+        try:
+            os.rename(src_path, dst_path)
+        except BaseException as e:
+            print 'Renaming failed: {}'.format(e)
     # print matches
 
 if write_log:
