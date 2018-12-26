@@ -7,7 +7,7 @@ from Tkinter import Tk
 in_txt = Tk().clipboard_get()
 
 lines = in_txt.split('\n')
-data = [line.split(' ') for line in lines  if line.strip()]
+data = [os.path.splitext(line)[0].split(' ') for line in lines  if line.strip()]
 out_lines = ['{} {}'.format(item[0], item[1].replace('-', ':')) for item in data]
 out_txt = ''
 for line in out_lines:
