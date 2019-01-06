@@ -29,6 +29,7 @@ params = {
     'dst_dir': '',
     'show_img': 0,
     'n_frames': 0,
+    'reverse': 0,
     'roi': None,
     'resize_factor': 1.0,
     'start_id': 0,
@@ -49,6 +50,7 @@ if __name__ == '__main__':
     dst_dir = params['dst_dir']
     start_id = params['start_id']
     out_fname_templ = params['out_fname_templ']
+    reverse = params['reverse']
 
     vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv']
 
@@ -71,6 +73,9 @@ if __name__ == '__main__':
         seq_names.sort(key=sortKey)
     else:
         seq_names = [_seq_name]
+
+    if reverse:
+        print('Reversing videos')
 
     for seq_name in seq_names:
         src_path = seq_name
@@ -126,7 +131,10 @@ if __name__ == '__main__':
             if resize_factor != 1:
                 frame = cv2.resize(frame, (0, 0), fx=resize_factor, fy=resize_factor)
 
-            out_path = os.path.join(dst_dir, out_fname_templ % (frame_id - start_id))
+            out_id = (frame_id - start_id)
+            if reverse:
+                out_id = total_frames - out_id + 1
+            out_path = os.path.join(dst_dir, out_fname_templ % out_id)
             curr_img = cv2.imwrite(out_path, frame)
             if show_img:
                 cv2.imshow('Frame', frame)

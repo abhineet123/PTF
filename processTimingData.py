@@ -1,27 +1,8 @@
-import sys
-import os
-from Misc import processArguments
 from datetime import datetime, timedelta
 import pyperclip
 from Tkinter import Tk
 
 in_txt = Tk().clipboard_get()
-
-params = {
-    'in_fname': 't.txt',
-    'out_fname': 't_processed.txt',
-}
-
-if __name__ == '__main__':
-    processArguments(sys.argv[1:], params)
-
-in_fname = params['in_fname']
-out_fname = params['out_fname']
-
-# if not os.path.isfile(in_fname):
-#     print 'Input file {:s} does not exist'.format(in_fname)
-#     exit(0)
-# lines = open(in_fname, 'r').readlines()
 
 lines = in_txt.split('\n')
 lines = [line for line in lines if line.strip()]

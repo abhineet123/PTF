@@ -12,6 +12,7 @@ params = {
     'del_src': 0,
     'start_id': 0,
     'n_frames': 0,
+    'reverse': 0,
     'res': '',
     'fps': 30,
     'codec': 'H264',
@@ -30,6 +31,8 @@ res = params['res']
 fps = params['fps']
 codec = params['codec']
 ext = params['ext']
+reverse = params['reverse']
+
 
 height = width = 0
 if res:
@@ -47,6 +50,9 @@ if os.path.isdir(_src_path):
     src_file_list.sort(key=sortKey)
 else:
     src_file_list = [_src_path]
+
+if reverse:
+    print('Reversing video')
 
 for src_path in src_file_list:
     src_path = os.path.abspath(src_path)
@@ -71,7 +77,7 @@ for src_path in src_file_list:
 
     cap = cv2.VideoCapture()
     if not cap.open(src_path):
-        raise StandardError('The video file ' + src_path + ' could not be opened')
+        raise IOError('The video file ' + src_path + ' could not be opened')
 
     if cv2.__version__.startswith('3'):
         cv_prop = cv2.CAP_PROP_FRAME_COUNT
@@ -95,7 +101,9 @@ for src_path in src_file_list:
 
     if height <= 0 or width <= 0:
         dst_height, dst_width = _height, _width
+        enable_resize = 0
     else:
+        enable_resize = 1
         dst_height, dst_width = height, width
 
     fourcc = cv2.VideoWriter_fourcc(*codec)
@@ -111,6 +119,7 @@ for src_path in src_file_list:
 
     frame_id = 0
     pause_after_frame = 0
+    frames = []
     while True:
 
         ret, image = cap.read()
@@ -123,7 +132,8 @@ for src_path in src_file_list:
         if frame_id <= start_id:
             continue
 
-        image = resizeAR(image, dst_width, dst_height)
+        if enable_resize:
+            image = resizeAR(image, dst_width, dst_height)
 
         if show_img:
             cv2.imshow(seq_name, image)
@@ -133,7 +143,10 @@ for src_path in src_file_list:
             elif k == 32:
                 pause_after_frame = 1 - pause_after_frame
 
-        video_out.write(image)
+        if reverse:
+            frames.append(image)
+        else:
+            video_out.write(image)
 
         sys.stdout.write('\rDone {:d} frames '.format(frame_id - start_id))
         sys.stdout.flush()
@@ -146,6 +159,10 @@ for src_path in src_file_list:
 
     sys.stdout.write('\n')
     sys.stdout.flush()
+
+    if reverse:
+        for frame in frames[::-1]:
+            video_out.write(frame)
 
     video_out.release()
 
