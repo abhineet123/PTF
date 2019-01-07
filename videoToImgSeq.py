@@ -33,7 +33,8 @@ params = {
     'roi': None,
     'resize_factor': 1.0,
     'start_id': 0,
-    'out_fname_templ': 'image%06d.jpg'
+    'out_fname_templ': 'image%06d',
+    'ext': 'jpg'
 }
 
 if __name__ == '__main__':
@@ -51,6 +52,7 @@ if __name__ == '__main__':
     start_id = params['start_id']
     out_fname_templ = params['out_fname_templ']
     reverse = params['reverse']
+    ext = params['ext']
 
     vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv']
 
@@ -100,7 +102,7 @@ if __name__ == '__main__':
             dst_dir = os.path.join(os.path.dirname(src_path), seq_name)
         if dst_dir and not os.path.isdir(dst_dir):
             os.makedirs(dst_dir)
-        print('Writing image sequence to: {:s}/{:s}'.format(dst_dir, out_fname_templ))
+        print('Writing image sequence to: {:s}/{:s}.{}'.format(dst_dir, out_fname_templ, ext))
 
         cap = cv2.VideoCapture()
         if not cap.open(src_path):
@@ -134,7 +136,7 @@ if __name__ == '__main__':
             out_id = (frame_id - start_id)
             if reverse:
                 out_id = total_frames - out_id + 1
-            out_path = os.path.join(dst_dir, out_fname_templ % out_id)
+            out_path = os.path.join(dst_dir, out_fname_templ % out_id + '.' + ext)
             curr_img = cv2.imwrite(out_path, frame)
             if show_img:
                 cv2.imshow('Frame', frame)

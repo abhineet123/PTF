@@ -15,8 +15,11 @@ params = {
     'width': 0,
     'height': 0,
     'fps': 30,
+    # 'codec': 'FFV1',
+    # 'ext': 'avi',
     'codec': 'H264',
     'ext': 'mkv',
+    'out_postfix': '',
 }
 
 processArguments(sys.argv[1:], params)
@@ -32,6 +35,7 @@ height = params['height']
 fps = params['fps']
 codec = params['codec']
 ext = params['ext']
+out_postfix = params['out_postfix']
 
 if os.path.isdir(_src_path):
     src_paths = [_src_path]
@@ -62,7 +66,10 @@ for src_path in src_paths:
     src_file_list.sort(key=sortKey)
 
     if not save_path:
-        save_path = os.path.join(os.path.dirname(src_path), os.path.basename(src_path) + '.' + ext)
+        save_fname = os.path.basename(src_path)
+        if out_postfix:
+            save_fname = '{}_{}'.format(save_fname, out_postfix)
+        save_path = os.path.join(os.path.dirname(src_path), save_fname + '.' + ext)
 
     save_dir = os.path.dirname(save_path)
     if save_dir and not os.path.isdir(save_dir):

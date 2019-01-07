@@ -17,6 +17,7 @@ params = {
     'fps': 30,
     'codec': 'H264',
     'ext': 'mkv',
+    'out_postfix': '',
 }
 
 processArguments(sys.argv[1:], params)
@@ -32,6 +33,7 @@ fps = params['fps']
 codec = params['codec']
 ext = params['ext']
 reverse = params['reverse']
+out_postfix = params['out_postfix']
 
 
 height = width = 0
