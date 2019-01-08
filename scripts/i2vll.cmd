@@ -1,2 +1,2 @@
 @echo off
-python "%~dp0\..\imgSeqToVideo.py" src_path=%1 n_frames=%2 width=%3 height=%4 fps=%5 codec=FFV1 ext=avi save_path=%6
+python "%~dp0\..\imgSeqToVideo.py" codec=FFV1 ext=avi src_path=%1 fps=%2 n_frames=%3 width=%4 height=%5 save_path=%6

@@ -37,8 +37,14 @@ codec = params['codec']
 ext = params['ext']
 out_postfix = params['out_postfix']
 
+img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
+
 if os.path.isdir(_src_path):
-    src_paths = [_src_path]
+    src_file_list = [k for k in os.listdir(_src_path) for _ext in img_exts if k.endswith(_ext)]
+    if not src_file_list:
+        src_paths = [os.path.join(_src_path, k) for k in os.listdir(_src_path) if os.path.isdir(os.path.join(_src_path, k))]
+    else:
+        src_paths = [_src_path]
 elif os.path.isfile(_src_path):
     print('Reading source image sequences from: {}'.format(_src_path))
     src_paths = [x.strip() for x in open(_src_path).readlines() if x.strip()]
@@ -54,10 +60,7 @@ for src_path in src_paths:
 
     print('Reading source images from: {}'.format(src_path))
 
-    img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
-
     src_path = os.path.abspath(src_path)
-
     src_file_list = [k for k in os.listdir(src_path) for _ext in img_exts if k.endswith(_ext)]
     total_frames = len(src_file_list)
     if total_frames <= 0:
