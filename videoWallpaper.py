@@ -9,7 +9,7 @@ from threading import Event
 
 interrupt_wait = Event()
 
-from Misc import processArguments, sortKey, resizeAR
+from Misc import processArguments, sortKey, resizeAR, addBorder
 
 try:
     win_wallpaper_func = ctypes.windll.user32.SystemParametersInfoA
@@ -34,7 +34,7 @@ params = {
     'show_img': 1,
     'del_src': 0,
     'start_id': 0,
-    'n_frames': 0,
+    'mode': 1,
     'res': '',
     'interval': 0.05,
     'wallpaper_dir': 'log',
@@ -46,7 +46,7 @@ img_ext = params['img_ext']
 show_img = params['show_img']
 del_src = params['del_src']
 start_id = params['start_id']
-n_frames = params['n_frames']
+mode = params['mode']
 res = params['res']
 wallpaper_dir = params['wallpaper_dir']
 interval = params['interval']
@@ -123,19 +123,47 @@ while src_id < n_sources:
         if frame_id <= start_id:
             continue
 
-        # user32 = ctypes.windll.user32
-        # screen_size = user32.GetSystemMetrics(78), user32.GetSystemMetrics(79)
+        user32 = ctypes.windll.user32
+        screensize = user32.GetSystemMetrics(78), user32.GetSystemMetrics(79)
 
         img_h, img_w = src_img.shape[:2]
         wallpaper_size = (img_w, img_h)
 
-        if wallpaper_size != screen_size:
-            src_img = resizeAR(src_img, screen_size[0], screen_size[1])
+        # wp_width = 1920
+        #
+        # if mode == 1:
+        #     if screensize[0] == 1920 and screensize[1] == 1080:
+        #         wp_border = 30
+        #     else:
+        #         wp_border = 0
+        #     wp_height = 1080
+        #     wp_start_row = screensize[1] - 1080
+        #     wp_start_col = 0
+        # else:
+        #     wp_border = 30
+        #     wp_height = screensize[1]
+        #     wp_start_row = 0
+        #     if screensize[0] >= 3840:
+        #         wp_start_col = 1920
+        #     else:
+        #         wp_start_col = 0
+        #
+        # src_img_desktop = resizeAR(src_img, wp_width, wp_height)
+        # wp_end_col = wp_start_col + src_img_desktop.shape[1]
+        # wp_end_row = wp_start_row + src_img_desktop.shape[0]
+        #
+        #
+        # src_img_desktop_full = np.zeros((screensize[1], screensize[0], 3), dtype=np.uint8)
+        # src_img_desktop_full[wp_start_row:wp_end_row, wp_start_col:wp_end_col, :] = src_img_desktop
+
+        if wallpaper_size != screensize:
+            src_img = resizeAR(src_img, screensize[0], screensize[1])
 
         wp_fname = os.path.join(wallpaper_dir, 'wallpaper_{}.jpg'.format(frame_id))
+        # wp_fname = os.path.join(wallpaper_dir, 'wallpaper.bmp')
         cv2.imwrite(wp_fname, src_img)
 
-        print('screen_size: {}'.format(screen_size))
+        # print('screensize: {}'.format(screensize))
         # print('wp_fname: {}'.format(wp_fname))
 
         win_wallpaper_func(SPI_SETDESKWALLPAPER, 0, wp_fname, 0)
