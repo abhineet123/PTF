@@ -7,7 +7,8 @@ def findChildren(_headings, root_level, _start_id, _root_node, n_headings):
     nodes = []
     _id = _start_id
     while _id < n_headings:
-        words = _headings[_id].split(' ')
+        _heading, line_id = _headings[_id]
+        words = _heading.split(' ')
         curr_level = words[0].count('#')
 
         if curr_level <= root_level:
@@ -27,8 +28,8 @@ def findChildren(_headings, root_level, _start_id, _root_node, n_headings):
                 # parent_text = str(_root_node)
                 parent_text = '{}/{}'.format(_root_node.parent_text, parent_text)
         heading_text = '_'.join(heading_words)
-        new_node = Node(heading_text, parent=_root_node, orig_text=_headings[_id], parent_text=parent_text,
-                        marker=words[0], id=_id)
+        new_node = Node(heading_text, parent=_root_node, orig_text=_heading, parent_text=parent_text,
+                        marker=words[0], line_id=line_id)
         nodes.append(new_node)
 
         child_nodes, ___id = findChildren(_headings, curr_level, _id + 1, new_node, n_headings)
@@ -43,12 +44,12 @@ def main():
     in_txt = Tk().clipboard_get()
 
     lines = in_txt.split('\n')
-    lines = [line for line in lines if line.strip()]
+    lines = [line for line in lines]
     start_t = None
     curr_t = None
 
     curr_root = Node("root_node")
-    headings = [k for k in lines if k.startswith('#')]
+    headings = [(k, i) for i, k in enumerate(lines) if k.startswith('#')]
     n_headings = len(headings)
     heading_id = 0
     level = 0
@@ -56,17 +57,21 @@ def main():
     nodes, _ = findChildren(headings, 0, 0, curr_root, n_headings)
 
     print(RenderTree(curr_root))
-    out_txt = in_txt
+    # out_txt = in_txt
 
     for node in nodes:
         if node.is_root or node.parent.is_root:
             continue
         orig_text = node.orig_text
-        new_text = '{} {} @ {}\n'.format(node.marker, node.name, node.parent_text)
+        new_text = '{} {}       @ {}'.format(node.marker, node.name, node.parent_text)
+
+        lines[node.line_id] = new_text
 
         print('{}: new_text: {}'.format(node, new_text))
 
-        out_txt = out_txt.replace(orig_text + '\n', new_text)
+        # out_txt = out_txt.replace(orig_text + '\n', new_text)
+
+    out_txt = '\n'.join(lines)
 
     # print(out_txt)
 
