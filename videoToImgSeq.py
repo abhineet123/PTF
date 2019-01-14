@@ -100,7 +100,7 @@ if __name__ == '__main__':
         if not dst_dir:
             out_seq_name = os.path.splitext(os.path.basename(src_path))[0]
             if roi_enabled:
-                out_seq_name = '{}_roi_{}_{}_{}_{}'.format(out_seq_name, xmin, ymin, xmin, xmax)
+                out_seq_name = '{}_roi_{}_{}_{}_{}'.format(out_seq_name, xmin, ymin, xmax, ymax)
             dst_dir = os.path.join(os.path.dirname(src_path), out_seq_name)
         if dst_dir and not os.path.isdir(dst_dir):
             os.makedirs(dst_dir)
