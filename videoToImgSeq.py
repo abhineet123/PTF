@@ -2,23 +2,23 @@ import os
 import cv2
 import sys
 
-from Misc import sortKey
+from Misc import sortKey, processArguments
 
-def processArguments(args, params):
-    # arguments specified as 'arg_name=argv_val'
-    no_of_args = len(args)
-    for arg_id in range(no_of_args):
-        arg = args[arg_id].split('=')
-        if len(arg) != 2 or not arg[0] in params.keys():
-            print('Invalid argument provided: {:s}'.format(args[arg_id]))
-            return
-        if not arg[1] or not arg[0]:
-            continue
-        try:
-            params[arg[0]] = type(params[arg[0]])(arg[1])
-        except ValueError:
-            print('Invalid argument value {} provided for {}'.format(arg[1], arg[0]))
-            return
+# def processArguments(args, params):
+#     # arguments specified as 'arg_name=argv_val'
+#     no_of_args = len(args)
+#     for arg_id in range(no_of_args):
+#         arg = args[arg_id].split('=')
+#         if len(arg) != 2 or not arg[0] in params.keys():
+#             print('Invalid argument provided: {:s}'.format(args[arg_id]))
+#             return
+#         if not arg[1] or not arg[0]:
+#             continue
+#         try:
+#             params[arg[0]] = type(params[arg[0]])(arg[1])
+#         except ValueError:
+#             print('Invalid argument value {} provided for {}'.format(arg[1], arg[0]))
+#             return
 
 
 params = {
@@ -30,7 +30,7 @@ params = {
     'show_img': 0,
     'n_frames': 0,
     'reverse': 0,
-    'roi': None,
+    'roi': [],
     'resize_factor': 1.0,
     'start_id': 0,
     'out_fname_templ': 'image%06d',
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv']
 
     roi_enabled = False
-    if roi is not None and isinstance(roi, (list, tuple)) and len(roi) == 4:
+    if roi and isinstance(roi, (list, tuple)) and len(roi) == 4:
         xmin, ymin, xmax, ymax = roi
         if xmax > xmin and ymax > ymin:
             print('Using roi: ', roi)
@@ -98,8 +98,10 @@ if __name__ == '__main__':
         print('Reading video file: {:s}'.format(src_path))
 
         if not dst_dir:
-            seq_name = os.path.splitext(os.path.basename(src_path))[0]
-            dst_dir = os.path.join(os.path.dirname(src_path), seq_name)
+            out_seq_name = os.path.splitext(os.path.basename(src_path))[0]
+            if roi_enabled:
+                out_seq_name = '{}_roi_{}_{}_{}_{}'.format(out_seq_name, xmin, ymin, xmin, xmax)
+            dst_dir = os.path.join(os.path.dirname(src_path), out_seq_name)
         if dst_dir and not os.path.isdir(dst_dir):
             os.makedirs(dst_dir)
         print('Writing image sequence to: {:s}/{:s}.{}'.format(dst_dir, out_fname_templ, ext))
