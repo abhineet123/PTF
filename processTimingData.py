@@ -15,7 +15,7 @@ for line in lines:
     if line.startswith('Timing Description: Start Time: '):
         _line = line.replace('Timing Description: Start Time: ', '').strip()
         start_t = datetime.strptime(_line, '%b %d, %Y %I:%M:%S %p')
-        out_txt += start_t.strftime('%d/%m/%Y') + '\n'
+        out_txt += start_t.strftime('%d/%m/%Y\t%H:%M:%S') + '\n'
         # print('start_t: {}'.format(start_t))
     if line.startswith('Lap Description: '):
         _line = line.replace('Lap Description: ', '').strip()

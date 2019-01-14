@@ -291,7 +291,10 @@ def processArguments(args, params):
     # arguments specified as 'arg_name=argv_val'
     no_of_args = len(args)
     for arg_id in range(no_of_args):
-        arg = args[arg_id].split('=')
+        # take last two
+        arg = args[arg_id].split('=')[-2:]
+        # print('args[{}]: {}'.format(arg_id, args[arg_id]))
+        # print('arg: {}'.format(arg))
         if len(arg) != 2 or not arg[0] in params.keys():
             print('Invalid argument provided: {:s}'.format(args[arg_id]))
             return
