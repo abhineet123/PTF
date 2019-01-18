@@ -129,6 +129,9 @@ if __name__ == '__main__':
                 break
             frame_id += 1
             if frame_id <= start_id:
+                sys.stdout.write('\rSkipped {:d}/{:d} frames'.format(
+                    frame_id, start_id))
+                sys.stdout.flush()
                 continue
             if roi_enabled:
                 frame = frame[roi[1]:roi[3], roi[0]:roi[2], :]

@@ -2,12 +2,13 @@ import os
 import cv2
 import sys, time, random, glob
 import numpy as np
-from Misc import processArguments, sortKey, stackImages, resizeAR, addBorder
 import psutil
 import inspect
 import keyboard
 from datetime import datetime
 from threading import Event
+
+from Misc import processArguments, sortKey, stackImages, resizeAR, addBorder
 
 interrupt_wait = Event()
 
