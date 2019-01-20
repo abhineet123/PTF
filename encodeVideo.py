@@ -66,6 +66,7 @@ for src_path in src_file_list:
             dst_seq_name = '{}_{}'.format(dst_seq_name, start_id)
         if n_frames > 0:
             dst_seq_name = '{}_{}'.format(dst_seq_name, start_id + n_frames)
+        dst_seq_name = '{}_{}_fps'.format(dst_seq_name, fps)
         if out_postfix:
             dst_seq_name = '{}_{}'.format(dst_seq_name, out_postfix)
         dst_path = os.path.join(os.path.dirname(src_path), dst_seq_name + '.' + ext)
