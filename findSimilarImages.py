@@ -19,6 +19,15 @@ def chunk_reader(fobj, chunk_size=1024):
         yield chunk
 
 
+def getHist(full_path):
+    curr_image = cv2.imread(full_path)
+    curr_image = cv2.cvtColor(curr_image, cv2.COLOR_BGR2RGB)
+    curr_hist = cv2.calcHist([curr_image], [0, 1, 2], None, [8, 8, 8],
+                             [0, 256, 0, 256, 0, 256])
+    cv2.normalize(curr_hist, curr_hist).flatten()
+    return curr_hist
+
+
 def check_for_similar_images(_filename, paths, db_file, methodName="Hellinger", n_results=10, thresh=0.1):
     valid_exts = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif']
 
@@ -37,8 +46,6 @@ def check_for_similar_images(_filename, paths, db_file, methodName="Hellinger", 
 
     script_filename = inspect.getframeinfo(inspect.currentframe()).filename
     script_path = os.path.dirname(os.path.abspath(script_filename))
-
-    n_files = 0
 
     db = {}
     if db_file:
@@ -71,8 +78,8 @@ def check_for_similar_images(_filename, paths, db_file, methodName="Hellinger", 
 
     # pprint(all_files_list)
 
-    all_files_stats_list = {k: os.stat(k) for k in all_files_list}
-    all_files_stats_list = {'{}_{}'.format(st.st_ino, st.st_dev): k for k, st in all_files_stats_list.items()}
+    all_stats = {k: os.stat(k) for k in all_files_list}
+    all_stats = {'{}_{}'.format(st.st_ino, st.st_dev): k for k, st in all_stats.items()}
 
     # print('Looking for existing files in db')
     # n_files = 0
@@ -91,49 +98,53 @@ def check_for_similar_images(_filename, paths, db_file, methodName="Hellinger", 
     #
     # print()
 
-    new_stats_list = [k for k in all_files_stats_list if k not in db
-                      or db[k][0] != os.path.getmtime(all_files_stats_list[k])]
+    new_stats = [k for k in all_stats if k not in db
+                 or db[k][0] != os.path.getmtime(all_stats[k])]
 
-    n_new_files = len(new_stats_list)
-    if n_new_files:
-        print('Computing features for {} / {} files'.format(n_new_files, len(all_files_list)))
-    else:
-        print('No new files to compute features for')
+    n_new_files = len(new_stats)
+    n_files = len(all_files_list)
 
-    for _stsats in new_stats_list:
-        full_path = all_files_stats_list[_stsats]
-        curr_image = cv2.imread(full_path)
-        curr_image = cv2.cvtColor(curr_image, cv2.COLOR_BGR2RGB)
-        curr_hist = cv2.calcHist([curr_image], [0, 1, 2], None, [8, 8, 8],
-                                 [0, 256, 0, 256, 0, 256])
-        cv2.normalize(curr_hist, curr_hist).flatten()
+    # if n_new_files:
+    #     print('Computing features for {} / {} files'.format(n_new_files, len(all_files_list)))
+    # else:
+    #     print('No new files to compute features for')
 
-        db[_stsats] = (os.path.getmtime(full_path), curr_hist)
+    if new_stats:
+        print('Computing hashes for {}/{} files ...'.format(n_new_files, n_files))
+        db.update({k: (os.path.getmtime(all_stats[k]), getHist(all_stats[k]))
+                   for k in new_stats})
 
-        # d = cv2.compareHist(img_hist, curr_hist, method)
-        # results[full_path] = d
-
-        # file_path_map[full_path] = full_path
-
-        n_files += 1
-        sys.stdout.write('\rDone {} files'.format(n_files))
-        sys.stdout.flush()
+    # for _stsats in new_stats:
+    #     full_path = all_stats[_stsats]
+    #
+    #     db[_stsats] = (os.path.getmtime(full_path), curr_hist)
+    #
+    #     # d = cv2.compareHist(img_hist, curr_hist, method)
+    #     # results[full_path] = d
+    #
+    #     # file_path_map[full_path] = full_path
+    #
+    #     n_files += 1
+    #     sys.stdout.write('\rDone {} files'.format(n_files))
+    #     sys.stdout.flush()
 
     print()
 
     if _filename:
         print('Looking for images similar to {} in {}'.format(_filename, paths))
 
-        image = cv2.imread(_filename)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        img_hist = cv2.calcHist([image], [0, 1, 2], None, [8, 8, 8],
-                                [0, 256, 0, 256, 0, 256])
-        cv2.normalize(img_hist, img_hist).flatten()
+        img_hist = getHist(_filename)
+
+        # image = cv2.imread(_filename)
+        # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        # img_hist = cv2.calcHist([image], [0, 1, 2], None, [8, 8, 8],
+        #                         [0, 256, 0, 256, 0, 256])
+        # cv2.normalize(img_hist, img_hist).flatten()
         # print('img_hist: {}'.format(img_hist))
 
         print('Comparing features...')
 
-        results = {all_files_stats_list[k]: cv2.compareHist(img_hist, db[k][1], method) for k in all_files_stats_list}
+        results = {all_stats[k]: cv2.compareHist(img_hist, db[k][1], method) for k in all_stats}
         results = sorted([(v, k) for (k, v) in results.items()], reverse=reverse)
         # print('\nTotal files searched: {}'.format(n_files))
 
@@ -149,11 +160,12 @@ def check_for_similar_images(_filename, paths, db_file, methodName="Hellinger", 
         # pairwise search
         print('Looking for pairwise similar images using thresh: {}'.format(thresh))
         print('Comparing features...')
-        all_files_features_pairs = [(all_files_stats_list[k[0]], all_files_stats_list[k[1]],
+        all_files_features_pairs = [(all_stats[k[0]], all_stats[k[1]],
                                      cv2.compareHist(db[k[0]][1], db[k[1]][1], method)) for k in
-                                    itertools.combinations(list(all_files_stats_list.keys()), r=2)]
+                                    itertools.combinations(list(all_stats.keys()), r=2)]
         print('Thresholding...')
         similar_img_pairs = [k for k in all_files_features_pairs if k[2] < thresh]
+        print('Sorting...')
         similar_img_pairs.sort(key=lambda x: x[2])
 
         n_pairs = len(similar_img_pairs)
@@ -190,7 +202,7 @@ def check_for_similar_images(_filename, paths, db_file, methodName="Hellinger", 
                 os.remove(pair[1])
 
     # print('Files skipped: {}'.format(n_skips))
-    if db_file and new_stats_list:
+    if db_file and new_stats:
         print('Saving feature db to: {}'.format(db_file))
         pickle.dump(db, open(db_file, "wb"))
 

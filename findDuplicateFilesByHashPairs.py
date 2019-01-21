@@ -100,10 +100,10 @@ def main():
 
     if new_stats:
         print('Computing hashes for {}/{} files ...'.format(n_new_files, n_files))
-        src_file_hash_list = {k: (os.path.getmtime(all_stats[k]), getHash(all_stats[k]))
-                              for k in new_stats}
-        db.update(src_file_hash_list)
-
+        db.update({k: (os.path.getmtime(all_stats[k]), getHash(all_stats[k]))
+                   for k in new_stats})
+    else:
+        print('No new files to compute hashes for')
     # src_file_hash_list = list(src_file_hash_dict.keys())
     # src_file_hash_set = set(src_file_hash_list)
     if filename:
