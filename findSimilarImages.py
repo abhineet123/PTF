@@ -160,6 +160,13 @@ def check_for_similar_images(_filename, paths, db_file, methodName="Hellinger", 
         cwd = os.getcwd()
         print('Found {} pairs'.format(n_pairs))
         for pair in similar_img_pairs:
+            if not os.path.isfile(pair[0]):
+                print('{} does not exist'.format(pair[0]))
+                continue
+            if not os.path.isfile(pair[1]):
+                print('{} does not exist'.format(pair[1]))
+                continue
+
             curr_image_1 = cv2.imread(pair[0])
             curr_image_2 = cv2.imread(pair[1])
 
