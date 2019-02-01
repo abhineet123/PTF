@@ -56,8 +56,8 @@ else:
 if reverse:
     print('Reversing video')
 
-for src_path in src_file_list:
-    src_path = os.path.abspath(src_path)
+for _src_path in src_file_list:
+    src_path = os.path.abspath(_src_path)
     seq_name = os.path.splitext(os.path.basename(src_path))[0]
 
     if not save_path:

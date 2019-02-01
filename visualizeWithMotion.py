@@ -297,7 +297,7 @@ if __name__ == '__main__':
     print('Saving wallpapers to {}'.format(wallpaper_dir))
 
 
-    def createWindow():
+    def createWindow(move_to_right=0):
         global mode
 
         try:
@@ -323,7 +323,10 @@ if __name__ == '__main__':
             if win_utils_available:
                 winUtils.hideBorder2(win_name)
                 # winUtils.loseFocus(win_name)
-            cv2.moveWindow(win_name, win_offset_x + monitors[2][0], win_offset_y + monitors[2][1])
+            if move_to_right:
+                cv2.moveWindow(win_name, win_offset_x + monitors[4][0], win_offset_y + monitors[4][1])
+            else:
+                cv2.moveWindow(win_name, win_offset_x + monitors[2][0], win_offset_y + monitors[2][1])
 
         cv2.setMouseCallback(win_name, mouseHandler)
 
@@ -338,7 +341,7 @@ if __name__ == '__main__':
         #             print("Unable to register id", _id)
 
 
-    def changeMode():
+    def changeMode(move_to_right=0):
         global mode, height, aspect_ratio
         mode = 1 - mode
 
@@ -349,7 +352,7 @@ if __name__ == '__main__':
 
         # print('changeMode :: height: ', height)
         aspect_ratio = float(width) / float(height)
-        createWindow()
+        createWindow(move_to_right)
         loadImage()
 
 
@@ -1171,13 +1174,15 @@ if __name__ == '__main__':
 
         k = cv2.waitKeyEx(1)
 
-        # if k >= 0:
-        #     print('k: {}'.format(k))
+        if k >= 0:
+            print('k: {}'.format(k))
 
         if k == 27 or end_exec:
             break
         elif k == 13:
             changeMode()
+        elif k == 10:
+            changeMode(1)
         elif k == ord('g'):
             # grid transpose
             grid_size = (grid_size[1], grid_size[0])

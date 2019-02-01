@@ -26,7 +26,7 @@ def findChildren(_headings, root_level, _start_id, _root_node, n_headings):
             parent_text = _root_node.name
             if curr_level > 2:
                 # parent_text = str(_root_node)
-                parent_text = '{}/{}'.format(_root_node.parent_text, parent_text)
+                parent_text = '{}/{}'.format(parent_text, _root_node.parent_text)
         heading_text = '_'.join(heading_words)
         new_node = Node(heading_text, parent=_root_node, orig_text=_heading, parent_text=parent_text,
                         marker=words[0], line_id=line_id)
