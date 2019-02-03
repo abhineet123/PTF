@@ -1172,7 +1172,10 @@ if __name__ == '__main__':
         # else:
         #     cv2.imshow(win_name, dst_img)
 
-        k = cv2.waitKeyEx(1)
+        if speed == 0 and auto_progress:
+            k = cv2.waitKeyEx(transition_interval*1000)
+        else:
+            k = cv2.waitKeyEx(1)
 
         if k >= 0:
             print('k: {}'.format(k))
@@ -1442,9 +1445,11 @@ if __name__ == '__main__':
         updateZoom()
 
         if speed == 0 and auto_progress:
-            end_time = time.time()
-            if end_time - start_time >= transition_interval:
-                loadImage(1)
+            # time.sleep(transition_interval)
+            loadImage(1)
+            # end_time = time.time()
+            # if end_time - start_time >= transition_interval:
+            #     loadImage(1)
 
         # print('end_row: ', end_row)
         # print('start_col: ', start_col)
