@@ -1497,6 +1497,8 @@ if __name__ == '__main__':
         for k in images_to_sort.keys():
             print('k: ', k)
             for orig_file_path in images_to_sort[k]:
+                if not os.path.isfile(orig_file_path):
+                    continue
                 print('orig_file_path: ', orig_file_path)
                 orig_file_path = os.path.abspath(orig_file_path)
                 sort_dir = os.path.join(os.path.dirname(orig_file_path), k)
