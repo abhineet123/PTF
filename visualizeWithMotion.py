@@ -1,6 +1,6 @@
 import os
 import cv2
-import sys, time, random, glob
+import sys, time, random, glob, shutil
 import numpy as np
 import psutil
 import inspect
@@ -1033,6 +1033,7 @@ if __name__ == '__main__':
             img_id -= n_images
             interrupt_wait.set()
 
+
     def add_hotkeys():
         # kb_params = [0, wallpaper_mode]
         keyboard.add_hotkey('ctrl+alt+esc', kb_callback, args=(0,))
@@ -1051,6 +1052,7 @@ if __name__ == '__main__':
         keyboard.add_hotkey('ctrl+alt+up', kb_callback, args=(13,))
         keyboard.add_hotkey('ctrl+alt+down', kb_callback, args=(14,))
 
+
     def remove_hotkeys():
         keyboard.remove_hotkey('ctrl+alt+esc')
         keyboard.remove_hotkey('ctrl+alt+right')
@@ -1067,6 +1069,8 @@ if __name__ == '__main__':
         keyboard.remove_hotkey('ctrl+alt+)')
         keyboard.remove_hotkey('ctrl+alt+up')
         keyboard.remove_hotkey('ctrl+alt+down')
+
+
     # if hotkeys_available:
     #     def handle_win_f3():
     #         print('Minimizing window')
@@ -1088,6 +1092,15 @@ if __name__ == '__main__':
     img_id += n_images - 1
     loadImage(set_grid_size=1)
     exit_program = 0
+
+    numpad_to_ascii = {
+        2293760: '1',
+        2228224: '2',
+        2359296: '3',
+        2162688: '4',
+    }
+    images_to_sort = {}
+    images_to_sort_inv = {}
 
     if wallpaper_mode:
         add_hotkeys()
@@ -1173,264 +1186,282 @@ if __name__ == '__main__':
         #     cv2.imshow(win_name, dst_img)
 
         if speed == 0 and auto_progress:
-            k = cv2.waitKeyEx(transition_interval*1000)
+            k = cv2.waitKeyEx(transition_interval * 1000)
         else:
             k = cv2.waitKeyEx(1)
 
         if k >= 0:
-            print('k: {}'.format(k))
-
-        if k == 27 or end_exec:
-            break
-        elif k == 13:
-            changeMode()
-        elif k == 10:
-            changeMode(1)
-        elif k == ord('g'):
-            # grid transpose
-            grid_size = (grid_size[1], grid_size[0])
-            loadImage()
-        elif k == ord('C'):
-            # single column grid
-            grid_size = (n_images, 1)
-            loadImage()
-        elif k == ord('R'):
-            # single row grid
-            grid_size = (1, n_images)
-            loadImage()
-        elif k == ord('r'):
-            random_mode = 1 - random_mode
-            if random_mode:
-                print('Random mode enabled')
-                src_file_list_rand = list(np.random.permutation(src_file_list))
-                img_id = src_file_list_rand.index(img_fname)
-            else:
-                print('Random mode disabled')
-                img_id = src_file_list.index(img_fname)
-        elif k == ord('c'):
-            auto_progress = 1 - auto_progress
-            if auto_progress:
-                print('Auto progression enabled')
-            else:
-                print('Auto progression disabled')
-        elif k == ord('q'):
-            random_mode = 1 - random_mode
-            if random_mode:
-                print('Random mode enabled')
-                src_file_list_rand = list(np.random.permutation(src_file_list))
-            else:
-                print('Random mode disabled')
-            auto_progress = 1 - auto_progress
-            if auto_progress:
-                print('Auto progression enabled')
-            else:
-                print('Auto progression disabled')
-        elif k == ord('b'):
-            borderless = 1 - borderless
-            if borderless:
-                print('Borderless stitching enabled')
-            else:
-                print('Borderless stitching disabled')
-            loadImage()
-        elif k == ord('n'):
-            max_switches -= 1
-            if max_switches < 1:
-                max_switches = 1
-        elif k == ord('N'):
-            max_switches += 1
-        elif k == ord('1'):
-            curr_monitor = 0
-            cv2.moveWindow(win_name, win_offset_x + monitors[0][0], win_offset_y + monitors[0][1])
-            # createWindow()
-        elif k == ord('2'):
-            curr_monitor = 1
-            cv2.moveWindow(win_name, win_offset_x + monitors[1][0], win_offset_y + monitors[1][1])
-            # createWindow()
-        elif k == ord('3'):
-            curr_monitor = 2
-            cv2.moveWindow(win_name, win_offset_x + monitors[2][0], win_offset_y + monitors[2][1])
-            # createWindow()
-        elif k == ord('4'):
-            curr_monitor = 3
-            cv2.moveWindow(win_name, win_offset_x + monitors[3][0], win_offset_y + monitors[3][1])
-            # createWindow()
-        elif k == ord('5'):
-            curr_monitor = 4
-            cv2.moveWindow(win_name, win_offset_x + monitors[4][0], win_offset_y + monitors[4][1])
-            # createWindow()
-        elif k == 32:
-            is_paused = 1 - is_paused
-            if speed == 0:
-                speed = old_speed
-            else:
-                old_speed = speed
-                speed = 0
-        elif k == ord('p'):
-            reversed_pos = (reversed_pos + 1) % 3
-            # print('reversed_pos: ', reversed_pos)
-            if not reversed_pos:
-                cv2.moveWindow(win_name, win_offset_x + monitors[curr_monitor][0],
-                               win_offset_y + monitors[curr_monitor][1])
-        elif k == ord('t'):
-            transition_interval -= 1
-            if transition_interval < 0:
-                transition_interval = 0
-            print('Setting transition interval to: {}'.format(transition_interval))
-        elif k == ord('T'):
-            transition_interval += 1
-            print('Setting transition interval to: {}'.format(transition_interval))
-        elif k == ord('m') or k == ord('M'):
-            minimizeWindow()
-        elif k == ord('W'):
-            set_wallpaper = 0 if set_wallpaper else 2
-            if set_wallpaper:
-                minimizeWindow()
+            # print('k: {}'.format(k))
+            if k == 27 or end_exec:
+                break
+            elif k == 13:
+                changeMode()
+            elif k == 10:
+                changeMode(1)
+            elif k == ord('g'):
+                # grid transpose
+                grid_size = (grid_size[1], grid_size[0])
                 loadImage()
-        elif k == ord('w'):
-            set_wallpaper = 0 if set_wallpaper else 1
-            if set_wallpaper:
-                minimizeWindow()
+            elif k == ord('C'):
+                # single column grid
+                grid_size = (n_images, 1)
                 loadImage()
-        elif k == ord('e') or k == ord('E'):
-            wallpaper_mode = 1 - wallpaper_mode
-            if wallpaper_mode:
-                set_wallpaper = 2 if k == ord('E') else 1
-                print('wallpaper mode enabled')
-                cv2.destroyWindow(win_name)
-                add_hotkeys()
-            else:
-                print('wallpaper mode disabled')
+            elif k == ord('R'):
+                # single row grid
+                grid_size = (1, n_images)
+                loadImage()
+            elif k == ord('r'):
+                random_mode = 1 - random_mode
+                if random_mode:
+                    print('Random mode enabled')
+                    src_file_list_rand = list(np.random.permutation(src_file_list))
+                    img_id = src_file_list_rand.index(img_fname)
+                else:
+                    print('Random mode disabled')
+                    img_id = src_file_list.index(img_fname)
+            elif k == ord('c'):
+                auto_progress = 1 - auto_progress
+                if auto_progress:
+                    print('Auto progression enabled')
+                else:
+                    print('Auto progression disabled')
+            elif k == ord('q'):
+                random_mode = 1 - random_mode
+                if random_mode:
+                    print('Random mode enabled')
+                    src_file_list_rand = list(np.random.permutation(src_file_list))
+                else:
+                    print('Random mode disabled')
+                auto_progress = 1 - auto_progress
+                if auto_progress:
+                    print('Auto progression enabled')
+                else:
+                    print('Auto progression disabled')
+            elif k == ord('b'):
+                borderless = 1 - borderless
+                if borderless:
+                    print('Borderless stitching enabled')
+                else:
+                    print('Borderless stitching disabled')
+                loadImage()
+            elif k == ord('n'):
+                max_switches -= 1
+                if max_switches < 1:
+                    max_switches = 1
+            elif k == ord('N'):
+                max_switches += 1
+            elif k == ord('1'):
+                curr_monitor = 0
+                cv2.moveWindow(win_name, win_offset_x + monitors[0][0], win_offset_y + monitors[0][1])
+                # createWindow()
+            elif k == ord('2'):
+                curr_monitor = 1
+                cv2.moveWindow(win_name, win_offset_x + monitors[1][0], win_offset_y + monitors[1][1])
+                # createWindow()
+            elif k == ord('3'):
+                curr_monitor = 2
+                cv2.moveWindow(win_name, win_offset_x + monitors[2][0], win_offset_y + monitors[2][1])
+                # createWindow()
+            elif k == ord('4'):
+                curr_monitor = 3
+                cv2.moveWindow(win_name, win_offset_x + monitors[3][0], win_offset_y + monitors[3][1])
+                # createWindow()
+            elif k == ord('5'):
+                curr_monitor = 4
+                cv2.moveWindow(win_name, win_offset_x + monitors[4][0], win_offset_y + monitors[4][1])
+                # createWindow()
+            elif k == 32:
+                is_paused = 1 - is_paused
+                if speed == 0:
+                    speed = old_speed
+                else:
+                    old_speed = speed
+                    speed = 0
+            elif k == ord('p'):
+                reversed_pos = (reversed_pos + 1) % 3
+                # print('reversed_pos: ', reversed_pos)
+                if not reversed_pos:
+                    cv2.moveWindow(win_name, win_offset_x + monitors[curr_monitor][0],
+                                   win_offset_y + monitors[curr_monitor][1])
+            elif k == ord('t'):
+                transition_interval -= 1
+                if transition_interval < 0:
+                    transition_interval = 0
+                print('Setting transition interval to: {}'.format(transition_interval))
+            elif k == ord('T'):
+                transition_interval += 1
+                print('Setting transition interval to: {}'.format(transition_interval))
+            elif k == ord('m') or k == ord('M'):
+                minimizeWindow()
+            elif k == ord('W'):
+                set_wallpaper = 0 if set_wallpaper else 2
+                if set_wallpaper:
+                    minimizeWindow()
+                    loadImage()
+            elif k == ord('w'):
+                set_wallpaper = 0 if set_wallpaper else 1
+                if set_wallpaper:
+                    minimizeWindow()
+                    loadImage()
+            elif k == ord('e') or k == ord('E'):
+                wallpaper_mode = 1 - wallpaper_mode
+                if wallpaper_mode:
+                    set_wallpaper = 2 if k == ord('E') else 1
+                    print('wallpaper mode enabled')
+                    cv2.destroyWindow(win_name)
+                    add_hotkeys()
+                else:
+                    print('wallpaper mode disabled')
+                    createWindow()
+                    remove_hotkeys()
+            elif k == ord(','):
+                height -= 5
+                if height < 10:
+                    height = 10
+                loadImage()
+            elif k == ord('.'):
+                height += 5
+                loadImage()
+            elif k == ord('<'):
+                width -= 5
+                if width < 10:
+                    width = 10
+                loadImage()
+            elif k == ord('>'):
+                width += 5
+                loadImage()
+            elif k == ord('/'):
+                height = _height
+                loadImage()
+            elif k == ord('?'):
+                width = _width
+                loadImage()
+            elif k == ord('+'):
+                n_images += 1
+                img_id -= 1
+                loadImage(1, 1)
+            elif k == ord('-'):
+                n_images -= 1
+                if n_images < 1:
+                    n_images = 1
+                img_id -= 1
+                loadImage(1, 1)
+            elif k == ord('='):
+                predef_n_image_id = (predef_n_image_id + 1) % n_predef_n_images
+                n_images = predef_n_images[predef_n_image_id]
+                img_id -= 1
+                loadImage(1, 1)
+            elif k == ord('_'):
+                predef_n_image_id -= 1
+                if predef_n_image_id < 0:
+                    predef_n_image_id = n_predef_n_images - 1
+                n_images = predef_n_images[predef_n_image_id]
+                img_id -= 1
+                loadImage(1, 1)
+            elif k == ord('!'):
+                predef_n_image_id = 0
+                n_images = predef_n_images[predef_n_image_id]
+                img_id -= 1
+                loadImage(1, 1)
+            elif k == ord('@'):
+                predef_n_image_id = 1
+                n_images = predef_n_images[predef_n_image_id]
+                img_id -= 1
+                loadImage(1, 1)
+            elif k == ord('#'):
+                predef_n_image_id = 2
+                n_images = predef_n_images[predef_n_image_id]
+                img_id -= 1
+                loadImage(1, 1)
+            elif k == ord('$'):
+                predef_n_image_id = 3
+                n_images = predef_n_images[predef_n_image_id]
+                img_id -= 1
+                loadImage(1, 1)
+            elif k == ord('%'):
+                predef_n_image_id = 4
+                n_images = predef_n_images[predef_n_image_id]
+                img_id -= 1
+                loadImage(1, 1)
+            elif k == ord('^'):
+                predef_n_image_id = 5
+                n_images = predef_n_images[predef_n_image_id]
+                img_id -= 1
+                loadImage(1, 1)
+            elif k == ord('&'):
+                predef_n_image_id = 6
+                n_images = predef_n_images[predef_n_image_id]
+                img_id -= 1
+                loadImage(1, 1)
+            elif k == ord('*'):
+                predef_n_image_id = 7
+                n_images = predef_n_images[predef_n_image_id]
+                img_id -= 1
+                loadImage(1, 1)
+            elif k == ord('('):
+                predef_n_image_id = 8
+                n_images = predef_n_images[predef_n_image_id]
+                img_id -= 1
+                loadImage(1, 1)
+            elif k == ord(')'):
+                predef_n_image_id = 9
+                n_images = predef_n_images[predef_n_image_id]
+                img_id -= 1
+                loadImage(1, 1)
+            elif k == ord('i'):
+                direction = -direction
+            elif k == ord('s') or k == ord('l') or k == ord('R'):
+                loadImage()
+            elif k == 2490368:
+                # up
+                updateZoom(_speed=old_speed, _direction=-1)
+            elif k == 2621440:
+                # down
+                updateZoom(_speed=old_speed, _direction=1)
+            elif k == 2555904:
+                # right
+                loadImage(1)
+            elif k == 2424832:
+                # left
+                loadImage(-1)
+            elif k == 39 or k == ord('d'):
+                loadImage(1)
+            elif k == 40 or k == ord('a'):
+                loadImage(-1)
+            elif k == ord('F') or k == ord('0'):
+                if n_images == 1:
+                    print('"' + os.path.abspath(img_fname) + '"')
+                else:
+                    print()
+                    for _idx in stack_idx:
+                        print('"' + os.path.abspath(img_fnames[_idx]) + '"')
+                    print()
+            elif k == ord('f') or k == ord('/') or k == ord('?'):
+                fullscreen = 1 - fullscreen
                 createWindow()
-                remove_hotkeys()
-        elif k == ord(','):
-            height -= 5
-            if height < 10:
-                height = 10
-            loadImage()
-        elif k == ord('.'):
-            height += 5
-            loadImage()
-        elif k == ord('<'):
-            width -= 5
-            if width < 10:
-                width = 10
-            loadImage()
-        elif k == ord('>'):
-            width += 5
-            loadImage()
-        elif k == ord('/'):
-            height = _height
-            loadImage()
-        elif k == ord('?'):
-            width = _width
-            loadImage()
-        elif k == ord('+'):
-            n_images += 1
-            img_id -= 1
-            loadImage(1, 1)
-        elif k == ord('-'):
-            n_images -= 1
-            if n_images < 1:
-                n_images = 1
-            img_id -= 1
-            loadImage(1, 1)
-        elif k == ord('='):
-            predef_n_image_id = (predef_n_image_id + 1) % n_predef_n_images
-            n_images = predef_n_images[predef_n_image_id]
-            img_id -= 1
-            loadImage(1, 1)
-        elif k == ord('_'):
-            predef_n_image_id -= 1
-            if predef_n_image_id < 0:
-                predef_n_image_id = n_predef_n_images - 1
-            n_images = predef_n_images[predef_n_image_id]
-            img_id -= 1
-            loadImage(1, 1)
-        elif k == ord('!'):
-            predef_n_image_id = 0
-            n_images = predef_n_images[predef_n_image_id]
-            img_id -= 1
-            loadImage(1, 1)
-        elif k == ord('@'):
-            predef_n_image_id = 1
-            n_images = predef_n_images[predef_n_image_id]
-            img_id -= 1
-            loadImage(1, 1)
-        elif k == ord('#'):
-            predef_n_image_id = 2
-            n_images = predef_n_images[predef_n_image_id]
-            img_id -= 1
-            loadImage(1, 1)
-        elif k == ord('$'):
-            predef_n_image_id = 3
-            n_images = predef_n_images[predef_n_image_id]
-            img_id -= 1
-            loadImage(1, 1)
-        elif k == ord('%'):
-            predef_n_image_id = 4
-            n_images = predef_n_images[predef_n_image_id]
-            img_id -= 1
-            loadImage(1, 1)
-        elif k == ord('^'):
-            predef_n_image_id = 5
-            n_images = predef_n_images[predef_n_image_id]
-            img_id -= 1
-            loadImage(1, 1)
-        elif k == ord('&'):
-            predef_n_image_id = 6
-            n_images = predef_n_images[predef_n_image_id]
-            img_id -= 1
-            loadImage(1, 1)
-        elif k == ord('*'):
-            predef_n_image_id = 7
-            n_images = predef_n_images[predef_n_image_id]
-            img_id -= 1
-            loadImage(1, 1)
-        elif k == ord('('):
-            predef_n_image_id = 8
-            n_images = predef_n_images[predef_n_image_id]
-            img_id -= 1
-            loadImage(1, 1)
-        elif k == ord(')'):
-            predef_n_image_id = 9
-            n_images = predef_n_images[predef_n_image_id]
-            img_id -= 1
-            loadImage(1, 1)
-        elif k == ord('i'):
-            direction = -direction
-        elif k == ord('s') or k == ord('l') or k == ord('R'):
-            loadImage()
-        elif k == 2490368:
-            # up
-            updateZoom(_speed=old_speed, _direction=-1)
-        elif k == 2621440:
-            # down
-            updateZoom(_speed=old_speed, _direction=1)
-        elif k == 2555904:
-            # right
-            loadImage(1)
-        elif k == 2424832:
-            # left
-            loadImage(-1)
-        elif k == 39 or k == ord('d'):
-            loadImage(1)
-        elif k == 40 or k == ord('a'):
-            loadImage(-1)
-        elif k == ord('F') or k == ord('0'):
-            if n_images == 1:
-                print('"' + os.path.abspath(img_fname) + '"')
+                if fullscreen:
+                    print('fullscreen mode enabled')
+                else:
+                    print('fullscreen mode disabled')
             else:
-                print()
-                for _idx in stack_idx:
-                    print('"' + os.path.abspath(img_fnames[_idx]) + '"')
-                print()
-        elif k == ord('f') or k == ord('/') or k == ord('?'):
-            fullscreen = 1 - fullscreen
-            createWindow()
-            if fullscreen:
-                print('fullscreen mode enabled')
-            else:
-                print('fullscreen mode disabled')
+                try:
+                    numpad_key = numpad_to_ascii[k]
+                except KeyError as e:
+                    print('Unknown key: {} :: {}'.format(k, e))
+                else:
+                    if img_fname in images_to_sort_inv:
+                        prev_key = images_to_sort_inv[img_fname]
+                        if prev_key != numpad_key:
+                            print('Removing previous sorting of {} into {}'.format(img_fname, prev_key))
+                            images_to_sort[prev_key].remove(img_fname)
+                            del images_to_sort_inv[img_fname]
+                    print('Sorting {} into category {}'.format(img_fname, numpad_key))
+                    try:
+                        images_to_sort[numpad_key].append(img_fname)
+                    except KeyError:
+                        images_to_sort[numpad_key] = [img_fname, ]
+                    images_to_sort_inv[img_fname] = numpad_key
+                    loadImage(1)
 
         # if hotkeys_available:
         #     msg = wintypes.MSG()
@@ -1461,6 +1492,19 @@ if __name__ == '__main__':
         remove_hotkeys()
     else:
         cv2.destroyWindow(win_name)
+
+    if images_to_sort:
+        for k in images_to_sort.keys():
+            print('k: ', k)
+            for orig_file_path in images_to_sort[k]:
+                print('orig_file_path: ', orig_file_path)
+                orig_file_path = os.path.abspath(orig_file_path)
+                sort_dir = os.path.join(os.path.dirname(orig_file_path), k)
+                if not os.path.isdir(sort_dir):
+                    os.makedirs(sort_dir)
+                sort_file_path = os.path.join(sort_dir, os.path.basename(orig_file_path))
+                print('Moving {} to {}'.format(orig_file_path, sort_file_path))
+                shutil.move(orig_file_path, sort_file_path)
 
     if set_wallpaper:
         win_wallpaper_func(SPI_SETDESKWALLPAPER, 0, orig_wp_fname, 0)
