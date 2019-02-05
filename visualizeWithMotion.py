@@ -296,6 +296,7 @@ if __name__ == '__main__':
         os.makedirs(wallpaper_dir)
     print('Saving wallpapers to {}'.format(wallpaper_dir))
 
+    no_auto_progress = 0
 
     def createWindow(move_to_right=0):
         global mode
@@ -1191,7 +1192,7 @@ if __name__ == '__main__':
             k = cv2.waitKeyEx(1)
 
         if k >= 0:
-            # print('k: {}'.format(k))
+            print('k: {}'.format(k))
             if k == 27 or end_exec:
                 break
             elif k == 13:
@@ -1420,9 +1421,11 @@ if __name__ == '__main__':
                 updateZoom(_speed=old_speed, _direction=1)
             elif k == 2555904:
                 # right
+                no_auto_progress = 1
                 loadImage(1)
             elif k == 2424832:
                 # left
+                no_auto_progress = 1
                 loadImage(-1)
             elif k == 39 or k == ord('d'):
                 loadImage(1)
@@ -1476,11 +1479,14 @@ if __name__ == '__main__':
         updateZoom()
 
         if speed == 0 and auto_progress:
-            # time.sleep(transition_interval)
-            loadImage(1)
-            # end_time = time.time()
-            # if end_time - start_time >= transition_interval:
-            #     loadImage(1)
+            if no_auto_progress:
+                no_auto_progress = 0
+            else:
+                # time.sleep(transition_interval)
+                loadImage(1)
+                # end_time = time.time()
+                # if end_time - start_time >= transition_interval:
+                #     loadImage(1)
 
         # print('end_row: ', end_row)
         # print('start_col: ', start_col)
