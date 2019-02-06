@@ -298,6 +298,7 @@ if __name__ == '__main__':
 
     no_auto_progress = 0
 
+
     def createWindow(move_to_right=0):
         global mode
 
@@ -700,10 +701,54 @@ if __name__ == '__main__':
             print('Window minimization unavailable')
 
 
+    def getClickedImage(x, y, get_idx=0):
+        if n_images == 1:
+            if get_idx:
+                return img_fname, 0
+            return img_fname
+            # return img_fname if not get_idx else img_fname, 0
+        resize_ratio = float(dst_img.shape[0]) / float(src_img.shape[0])
+        x_scaled, y_scaled = x / resize_ratio, y / resize_ratio
+        for i in range(n_images):
+            _start_row, _start_col, _end_row, _end_col = stack_locations[i]
+            if x_scaled >= _start_col and x_scaled < _end_col and y_scaled >= _start_row and y_scaled < _end_row:
+                __idx = stack_idx[i]
+                fname = os.path.abspath(img_fnames[__idx])
+                print('Clicked on image {} with id {}:\n {}'.format(i + 1, __idx, fname))
+                if get_idx:
+                    return fname, __idx
+                return fname
+                # return fname if not get_idx else fname, __idx
+
+        print('Image for the clicked point {}, {} not found'.format(x, y))
+
+        if get_idx:
+            return None, None
+        return None
+        # return None if not get_idx else None, None
+
+    def sortImage(img_fname, sort_type):
+        if img_fname is None:
+            return
+        if img_fname in images_to_sort_inv:
+            prev_key = images_to_sort_inv[img_fname]
+            if prev_key != sort_type:
+                print('Removing previous sorting of {} into {}'.format(img_fname, prev_key))
+                images_to_sort[prev_key].remove(img_fname)
+                del images_to_sort_inv[img_fname]
+        print('Sorting {} into category {}'.format(img_fname, sort_type))
+        try:
+            images_to_sort[sort_type].append(img_fname)
+        except KeyError:
+            images_to_sort[sort_type] = [img_fname, ]
+        images_to_sort_inv[img_fname] = sort_type
+        loadImage(1)
+
+
     def mouseHandler(event, x, y, flags=None, param=None):
         global img_id, row_offset, col_offset, lc_start_t, rc_start_t, end_exec, fullscreen, \
             direction, target_height, prev_pos, prev_win_pos, speed, old_speed, min_height, min_height_ratio, n_images, src_images
-        global win_offset_x, win_offset_y, width, height, top_border, bottom_border
+        global win_offset_x, win_offset_y, width, height, top_border, bottom_border, images_to_sort, images_to_sort_inv
         reset_prev_pos = reset_prev_win_pos = True
         try:
             if event == cv2.EVENT_MBUTTONDBLCLK:
@@ -727,13 +772,24 @@ if __name__ == '__main__':
                 #     if click_interval < double_click_interval:
                 #         end_exec = 1
                 #     rc_start_t = None
+                # print('flags: {}'.format(flags))
                 # print('flags: {0:b}'.format(flags))
+
+                flags_to_sort_type = {
+                    34: ('2', 'alt'),
+                    42: ('4', 'alt + ctrl'),
+                    58: ('6', 'alt + ctrl + shift'),
+                }
                 if flags == 2:
                     loadImage(1)
                 elif flags == 10 or flags == 11:
                     direction = -direction
                 elif flags == 18:
                     row_offset = col_offset = 0
+                elif flags in flags_to_sort_type.keys():
+                    _img_fname = getClickedImage(x, y)
+                    sort_type = flags_to_sort_type[flags][0]
+                    sortImage(_img_fname, sort_type)
             elif event == cv2.EVENT_RBUTTONUP:
                 pass
             elif event == cv2.EVENT_MBUTTONDOWN:
@@ -878,38 +934,61 @@ if __name__ == '__main__':
                     #         lc_start_t = None
                     # print('flags: {}'.format(flags))
                     # print('flags_b: {0:b}'.format(flags))
+
+                    flags_to_sort_type = {
+                        33: ('1', 'alt'),
+                        41: ('3', 'alt + ctrl'),
+                        57: ('5', 'alt + ctrl + shift'),
+                    }
                     if flags == 1:
                         loadImage(-1)
                     elif flags == 9:
                         # ctrl
                         target_height = min_height
+                    elif flags in flags_to_sort_type.keys():
+                        _img_fname = getClickedImage(x, y)
+                        sort_type = flags_to_sort_type[flags][0]
+                        sortImage(_img_fname, sort_type)
                     elif flags == 17 or flags == 25:
                         # shift
                         # print('n_images: {}'.format(n_images))
                         if n_images > 1:
                             # print('here we are')
-                            resize_ratio = float(dst_img.shape[0]) / float(src_img.shape[0])
-                            x_scaled, y_scaled = x / resize_ratio, y / resize_ratio
-                            click_found = 0
-                            for i in range(n_images):
-                                _start_row, _start_col, _end_row, _end_col = stack_locations[i]
-                                if x_scaled >= _start_col and x_scaled < _end_col and y_scaled >= _start_row and y_scaled < _end_row:
-                                    __idx = stack_idx[i]
-                                    fname = '"' + os.path.abspath(img_fnames[__idx]) + '"'
-                                    print('Clicked on image {} with id {}:\n {}'.format(i + 1, __idx, fname))
-                                    time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
-                                    open(log_file, 'a').write(time_stamp + "\n" + fname + '\n')
-                                    click_found = 1
-
-                                    if flags == 25:
-                                        # ctrl + shift
-                                        img_id += __idx + 1 - n_images
-                                        # print('making img_id: {}'.format(img_id))
-                                        n_images = 1
-                                        src_images = []
-                                        loadImage(0)
-                                    break
-                            if not click_found:
+                            clicked_img_fname, __idx = getClickedImage(x, y, get_idx=1)
+                            if clicked_img_fname is not None:
+                                name = '"' + clicked_img_fname + '"'
+                                time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+                                open(log_file, 'a').write(time_stamp + "\n" + fname + '\n')
+                                if flags == 25:
+                                    # ctrl + shift
+                                    img_id += __idx + 1 - n_images
+                                    # print('making img_id: {}'.format(img_id))
+                                    n_images = 1
+                                    src_images = []
+                                    loadImage(0)
+                            else:
+                                # resize_ratio = float(dst_img.shape[0]) / float(src_img.shape[0])
+                                # x_scaled, y_scaled = x / resize_ratio, y / resize_ratio
+                                # click_found = 0
+                                # for i in range(n_images):
+                                #     _start_row, _start_col, _end_row, _end_col = stack_locations[i]
+                                #     if x_scaled >= _start_col and x_scaled < _end_col and y_scaled >= _start_row and y_scaled < _end_row:
+                                #         __idx = stack_idx[i]
+                                #         fname = '"' + os.path.abspath(img_fnames[__idx]) + '"'
+                                #         print('Clicked on image {} with id {}:\n {}'.format(i + 1, __idx, fname))
+                                #         time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+                                #         open(log_file, 'a').write(time_stamp + "\n" + fname + '\n')
+                                #         click_found = 1
+                                #
+                                #         if flags == 25:
+                                #             # ctrl + shift
+                                #             img_id += __idx + 1 - n_images
+                                #             # print('making img_id: {}'.format(img_id))
+                                #             n_images = 1
+                                #             src_images = []
+                                #             loadImage(0)
+                                #         break
+                                # if not click_found:
                                 print('x: {}'.format(x))
                                 print('y: {}'.format(y))
                                 print('resize_ratio: {}'.format(resize_ratio))
@@ -1452,19 +1531,7 @@ if __name__ == '__main__':
                 except KeyError as e:
                     print('Unknown key: {} :: {}'.format(k, e))
                 else:
-                    if img_fname in images_to_sort_inv:
-                        prev_key = images_to_sort_inv[img_fname]
-                        if prev_key != numpad_key:
-                            print('Removing previous sorting of {} into {}'.format(img_fname, prev_key))
-                            images_to_sort[prev_key].remove(img_fname)
-                            del images_to_sort_inv[img_fname]
-                    print('Sorting {} into category {}'.format(img_fname, numpad_key))
-                    try:
-                        images_to_sort[numpad_key].append(img_fname)
-                    except KeyError:
-                        images_to_sort[numpad_key] = [img_fname, ]
-                    images_to_sort_inv[img_fname] = numpad_key
-                    loadImage(1)
+                    sortImage(img_fname, numpad_key)
 
         # if hotkeys_available:
         #     msg = wintypes.MSG()
