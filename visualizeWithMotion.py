@@ -727,6 +727,7 @@ if __name__ == '__main__':
         return None
         # return None if not get_idx else None, None
 
+
     def sortImage(img_fname, sort_type):
         if img_fname is None:
             return
@@ -742,7 +743,7 @@ if __name__ == '__main__':
         except KeyError:
             images_to_sort[sort_type] = [img_fname, ]
         images_to_sort_inv[img_fname] = sort_type
-        if n_images==1:
+        if n_images == 1:
             loadImage(1)
 
 
