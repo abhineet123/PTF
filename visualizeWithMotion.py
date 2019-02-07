@@ -742,7 +742,8 @@ if __name__ == '__main__':
         except KeyError:
             images_to_sort[sort_type] = [img_fname, ]
         images_to_sort_inv[img_fname] = sort_type
-        loadImage(1)
+        if n_images==1:
+            loadImage(1)
 
 
     def mouseHandler(event, x, y, flags=None, param=None):
