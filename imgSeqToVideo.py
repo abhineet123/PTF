@@ -30,8 +30,8 @@ show_img = params['show_img']
 del_src = params['del_src']
 start_id = params['start_id']
 n_frames = params['n_frames']
-width = params['width']
-height = params['height']
+_width = params['width']
+_height = params['height']
 fps = params['fps']
 codec = params['codec']
 ext = params['ext']
@@ -42,7 +42,8 @@ img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
 if os.path.isdir(_src_path):
     src_file_list = [k for k in os.listdir(_src_path) for _ext in img_exts if k.endswith(_ext)]
     if not src_file_list:
-        src_paths = [os.path.join(_src_path, k) for k in os.listdir(_src_path) if os.path.isdir(os.path.join(_src_path, k))]
+        src_paths = [os.path.join(_src_path, k) for k in os.listdir(_src_path) if
+                     os.path.isdir(os.path.join(_src_path, k))]
     else:
         src_paths = [_src_path]
 elif os.path.isfile(_src_path):
@@ -68,11 +69,18 @@ for src_path in src_paths:
     print('total_frames: {}'.format(total_frames))
     src_file_list.sort(key=sortKey)
 
+    width, height = _width, _height
+
     if not save_path:
-        save_fname = os.path.basename(src_path)
+        save_fname = '{}_{}_fps'.format(os.path.basename(src_path), fps)
+
+        if height > 0 and width > 0:
+            save_fname = '{}_{}x{}'.format(save_fname, width, height)
+
         if out_postfix:
-            save_fname = '{}_{}'.format(save_fname, out_postfix)
-        save_path = os.path.join(os.path.dirname(src_path), save_fname + '.' + ext)
+            '{}_{}'.format(save_fname, out_postfix)
+
+        save_path = os.path.join(os.path.dirname(src_path), '{}.{}'.format(save_fname, ext))
 
     save_dir = os.path.dirname(save_path)
     if save_dir and not os.path.isdir(save_dir):
