@@ -941,6 +941,15 @@ if __name__ == '__main__':
                         41: ('3', 'alt + ctrl'),
                         57: ('5', 'alt + ctrl + shift'),
                     }
+                    keys_to_flags = {
+                        'none': 1,
+                        'ctrl': 9,
+                        'shift': 17,
+                        'ctrl+shift': 25,
+                        'alt': 33,
+                        'alt+ctrl': 41,
+                        'alt+ctrl+shift': 57,
+                    }
                     if flags == 1:
                         loadImage(-1)
                     elif flags == 9:
