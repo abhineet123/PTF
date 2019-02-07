@@ -746,7 +746,6 @@ if __name__ == '__main__':
         if n_images == 1:
             loadImage(1)
 
-
     def mouseHandler(event, x, y, flags=None, param=None):
         global img_id, row_offset, col_offset, lc_start_t, rc_start_t, end_exec, fullscreen, \
             direction, target_height, prev_pos, prev_win_pos, speed, old_speed, min_height, min_height_ratio, n_images, src_images
@@ -958,7 +957,7 @@ if __name__ == '__main__':
                             # print('here we are')
                             clicked_img_fname, __idx = getClickedImage(x, y, get_idx=1)
                             if clicked_img_fname is not None:
-                                name = '"' + clicked_img_fname + '"'
+                                fname = '"' + clicked_img_fname + '"'
                                 time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
                                 open(log_file, 'a').write(time_stamp + "\n" + fname + '\n')
                                 if flags == 25:
