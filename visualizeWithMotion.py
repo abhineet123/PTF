@@ -844,8 +844,12 @@ if __name__ == '__main__':
                 pass
             elif event == cv2.EVENT_MBUTTONDOWN:
                 flags_str = '{0:b}'.format(flags)
-                print('EVENT_MBUTTONDOWN flags: {:s}'.format(flags_str))
-                if flags_str[1] == '1':
+                # print('EVENT_MBUTTONDOWN flags: {:s}'.format(flags_str))
+                if flags_str == '100':
+                    if video_mode:
+                        auto_progress = 1 - auto_progress
+                    loadImage()
+                elif flags_str[1] == '1':
                     # ctrl
                     target_height = min_height
                 elif flags_str[2] == '1':
@@ -861,10 +865,7 @@ if __name__ == '__main__':
                         rotate_video = 0
                     print('Rotating video by {} degrees'.format(rotate_video * 90))
                     loadImage()
-                else:
-                    if video_mode:
-                        auto_progress = 1 - auto_progress
-                    loadImage()
+
             elif event == cv2.EVENT_MOUSEMOVE:
                 # print('EVENT_MOUSEMOVE flags: {}'.format(flags))
                 if flags == 33:
