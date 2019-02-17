@@ -241,18 +241,18 @@ if __name__ == '__main__':
         if not cap.open(src_path):
             raise IOError('The video file ' + src_path + ' could not be opened')
 
-        if cv2.__version__.startswith('3'):
-            cv_prop = cv2.CAP_PROP_FRAME_COUNT
-            h_prop = cv2.CAP_PROP_FRAME_HEIGHT
-            w_prop = cv2.CAP_PROP_FRAME_WIDTH
-        else:
-            cv_prop = cv2.cv.CAP_PROP_FRAME_COUNT
-            h_prop = cv2.cv.CAP_PROP_FRAME_HEIGHT
-            w_prop = cv2.cv.CAP_PROP_FRAME_WIDTH
+        # if cv2.__version__.startswith('3'):
+        #     cv_prop = cv2.CAP_PROP_FRAME_COUNT
+        #     h_prop = cv2.CAP_PROP_FRAME_HEIGHT
+        #     w_prop = cv2.CAP_PROP_FRAME_WIDTH
+        # else:
+        #     cv_prop = cv2.cv.CAP_PROP_FRAME_COUNT
+        #     h_prop = cv2.cv.CAP_PROP_FRAME_HEIGHT
+        #     w_prop = cv2.cv.CAP_PROP_FRAME_WIDTH
 
-        total_frames = int(cap.get(cv_prop))
-        _height = int(cap.get(h_prop))
-        _width = int(cap.get(w_prop))
+        # total_frames = int(cap.get(cv_prop))
+        # _height = int(cap.get(h_prop))
+        # _width = int(cap.get(w_prop))
 
         src_file_list = []
         while True:
@@ -260,6 +260,7 @@ if __name__ == '__main__':
             if not ret:
                 break
             src_file_list.append(src_img)
+        total_frames = len(src_file_list)
         transition_interval = 30
     else:
         print('Reading source images from: {}'.format(src_dir))
@@ -796,7 +797,8 @@ if __name__ == '__main__':
     def mouseHandler(event, x, y, flags=None, param=None):
         global img_id, row_offset, col_offset, lc_start_t, rc_start_t, end_exec, fullscreen, \
             direction, target_height, prev_pos, prev_win_pos, speed, old_speed, min_height, min_height_ratio, n_images, src_images
-        global win_offset_x, win_offset_y, width, height, top_border, bottom_border, images_to_sort, images_to_sort_inv
+        global win_offset_x, win_offset_y, width, height, top_border, bottom_border, images_to_sort, \
+            images_to_sort_inv, auto_progress
         reset_prev_pos = reset_prev_win_pos = True
         try:
             if event == cv2.EVENT_MBUTTONDBLCLK:
@@ -846,6 +848,8 @@ if __name__ == '__main__':
                 if flags_str[1] == '1':
                     target_height = min_height
                 else:
+                    if video_mode:
+                        auto_progress = 1 - auto_progress
                     loadImage()
             elif event == cv2.EVENT_MOUSEMOVE:
                 # print('EVENT_MOUSEMOVE flags: {}'.format(flags))
@@ -1354,7 +1358,7 @@ if __name__ == '__main__':
             elif k == ord('r'):
                 if video_mode:
                     print('Reversing video')
-                    img_id = 0
+                    img_id = total_frames - img_id - 1
                     src_file_list = list(reversed(src_file_list))
                 else:
                     random_mode = 1 - random_mode
@@ -1376,7 +1380,7 @@ if __name__ == '__main__':
                     rotate_video += 1
                     if rotate_video > 3:
                         rotate_video = 0
-                    print('Rotating video by {} degrees'.format(rotate_video*90))
+                    print('Rotating video by {} degrees'.format(rotate_video * 90))
                     loadImage()
                 else:
                     random_mode = 1 - random_mode
