@@ -72,7 +72,7 @@ for src_path in src_paths:
     width, height = _width, _height
 
     if not save_path:
-        save_fname = '{}_{}_fps'.format(os.path.basename(src_path), fps)
+        save_fname = '{}_{}'.format(os.path.basename(src_path), fps)
 
         if height > 0 and width > 0:
             save_fname = '{}_{}x{}'.format(save_fname, width, height)

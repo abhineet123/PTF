@@ -213,69 +213,105 @@ if __name__ == '__main__':
     win_offset_x = win_offset_y = 0
     top_border = bottom_border = 0
 
+    img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff', '.gif')
+    vid_exts = ('.mp4', '.avi', '.mkv')
+
+    transition_interval_diff = 1
+
     img_id = 0
+    video_mode = 0
+    rotate_video = 0
     if os.path.isdir(src_path):
         src_dir = src_path
         img_fname = None
     elif os.path.isfile(src_path):
         src_dir = os.path.dirname(src_path)
-        img_fname = src_path
+        _ext = os.path.splitext(src_path)[1]
+        if _ext in vid_exts:
+            video_mode = 1
+            img_fname = None
+        else:
+            img_fname = src_path
     else:
         raise IOError('Invalid source path: {}'.format(src_path))
 
-    print('Reading source images from: {}'.format(src_dir))
+    if video_mode:
+        print('Reading frames from video file {}'.format(src_dir))
+        cap = cv2.VideoCapture()
+        if not cap.open(src_path):
+            raise IOError('The video file ' + src_path + ' could not be opened')
 
-    img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff', '.gif')
+        if cv2.__version__.startswith('3'):
+            cv_prop = cv2.CAP_PROP_FRAME_COUNT
+            h_prop = cv2.CAP_PROP_FRAME_HEIGHT
+            w_prop = cv2.CAP_PROP_FRAME_WIDTH
+        else:
+            cv_prop = cv2.cv.CAP_PROP_FRAME_COUNT
+            h_prop = cv2.cv.CAP_PROP_FRAME_HEIGHT
+            w_prop = cv2.cv.CAP_PROP_FRAME_WIDTH
 
-    if recursive:
-        src_file_gen = [[os.path.join(dirpath, f) for f in filenames if
-                         os.path.splitext(f.lower())[1] in img_exts]
-                        for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
-        src_file_list = [item for sublist in src_file_gen for item in sublist]
+        total_frames = int(cap.get(cv_prop))
+        _height = int(cap.get(h_prop))
+        _width = int(cap.get(w_prop))
 
-        # _src_file_list = list(src_file_gen)
-        # src_file_list = []
-        # for x in _src_file_list:
-        #     src_file_list += x
+        src_file_list = []
+        while True:
+            ret, src_img = cap.read()
+            if not ret:
+                break
+            src_file_list.append(src_img)
+        transition_interval = 30
     else:
-        src_file_list = [os.path.join(src_dir, k) for k in os.listdir(src_dir) if
-                         os.path.splitext(k.lower())[1] in img_exts]
+        print('Reading source images from: {}'.format(src_dir))
+        if recursive:
+            src_file_gen = [[os.path.join(dirpath, f) for f in filenames if
+                             os.path.splitext(f.lower())[1] in img_exts]
+                            for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
+            src_file_list = [item for sublist in src_file_gen for item in sublist]
 
-    # src_file_list = [list(x) for x in src_file_list]
-    # src_file_list = [x for x in src_file_list]
+            # _src_file_list = list(src_file_gen)
+            # src_file_list = []
+            # for x in _src_file_list:
+            #     src_file_list += x
+        else:
+            src_file_list = [os.path.join(src_dir, k) for k in os.listdir(src_dir) if
+                             os.path.splitext(k.lower())[1] in img_exts]
 
-    # print('src_file_list: ', src_file_list)
+        # src_file_list = [list(x) for x in src_file_list]
+        # src_file_list = [x for x in src_file_list]
 
-    # for (dirpath, dirnames, filenames) in os.walk(src_dir):
-    #     print()
-    #     print('dirpath', dirpath)
-    #     print('filenames', filenames)
-    #     print('dirnames', dirnames)
-    #     print()
+        # print('src_file_list: ', src_file_list)
 
-    total_frames = len(src_file_list)
+        # for (dirpath, dirnames, filenames) in os.walk(src_dir):
+        #     print()
+        #     print('dirpath', dirpath)
+        #     print('filenames', filenames)
+        #     print('dirnames', dirnames)
+        #     print()
+
+        total_frames = len(src_file_list)
+        try:
+            # nums = int(os.path.splitext(img_fname)[0].split('_')[-1])
+            src_file_list.sort(key=sortKey)
+        except:
+            src_file_list.sort()
+
+        if img_fname is None:
+            img_fname = src_file_list[img_id]
+
+        img_id = src_file_list.index(img_fname)
+
+        if random_mode:
+            print('Random mode enabled')
+            src_file_list_rand = list(np.random.permutation(src_file_list))
+
+        # print('src_file_list: {}'.format(src_file_list))
+        # print('img_fname: {}'.format(img_fname))
+        # print('img_id: {}'.format(img_id))
+
     if total_frames <= 0:
         raise SystemError('No input frames found')
     print('total_frames: {}'.format(total_frames))
-
-    try:
-        # nums = int(os.path.splitext(img_fname)[0].split('_')[-1])
-        src_file_list.sort(key=sortKey)
-    except:
-        src_file_list.sort()
-
-    if img_fname is None:
-        img_fname = src_file_list[img_id]
-
-    img_id = src_file_list.index(img_fname)
-
-    # print('src_file_list: {}'.format(src_file_list))
-    # print('img_fname: {}'.format(img_fname))
-    # print('img_id: {}'.format(img_id))
-
-    if random_mode:
-        print('Random mode enabled')
-        src_file_list_rand = list(np.random.permutation(src_file_list))
 
     src_img_ar, start_row, end_row, start_col, end_col, dst_height, dst_width = [None] * 7
     target_height, target_width, min_height, start_col, end_col, height_ratio = [None] * 6
@@ -389,7 +425,7 @@ if __name__ == '__main__':
             top_border = bottom_border = 0
         aspect_ratio = float(width) / float(height)
 
-        if _type != 0 or not src_images:
+        if _type != 0 or not src_images or video_mode:
             if _type == 0:
                 img_id -= n_images
             elif _type == -1:
@@ -422,16 +458,23 @@ if __name__ == '__main__':
                 else:
                     img_fname = src_file_list[img_id]
 
-                # src_img_fname = os.path.join(src_dir, img_fname)
+                if video_mode:
+                    if rotate_video:
+                        src_img = np.rot90(img_fname, rotate_video)
+                    else:
+                        src_img = np.copy(img_fname)
+                else:
+                    # src_img_fname = os.path.join(src_dir, img_fname)
 
-                # print('img_id: {}'.format(img_id))
-                # print('img_fname: {}'.format(img_fname))
+                    # print('img_id: {}'.format(img_id))
+                    # print('img_fname: {}'.format(img_fname))
+                    src_img_fname = img_fname
+                    src_img = cv2.imread(src_img_fname)
+                    if src_img is None:
+                        raise SystemError('Source image could not be read from: {}'.format(src_img_fname))
 
-                src_img_fname = img_fname
-                src_img = cv2.imread(src_img_fname)
-                if src_img is None:
-                    raise SystemError('Source image could not be read from: {}'.format(src_img_fname))
-                img_fnames.append(img_fname)
+                    img_fnames.append(img_fname)
+
                 src_images.append(src_img)
 
         if n_images == 1:
@@ -702,6 +745,9 @@ if __name__ == '__main__':
 
 
     def getClickedImage(x, y, get_idx=0):
+        if video_mode:
+            return 'Frame {}'.format(img_id)
+
         if n_images == 1:
             if get_idx:
                 return img_fname, 0
@@ -745,6 +791,7 @@ if __name__ == '__main__':
         images_to_sort_inv[img_fname] = sort_type
         if n_images == 1:
             loadImage(1)
+
 
     def mouseHandler(event, x, y, flags=None, param=None):
         global img_id, row_offset, col_offset, lc_start_t, rc_start_t, end_exec, fullscreen, \
@@ -1102,7 +1149,8 @@ if __name__ == '__main__':
             else:
                 print()
                 for _idx in stack_idx:
-                    print('"' + os.path.abspath(img_fnames[_idx]) + '"')
+                    if not video_mode:
+                        print('"' + os.path.abspath(img_fnames[_idx]) + '"')
                 print()
         elif _type == 13:
             if transition_interval == MAX_TRANSITION_INTERVAL:
@@ -1276,7 +1324,10 @@ if __name__ == '__main__':
         #     cv2.imshow(win_name, dst_img)
 
         if speed == 0 and auto_progress:
-            k = cv2.waitKeyEx(transition_interval * 1000)
+            if video_mode:
+                k = cv2.waitKeyEx(transition_interval)
+            else:
+                k = cv2.waitKeyEx(transition_interval * 1000)
         else:
             k = cv2.waitKeyEx(1)
 
@@ -1301,14 +1352,19 @@ if __name__ == '__main__':
                 grid_size = (1, n_images)
                 loadImage()
             elif k == ord('r'):
-                random_mode = 1 - random_mode
-                if random_mode:
-                    print('Random mode enabled')
-                    src_file_list_rand = list(np.random.permutation(src_file_list))
-                    img_id = src_file_list_rand.index(img_fname)
+                if video_mode:
+                    print('Reversing video')
+                    img_id = 0
+                    src_file_list = list(reversed(src_file_list))
                 else:
-                    print('Random mode disabled')
-                    img_id = src_file_list.index(img_fname)
+                    random_mode = 1 - random_mode
+                    if random_mode:
+                        print('Random mode enabled')
+                        src_file_list_rand = list(np.random.permutation(src_file_list))
+                        img_id = src_file_list_rand.index(img_fname)
+                    else:
+                        print('Random mode disabled')
+                        img_id = src_file_list.index(img_fname)
             elif k == ord('c'):
                 auto_progress = 1 - auto_progress
                 if auto_progress:
@@ -1316,17 +1372,24 @@ if __name__ == '__main__':
                 else:
                     print('Auto progression disabled')
             elif k == ord('q'):
-                random_mode = 1 - random_mode
-                if random_mode:
-                    print('Random mode enabled')
-                    src_file_list_rand = list(np.random.permutation(src_file_list))
+                if video_mode:
+                    rotate_video += 1
+                    if rotate_video > 3:
+                        rotate_video = 0
+                    print('Rotating video by {} degrees'.format(rotate_video*90))
+                    loadImage()
                 else:
-                    print('Random mode disabled')
-                auto_progress = 1 - auto_progress
-                if auto_progress:
-                    print('Auto progression enabled')
-                else:
-                    print('Auto progression disabled')
+                    random_mode = 1 - random_mode
+                    if random_mode:
+                        print('Random mode enabled')
+                        src_file_list_rand = list(np.random.permutation(src_file_list))
+                    else:
+                        print('Random mode disabled')
+                    auto_progress = 1 - auto_progress
+                    if auto_progress:
+                        print('Auto progression enabled')
+                    else:
+                        print('Auto progression disabled')
             elif k == ord('b'):
                 borderless = 1 - borderless
                 if borderless:
@@ -1374,12 +1437,12 @@ if __name__ == '__main__':
                     cv2.moveWindow(win_name, win_offset_x + monitors[curr_monitor][0],
                                    win_offset_y + monitors[curr_monitor][1])
             elif k == ord('t'):
-                transition_interval -= 1
-                if transition_interval < 0:
-                    transition_interval = 0
+                transition_interval -= transition_interval_diff
+                if transition_interval < 1:
+                    transition_interval = 1
                 print('Setting transition interval to: {}'.format(transition_interval))
             elif k == ord('T'):
-                transition_interval += 1
+                transition_interval += transition_interval_diff
                 print('Setting transition interval to: {}'.format(transition_interval))
             elif k == ord('m') or k == ord('M'):
                 minimizeWindow()
@@ -1526,7 +1589,8 @@ if __name__ == '__main__':
                 else:
                     print()
                     for _idx in stack_idx:
-                        print('"' + os.path.abspath(img_fnames[_idx]) + '"')
+                        if not video_mode:
+                            print('"' + os.path.abspath(img_fnames[_idx]) + '"')
                     print()
             elif k == ord('f') or k == ord('/') or k == ord('?'):
                 fullscreen = 1 - fullscreen

@@ -110,7 +110,7 @@ def check_for_similar_images(_filename, paths, db_file, methodName="Hellinger", 
     #     print('No new files to compute features for')
 
     if new_stats:
-        print('Computing hashes for {}/{} files ...'.format(n_new_files, n_files))
+        print('Computing features for {}/{} files ...'.format(n_new_files, n_files))
         db.update({k: (os.path.getmtime(all_stats[k]), getHist(all_stats[k]))
                    for k in new_stats})
 
