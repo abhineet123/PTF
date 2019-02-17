@@ -798,7 +798,7 @@ if __name__ == '__main__':
         global img_id, row_offset, col_offset, lc_start_t, rc_start_t, end_exec, fullscreen, \
             direction, target_height, prev_pos, prev_win_pos, speed, old_speed, min_height, min_height_ratio, n_images, src_images
         global win_offset_x, win_offset_y, width, height, top_border, bottom_border, images_to_sort, \
-            images_to_sort_inv, auto_progress
+            images_to_sort_inv, auto_progress, src_file_list, rotate_video
         reset_prev_pos = reset_prev_win_pos = True
         try:
             if event == cv2.EVENT_MBUTTONDBLCLK:
@@ -844,9 +844,23 @@ if __name__ == '__main__':
                 pass
             elif event == cv2.EVENT_MBUTTONDOWN:
                 flags_str = '{0:b}'.format(flags)
-                # print('EVENT_MBUTTONDOWN flags: {:s}'.format(flags_str))
+                print('EVENT_MBUTTONDOWN flags: {:s}'.format(flags_str))
                 if flags_str[1] == '1':
+                    # ctrl
                     target_height = min_height
+                elif flags_str[2] == '1':
+                    # shift
+                    if video_mode:
+                        print('Reversing video')
+                        img_id = total_frames - img_id - 1
+                        src_file_list = list(reversed(src_file_list))
+                elif flags_str[3] == '1':
+                    # alt
+                    rotate_video += 1
+                    if rotate_video > 3:
+                        rotate_video = 0
+                    print('Rotating video by {} degrees'.format(rotate_video * 90))
+                    loadImage()
                 else:
                     if video_mode:
                         auto_progress = 1 - auto_progress
