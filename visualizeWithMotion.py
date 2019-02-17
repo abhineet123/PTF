@@ -264,10 +264,15 @@ if __name__ == '__main__':
         else:
             video_files_list = [os.path.join(src_dir, k) for k in os.listdir(src_dir) if
                                 os.path.splitext(k.lower())[1] in vid_exts]
+        try:
+            video_files_list.sort(key=sortKey)
+        except:
+            video_files_list.sort()
+
         vid_id = video_files_list.index(src_path)
         n_videos = len(video_files_list)
         if n_videos > 1:
-            print('Found {} videos in {}'.format(n_videos, video_files_list))
+            print('Found {} videos in {}'.format(n_videos, src_dir))
 
         loadVideo()
         transition_interval = 30
@@ -807,7 +812,7 @@ if __name__ == '__main__':
         global img_id, row_offset, col_offset, lc_start_t, rc_start_t, end_exec, fullscreen, \
             direction, target_height, prev_pos, prev_win_pos, speed, old_speed, min_height, min_height_ratio, n_images, src_images
         global win_offset_x, win_offset_y, width, height, top_border, bottom_border, images_to_sort, \
-            images_to_sort_inv, auto_progress, src_file_list, rotate_video
+            images_to_sort_inv, auto_progress, src_file_list, rotate_video, src_path, vid_id
         reset_prev_pos = reset_prev_win_pos = True
         try:
             if event == cv2.EVENT_MBUTTONDBLCLK:
@@ -840,7 +845,14 @@ if __name__ == '__main__':
                     58: ('6', 'alt + ctrl + shift'),
                 }
                 if flags == 2:
-                    loadImage(1)
+                    if video_mode and auto_progress:
+                        vid_id = (vid_id + 1) % n_videos
+                        src_path = video_files_list[vid_id]
+                        loadVideo()
+                        img_id = 0
+                        loadImage()
+                    else:
+                        loadImage(1)
                 elif flags == 10 or flags == 11:
                     direction = -direction
                 elif flags == 18:
@@ -1026,7 +1038,16 @@ if __name__ == '__main__':
                         'alt+ctrl+shift': 57,
                     }
                     if flags == 1:
-                        loadImage(-1)
+                        if video_mode and auto_progress:
+                            vid_id -= 1
+                            if vid_id < 0:
+                                vid_id = n_videos - 1
+                            src_path = video_files_list[vid_id]
+                            loadVideo()
+                            img_id = 0
+                            loadImage()
+                        else:
+                            loadImage(-1)
                     elif flags == 9:
                         # ctrl
                         target_height = min_height
