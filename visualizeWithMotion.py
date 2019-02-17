@@ -218,6 +218,8 @@ if __name__ == '__main__':
 
     transition_interval_diff = 1
 
+    video_files_list = []
+    n_videos = vid_id = 0
     img_id = 0
     video_mode = 0
     rotate_video = 0
@@ -225,6 +227,7 @@ if __name__ == '__main__':
         src_dir = src_path
         img_fname = None
     elif os.path.isfile(src_path):
+        src_path = os.path.abspath(src_path)
         src_dir = os.path.dirname(src_path)
         _ext = os.path.splitext(src_path)[1]
         if _ext in vid_exts:
@@ -235,25 +238,14 @@ if __name__ == '__main__':
     else:
         raise IOError('Invalid source path: {}'.format(src_path))
 
-    if video_mode:
+
+    def loadVideo():
+        global src_file_list, total_frames
+
         print('Reading frames from video file {}'.format(src_dir))
         cap = cv2.VideoCapture()
         if not cap.open(src_path):
             raise IOError('The video file ' + src_path + ' could not be opened')
-
-        # if cv2.__version__.startswith('3'):
-        #     cv_prop = cv2.CAP_PROP_FRAME_COUNT
-        #     h_prop = cv2.CAP_PROP_FRAME_HEIGHT
-        #     w_prop = cv2.CAP_PROP_FRAME_WIDTH
-        # else:
-        #     cv_prop = cv2.cv.CAP_PROP_FRAME_COUNT
-        #     h_prop = cv2.cv.CAP_PROP_FRAME_HEIGHT
-        #     w_prop = cv2.cv.CAP_PROP_FRAME_WIDTH
-
-        # total_frames = int(cap.get(cv_prop))
-        # _height = int(cap.get(h_prop))
-        # _width = int(cap.get(w_prop))
-
         src_file_list = []
         while True:
             ret, src_img = cap.read()
@@ -261,6 +253,23 @@ if __name__ == '__main__':
                 break
             src_file_list.append(src_img)
         total_frames = len(src_file_list)
+
+
+    if video_mode:
+        if recursive:
+            video_file_gen = [[os.path.join(dirpath, f) for f in filenames if
+                               os.path.splitext(f.lower())[1] in vid_exts]
+                              for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
+            video_files_list = [item for sublist in video_file_gen for item in sublist]
+        else:
+            video_files_list = [os.path.join(src_dir, k) for k in os.listdir(src_dir) if
+                                os.path.splitext(k.lower())[1] in vid_exts]
+        vid_id = video_files_list.index(src_path)
+        n_videos = len(video_files_list)
+        if n_videos > 1:
+            print('Found {} videos in {}'.format(n_videos, video_files_list))
+
+        loadVideo()
         transition_interval = 30
     else:
         print('Reading source images from: {}'.format(src_dir))
@@ -1592,12 +1601,28 @@ if __name__ == '__main__':
                 updateZoom(_speed=old_speed, _direction=1)
             elif k == 2555904:
                 # right
-                no_auto_progress = 1
-                loadImage(1)
+                if video_mode and auto_progress:
+                    vid_id = (vid_id + 1) % n_videos
+                    src_path = video_files_list[vid_id]
+                    loadVideo()
+                    img_id = 0
+                    loadImage()
+                else:
+                    no_auto_progress = 1
+                    loadImage(1)
             elif k == 2424832:
                 # left
-                no_auto_progress = 1
-                loadImage(-1)
+                if video_mode and auto_progress:
+                    vid_id -= 1
+                    if vid_id < 0:
+                        vid_id = n_videos - 1
+                    src_path = video_files_list[vid_id]
+                    loadVideo()
+                    img_id = 0
+                    loadImage()
+                else:
+                    no_auto_progress = 1
+                    loadImage(-1)
             elif k == 39 or k == ord('d'):
                 loadImage(1)
             elif k == 40 or k == ord('a'):
