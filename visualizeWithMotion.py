@@ -873,7 +873,7 @@ if __name__ == '__main__':
                 pass
             elif event == cv2.EVENT_MBUTTONDOWN:
                 flags_str = '{0:b}'.format(flags)
-                print('EVENT_MBUTTONDOWN flags: {:s}'.format(flags_str))
+                # print('EVENT_MBUTTONDOWN flags: {:s}'.format(flags_str))
                 if flags_str == '100':
                     if video_mode:
                         auto_progress = 1 - auto_progress
