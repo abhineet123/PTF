@@ -244,7 +244,7 @@ if __name__ == '__main__':
     def loadVideo():
         global src_file_list, total_frames
 
-        print('Reading frames from video file {}'.format(src_dir))
+        print('Reading frames from video file {}'.format(src_path))
         cap = cv2.VideoCapture()
         if not cap.open(src_path):
             raise IOError('The video file ' + src_path + ' could not be opened')
