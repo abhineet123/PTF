@@ -72,6 +72,7 @@ params = {
     'resize': 0,
     'mode': 0,
     'auto_progress': 0,
+    'auto_progress_video': 0,
     'max_switches': 1,
     'transition_interval': 5,
     'random_mode': 0,
@@ -105,6 +106,7 @@ if __name__ == '__main__':
     resize = params['resize']
     mode = params['mode']
     auto_progress = params['auto_progress']
+    auto_progress_video = params['auto_progress_video']
     max_switches = params['max_switches']
     transition_interval = params['transition_interval']
     random_mode = params['random_mode']
@@ -430,7 +432,7 @@ if __name__ == '__main__':
     def loadImage(_type=0, set_grid_size=0):
         global src_img_ar, start_row, end_row, start_col, end_col, dst_height, dst_width, n_switches, img_id, direction
         global target_height, target_width, min_height, start_col, end_col, height_ratio, img_fname, start_time
-        global src_start_row, src_start_col, src_end_row, src_end_col, aspect_ratio, \
+        global src_start_row, src_start_col, src_end_row, src_end_col, aspect_ratio, src_path, vid_id, \
             src_images, img_fnames, stack_idx, stack_locations, src_img, wp_id, src_file_list_rand, top_border, bottom_border
 
         if set_grid_size:
@@ -461,10 +463,16 @@ if __name__ == '__main__':
                 #     img_id -= 1
 
                 if img_id >= total_frames:
-                    img_id -= total_frames
-                    if n_images > 1 and set_wallpaper and random_mode:
-                        print('Resetting randomisation')
-                        src_file_list_rand = list(np.random.permutation(src_file_list))
+                    if video_mode and auto_progress_video:
+                        vid_id = (vid_id+1)%n_videos
+                        src_path = video_files_list[vid_id]
+                        loadVideo()
+                        img_id = 0
+                    else:
+                        img_id -= total_frames
+                        if n_images > 1 and set_wallpaper and random_mode:
+                            print('Resetting randomisation')
+                            src_file_list_rand = list(np.random.permutation(src_file_list))
                 elif img_id < 0:
                     img_id += total_frames
 
@@ -812,7 +820,7 @@ if __name__ == '__main__':
         global img_id, row_offset, col_offset, lc_start_t, rc_start_t, end_exec, fullscreen, \
             direction, target_height, prev_pos, prev_win_pos, speed, old_speed, min_height, min_height_ratio, n_images, src_images
         global win_offset_x, win_offset_y, width, height, top_border, bottom_border, images_to_sort, \
-            images_to_sort_inv, auto_progress, src_file_list, rotate_video, src_path, vid_id
+            images_to_sort_inv, auto_progress, src_file_list, rotate_video, src_path, vid_id, auto_progress_video
         reset_prev_pos = reset_prev_win_pos = True
         try:
             if event == cv2.EVENT_MBUTTONDBLCLK:
@@ -865,27 +873,35 @@ if __name__ == '__main__':
                 pass
             elif event == cv2.EVENT_MBUTTONDOWN:
                 flags_str = '{0:b}'.format(flags)
-                # print('EVENT_MBUTTONDOWN flags: {:s}'.format(flags_str))
+                print('EVENT_MBUTTONDOWN flags: {:s}'.format(flags_str))
                 if flags_str == '100':
                     if video_mode:
                         auto_progress = 1 - auto_progress
                     loadImage()
-                elif flags_str[1] == '1':
+                elif flags_str == '1100':
                     # ctrl
                     target_height = min_height
-                elif flags_str[2] == '1':
+                elif flags_str == '10100':
                     # shift
                     if video_mode:
                         print('Reversing video')
                         img_id = total_frames - img_id - 1
                         src_file_list = list(reversed(src_file_list))
-                elif flags_str[3] == '1':
+                elif flags_str == '100100':
                     # alt
                     rotate_video += 1
                     if rotate_video > 3:
                         rotate_video = 0
                     print('Rotating video by {} degrees'.format(rotate_video * 90))
                     loadImage()
+                elif flags_str == '11100':
+                    # ctrl + shift
+                    auto_progress_video = 1 - auto_progress_video
+                    if auto_progress_video:
+                        print('Video auto progression enabled')
+                    else:
+                        print('Video auto progression disabled')
+
 
             elif event == cv2.EVENT_MOUSEMOVE:
                 # print('EVENT_MOUSEMOVE flags: {}'.format(flags))
