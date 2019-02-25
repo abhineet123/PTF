@@ -300,7 +300,7 @@ def processArguments(args, params):
 
         if len(arg) == 3:
             arg = arg[1:]
-            
+
         # print('args[{}]: {}'.format(arg_id, args[arg_id]))
         # print('arg: {}'.format(arg))
         if len(arg) != 2 or arg[0] not in params.keys():

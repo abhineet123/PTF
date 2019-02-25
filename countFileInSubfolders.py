@@ -41,7 +41,7 @@ else:
         subfolders = [os.path.join(folder_name, name) for name in os.listdir(folder_name) if os.path.isdir(os.path.join(folder_name, name))]
 if prefix:
     print('Limiting search to only sub folders starting with {}'.format(prefix))
-    subfolders = [x for x in subfolders if x.startswith(prefix)]
+    subfolders = [x for x in subfolders if os.path.basename(x).startswith(prefix)]
 try:
     subfolders.sort(key=sortKey)
 except:
