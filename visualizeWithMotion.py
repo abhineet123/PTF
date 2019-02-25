@@ -7,6 +7,7 @@ import inspect
 import keyboard
 from datetime import datetime
 from threading import Event
+import threading
 
 from Misc import processArguments, sortKey, stackImages, resizeAR, addBorder
 
@@ -224,7 +225,7 @@ if __name__ == '__main__':
     n_videos = vid_id = 0
     img_id = 0
     video_mode = 0
-    rotate_video = 0
+    rotate_images = 0
     if os.path.isdir(src_path):
         src_dir = src_path
         img_fname = None
@@ -241,6 +242,15 @@ if __name__ == '__main__':
         raise IOError('Invalid source path: {}'.format(src_path))
 
 
+    # def readVideoFrames(cap):
+    #     global total_frames, src_file_list
+    #     while True:
+    #         ret, src_img = cap.read()
+    #         if not ret:
+    #             break
+    #         src_file_list.append(src_img)
+    #     total_frames = len(src_file_list)
+
     def loadVideo():
         global src_file_list, total_frames
 
@@ -249,12 +259,26 @@ if __name__ == '__main__':
         if not cap.open(src_path):
             raise IOError('The video file ' + src_path + ' could not be opened')
         src_file_list = []
+
         while True:
             ret, src_img = cap.read()
             if not ret:
                 break
             src_file_list.append(src_img)
+            # total_frames += 1
         total_frames = len(src_file_list)
+
+        # if cv2.__version__.startswith('3'):
+        #     cv_prop = cv2.CAP_PROP_FRAME_COUNT
+        # else:
+        #     cv_prop = cv2.cv.CAP_PROP_FRAME_COUNT
+        #
+        # total_frames = int(cap.get(cv_prop))
+        # readVideoFrames(cap)
+
+        # thread = threading.Thread(target=readVideoFrames, args=(cap, ))
+        # thread.start()
+        # time.sleep(0.1)
 
 
     if video_mode:
@@ -482,8 +506,8 @@ if __name__ == '__main__':
                     img_fname = src_file_list[img_id]
 
                 if video_mode:
-                    if rotate_video:
-                        src_img = np.rot90(img_fname, rotate_video)
+                    if rotate_images:
+                        src_img = np.rot90(img_fname, rotate_images)
                     else:
                         src_img = np.copy(img_fname)
                 else:
@@ -495,7 +519,8 @@ if __name__ == '__main__':
                     src_img = cv2.imread(src_img_fname)
                     if src_img is None:
                         raise SystemError('Source image could not be read from: {}'.format(src_img_fname))
-
+                    if rotate_images:
+                        src_img = np.rot90(src_img, rotate_images)
                     img_fnames.append(img_fname)
 
                 src_images.append(src_img)
@@ -820,7 +845,7 @@ if __name__ == '__main__':
         global img_id, row_offset, col_offset, lc_start_t, rc_start_t, end_exec, fullscreen, \
             direction, target_height, prev_pos, prev_win_pos, speed, old_speed, min_height, min_height_ratio, n_images, src_images
         global win_offset_x, win_offset_y, width, height, top_border, bottom_border, images_to_sort, \
-            images_to_sort_inv, auto_progress, src_file_list, rotate_video, src_path, vid_id, auto_progress_video
+            images_to_sort_inv, auto_progress, src_file_list, rotate_images, src_path, vid_id, auto_progress_video
         reset_prev_pos = reset_prev_win_pos = True
         try:
             if event == cv2.EVENT_MBUTTONDBLCLK:
@@ -889,10 +914,11 @@ if __name__ == '__main__':
                         src_file_list = list(reversed(src_file_list))
                 elif flags_str == '100100':
                     # alt
-                    rotate_video += 1
-                    if rotate_video > 3:
-                        rotate_video = 0
-                    print('Rotating video by {} degrees'.format(rotate_video * 90))
+                    rotate_images += 1
+                    if rotate_images > 3:
+                        rotate_images = 0
+                    print('Rotating images by {} degrees'.format(rotate_images * 90))
+                    src_images = []
                     loadImage()
                 elif flags_str == '11100':
                     # ctrl + shift
@@ -1436,25 +1462,32 @@ if __name__ == '__main__':
                     print('Auto progression enabled')
                 else:
                     print('Auto progression disabled')
-            elif k == ord('q'):
-                if video_mode:
-                    rotate_video += 1
-                    if rotate_video > 3:
-                        rotate_video = 0
-                    print('Rotating video by {} degrees'.format(rotate_video * 90))
-                    loadImage()
+            elif k == ord('Q'):
+                auto_progress_video = 1 - auto_progress_video
+                if auto_progress_video:
+                    print('Video auto progression enabled')
                 else:
-                    random_mode = 1 - random_mode
-                    if random_mode:
-                        print('Random mode enabled')
-                        src_file_list_rand = list(np.random.permutation(src_file_list))
-                    else:
-                        print('Random mode disabled')
-                    auto_progress = 1 - auto_progress
-                    if auto_progress:
-                        print('Auto progression enabled')
-                    else:
-                        print('Auto progression disabled')
+                    print('Video auto progression disabled')
+            elif k == ord('q'):
+                # if video_mode:
+                rotate_images += 1
+                if rotate_images > 3:
+                    rotate_images = 0
+                print('Rotating video by {} degrees'.format(rotate_images * 90))
+                src_images=[]
+                loadImage()
+                # else:
+                #     random_mode = 1 - random_mode
+                #     if random_mode:
+                #         print('Random mode enabled')
+                #         src_file_list_rand = list(np.random.permutation(src_file_list))
+                #     else:
+                #         print('Random mode disabled')
+                #     auto_progress = 1 - auto_progress
+                #     if auto_progress:
+                #         print('Auto progression enabled')
+                #     else:
+                #         print('Auto progression disabled')
             elif k == ord('b'):
                 borderless = 1 - borderless
                 if borderless:
