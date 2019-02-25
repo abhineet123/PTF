@@ -291,19 +291,26 @@ def processArguments(args, params):
     # arguments specified as 'arg_name=argv_val'
     no_of_args = len(args)
     for arg_id in range(no_of_args):
-        # take last two
-        arg = args[arg_id].split('=')[-2:]
+        arg_str = args[arg_id]
+
+        if arg_str.startswith('--'):
+            arg_str = arg_str[2:]
+
+        arg = arg_str.split('=')[-2:]
+
+        if len(arg) == 3:
+            arg = arg[1:]
+            
         # print('args[{}]: {}'.format(arg_id, args[arg_id]))
         # print('arg: {}'.format(arg))
-        if len(arg) != 2 or not arg[0] in params.keys():
+        if len(arg) != 2 or arg[0] not in params.keys():
             print('Invalid argument provided: {:s}'.format(args[arg_id]))
             return
 
         if not arg[1] or not arg[0] or arg[1] == '#':
             continue
 
-        if arg[0].startswith('--'):
-            arg[0] = arg[0][2:]
+
 
         if isinstance(params[arg[0]], (list, tuple)):
             # if not ',' in arg[1]:
