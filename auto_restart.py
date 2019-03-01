@@ -89,6 +89,7 @@ if __name__ == '__main__':
         'wait_time': 10800,
         'post_wait_time': 10,
         'check_vpn_gap': 30,
+        'max_vpn_wait_time': 600,
         'vpn_path': 'C:\Users\Tommy\Desktop\purevpn.lnk',
         'tor_path': 'C:\Users\Tommy\Desktop\uTorrent.lnk',
         'settings_path': 'C:\Users\Tommy\AppData\Roaming\uTorrent\settings.dat',
@@ -110,6 +111,7 @@ if __name__ == '__main__':
     vpn_proc = params['vpn_proc']
     tor_proc = params['tor_proc']
     email_auth = params['email_auth']
+    max_vpn_wait_time = params['max_vpn_wait_time']
 
     global_start_t = time.time()
 
@@ -123,14 +125,17 @@ if __name__ == '__main__':
         ip_address = None
 
         print 'waiting for vpn to start'
+        vpn_wait_start_t = time.time()
 
         while True:
             ip_address = check_interface(interface_name)
-            if time.time() - global_start_t > restart_time:
-                restart_now = 1
-                break
             if ip_address is not None:
                 break
+            current_t = time.time()
+            if current_t - global_start_t > restart_time or current_t - vpn_wait_start_t > max_vpn_wait_time:
+                restart_now = 1
+                break
+            time.sleep(0.1)
 
         if restart_now:
             break
