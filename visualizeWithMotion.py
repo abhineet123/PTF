@@ -87,6 +87,7 @@ params = {
     'n_wallpapers': 1000,
     'wallpaper_dir': '',
     'wallpaper_mode': 0,
+    'widescreen_mode': 0,
 }
 
 if __name__ == '__main__':
@@ -106,6 +107,7 @@ if __name__ == '__main__':
     quality = params['quality']
     resize = params['resize']
     mode = params['mode']
+    widescreen_mode = params['widescreen_mode']
     auto_progress = params['auto_progress']
     auto_progress_video = params['auto_progress_video']
     max_switches = params['max_switches']
@@ -159,6 +161,8 @@ if __name__ == '__main__':
         [1920, 0],
         [1920, -1080],
     ]
+    widescreen_monitor = [-1920, -1080]
+
     predef_n_images = [1, 2, 3, 4, 6, 8, 9, 10, 12, 16, 18, 20, 24]
     predef_grid_sizes = {
         1: (1, 1),
@@ -402,10 +406,13 @@ if __name__ == '__main__':
             if win_utils_available:
                 winUtils.hideBorder2(win_name)
                 # winUtils.loseFocus(win_name)
-            if move_to_right:
-                cv2.moveWindow(win_name, win_offset_x + monitors[4][0], win_offset_y + monitors[4][1])
+            if widescreen_mode:
+                cv2.moveWindow(win_name, win_offset_x + widescreen_monitor[0], win_offset_y + widescreen_monitor[1])
             else:
-                cv2.moveWindow(win_name, win_offset_x + monitors[2][0], win_offset_y + monitors[2][1])
+                if move_to_right:
+                    cv2.moveWindow(win_name, win_offset_x + monitors[4][0], win_offset_y + monitors[4][1])
+                else:
+                    cv2.moveWindow(win_name, win_offset_x + monitors[2][0], win_offset_y + monitors[2][1])
 
         cv2.setMouseCallback(win_name, mouseHandler)
 
@@ -421,15 +428,21 @@ if __name__ == '__main__':
 
 
     def changeMode(move_to_right=0):
-        global mode, height, aspect_ratio
-        mode = 1 - mode
-
-        if mode == 0:
-            height = int(height / 2.0)
+        global mode, height, width, aspect_ratio, widescreen_mode
+        if widescreen_mode:
+            width = 5760
+            height = 2160
         else:
-            height = int(2 * height)
+            width = 1920
+            mode = 1 - mode
+            if mode == 0:
+                height = 1080
+            else:
+                height = 2160
 
-        # print('changeMode :: height: ', height)
+        print('changeMode :: height: ', height)
+        print('changeMode :: width: ', width)
+
         aspect_ratio = float(width) / float(height)
         createWindow(move_to_right)
         loadImage()
@@ -488,7 +501,7 @@ if __name__ == '__main__':
 
                 if img_id >= total_frames:
                     if video_mode and auto_progress_video:
-                        vid_id = (vid_id+1)%n_videos
+                        vid_id = (vid_id + 1) % n_videos
                         src_path = video_files_list[vid_id]
                         loadVideo()
                         img_id = 0
@@ -1429,7 +1442,11 @@ if __name__ == '__main__':
             elif k == 13:
                 changeMode()
             elif k == 10:
-                changeMode(1)
+                if mode == 1:
+                    widescreen_mode = 1 - widescreen_mode
+                    changeMode(0)
+                else:
+                    changeMode(1)
             elif k == ord('g'):
                 # grid transpose
                 grid_size = (grid_size[1], grid_size[0])
@@ -1474,7 +1491,7 @@ if __name__ == '__main__':
                 if rotate_images > 3:
                     rotate_images = 0
                 print('Rotating video by {} degrees'.format(rotate_images * 90))
-                src_images=[]
+                src_images = []
                 loadImage()
                 # else:
                 #     random_mode = 1 - random_mode
