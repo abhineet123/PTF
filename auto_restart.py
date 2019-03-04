@@ -124,7 +124,7 @@ if __name__ == '__main__':
         os.startfile(vpn_path)
         ip_address = None
 
-        print 'waiting for vpn to start'
+        print('waiting for vpn to start')
         vpn_wait_start_t = time.time()
 
         while True:
@@ -140,7 +140,7 @@ if __name__ == '__main__':
         if restart_now:
             break
 
-        print 'vpn started with ip_address: {}'.format(ip_address)
+        print('vpn started with ip_address: {}'.format(ip_address))
 
         if ip_address != prev_ip_address:
             prev_ip_address = ip_address
@@ -180,18 +180,18 @@ if __name__ == '__main__':
 
         os.startfile(tor_path)
 
-        print 'Waiting for {} seconds. Press any key to continue'.format(wait_time)
+        print('Waiting for {} seconds. Press any key to continue'.format(wait_time))
 
         for i in xrange(wait_time):
             if (i + 1) % check_vpn_gap == 0:
                 ip_address = check_interface(interface_name)
                 if ip_address is None:
-                    print '\nvpn disconnection detected'
+                    print('\nvpn disconnection detected')
                     break
 
             if msvcrt.kbhit():
                 inp = msvcrt.getch()
-                print '\ncontinuing'
+                print('\ncontinuing')
                 break
 
             time.sleep(1)
@@ -228,11 +228,11 @@ if __name__ == '__main__':
         if restart_now:
             break
 
-        print 'Waiting for {} seconds. Press any key to continue'.format(post_wait_time)
+        print('Waiting for {} seconds. Press any key to continue'.format(post_wait_time))
         for i in xrange(post_wait_time):
             if msvcrt.kbhit():
                 inp = msvcrt.getch()
-                print '\ncontinuing'
+                print('\ncontinuing')
                 break
 
             time.sleep(1)
@@ -243,5 +243,5 @@ if __name__ == '__main__':
         sys.stdout.flush()
 
     if restart_now:
-        print "Restarting..."
+        print("Restarting...")
         os.system("shutdown -t 0 -r -f")
