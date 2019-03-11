@@ -220,7 +220,7 @@ if __name__ == '__main__':
     win_offset_x = win_offset_y = 0
     top_border = bottom_border = 0
 
-    img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff', '.gif')
+    img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff')
     vid_exts = ('.mp4', '.avi', '.mkv')
 
     transition_interval_diff = 1
