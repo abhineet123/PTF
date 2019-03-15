@@ -11,6 +11,7 @@ if __name__ == '__main__':
         'scp_dst': '',
         'switches': '-r',
         'relative': 0,
+        'out_start_id': 0,
     }
     processArguments(sys.argv[1:], params)
     dir_names = params['dir_names']
@@ -19,6 +20,7 @@ if __name__ == '__main__':
     switches = params['switches']
     scp_dst = params['scp_dst']
     relative = params['relative']
+    out_start_id = params['out_start_id']
 
     print('dir_names: ', dir_names)
 
@@ -34,7 +36,7 @@ if __name__ == '__main__':
     print('zip_path: ', zip_path)
 
     if not out_name:
-        for _dir in dir_names:
+        for _dir in dir_names[out_start_id:]:
             out_name = '{}_{}'.format(out_name, _dir) if out_name else _dir
     else:
         out_name = os.path.splitext(out_name)[0]
@@ -50,7 +52,6 @@ if __name__ == '__main__':
         zip_cmd = 'cd {} && zip {} {} *'.format(zip_path, switches, out_name)
         out_path = os.path.join(zip_path, out_name)
     else:
-
         zip_cmd = 'zip {:s} {:s}'.format(switches, out_name)
         zip_cmd = '{:s} {:s}'.format(zip_cmd, zip_path)
         out_path = out_name
