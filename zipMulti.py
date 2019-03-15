@@ -11,7 +11,6 @@ if __name__ == '__main__':
         'scp_dst': '',
         'switches': '-r',
         'relative': 0,
-        'out_start_id': 0,
     }
     processArguments(sys.argv[1:], params)
     dir_names = params['dir_names']
@@ -20,7 +19,6 @@ if __name__ == '__main__':
     switches = params['switches']
     scp_dst = params['scp_dst']
     relative = params['relative']
-    out_start_id = params['out_start_id']
 
     print('dir_names: ', dir_names)
 
@@ -35,12 +33,21 @@ if __name__ == '__main__':
 
     print('zip_path: ', zip_path)
 
+    out_start_id = 0
+    if out_name:
+        try:
+            out_start_id = int(out_name)
+        except ValueError:
+            pass
+        else:
+            out_name = ''
+
     if not out_name:
         for _dir in dir_names[out_start_id:]:
             out_name = '{}_{}'.format(out_name, _dir) if out_name else _dir
     else:
         out_name = os.path.splitext(out_name)[0]
-        
+
     if postfix:
         out_name = '{}_{}'.format(out_name, postfix)
 
@@ -79,4 +86,3 @@ if __name__ == '__main__':
     #     spam = pyperclip.paste()
     # except pyperclip.PyperclipException as e:
     #     print('Copying to clipboard failed: {}'.format(e))
-
