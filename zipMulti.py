@@ -46,24 +46,27 @@ if __name__ == '__main__':
     time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
     out_name = '{}_{}.zip'.format(out_name, time_stamp)
 
-    zip_cmd = 'zip {:s} {:s}'.format(switches, out_name)
-    zip_cmd = '{:s} {:s}'.format(zip_cmd, zip_path)
-
     if relative:
-        zip_cmd = 'cd {} && {}'.format(zip_path, zip_cmd)
+        zip_cmd = 'cd {} && zip {} {} *'.format(zip_path, switches, out_name)
+        out_path = os.path.join(zip_path, out_name)
+    else:
+
+        zip_cmd = 'zip {:s} {:s}'.format(switches, out_name)
+        zip_cmd = '{:s} {:s}'.format(zip_cmd, zip_path)
+        out_path = out_name
 
     os.system(zip_cmd)
-    os.system('unzip -l {}'.format(out_name))
+    os.system('unzip -l {}'.format(out_path))
 
     if scp_dst:
-        scp_cmd = 'scp {} {}:~/'.format(out_name, scp_dst)
+        scp_cmd = 'scp {} {}:~/'.format(out_path, scp_dst)
         print('\nrunning: {}\n'.format(scp_cmd))
         os.system(scp_cmd)
-        rm_cmd = 'rm {}'.format(out_name)
+        rm_cmd = 'rm {}'.format(out_path)
         print('\nrunning: {}\n'.format(rm_cmd))
         os.system(rm_cmd)
     else:
-        mv_cmd = 'mv {:s} ~'.format(out_name)
+        mv_cmd = 'mv {:s} ~'.format(out_path)
         print('\nrunning: {}\n'.format(mv_cmd))
         os.system(mv_cmd)
 
