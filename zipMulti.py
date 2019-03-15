@@ -10,6 +10,7 @@ if __name__ == '__main__':
         'postfix': '',
         'scp_dst': '',
         'switches': '-r',
+        'relative': 0,
     }
     processArguments(sys.argv[1:], params)
     dir_names = params['dir_names']
@@ -17,6 +18,7 @@ if __name__ == '__main__':
     postfix = params['postfix']
     switches = params['switches']
     scp_dst = params['scp_dst']
+    relative = params['relative']
 
     print('dir_names: ', dir_names)
 
@@ -46,6 +48,9 @@ if __name__ == '__main__':
 
     zip_cmd = 'zip {:s} {:s}'.format(switches, out_name)
     zip_cmd = '{:s} {:s}'.format(zip_cmd, zip_path)
+
+    if relative:
+        zip_cmd = 'cd {} && {}'.format(zip_path, zip_cmd)
 
     os.system(zip_cmd)
     os.system('unzip -l {}'.format(out_name))

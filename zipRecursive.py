@@ -14,6 +14,7 @@ if __name__ == '__main__':
         'switches': '-rq',
         'scp_dst': '',
         'include_all': 1,
+        'relative': 0,
     }
     processArguments(sys.argv[1:], params)
     _root_dir = params['root_dir']
@@ -24,6 +25,7 @@ if __name__ == '__main__':
     switches = params['switches']
     scp_dst = params['scp_dst']
     include_all = params['include_all']
+
 
     if os.path.isdir(_root_dir):
         root_dirs = [_root_dir]
