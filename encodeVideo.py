@@ -35,7 +35,6 @@ ext = params['ext']
 reverse = params['reverse']
 out_postfix = params['out_postfix']
 
-
 height = width = 0
 if res:
     width, height = [int(x) for x in res.split('x')]
@@ -53,8 +52,10 @@ if os.path.isdir(_src_path):
 else:
     src_file_list = [_src_path]
 
-if reverse:
-    print('Reversing video')
+if reverse == 1:
+    print('Writing reversed video')
+elif reverse == 2:
+    print('Appending reversed video')
 
 for _src_path in src_file_list:
     src_path = os.path.abspath(_src_path)
@@ -67,6 +68,8 @@ for _src_path in src_file_list:
         if n_frames > 0:
             dst_seq_name = '{}_{}'.format(dst_seq_name, start_id + n_frames)
         dst_seq_name = '{}_{}'.format(dst_seq_name, fps)
+        if reverse:
+            dst_seq_name = '{}_r{}'.format(dst_seq_name, reverse)
         if out_postfix:
             dst_seq_name = '{}_{}'.format(dst_seq_name, out_postfix)
         dst_path = os.path.join(os.path.dirname(src_path), dst_seq_name + '.' + ext)
@@ -150,7 +153,8 @@ for _src_path in src_file_list:
 
         if reverse:
             frames.append(image)
-        else:
+
+        if reverse != 1:
             video_out.write(image)
 
         sys.stdout.write('\rDone {:d} frames '.format(frame_id - start_id))
