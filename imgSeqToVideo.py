@@ -20,6 +20,7 @@ params = {
     'codec': 'H264',
     'ext': 'mkv',
     'out_postfix': '',
+    'reverse': 0,
 }
 
 processArguments(sys.argv[1:], params)
@@ -36,12 +37,13 @@ fps = params['fps']
 codec = params['codec']
 ext = params['ext']
 out_postfix = params['out_postfix']
+reverse = params['reverse']
 
 img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
 
 if os.path.isdir(_src_path):
-    src_file_list = [k for k in os.listdir(_src_path) for _ext in img_exts if k.endswith(_ext)]
-    if not src_file_list:
+    src_files = [k for k in os.listdir(_src_path) for _ext in img_exts if k.endswith(_ext)]
+    if not src_files:
         src_paths = [os.path.join(_src_path, k) for k in os.listdir(_src_path) if
                      os.path.isdir(os.path.join(_src_path, k))]
     else:
@@ -56,18 +58,29 @@ elif os.path.isfile(_src_path):
 else:
     raise IOError('Invalid src_path: {}'.format(_src_path))
 
+if reverse == 1:
+    print('Writing the reverse sequence')
+elif reverse == 2:
+    print('Appending the reverse sequence')
+
 for src_path in src_paths:
     seq_name = os.path.basename(src_path)
 
     print('Reading source images from: {}'.format(src_path))
 
     src_path = os.path.abspath(src_path)
-    src_file_list = [k for k in os.listdir(src_path) for _ext in img_exts if k.endswith(_ext)]
-    total_frames = len(src_file_list)
-    if total_frames <= 0:
+    src_files = [k for k in os.listdir(src_path) for _ext in img_exts if k.endswith(_ext)]
+    n_src_files = len(src_files)
+    if n_src_files <= 0:
         raise SystemError('No input frames found')
-    print('total_frames: {}'.format(total_frames))
-    src_file_list.sort(key=sortKey)
+    src_files.sort(key=sortKey)
+    print('n_src_files: {}'.format(n_src_files))
+
+    if reverse == 1:
+        src_files = src_files[::-1]
+    elif reverse == 2:
+        src_files += src_files[::-1]
+        n_src_files *= 2
 
     width, height = _width, _height
 
@@ -78,7 +91,10 @@ for src_path in src_paths:
             save_fname = '{}_{}x{}'.format(save_fname, width, height)
 
         if out_postfix:
-            '{}_{}'.format(save_fname, out_postfix)
+            save_fname = '{}_{}'.format(save_fname, out_postfix)
+
+        if reverse:
+            save_fname = '{}_r{}'.format(save_fname, reverse)
 
         save_path = os.path.join(os.path.dirname(src_path), '{}.{}'.format(save_fname, ext))
 
@@ -87,7 +103,7 @@ for src_path in src_paths:
         os.makedirs(save_dir)
 
     if height <= 0 or width <= 0:
-        temp_img = cv2.imread(os.path.join(src_path, src_file_list[0]))
+        temp_img = cv2.imread(os.path.join(src_path, src_files[0]))
         height, width, _ = temp_img.shape
 
     fourcc = cv2.VideoWriter_fourcc(*codec)
@@ -101,7 +117,7 @@ for src_path in src_paths:
     frame_id = start_id
     pause_after_frame = 0
     while True:
-        filename = src_file_list[frame_id]
+        filename = src_files[frame_id]
         file_path = os.path.join(src_path, filename)
         if not os.path.exists(file_path):
             raise SystemError('Image file {} does not exist'.format(file_path))
@@ -127,7 +143,7 @@ for src_path in src_paths:
         if n_frames > 0 and (frame_id - start_id) >= n_frames:
             break
 
-        if frame_id >= total_frames:
+        if frame_id >= n_src_files:
             break
 
     sys.stdout.write('\n\n')
