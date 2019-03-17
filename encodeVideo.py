@@ -171,6 +171,13 @@ for _src_path in src_file_list:
 
     if reverse:
         for frame in frames[::-1]:
+            if show_img:
+                cv2.imshow(seq_name, frame)
+                k = cv2.waitKey(1 - pause_after_frame) & 0xFF
+                if k == ord('q') or k == 27:
+                    break
+                elif k == 32:
+                    pause_after_frame = 1 - pause_after_frame
             video_out.write(frame)
 
     video_out.release()
