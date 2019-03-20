@@ -66,7 +66,7 @@ if __name__ == '__main__':
 
     if relative:
         zip_cmd = 'cd {} && zip {} {} {}'.format(zip_root_path, switches, out_name, zip_file)
-        out_path = os.path.join(zip_path, out_name)
+        out_path = os.path.join(zip_root_path, out_name)
     else:
         zip_cmd = 'zip {:s} {:s}'.format(switches, out_name)
         zip_cmd = '{:s} {:s}'.format(zip_cmd, zip_path)
