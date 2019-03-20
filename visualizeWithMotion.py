@@ -7,7 +7,7 @@ import inspect
 import keyboard
 from datetime import datetime
 from threading import Event
-import threading
+# import threading
 
 from Misc import processArguments, sortKey, stackImages, resizeAR, addBorder
 
