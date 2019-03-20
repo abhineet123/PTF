@@ -57,13 +57,15 @@ if __name__ == '__main__':
 
     if os.path.isdir(zip_path):
         zip_root_path = zip_path
+        zip_file = '*'
     elif os.path.isfile(zip_path):
         zip_root_path = os.path.dirname(zip_path)
+        zip_file = os.path.basename(zip_path)
     else:
         raise IOError('zip_path is neither a folder nor a file')
 
     if relative:
-        zip_cmd = 'cd {} && zip {} {} *'.format(zip_root_path, switches, out_name)
+        zip_cmd = 'cd {} && zip {} {} {}'.format(zip_root_path, switches, out_name, zip_file)
         out_path = os.path.join(zip_path, out_name)
     else:
         zip_cmd = 'zip {:s} {:s}'.format(switches, out_name)
