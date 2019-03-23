@@ -117,7 +117,7 @@ exit_program = 0
 
 
 def loadImage(diff=0):
-    global img_id, src_file_list_rand
+    global img_id, src_files_rand
     img_id += diff
     if img_id >= total_frames:
         img_id -= total_frames
@@ -214,7 +214,7 @@ keyboard.add_hotkey('ctrl+alt+shift+up', inc_callback2)
 keyboard.add_hotkey('ctrl+alt+shift+down', dec_callback2)
 if random_mode:
     print('Random mode enabled')
-    src_file_list_rand = list(np.random.permutation(src_files))
+    src_files_rand = list(np.random.permutation(src_files))
 
 img_id -= 1
 while not exit_program:

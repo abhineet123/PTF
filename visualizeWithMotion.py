@@ -88,6 +88,7 @@ params = {
     'wallpaper_dir': '',
     'wallpaper_mode': 0,
     'widescreen_mode': 0,
+    'multi_mode': 0,
 }
 
 if __name__ == '__main__':
@@ -123,6 +124,7 @@ if __name__ == '__main__':
     wallpaper_dir = params['wallpaper_dir']
     wallpaper_mode = params['wallpaper_mode']
     n_wallpapers = params['n_wallpapers']
+    multi_mode = params['multi_mode']
 
     if wallpaper_mode and not set_wallpaper:
         set_wallpaper = 1
@@ -227,14 +229,14 @@ if __name__ == '__main__':
 
     video_files_list = []
     n_videos = vid_id = 0
-    img_id = 0
     video_mode = 0
     rotate_images = 0
+    src_path = os.path.abspath(src_path)
+
     if os.path.isdir(src_path):
         src_dir = src_path
         img_fname = None
     elif os.path.isfile(src_path):
-        src_path = os.path.abspath(src_path)
         src_dir = os.path.dirname(src_path)
         _ext = os.path.splitext(src_path)[1]
         if _ext in vid_exts:
@@ -289,6 +291,11 @@ if __name__ == '__main__':
         # time.sleep(0.1)
 
 
+    src_files = {}
+    src_files_rand = {}
+    total_frames = {}
+    img_id = {}
+
     if video_mode:
         if recursive:
             video_file_gen = [[os.path.join(dirpath, f) for f in filenames if
@@ -307,66 +314,72 @@ if __name__ == '__main__':
         n_videos = len(video_files_list)
         if n_videos > 1:
             print('Found {} videos in {}'.format(n_videos, src_dir))
-
-        src_files = {}
-        total_frames = {}
-        img_id = {}
         loadVideo(0)
         transition_interval = 30
         _total_frames = total_frames[0]
     else:
-        print('Reading source images from: {}'.format(src_dir))
-        if recursive:
-            src_file_gen = [[os.path.join(dirpath, f) for f in filenames if
-                             os.path.splitext(f.lower())[1] in img_exts]
-                            for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
-            src_files = [item for sublist in src_file_gen for item in sublist]
+        src_dirs = [src_dir, ]
+        if multi_mode:
+            root_dir = os.path.dirname(src_dir)
+            src_dirs += [os.path.join(root_dir, k) for k in os.listdir(root_dir)
+                         if os.path.isdir(os.path.join(root_dir, k)) and k != src_dir]
 
-            # _src_file_list = list(src_file_gen)
-            # src_file_list = []
-            # for x in _src_file_list:
-            #     src_file_list += x
-        else:
-            src_files = [os.path.join(src_dir, k) for k in os.listdir(src_dir) if
-                         os.path.splitext(k.lower())[1] in img_exts]
+        n_src = len(src_dirs)
 
-        # src_file_list = [list(x) for x in src_file_list]
-        # src_file_list = [x for x in src_file_list]
+        for _id, src_dir in enumerate(src_dirs):
+            print('Reading source images from: {}'.format(src_dir))
+            if recursive:
+                src_file_gen = [[os.path.join(dirpath, f) for f in filenames if
+                                 os.path.splitext(f.lower())[1] in img_exts]
+                                for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
+                src_files[_id] = [item for sublist in src_file_gen for item in sublist]
 
-        # print('src_file_list: ', src_file_list)
+                # _src_file_list = list(src_file_gen)
+                # src_file_list = []
+                # for x in _src_file_list:
+                #     src_file_list += x
+            else:
+                src_files[_id] = [os.path.join(src_dir, k) for k in os.listdir(src_dir) if
+                                  os.path.splitext(k.lower())[1] in img_exts]
 
-        # for (dirpath, dirnames, filenames) in os.walk(src_dir):
-        #     print()
-        #     print('dirpath', dirpath)
-        #     print('filenames', filenames)
-        #     print('dirnames', dirnames)
-        #     print()
+            # src_file_list = [list(x) for x in src_file_list]
+            # src_file_list = [x for x in src_file_list]
 
-        total_frames = len(src_files)
-        try:
-            # nums = int(os.path.splitext(img_fname)[0].split('_')[-1])
-            src_files.sort(key=sortKey)
-        except:
-            src_files.sort()
+            # print('src_file_list: ', src_file_list)
+
+            # for (dirpath, dirnames, filenames) in os.walk(src_path):
+            #     print()
+            #     print('dirpath', dirpath)
+            #     print('filenames', filenames)
+            #     print('dirnames', dirnames)
+            #     print()
+
+            total_frames[_id] = len(src_files[_id])
+            try:
+                # nums = int(os.path.splitext(img_fname)[0].split('_')[-1])
+                src_files[_id].sort(key=sortKey)
+            except:
+                src_files[_id].sort()
+
+            if random_mode:
+                print('Random mode enabled')
+                src_files_rand[_id] = list(np.random.permutation(src_files[_id]))
+
+            # print('src_file_list: {}'.format(src_file_list))
+            # print('img_fname: {}'.format(img_fname))
+            # print('img_id: {}'.format(img_id))
+            _total_frames = total_frames[_id]
+
+            img_id[_id] = 0
+
+            if _total_frames <= 0:
+                raise SystemError('No input frames found')
+            print('total_frames: {}'.format(_total_frames))
 
         if img_fname is None:
-            img_fname = src_files[img_id]
+            img_fname = src_files[0][img_id[0]]
 
-        img_id = src_files.index(img_fname)
-
-        if random_mode:
-            print('Random mode enabled')
-            src_file_list_rand = list(np.random.permutation(src_files))
-
-        # print('src_file_list: {}'.format(src_file_list))
-        # print('img_fname: {}'.format(img_fname))
-        # print('img_id: {}'.format(img_id))
-
-        _total_frames = total_frames
-
-    if _total_frames <= 0:
-        raise SystemError('No input frames found')
-    print('total_frames: {}'.format(_total_frames))
+        img_id[0] = src_files[0].index(img_fname)
 
     src_img_ar, start_row, end_row, start_col, end_col, dst_height, dst_width = [None] * 7
     target_height, target_width, min_height, start_col, end_col, height_ratio = [None] * 6
@@ -480,14 +493,15 @@ if __name__ == '__main__':
         global src_img_ar, start_row, end_row, start_col, end_col, dst_height, dst_width, n_switches, img_id, direction
         global target_height, target_width, min_height, start_col, end_col, height_ratio, img_fname, start_time
         global src_start_row, src_start_col, src_end_row, src_end_col, aspect_ratio, src_path, vid_id, \
-            src_images, img_fnames, stack_idx, stack_locations, src_img, wp_id, src_file_list_rand, top_border, bottom_border
+            src_images, img_fnames, stack_idx, stack_locations, src_img, wp_id, src_files_rand, top_border, bottom_border
 
         if decrement_id:
             if video_mode:
                 for _id in img_id:
                     img_id[_id] -= 1
             else:
-                img_id -= 1
+                for _id in img_id:
+                    img_id[_id] -= 1
         if set_grid_size:
             setGridSize()
 
@@ -496,7 +510,7 @@ if __name__ == '__main__':
         aspect_ratio = float(width) / float(height)
 
         if _type != 0 or not src_images or video_mode:
-            if video_mode:
+            if video_mode or multi_mode:
                 for _id in img_id:
                     if _type == 0:
                         img_id[_id] -= 1
@@ -504,12 +518,13 @@ if __name__ == '__main__':
                         img_id[_id] -= 2
             else:
                 if _type == 0:
-                    img_id -= n_images
+                    img_id[0] -= n_images
                 elif _type == -1:
-                    img_id -= 2 * n_images
+                    img_id[0] -= 2 * n_images
             src_images = []
             img_fnames = []
             for _load_id in range(n_images):
+
                 if video_mode:
                     if _load_id not in total_frames:
                         vid_id = (vid_id + 1) % n_videos
@@ -518,8 +533,9 @@ if __name__ == '__main__':
                     _total_frames = total_frames[_load_id]
                     _img_id = img_id[_load_id]
                 else:
-                    _total_frames = total_frames
-                    _img_id = img_id
+                    src_id = _load_id % n_src
+                    _total_frames = total_frames[src_id]
+                    _img_id = img_id[src_id]
                 _img_id += 1
 
                 # if _type == 1:
@@ -543,7 +559,7 @@ if __name__ == '__main__':
                         _img_id -= _total_frames
                         if n_images > 1 and set_wallpaper and random_mode:
                             print('Resetting randomisation')
-                            src_file_list_rand = list(np.random.permutation(src_files))
+                            src_files_rand[src_id] = list(np.random.permutation(src_files[src_id]))
                 elif _img_id < 0:
                     _img_id += _total_frames
 
@@ -555,9 +571,9 @@ if __name__ == '__main__':
                         src_img = np.copy(img_fname)
                 else:
                     if random_mode:
-                        img_fname = src_file_list_rand[_img_id]
+                        img_fname = src_files_rand[src_id][_img_id]
                     else:
-                        img_fname = src_files[_img_id]
+                        img_fname = src_files[src_id][_img_id]
                     # src_img_fname = os.path.join(src_dir, img_fname)
 
                     # print('img_id: {}'.format(img_id))
@@ -574,7 +590,7 @@ if __name__ == '__main__':
                 if video_mode:
                     img_id[_load_id] = _img_id
                 else:
-                    img_id = _img_id
+                    img_id[src_id] = _img_id
 
         if n_images == 1:
             src_img = src_images[0]
@@ -1372,10 +1388,7 @@ if __name__ == '__main__':
     #         2: handle_win_f4
     #     }
 
-    if video_mode:
-        img_id[0] += n_images - 1
-    else:
-        img_id += n_images - 1
+    img_id[0] += n_images - 1
     loadImage(set_grid_size=1)
     exit_program = 0
 
@@ -1472,7 +1485,7 @@ if __name__ == '__main__':
         #     cv2.imshow(win_name, dst_img)
 
         if speed == 0 and auto_progress:
-            if video_mode:
+            if video_mode or multi_mode:
                 k = cv2.waitKeyEx(transition_interval)
             else:
                 k = cv2.waitKeyEx(transition_interval * 1000)
@@ -1482,7 +1495,7 @@ if __name__ == '__main__':
         if k < 0:
             auto_progress_type = 1
         else:
-            print('k: {}'.format(k))
+            # print('k: {}'.format(k))
             if k == 27 or end_exec:
                 break
             elif k == 13:
@@ -1515,11 +1528,13 @@ if __name__ == '__main__':
                     random_mode = 1 - random_mode
                     if random_mode:
                         print('Random mode enabled')
-                        src_file_list_rand = list(np.random.permutation(src_files))
-                        img_id = src_file_list_rand.index(img_fname)
+                        for _id in img_id:
+                            src_files_rand[_id] = list(np.random.permutation(src_files[_id]))
+                            img_id[_id] = src_files_rand[_id].index(img_fname)
                     else:
                         print('Random mode disabled')
-                        img_id = src_files.index(img_fname)
+                        for _id in img_id:
+                            img_id[_id] = src_files[_id].index(img_fname)
             elif k == ord('c'):
                 auto_progress = 1 - auto_progress
                 if auto_progress:
@@ -1720,7 +1735,7 @@ if __name__ == '__main__':
             elif k == 2621440:
                 # down
                 updateZoom(_speed=old_speed, _direction=1)
-            elif k == 2555904:
+            elif k == 2555904 or k == 39 or k == ord('d'):
                 # right
                 if video_mode and auto_progress:
                     vid_id = (vid_id + 1) % n_videos
@@ -1732,7 +1747,7 @@ if __name__ == '__main__':
                         auto_progress_type = 1
                     else:
                         loadImage(1)
-            elif k == 2424832:
+            elif k == 2424832 or k == 40 or k == ord('a'):
                 # left
                 if video_mode and auto_progress:
                     vid_id -= 1
@@ -1746,10 +1761,6 @@ if __name__ == '__main__':
                         auto_progress_type = -1
                     else:
                         loadImage(-1)
-            elif k == 39 or k == ord('d'):
-                loadImage(1)if speed == 0 and auto_progress:
-            elif k == 40 or k == ord('a'):
-                loadImage(-1)
             elif k == ord('F') or k == ord('0'):
                 if n_images == 1:
                     print('"' + os.path.abspath(img_fname) + '"')
