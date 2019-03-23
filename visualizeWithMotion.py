@@ -1728,8 +1728,10 @@ if __name__ == '__main__':
                     loadVideo(0)
                     loadImage()
                 else:
-                    auto_progress_type = 1
-                    # loadImage(1)
+                    if speed == 0 and auto_progress:
+                        auto_progress_type = 1
+                    else:
+                        loadImage(1)
             elif k == 2424832:
                 # left
                 if video_mode and auto_progress:
@@ -1740,10 +1742,12 @@ if __name__ == '__main__':
                     loadVideo(0)
                     loadImage()
                 else:
-                    auto_progress_type = -1
-                    # loadImage(-1)
+                    if speed == 0 and auto_progress:
+                        auto_progress_type = -1
+                    else:
+                        loadImage(-1)
             elif k == 39 or k == ord('d'):
-                loadImage(1)
+                loadImage(1)if speed == 0 and auto_progress:
             elif k == 40 or k == ord('a'):
                 loadImage(-1)
             elif k == ord('F') or k == ord('0'):
