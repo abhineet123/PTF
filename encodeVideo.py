@@ -43,21 +43,21 @@ print('Reading source videos from: {}'.format(_src_path))
 vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv']
 
 if os.path.isdir(_src_path):
-    src_file_list = [os.path.join(_src_path, k) for k in os.listdir(_src_path) for _ext in vid_exts if k.endswith(_ext)]
-    n_videos = len(src_file_list)
+    src_files = [os.path.join(_src_path, k) for k in os.listdir(_src_path) for _ext in vid_exts if k.endswith(_ext)]
+    n_videos = len(src_files)
     if n_videos <= 0:
         raise SystemError('No input videos found')
     print('n_videos: {}'.format(n_videos))
-    src_file_list.sort(key=sortKey)
+    src_files.sort(key=sortKey)
 else:
-    src_file_list = [_src_path]
+    src_files = [_src_path]
 
 if reverse == 1:
     print('Writing reversed video')
 elif reverse == 2:
     print('Appending reversed video')
 
-for _src_path in src_file_list:
+for _src_path in src_files:
     src_path = os.path.abspath(_src_path)
     seq_name = os.path.splitext(os.path.basename(src_path))[0]
 

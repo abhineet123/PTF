@@ -63,7 +63,7 @@ try:
 
 except BaseException as e:
     raise SystemError('Wallpaper functionality unavailable: {}'.format(e))
-src_file_list = []
+src_files = []
 
 old_transition_interval = transition_interval
 
@@ -86,26 +86,26 @@ for src_path in _src_path:
         src_file_gen = [[os.path.join(dirpath, f) for f in filenames if
                          os.path.splitext(f.lower())[1] in img_exts]
                         for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
-        src_file_list += [item for sublist in src_file_gen for item in sublist]
+        src_files += [item for sublist in src_file_gen for item in sublist]
     else:
-        src_file_list += [os.path.join(src_dir, k) for k in os.listdir(src_dir) if
-                          os.path.splitext(k.lower())[1] in img_exts]
+        src_files += [os.path.join(src_dir, k) for k in os.listdir(src_dir) if
+                      os.path.splitext(k.lower())[1] in img_exts]
 
-total_frames = len(src_file_list)
+total_frames = len(src_files)
 if total_frames <= 0:
     raise SystemError('No input frames found')
 print('total_frames: {}'.format(total_frames))
 
 try:
     # nums = int(os.path.splitext(img_fname)[0].split('_')[-1])
-    src_file_list.sort(key=sortKey)
+    src_files.sort(key=sortKey)
 except:
-    src_file_list.sort()
+    src_files.sort()
 
 if img_fname is None:
-    img_fname = src_file_list[img_id]
+    img_fname = src_files[img_id]
 
-img_id = src_file_list.index(img_fname)
+img_id = src_files.index(img_fname)
 
 src_img = cv2.imread(img_fname)
 img_h, img_w = src_img.shape[:2]
@@ -123,14 +123,14 @@ def loadImage(diff=0):
         img_id -= total_frames
         if random_mode:
             print('Resetting randomisation')
-            src_file_list_rand = list(np.random.permutation(src_file_list))
+            src_file_list_rand = list(np.random.permutation(src_files))
     if img_id < 0:
         img_id = 0
 
     if random_mode:
         src_img_fname = src_file_list_rand[img_id]
     else:
-        src_img_fname = src_file_list[img_id]
+        src_img_fname = src_files[img_id]
 
     src_img_fname = os.path.abspath(src_img_fname)
 
@@ -214,7 +214,7 @@ keyboard.add_hotkey('ctrl+alt+shift+up', inc_callback2)
 keyboard.add_hotkey('ctrl+alt+shift+down', dec_callback2)
 if random_mode:
     print('Random mode enabled')
-    src_file_list_rand = list(np.random.permutation(src_file_list))
+    src_file_list_rand = list(np.random.permutation(src_files))
 
 img_id -= 1
 while not exit_program:

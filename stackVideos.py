@@ -56,18 +56,18 @@ if len(_src_path) == 1:
     _src_path = _src_path[0]
     print('Reading source videos from: {}'.format(_src_path))
     if os.path.isdir(_src_path):
-        src_file_list = [os.path.join(_src_path, k) for k in os.listdir(_src_path) for _ext in vid_exts if
-                         k.endswith(_ext)]
-        src_file_list.sort(key=sortKey)
+        src_files = [os.path.join(_src_path, k) for k in os.listdir(_src_path) for _ext in vid_exts if
+                     k.endswith(_ext)]
+        src_files.sort(key=sortKey)
     else:
-        src_file_list = [x.strip() for x in open(_src_path).readlines() if x.strip()]
+        src_files = [x.strip() for x in open(_src_path).readlines() if x.strip()]
         if root_dir:
-            src_file_list = [os.path.join(root_dir, name) for name in src_file_list]
+            src_files = [os.path.join(root_dir, name) for name in src_files]
 else:
-    src_file_list = _src_path
+    src_files = _src_path
 
 if not save_path:
-    dst_path = os.path.join(os.path.dirname(src_file_list[0]), 'stacked',
+    dst_path = os.path.join(os.path.dirname(src_files[0]), 'stacked',
                             '{}.{}'.format(datetime.now().strftime("%y%m%d_%H%M%S"), ext))
 else:
     out_seq_name, out_ext = os.path.splitext(os.path.basename(save_path))
@@ -78,11 +78,11 @@ save_dir = os.path.dirname(dst_path)
 if save_dir and not os.path.isdir(save_dir):
     os.makedirs(save_dir)
 
-n_videos = len(src_file_list)
+n_videos = len(src_files)
 if n_videos <= 0:
     raise SystemError('No input videos found')
 print('Stacking: {} videos:'.format(n_videos))
-pprint(src_file_list)
+pprint(src_files)
 
 if not grid_size:
     grid_size = None
@@ -95,7 +95,7 @@ n_frames_list = []
 cap_list = []
 size_list = []
 
-for src_file in src_file_list:
+for src_file in src_files:
     src_file = os.path.abspath(src_file)
     seq_name = os.path.splitext(os.path.basename(src_file))[0]
 

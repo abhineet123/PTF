@@ -41,8 +41,8 @@ resize_factor = params['resize_factor']
 img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
 
 if os.path.isdir(_src_path):
-    src_file_list = [k for k in os.listdir(_src_path) for _ext in img_exts if k.endswith(_ext)]
-    if src_file_list:
+    src_files = [k for k in os.listdir(_src_path) for _ext in img_exts if k.endswith(_ext)]
+    if src_files:
         src_paths = [_src_path]
     else:
         src_paths = [os.path.join(_src_path, k) for k in os.listdir(_src_path) if
@@ -66,12 +66,12 @@ for src_path in src_paths:
 
     print('Reading source images from: {}'.format(src_path))
     src_path = os.path.abspath(src_path)
-    src_file_list = [k for k in os.listdir(src_path) for _ext in img_exts if k.endswith(_ext)]
-    total_frames = len(src_file_list)
+    src_files = [k for k in os.listdir(src_path) for _ext in img_exts if k.endswith(_ext)]
+    total_frames = len(src_files)
     if total_frames <= 0:
         raise SystemError('No input frames found')
     print('total_frames: {}'.format(total_frames))
-    src_file_list.sort(key=sortKey)
+    src_files.sort(key=sortKey)
 
     if not save_path:
         save_path = os.path.join(os.path.dirname(src_path), os.path.basename(src_path) + '_gs')
@@ -84,7 +84,7 @@ for src_path in src_paths:
     frame_id = start_id
     pause_after_frame = 0
     while True:
-        filename = src_file_list[frame_id]
+        filename = src_files[frame_id]
         file_path = os.path.join(src_path, filename)
         if not os.path.exists(file_path):
             raise SystemError('Image file {} does not exist'.format(file_path))

@@ -27,13 +27,13 @@ if __name__ == '__main__':
     print('Reading source images from: {}'.format(src_path))
 
     img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff', '.gif')
-    src_file_list = [k for k in os.listdir(src_path) if os.path.splitext(k.lower())[1] in img_exts]
+    src_files = [k for k in os.listdir(src_path) if os.path.splitext(k.lower())[1] in img_exts]
 
-    total_frames = len(src_file_list)
+    total_frames = len(src_files)
     if total_frames <= 0:
         raise SystemError('No input frames found')
     print('total_frames: {}'.format(total_frames))
-    src_file_list.sort()
+    src_files.sort()
 
     # total_frames = len(src_file_list)
     # print('total_frames after sorting: {}'.format(total_frames))
@@ -53,7 +53,7 @@ if __name__ == '__main__':
     if resize:
         print('Resizing images to {}x{}'.format(width, height))
 
-    for img_fname in src_file_list:
+    for img_fname in src_files:
 
         src_img_fname = os.path.join(src_path, img_fname)
         src_img = cv2.imread(src_img_fname)

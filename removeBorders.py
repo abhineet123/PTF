@@ -34,13 +34,13 @@ if __name__ == '__main__':
 
     print('Reading source images from: {}'.format(src_path))
     img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff', '.gif')
-    src_file_list = [k for k in os.listdir(src_path) if os.path.splitext(k.lower())[1] in img_exts]
+    src_files = [k for k in os.listdir(src_path) if os.path.splitext(k.lower())[1] in img_exts]
 
-    total_frames = len(src_file_list)
+    total_frames = len(src_files)
     if total_frames <= 0:
         raise SystemError('No input frames found')
     print('total_frames: {}'.format(total_frames))
-    src_file_list.sort()
+    src_files.sort()
 
     # total_frames = len(src_file_list)
     # print('total_frames after sorting: {}'.format(total_frames))
@@ -59,7 +59,7 @@ if __name__ == '__main__':
         if out_size:
             out_width, out_height = [int(x) for x in out_size.split('x')]
         else:
-            src_img = cv2.imread(os.path.join(src_path, src_file_list[0]))
+            src_img = cv2.imread(os.path.join(src_path, src_files[0]))
             out_height, out_width = src_img.shape[:2]
         print('Resizing output images to : {}x{}'.format(out_width, out_height))
 
@@ -72,7 +72,7 @@ if __name__ == '__main__':
     if not os.path.isdir(dst_path):
         os.makedirs(dst_path)
 
-    for img_fname in src_file_list:
+    for img_fname in src_files:
 
         src_img_fname = os.path.join(src_path, img_fname)
         src_img = cv2.imread(src_img_fname)
