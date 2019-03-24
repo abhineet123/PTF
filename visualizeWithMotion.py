@@ -1530,11 +1530,13 @@ if __name__ == '__main__':
                         print('Random mode enabled')
                         for _id in img_id:
                             src_files_rand[_id] = list(np.random.permutation(src_files[_id]))
-                            img_id[_id] = src_files_rand[_id].index(img_fname)
+                            # img_id[_id] = src_files_rand[_id].index(img_fname)
+                            img_id[_id] = 0
                     else:
                         print('Random mode disabled')
                         for _id in img_id:
-                            img_id[_id] = src_files[_id].index(img_fname)
+                            # img_id[_id] = src_files[_id].index(img_fname)
+                            img_id[_id] = 0
             elif k == ord('c'):
                 auto_progress = 1 - auto_progress
                 if auto_progress:
