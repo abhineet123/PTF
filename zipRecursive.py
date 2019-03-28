@@ -25,6 +25,10 @@ if __name__ == '__main__':
     switches = params['switches']
     scp_dst = params['scp_dst']
     include_all = params['include_all']
+    relative = params['relative']
+
+    if not file_pattern:
+        file_pattern = '*'
 
 
     if os.path.isdir(_root_dir):

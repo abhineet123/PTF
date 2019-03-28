@@ -321,8 +321,9 @@ if __name__ == '__main__':
         src_dirs = [src_dir, ]
         if multi_mode:
             root_dir = os.path.dirname(src_dir)
+            src_dir_name = os.path.basename(src_dir)
             src_dirs += [os.path.join(root_dir, k) for k in os.listdir(root_dir)
-                         if os.path.isdir(os.path.join(root_dir, k)) and k != src_dir]
+                         if os.path.isdir(os.path.join(root_dir, k)) and k != src_dir_name]
 
         n_src = len(src_dirs)
 
@@ -579,7 +580,8 @@ if __name__ == '__main__':
                     # print('img_id: {}'.format(img_id))
                     # print('img_fname: {}'.format(img_fname))
                     src_img_fname = img_fname
-                    src_img = cv2.imread(src_img_fname)
+                    if os.path.isfile(src_img_fname):
+                        src_img = cv2.imread(src_img_fname)
                     if src_img is None:
                         raise SystemError('Source image could not be read from: {}'.format(src_img_fname))
                     if rotate_images:
@@ -889,21 +891,21 @@ if __name__ == '__main__':
         # return None if not get_idx else None, None
 
 
-    def sortImage(img_fname, sort_type):
-        if img_fname is None:
+    def sortImage(_img_name, sort_type):
+        if _img_name is None:
             return
-        if img_fname in images_to_sort_inv:
-            prev_key = images_to_sort_inv[img_fname]
+        if _img_name in images_to_sort_inv:
+            prev_key = images_to_sort_inv[_img_name]
             if prev_key != sort_type:
-                print('Removing previous sorting of {} into {}'.format(img_fname, prev_key))
-                images_to_sort[prev_key].remove(img_fname)
-                del images_to_sort_inv[img_fname]
-        print('Sorting {} into category {}'.format(img_fname, sort_type))
+                print('Removing previous sorting of {} into {}'.format(_img_name, prev_key))
+                images_to_sort[prev_key].remove(_img_name)
+                del images_to_sort_inv[_img_name]
+        print('Sorting {} into category {}'.format(_img_name, sort_type))
         try:
-            images_to_sort[sort_type].append(img_fname)
+            images_to_sort[sort_type].append(_img_name)
         except KeyError:
-            images_to_sort[sort_type] = [img_fname, ]
-        images_to_sort_inv[img_fname] = sort_type
+            images_to_sort[sort_type] = [_img_name, ]
+        images_to_sort_inv[_img_name] = sort_type
         if n_images == 1:
             loadImage(1)
 
@@ -1182,8 +1184,8 @@ if __name__ == '__main__':
                                         src_images = []
                                         loadImage(0)
                             else:
-                                # resize_ratio = float(dst_img.shape[0]) / float(src_img.shape[0])
-                                # x_scaled, y_scaled = x / resize_ratio, y / resize_ratio
+                                resize_ratio = float(dst_img.shape[0]) / float(src_img.shape[0])
+                                x_scaled, y_scaled = x / resize_ratio, y / resize_ratio
                                 # click_found = 0
                                 # for i in range(n_images):
                                 #     _start_row, _start_col, _end_row, _end_col = stack_locations[i]
@@ -1485,7 +1487,7 @@ if __name__ == '__main__':
         #     cv2.imshow(win_name, dst_img)
 
         if speed == 0 and auto_progress:
-            if video_mode or multi_mode:
+            if video_mode:
                 k = cv2.waitKeyEx(transition_interval)
             else:
                 k = cv2.waitKeyEx(transition_interval * 1000)
