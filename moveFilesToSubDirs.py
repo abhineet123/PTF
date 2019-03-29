@@ -5,7 +5,7 @@ import shutil
 from Misc import processArguments
 
 params = {
-    'subdir_prefix': 'Set',
+    'subdir_prefix': '',
     'subdir_root_dir': '.',
     'files_per_subdir': 100,
     'subdir_start_id': 1,
@@ -36,14 +36,21 @@ file_id = 1
 for src_fname in src_file_names:
     filename, file_extension = os.path.splitext(src_fname)
     src_path = os.path.join(subdir_root_dir, src_fname)
-    if rename_files:
-        dst_fname = '{:s}{:d}_{:d}.{:s}'.format(subdir_prefix, subdir_id, file_id, file_extension)
+
+    if subdir_prefix:
+        if rename_files:
+            dst_fname = '{:s}{:d}_{:d}.{:s}'.format(subdir_prefix, subdir_id, file_id, file_extension)
+        else:
+            dst_fname = src_fname
+        dst_subdir_name = '{:s}{:d}'.format(subdir_prefix, subdir_id)
     else:
         dst_fname = src_fname
-    dst_subdir_name = '{:s}{:d}'.format(subdir_prefix, subdir_id)
+        dst_subdir_name = os.path.splitext(src_fname)[0]
+
     dst_dir = os.path.join(subdir_root_dir, dst_subdir_name)
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
+
     dst_path = os.path.join(dst_dir, dst_fname)
     shutil.move(src_path, dst_path)
     if file_id == files_per_subdir:
