@@ -1,7 +1,8 @@
 import os
 import sys
 
-folder_prefix = 'Subset'
+root_dir = '.'
+folder_prefix = ''
 folder_start_id = 1
 folder_end_id = 100
 search_str = ''
@@ -20,13 +21,18 @@ if len(sys.argv) > arg_id:
     folder_prefix = sys.argv[arg_id]
     arg_id += 1
 
-print 'Looking for {:s} in folders beginning with {:s} and IDs going from {:d} to {:d}'.format(
-    search_str, folder_prefix, folder_start_id, folder_end_id)
+if folder_prefix:
+    print 'Looking for {:s} in folders beginning with {:s} and IDs going from {:d} to {:d}'.format(
+        search_str, folder_prefix, folder_start_id, folder_end_id)
+    src_folders = ['{:s} {:d}'.format(folder_prefix, folder_id) for folder_id in
+                   xrange(folder_start_id, folder_end_id + 1)]
+else:
+    src_folders = [os.path.join(root_dir, k) for k in os.listdir(root_dir)
+                    if os.path.isdir(os.path.join(root_dir, k))]
 
 total_files_found = 0
 total_files_searched = 0
-for folder_id in xrange(folder_start_id, folder_end_id + 1):
-    src_folder = '{:s} {:d}'.format(folder_prefix, folder_id)
+for src_folder in src_folders:
     if not os.path.exists(src_folder):
         break
     src_files = [f for f in os.listdir(src_folder) if os.path.isfile(os.path.join(src_folder, f))]
@@ -43,8 +49,3 @@ if total_files_found > 0:
 else:
     print 'No matching files found'
 print '{:d} files searched'.format(total_files_searched)
-
-
-
-
-

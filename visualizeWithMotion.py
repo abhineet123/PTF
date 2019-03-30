@@ -64,6 +64,7 @@ except ImportError as e:
 
 params = {
     'src_path': '.',
+    'src_dirs': '',
     'width': 1920,
     'height': 1080,
     'min_height_ratio': 0.40,
@@ -100,6 +101,7 @@ if __name__ == '__main__':
 
     processArguments(sys.argv[1:], params)
     src_path = params['src_path']
+    src_dirs = params['src_dirs']
     _width = width = params['width']
     _height = height = params['height']
     min_height_ratio = params['min_height_ratio']
@@ -318,12 +320,16 @@ if __name__ == '__main__':
         transition_interval = 30
         _total_frames = total_frames[0]
     else:
-        src_dirs = [src_dir, ]
-        if multi_mode:
-            root_dir = os.path.dirname(src_dir)
-            src_dir_name = os.path.basename(src_dir)
-            src_dirs += [os.path.join(root_dir, k) for k in os.listdir(root_dir)
-                         if os.path.isdir(os.path.join(root_dir, k)) and k != src_dir_name]
+        if src_dirs:
+            src_dirs = src_dirs.split(',')
+            src_dirs = [os.path.join(src_dir, k) for k in src_dirs]
+        else:
+            src_dirs = [src_dir, ]
+            if multi_mode:
+                root_dir = os.path.dirname(src_dir)
+                src_dir_name = os.path.basename(src_dir)
+                src_dirs += [os.path.join(root_dir, k) for k in os.listdir(root_dir)
+                             if os.path.isdir(os.path.join(root_dir, k)) and k != src_dir_name]
 
         n_src = len(src_dirs)
 
@@ -363,8 +369,15 @@ if __name__ == '__main__':
                 src_files[_id].sort()
 
             if random_mode:
-                print('Random mode enabled')
+                if _id==0:
+                    print('Random mode enabled')
                 src_files_rand[_id] = list(np.random.permutation(src_files[_id]))
+
+            if not multi_mode and _id > 0:
+                total_frames[0] += total_frames[_id]
+                src_files[0] += src_files[_id]
+                if random_mode:
+                    src_files_rand[0] += src_files_rand[_id]
 
             # print('src_file_list: {}'.format(src_file_list))
             # print('img_fname: {}'.format(img_fname))
@@ -377,8 +390,11 @@ if __name__ == '__main__':
                 raise SystemError('No input frames found')
             print('total_frames: {}'.format(_total_frames))
 
+
+
         if img_fname is None:
             img_fname = src_files[0][img_id[0]]
+
 
         img_id[0] = src_files[0].index(img_fname)
 
