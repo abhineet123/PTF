@@ -331,7 +331,10 @@ if __name__ == '__main__':
                 src_dirs += [os.path.join(root_dir, k) for k in os.listdir(root_dir)
                              if os.path.isdir(os.path.join(root_dir, k)) and k != src_dir_name]
 
-        n_src = len(src_dirs)
+        if multi_mode or video_mode:
+            n_src = len(src_dirs)
+        else:
+            n_src = 1
 
         for _id, src_dir in enumerate(src_dirs):
             print('Reading source images from: {}'.format(src_dir))
