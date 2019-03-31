@@ -371,17 +371,14 @@ if __name__ == '__main__':
             except:
                 src_files[_id].sort()
 
-            if random_mode:
-                if _id==0:
-                    print('Random mode enabled')
-                src_files_rand[_id] = list(np.random.permutation(src_files[_id]))
-
             if not multi_mode and _id > 0:
                 total_frames[0] += total_frames[_id]
                 src_files[0] += src_files[_id]
-                if random_mode:
-                    src_files_rand[0] += src_files_rand[_id]
 
+            if random_mode:
+                if _id == 0:
+                    print('Random mode enabled')
+                src_files_rand[_id] = list(np.random.permutation(src_files[_id]))
             # print('src_file_list: {}'.format(src_file_list))
             # print('img_fname: {}'.format(img_fname))
             # print('img_id: {}'.format(img_id))
@@ -393,11 +390,11 @@ if __name__ == '__main__':
                 raise SystemError('No input frames found')
             print('total_frames: {}'.format(_total_frames))
 
-
+        if not multi_mode and random_mode:
+            src_files_rand[0] = list(np.random.permutation(src_files[0]))
 
         if img_fname is None:
             img_fname = src_files[0][img_id[0]]
-
 
         img_id[0] = src_files[0].index(img_fname)
 
@@ -1197,7 +1194,7 @@ if __name__ == '__main__':
                                 if flags == 25:
                                     # ctrl + shift
                                     if not video_mode:
-                                        img_id += __idx + 1 - n_images
+                                        img_id[0] += __idx + 1 - n_images
                                         # print('making img_id: {}'.format(img_id))
                                         n_images = 1
                                         src_images = []

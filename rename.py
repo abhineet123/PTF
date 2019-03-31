@@ -58,6 +58,14 @@ if dst_substr == '__none__' or dst_substr == '__n__':
 if dst_substr_orig == '__root__' or dst_substr_orig == '__rf__':
     dst_substr = 'root folder name'
 
+if not src_substr:
+    print('Getting src_substr from clipboard')
+    from Tkinter import Tk
+
+    src_substr = Tk().clipboard_get()
+    if os.path.isfile(src_dir):
+        src_dir = os.path.dirname(src_dir)
+
 if convert_to_lowercase:
     print 'Converting to lower case'
 
@@ -146,7 +154,6 @@ for src_path in src_file_paths:
     # print 'renaming folder {:s} to {:s}'.format(src_fname_dir, dst_fname_dir)
     #         os.rename(src_fname_dir, dst_fname_dir)
     #     dst_fname = src_fname.replace(src_substr, dst_substr)
-
 
     if write_log:
         log_fid.write('{}\t{}\n'.format(src_path, dst_path))
