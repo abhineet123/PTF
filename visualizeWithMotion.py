@@ -11,6 +11,22 @@ from threading import Event
 
 from Misc import processArguments, sortKey, stackImages, resizeAR, addBorder
 
+from PIL import Image, ImageChops
+# from wand.image import Image as wandImage
+
+def trim(im):
+    bg = Image.new(im.mode, im.size, im.getpixel((0, 0)))
+    diff = ImageChops.difference(im, bg)
+    # diff.show()
+    diff = ImageChops.add(diff, diff, 2.0, -50)
+    # diff.show()
+    # diff = ImageChops.add(diff, diff)
+    bbox = diff.getbbox()
+    if bbox:
+        return im.crop(bbox)
+    return im
+
+
 interrupt_wait = Event()
 
 win_utils_available = 1
@@ -90,6 +106,7 @@ params = {
     'wallpaper_mode': 0,
     'widescreen_mode': 0,
     'multi_mode': 0,
+    'trim_images': 0,
 }
 
 if __name__ == '__main__':
@@ -127,6 +144,7 @@ if __name__ == '__main__':
     wallpaper_mode = params['wallpaper_mode']
     n_wallpapers = params['n_wallpapers']
     multi_mode = params['multi_mode']
+    trim_images = params['trim_images']
 
     if wallpaper_mode and not set_wallpaper:
         set_wallpaper = 1
@@ -605,6 +623,10 @@ if __name__ == '__main__':
                         src_img = cv2.imread(src_img_fname)
                     if src_img is None:
                         raise SystemError('Source image could not be read from: {}'.format(src_img_fname))
+                    if trim_images:
+                        src_img = np.asarray(trim(Image.fromarray(src_img)))
+                        # src_img = wandImage(src_img).trim(color=None, fuzz=0) ()
+
                     if rotate_images:
                         src_img = np.rot90(src_img, rotate_images)
                     img_fnames.append(img_fname)
