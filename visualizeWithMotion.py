@@ -293,6 +293,12 @@ if __name__ == '__main__':
         # time.sleep(0.1)
 
 
+    if random_mode:
+        print('Random mode enabled')
+
+    if auto_progress:
+        print('Auto progression enabled')
+
     src_files = {}
     src_files_rand = {}
     total_frames = {}
@@ -376,8 +382,6 @@ if __name__ == '__main__':
                 src_files[0] += src_files[_id]
 
             if random_mode:
-                if _id == 0:
-                    print('Random mode enabled')
                 src_files_rand[_id] = list(np.random.permutation(src_files[_id]))
             # print('src_file_list: {}'.format(src_file_list))
             # print('img_fname: {}'.format(img_fname))
