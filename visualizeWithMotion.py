@@ -392,10 +392,11 @@ if __name__ == '__main__':
 
             if _total_frames <= 0:
                 raise SystemError('No input frames found')
-            print('total_frames: {}'.format(_total_frames))
+            print('Found {} frames'.format(_total_frames))
 
         if not multi_mode and random_mode:
             src_files_rand[0] = list(np.random.permutation(src_files[0]))
+            print('total_frames: {}'.format(total_frames[0]))
 
         if img_fname is None:
             img_fname = src_files[0][img_id[0]]
