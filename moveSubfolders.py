@@ -31,9 +31,10 @@ for src in subfolders:
     if curr_subfolders:
         continue
 
-    print('moving {}'.format(src))
+    dst_path = os.path.join(dst_dir, '{}_{}'.format(os.path.dirname(src), os.path.basename(src)))
+    print('moving {} to {}'.format(src, dst_path))
     try:
-        shutil.move(src, dst_dir)
+        shutil.move(src, dst_path)
     except shutil.Error as e:
         print('Failure: {}'.format(e))
         continue
