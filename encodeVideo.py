@@ -13,6 +13,7 @@ params = {
     'start_id': 0,
     'n_frames': 0,
     'reverse': 0,
+    'combine': 0,
     'res': '',
     'fps': 30,
     'codec': 'H264',
@@ -33,6 +34,7 @@ fps = params['fps']
 codec = params['codec']
 ext = params['ext']
 reverse = params['reverse']
+combine = params['combine']
 out_postfix = params['out_postfix']
 
 height = width = 0
@@ -57,6 +59,11 @@ if reverse == 1:
 elif reverse == 2:
     print('Appending reversed video')
 
+if combine:
+    print('Combining all videos into single output')
+
+video_out = None
+
 for _src_path in src_files:
     src_path = os.path.abspath(_src_path)
     seq_name = os.path.splitext(os.path.basename(src_path))[0]
@@ -72,6 +79,8 @@ for _src_path in src_files:
             dst_seq_name = '{}_r{}'.format(dst_seq_name, reverse)
         if out_postfix:
             dst_seq_name = '{}_{}'.format(dst_seq_name, out_postfix)
+        if combine:
+            dst_seq_name = '{}_combined'.format(dst_seq_name)
         dst_path = os.path.join(os.path.dirname(src_path), dst_seq_name + '.' + ext)
     else:
         dst_path = save_path
@@ -114,13 +123,14 @@ for _src_path in src_files:
         enable_resize = 1
         dst_height, dst_width = height, width
 
-    fourcc = cv2.VideoWriter_fourcc(*codec)
-    video_out = cv2.VideoWriter(dst_path, fourcc, fps, (dst_width, dst_height))
+    if video_out is None or not combine:
+        fourcc = cv2.VideoWriter_fourcc(*codec)
+        video_out = cv2.VideoWriter(dst_path, fourcc, fps, (dst_width, dst_height))
 
-    if video_out is None:
-        raise IOError('Output video file could not be opened: {}'.format(dst_path))
+        if video_out is None:
+            raise IOError('Output video file could not be opened: {}'.format(dst_path))
 
-    print('Saving {}x{} output video to {}'.format(dst_width, dst_height, dst_path))
+        print('Saving {}x{} output video to {}'.format(dst_width, dst_height, dst_path))
 
     if start_id > 0:
         print('Starting from frame_id {}'.format(start_id))
@@ -180,10 +190,14 @@ for _src_path in src_files:
                     pause_after_frame = 1 - pause_after_frame
             video_out.write(frame)
 
-    video_out.release()
+    if not combine:
+        video_out.release()
 
     if show_img:
         cv2.destroyWindow(seq_name)
     if del_src:
         print('Removing source video {}'.format(src_path))
         shutil.rmtree(src_path)
+
+if combine:
+    video_out.release()
