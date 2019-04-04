@@ -59,8 +59,8 @@ if reverse == 1:
 elif reverse == 2:
     print('Appending reversed video')
 
-if combine:
-    print('Combining all videos into single output')
+if combine and len(src_files)>1:
+    print('Combining all videos into a single output video')
 
 video_out = None
 
