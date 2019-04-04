@@ -597,7 +597,7 @@ if __name__ == '__main__':
                         _img_id = 0
                     else:
                         _img_id -= _total_frames
-                        if n_images > 1 and set_wallpaper and random_mode:
+                        if auto_progress and random_mode:
                             print('Resetting randomisation')
                             src_files_rand[src_id] = list(np.random.permutation(src_files[src_id]))
                 elif _img_id < 0:
