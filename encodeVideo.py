@@ -19,6 +19,7 @@ params = {
     'codec': 'H264',
     'ext': 'mkv',
     'out_postfix': '',
+    'add_headers': 0.0,
 }
 
 processArguments(sys.argv[1:], params)
@@ -36,6 +37,7 @@ ext = params['ext']
 reverse = params['reverse']
 combine = params['combine']
 out_postfix = params['out_postfix']
+add_headers = params['add_headers']
 
 height = width = 0
 if res:
@@ -43,28 +45,51 @@ if res:
 
 print('Reading source videos from: {}'.format(_src_path))
 vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv']
+img_exts = ['.jpg', '.png', '.jpeg', '.tif', '.bmp']
+
+header_files = None
 
 if os.path.isdir(_src_path):
     src_files = [os.path.join(_src_path, k) for k in os.listdir(_src_path) for _ext in vid_exts if k.endswith(_ext)]
-    n_videos = len(src_files)
-    if n_videos <= 0:
-        raise SystemError('No input videos found')
-    print('n_videos: {}'.format(n_videos))
     src_files.sort(key=sortKey)
+    header_root = _src_path
 else:
     src_files = [_src_path]
+    header_root = os.path.dirname(_src_path)
+
+n_videos = len(src_files)
+if n_videos <= 0:
+    raise IOError('No input videos found')
+
+print('n_videos: {}'.format(n_videos))
+
+if add_headers > 0:
+    header_files = [os.path.join(header_root, k) for k in os.listdir(header_root) for _ext in img_exts if
+                    k.endswith(_ext)]
+    header_files.sort(key=sortKey)
+    n_headers = len(header_files)
+    if n_headers != n_videos:
+        print('Mismatch between n_headers: {} and n_videos: {}'.format(n_headers, n_videos))
+        add_headers = 0
+
+if add_headers > 0:
+    print('Adding headers of length {} secs'.format(add_headers))
+
 
 if reverse == 1:
     print('Writing reversed video')
 elif reverse == 2:
     print('Appending reversed video')
 
-if combine and len(src_files)>1:
+if combine and n_videos>1:
     print('Combining all videos into a single output video')
 
 video_out = None
 
-for _src_path in src_files:
+n_header_frames = int(add_headers*fps)
+
+for src_id, _src_path in enumerate(src_files):
+
     src_path = os.path.abspath(_src_path)
     seq_name = os.path.splitext(os.path.basename(src_path))[0]
 
@@ -138,6 +163,14 @@ for _src_path in src_files:
     frame_id = 0
     pause_after_frame = 0
     frames = []
+
+    if add_headers > 0:
+        header_path = header_files[src_id]
+        header_img = cv2.imread(header_path)
+        header_img = resizeAR(header_img, dst_width, dst_height)
+        for i in range(n_header_frames):
+            video_out.write(header_img)
+
     while True:
 
         ret, image = cap.read()
