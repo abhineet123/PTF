@@ -13,17 +13,22 @@ if __name__ == '__main__':
         'relative': 0,
     }
     processArguments(sys.argv[1:], params)
-    dir_names = params['dir_names']
+    _dir_names = params['dir_names']
     out_name = params['out_name']
     postfix = params['postfix']
     switches = params['switches']
     scp_dst = params['scp_dst']
     relative = params['relative']
 
-    print('dir_names: ', dir_names)
+    print('dir_names: ', _dir_names)
 
-    if len(dir_names) == 1:
-        dir_names = dir_names[0].split(os.sep)
+    if len(_dir_names) == 1:
+        dir_names = _dir_names[0].split(os.sep)
+        if _dir_names.startswith(os.sep):
+            del dir_names[0]
+            dir_names[0] = os.sep + dir_names[0]
+    else:
+        dir_names = _dir_names
 
     print('dir_names: ', dir_names)
 
