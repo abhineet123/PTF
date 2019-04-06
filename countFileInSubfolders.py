@@ -50,6 +50,10 @@ except:
     subfolders.sort()
 
 counts_file = open('file_counts.txt', 'w')
+
+if sort_by_count:
+    print('Sorting list by counts')
+
 n_files_list = []
 src_files_list = []
 empty_folders = []
