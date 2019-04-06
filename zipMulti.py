@@ -47,6 +47,9 @@ if __name__ == '__main__':
         else:
             out_name = ''
 
+    if dir_names[0].startswith(os.sep):
+        dir_names[0] = dir_names[0].replace(os.sep, '')
+        
     if not out_name:
         for _dir in dir_names[out_start_id:]:
             out_name = '{}_{}'.format(out_name, _dir) if out_name else _dir
