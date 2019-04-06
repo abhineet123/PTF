@@ -56,7 +56,6 @@ if sort_by_count:
 
 n_files_list = []
 src_files_list = []
-empty_folders = []
 for subfolders_path in subfolders:
     # subfolders_path = os.path.join(folder_name, subfolder)
     subfolder = os.path.relpath(folder_name, subfolders_path)
@@ -66,12 +65,10 @@ for subfolders_path in subfolders:
     src_files.sort(key=sortKey)
 
     n_files = len(src_files)
+    src_files_list.append(src_files)
+    n_files_list.append(n_files)
 
-    if n_files == 0:
-        empty_folders.append(subfolders_path)
-    else:
-        src_files_list.append(src_files)
-        n_files_list.append(n_files)
+
 
 sort_idx = range(len(n_files_list))
 if sort_by_count:
@@ -79,16 +76,20 @@ if sort_by_count:
 
 total_files = 0
 files = []
+empty_folders = []
 for _idx in sort_idx:
     subfolders_path = subfolders[_idx]
     src_files = src_files_list[_idx]
     n_files = n_files_list[_idx]
     total_files += n_files
 
-    files += [os.path.join(subfolders_path, f) for f in src_files]
-    text = '{}:\t{}\t{}'.format(subfolders_path, n_files, total_files)
-    print(text)
-    counts_file.write(text + '\n')
+    if n_files == 0:
+        empty_folders.append(subfolders_path)
+    else:
+        files += [os.path.join(subfolders_path, f) for f in src_files]
+        text = '{}:\t{}\t{}'.format(subfolders_path, n_files, total_files)
+        print(text)
+        counts_file.write(text + '\n')
 
 print('total_files: {}'.format(total_files))
 if empty_folders:
