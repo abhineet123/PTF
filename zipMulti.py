@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     if len(_dir_names) == 1:
         dir_names = _dir_names[0].split(os.sep)
-        if _dir_names.startswith(os.sep):
+        if _dir_names[0].startswith(os.sep):
             del dir_names[0]
             dir_names[0] = os.sep + dir_names[0]
     else:
@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
     if dir_names[0].startswith(os.sep):
         dir_names[0] = dir_names[0].replace(os.sep, '')
-        
+
     if not out_name:
         for _dir in dir_names[out_start_id:]:
             out_name = '{}_{}'.format(out_name, _dir) if out_name else _dir
