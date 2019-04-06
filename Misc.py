@@ -3633,10 +3633,10 @@ def putTextWithBackground(img, text, fmt=None):
     if fmt is not None:
         try:
             font_id = fmt[0]
-            loc = fmt[1:3]
+            loc = tuple(fmt[1:3])
             size, thickness = fmt[3:5]
-            col = fmt[5:8]
-            bgr_col = fmt[8:]
+            col = tuple(fmt[5:8])
+            bgr_col = tuple(fmt[8:])
         except IndexError:
             pass
 

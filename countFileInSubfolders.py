@@ -12,6 +12,7 @@ params = {
     'shuffle_files': 1,
     'del_empty': 0,
     'recursive': 1,
+    'sort_by_count': 0,
 }
 processArguments(sys.argv[1:], params)
 file_ext = params['file_ext']
@@ -21,6 +22,7 @@ shuffle_files = params['shuffle_files']
 del_empty = params['del_empty']
 prefix = params['prefix']
 recursive = params['recursive']
+sort_by_count = params['sort_by_count']
 
 if os.path.isfile(folder_name):
     root_dir = os.path.abspath(os.getcwd())
@@ -47,9 +49,9 @@ try:
 except:
     subfolders.sort()
 
-total_files = 0
 counts_file = open('file_counts.txt', 'w')
-files = []
+n_files_list = []
+src_files_list = []
 empty_folders = []
 for subfolders_path in subfolders:
     # subfolders_path = os.path.join(folder_name, subfolder)
@@ -64,11 +66,25 @@ for subfolders_path in subfolders:
     if n_files == 0:
         empty_folders.append(subfolders_path)
     else:
-        total_files += n_files
-        files += [os.path.join(subfolders_path, f) for f in src_files]
-        text = '{}:\t{}\t{}'.format(subfolders_path, n_files, total_files)
-        print(text)
-        counts_file.write(text + '\n')
+        src_files_list.append(src_files)
+        n_files_list.append(n_files)
+
+sort_idx = range(len(n_files_list))
+if sort_by_count:
+    sort_idx = sorted(sort_idx, key=lambda k: n_files_list[k])
+
+total_files = 0
+files = []
+for _idx in sort_idx:
+    subfolders_path = subfolders[_idx]
+    src_files = src_files_list[_idx]
+    n_files = n_files_list[_idx]
+    total_files += n_files
+
+    files += [os.path.join(subfolders_path, f) for f in src_files]
+    text = '{}:\t{}\t{}'.format(subfolders_path, n_files, total_files)
+    print(text)
+    counts_file.write(text + '\n')
 
 print('total_files: {}'.format(total_files))
 if empty_folders:

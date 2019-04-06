@@ -226,6 +226,7 @@ if __name__ == '__main__':
                 min_dist = dist
                 curr_monitor = curr_id
     print('curr_monitor: ', curr_monitor)
+    print('transition_interval: ', transition_interval)
 
     aspect_ratio = float(width) / float(height)
     direction = -1
