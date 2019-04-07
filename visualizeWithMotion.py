@@ -708,12 +708,22 @@ if __name__ == '__main__':
         elif src_aspect_ratio > aspect_ratio:
             dst_width = src_width
             dst_height = int(src_width / aspect_ratio)
-            start_row = int((dst_height - src_height) / 2.0)
+            if reversed_pos == 0:
+                start_row = 0
+            elif reversed_pos == 1:
+                start_row = int((dst_height - src_height) / 2.0)
+            elif reversed_pos == 2:
+                start_row = int(dst_height - src_height)
             start_col = 0
         else:
             dst_height = src_height
             dst_width = int(src_height * aspect_ratio)
-            start_col = int((dst_width - src_width) / 2.0)
+            if reversed_pos == 0:
+                start_col = 0
+            elif reversed_pos == 1:
+                start_col = int((dst_width - src_width) / 2.0)
+            elif reversed_pos == 2:
+                start_col = int(dst_width - src_width)
             start_row = 0
 
         # if mode == 0:
@@ -1658,7 +1668,9 @@ if __name__ == '__main__':
             elif k == ord('p'):
                 reversed_pos = (reversed_pos + 1) % 3
                 # print('reversed_pos: ', reversed_pos)
-                if not reversed_pos:
+                if fullscreen:
+                    loadImage(0)
+                elif not reversed_pos:
                     cv2.moveWindow(win_name, win_offset_x + monitors[curr_monitor][0],
                                    win_offset_y + monitors[curr_monitor][1])
             elif k == ord('t'):
