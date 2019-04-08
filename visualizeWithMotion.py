@@ -98,7 +98,7 @@ params = {
     'random_mode': 0,
     'recursive': 1,
     'fullscreen': 0,
-    'reversed_pos': 0,
+    'reversed_pos': 1,
     'double_click_interval': 0.1,
     'n_images': 1,
     'borderless': 1,
@@ -1667,6 +1667,16 @@ if __name__ == '__main__':
                 else:
                     old_speed = speed
                     speed = 0
+            elif k == ord('P'):
+                reversed_pos -= 1
+                if reversed_pos < 0:
+                    reversed_pos = 2
+                # print('reversed_pos: ', reversed_pos)
+                if fullscreen or mode == 1:
+                    loadImage(0)
+                elif not reversed_pos:
+                    cv2.moveWindow(win_name, win_offset_x + monitors[curr_monitor][0],
+                                   win_offset_y + monitors[curr_monitor][1])
             elif k == ord('p'):
                 reversed_pos = (reversed_pos + 1) % 3
                 # print('reversed_pos: ', reversed_pos)
