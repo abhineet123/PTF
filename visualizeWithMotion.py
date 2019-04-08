@@ -12,6 +12,8 @@ from threading import Event
 from Misc import processArguments, sortKey, stackImages, resizeAR, addBorder
 
 from PIL import Image, ImageChops
+
+
 # from wand.image import Image as wandImage
 
 def trim(im):
@@ -1668,7 +1670,7 @@ if __name__ == '__main__':
             elif k == ord('p'):
                 reversed_pos = (reversed_pos + 1) % 3
                 # print('reversed_pos: ', reversed_pos)
-                if fullscreen:
+                if fullscreen or mode == 1:
                     loadImage(0)
                 elif not reversed_pos:
                     cv2.moveWindow(win_name, win_offset_x + monitors[curr_monitor][0],
