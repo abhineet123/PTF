@@ -110,10 +110,11 @@ if __name__ == '__main__':
         if not cap.open(src_path):
             raise StandardError('The video file ' + src_path + ' could not be opened')
 
-        if cv2.__version__.startswith('3'):
-            cv_prop = cv2.CAP_PROP_FRAME_COUNT
-        else:
+        if cv2.__version__.startswith('2'):
             cv_prop = cv2.cv.CAP_PROP_FRAME_COUNT
+        else:
+            cv_prop = cv2.CAP_PROP_FRAME_COUNT
+
         total_frames = int(cap.get(cv_prop))
 
         if n_frames <= 0:
