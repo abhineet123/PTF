@@ -29,6 +29,7 @@ params = {
     'dst_dir': '',
     'show_img': 0,
     'n_frames': 0,
+    'evenly_spaced': 0,
     'reverse': 0,
     'roi': [],
     'resize_factor': 1.0,
@@ -46,6 +47,7 @@ if __name__ == '__main__':
     show_img = params['show_img']
     vid_fmt = params['vid_fmt']
     n_frames = params['n_frames']
+    evenly_spaced = params['evenly_spaced']
     roi = params['roi']
     resize_factor = params['resize_factor']
     dst_dir = params['dst_dir']
@@ -116,19 +118,29 @@ if __name__ == '__main__':
             cv_prop = cv2.CAP_PROP_FRAME_COUNT
 
         total_frames = int(cap.get(cv_prop))
+        frame_gap = 1
 
         if n_frames <= 0:
             n_frames = total_frames
-        elif total_frames > 0 and n_frames > total_frames:
-            raise AssertionError('Invalid n_frames {} for video with {} frames'.format(n_frames, total_frames))
+        else:
+            if total_frames > 0 and n_frames > total_frames:
+                raise AssertionError('Invalid n_frames {} for video with {} frames'.format(n_frames, total_frames))
+            if evenly_spaced:
+                frame_gap = total_frames/n_frames
 
-        frame_id = 0
+        frame_id = all_frame_id = 0
         while True:
             ret, frame = cap.read()
             if not ret:
                 print('\nFrame {:d} could not be read'.format(frame_id + 1))
                 break
+            all_frame_id += 1
+
+            if frame_gap>1 and all_frame_id%frame_gap != 0:
+                continue
+
             frame_id += 1
+
             if frame_id <= start_id:
                 sys.stdout.write('\rSkipped {:d}/{:d} frames'.format(
                     frame_id, start_id))
