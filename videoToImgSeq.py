@@ -126,7 +126,10 @@ if __name__ == '__main__':
             if total_frames > 0 and n_frames > total_frames:
                 raise AssertionError('Invalid n_frames {} for video with {} frames'.format(n_frames, total_frames))
             if evenly_spaced:
-                frame_gap = total_frames/n_frames
+                frame_gap = total_frames / n_frames
+                print('Using evenly spaced sampling with frame_gap: {} to sample {} frames'.format(
+                    frame_gap, n_frames
+                ))
 
         frame_id = all_frame_id = 0
         while True:
@@ -136,7 +139,7 @@ if __name__ == '__main__':
                 break
             all_frame_id += 1
 
-            if frame_gap>1 and all_frame_id%frame_gap != 0:
+            if frame_gap > 1 and all_frame_id % frame_gap != 0:
                 continue
 
             frame_id += 1
