@@ -655,42 +655,51 @@ if __name__ == '__main__':
             if not wallpaper_mode:
                 wp_id = (wp_id + 1) % n_wallpapers
             wp_fname = os.path.join(wallpaper_dir, 'wallpaper_{}.jpg'.format(wp_id))
-            screensize = user32.GetSystemMetrics(78), user32.GetSystemMetrics(79)
 
-            wp_width = 1920
-
-            if set_wallpaper == 1:
-                if screensize[0] == 1920 and screensize[1] == 1080:
-                    wp_border = 30
-                else:
-                    wp_border = 0
-                wp_height = 1080
-                wp_start_row = screensize[1] - 1080
-                wp_start_col = 0
-            else:
+            if set_wallpaper == 3:
+                out_wp_width, out_wp_height = width, height
+                src_img_desktop = src_img
+                wp_start_row = wp_start_col = 0
+                wp_width, wp_height = width, height
+                border_type = 'bottom'
                 wp_border = 30
-                wp_height = screensize[1]
-                wp_start_row = 0
-                if screensize[0] >= 3840:
-                    wp_start_col = 1920
-                else:
-                    wp_start_col = 0
+            else:
+                screensize = user32.GetSystemMetrics(78), user32.GetSystemMetrics(79)
+                out_wp_width, out_wp_height = screensize
+                wp_width = 1920
 
-            if wp_border:
+                if set_wallpaper == 1:
+                    if screensize[0] == 1920 and screensize[1] == 1080:
+                        wp_border = 30
+                    else:
+                        wp_border = 0
+                    wp_height = 1080
+                    wp_start_row = screensize[1] - 1080
+                    wp_start_col = 0
+                else:
+                    wp_border = 30
+                    wp_height = screensize[1]
+                    wp_start_row = 0
+                    if screensize[0] >= 3840:
+                        wp_start_col = 1920
+                    else:
+                        wp_start_col = 0
                 if n_images == 1 or grid_size[0] % 2 == 1:
                     border_type = 'bottom'
                 else:
                     border_type = 'top_and_bottom'
+
+            if wp_border:
                 wp_height_ratio = float(src_img.shape[0]) / float(wp_height)
                 src_border = int(wp_border * wp_height_ratio)
                 src_img = addBorder(src_img, src_border, border_type)
 
             src_img_desktop = resizeAR(src_img, wp_width, wp_height)
             src_img = addBorder(src_img, bottom_border, 1)
+
             wp_end_col = wp_start_col + src_img_desktop.shape[1]
             wp_end_row = wp_start_row + src_img_desktop.shape[0]
-
-            src_img_desktop_full = np.zeros((screensize[1], screensize[0], 3), dtype=np.uint8)
+            src_img_desktop_full = np.zeros((out_wp_height, out_wp_width, 3), dtype=np.uint8)
             src_img_desktop_full[wp_start_row:wp_end_row, wp_start_col:wp_end_col, :] = src_img_desktop
             cv2.imwrite(wp_fname, src_img_desktop_full)
             win_wallpaper_func(SPI_SETDESKWALLPAPER, 0, wp_fname, 0)
@@ -1300,19 +1309,19 @@ if __name__ == '__main__':
         # print('_params: {}'.format(_params))
         print('_type: {}'.format(_type))
 
-        if _type == 0:
+        if _type == 'ctrl+alt+esc':
             print('exiting...')
             exit_program = 1
             interrupt_wait.set()
-        elif _type == 1:
+        elif _type == 'ctrl+alt+right':
             # loadImage(1)
             interrupt_wait.set()
-        elif _type == 2:
+        elif _type == 'ctrl+alt+left':
             # loadImage(-1)
             if not video_mode:
-                img_id -= 2 * n_images
+                img_id[0] -= 2 * n_images
             interrupt_wait.set()
-        elif _type == 3:
+        elif _type == 'ctrl+alt+w':
             wallpaper_mode = 1 - wallpaper_mode
             if wallpaper_mode:
                 set_wallpaper = 1
@@ -1324,7 +1333,7 @@ if __name__ == '__main__':
                 createWindow()
                 # maximizeWindow()
             interrupt_wait.set()
-        elif _type == 4:
+        elif _type == 'ctrl+alt+shift+w':
             wallpaper_mode = 1 - wallpaper_mode
             if wallpaper_mode:
                 set_wallpaper = 2
@@ -1334,33 +1343,33 @@ if __name__ == '__main__':
                 print('wallpaper mode disabled')
                 createWindow()
             interrupt_wait.set()
-        elif _type == 5:
+        elif _type == 'ctrl+alt+=':
             n_images += 1
             loadImage(1, 1)
-        elif _type == 6:
+        elif _type == 'ctrl+alt+-':
             n_images -= 1
             if n_images < 1:
                 n_images = 1
             loadImage(1, 1)
-        elif _type == 7:
+        elif _type == 'ctrl+alt+b':
             borderless = 1 - borderless
             if borderless:
                 print('Borderless stitching enabled')
             else:
                 print('Borderless stitching disabled')
-        elif _type == 8:
+        elif _type == 'ctrl+alt+$':
             n_images = 4
             loadImage(1, 1)
-        elif _type == 9:
+        elif _type == 'ctrl+alt+^':
             n_images = 6
             loadImage(1, 1)
-        elif _type == 10:
+        elif _type == 'ctrl+alt+!':
             n_images = 1
             loadImage(1, 1)
-        elif _type == 11:
+        elif _type == 'ctrl+alt+@':
             n_images = 2
             loadImage(1, 1)
-        elif _type == 12:
+        elif _type == 'ctrl+alt+)':
             if n_images == 1:
                 print('"' + os.path.abspath(img_fname) + '"')
             else:
@@ -1369,7 +1378,7 @@ if __name__ == '__main__':
                     if not video_mode:
                         print('"' + os.path.abspath(img_fnames[_idx]) + '"')
                 print()
-        elif _type == 13:
+        elif _type == 'ctrl+alt+up':
             if transition_interval == MAX_TRANSITION_INTERVAL:
                 transition_interval = old_transition_interval
             else:
@@ -1379,7 +1388,7 @@ if __name__ == '__main__':
             if not video_mode:
                 img_id -= n_images
             interrupt_wait.set()
-        elif _type == 14:
+        elif _type == 'ctrl+alt+down':
             if transition_interval == MIN_TRANSITION_INTERVAL:
                 transition_interval = old_transition_interval
             else:
@@ -1389,43 +1398,78 @@ if __name__ == '__main__':
             if not video_mode:
                 img_id -= n_images
             interrupt_wait.set()
+        elif _type == 'ctrl+alt+0':
+            if n_images == 1:
+                print('"' + os.path.abspath(img_fname) + '"')
+            else:
+                print()
+                for _idx in stack_idx:
+                    if not video_mode:
+                        print('"' + os.path.abspath(img_fnames[_idx]) + '"')
+                print()
+
+
+    hotkeys = [
+        'ctrl+alt+esc',
+        'ctrl+alt+right',
+        'ctrl+alt+left',
+        'ctrl+alt+w',
+        'ctrl+alt+shift+w',
+        'ctrl+alt+=',
+        'ctrl+alt+-',
+        'ctrl+alt+b',
+        'ctrl+alt+$',
+        'ctrl+alt+^',
+        'ctrl+alt+!',
+        'ctrl+alt+@',
+        'ctrl+alt+)',
+        'ctrl+alt+up',
+        'ctrl+alt+down',
+        'ctrl+alt+0',
+    ]
 
 
     def add_hotkeys():
+        for key in hotkeys:
+            keyboard.add_hotkey(key, kb_callback, args=(key,))
         # kb_params = [0, wallpaper_mode]
-        keyboard.add_hotkey('ctrl+alt+esc', kb_callback, args=(0,))
-        keyboard.add_hotkey('ctrl+alt+right', kb_callback, args=(1,))
-        keyboard.add_hotkey('ctrl+alt+left', kb_callback, args=(2,))
-        keyboard.add_hotkey('ctrl+alt+w', kb_callback, args=(3,))
-        keyboard.add_hotkey('ctrl+alt+shift+w', kb_callback, args=(4,))
-        keyboard.add_hotkey('ctrl+alt+=', kb_callback, args=(5,))
-        keyboard.add_hotkey('ctrl+alt+-', kb_callback, args=(6,))
-        keyboard.add_hotkey('ctrl+alt+b', kb_callback, args=(7,))
-        keyboard.add_hotkey('ctrl+alt+$', kb_callback, args=(8,))
-        keyboard.add_hotkey('ctrl+alt+^', kb_callback, args=(9,))
-        keyboard.add_hotkey('ctrl+alt+!', kb_callback, args=(10,))
-        keyboard.add_hotkey('ctrl+alt+@', kb_callback, args=(11,))
-        keyboard.add_hotkey('ctrl+alt+)', kb_callback, args=(12,))
-        keyboard.add_hotkey('ctrl+alt+up', kb_callback, args=(13,))
-        keyboard.add_hotkey('ctrl+alt+down', kb_callback, args=(14,))
+        # keyboard.add_hotkey('ctrl+alt+esc', kb_callback, args=(0,))
+        # keyboard.add_hotkey('ctrl+alt+right', kb_callback, args=(1,))
+        # keyboard.add_hotkey('ctrl+alt+left', kb_callback, args=(2,))
+        # keyboard.add_hotkey('ctrl+alt+w', kb_callback, args=(3,))
+        # keyboard.add_hotkey('ctrl+alt+shift+w', kb_callback, args=(4,))
+        # keyboard.add_hotkey('ctrl+alt+=', kb_callback, args=(5,))
+        # keyboard.add_hotkey('ctrl+alt+-', kb_callback, args=(6,))
+        # keyboard.add_hotkey('ctrl+alt+b', kb_callback, args=(7,))
+        # keyboard.add_hotkey('ctrl+alt+$', kb_callback, args=(8,))
+        # keyboard.add_hotkey('ctrl+alt+^', kb_callback, args=(9,))
+        # keyboard.add_hotkey('ctrl+alt+!', kb_callback, args=(10,))
+        # keyboard.add_hotkey('ctrl+alt+@', kb_callback, args=(11,))
+        # keyboard.add_hotkey('ctrl+alt+)', kb_callback, args=(12,))
+        # keyboard.add_hotkey('ctrl+alt+up', kb_callback, args=(13,))
+        # keyboard.add_hotkey('ctrl+alt+down', kb_callback, args=(14,))
+        # keyboard.add_hotkey('ctrl+alt+0', kb_callback, args=(15,))
 
 
     def remove_hotkeys():
-        keyboard.remove_hotkey('ctrl+alt+esc')
-        keyboard.remove_hotkey('ctrl+alt+right')
-        keyboard.remove_hotkey('ctrl+alt+left')
-        keyboard.remove_hotkey('ctrl+alt+w')
-        keyboard.remove_hotkey('ctrl+alt+shift+w')
-        keyboard.remove_hotkey('ctrl+alt+=')
-        keyboard.remove_hotkey('ctrl+alt+-')
-        keyboard.remove_hotkey('ctrl+alt+b')
-        keyboard.remove_hotkey('ctrl+alt+$')
-        keyboard.remove_hotkey('ctrl+alt+^')
-        keyboard.remove_hotkey('ctrl+alt+!')
-        keyboard.remove_hotkey('ctrl+alt+@')
-        keyboard.remove_hotkey('ctrl+alt+)')
-        keyboard.remove_hotkey('ctrl+alt+up')
-        keyboard.remove_hotkey('ctrl+alt+down')
+        for key in hotkeys:
+            keyboard.remove_hotkey(key)
+        # keyboard.remove_hotkey('ctrl+alt+esc')
+        # keyboard.remove_hotkey('ctrl+alt+right')
+        # keyboard.remove_hotkey('ctrl+alt+left')
+        # keyboard.remove_hotkey('ctrl+alt+w')
+        # keyboard.remove_hotkey('ctrl+alt+shift+w')
+        # keyboard.remove_hotkey('ctrl+alt+=')
+        # keyboard.remove_hotkey('ctrl+alt+-')
+        # keyboard.remove_hotkey('ctrl+alt+b')
+        # keyboard.remove_hotkey('ctrl+alt+$')
+        # keyboard.remove_hotkey('ctrl+alt+^')
+        # keyboard.remove_hotkey('ctrl+alt+!')
+        # keyboard.remove_hotkey('ctrl+alt+@')
+        # keyboard.remove_hotkey('ctrl+alt+)')
+        # keyboard.remove_hotkey('ctrl+alt+up')
+        # keyboard.remove_hotkey('ctrl+alt+down')
+        # keyboard.remove_hotkey('ctrl+alt+0')
 
 
     # if hotkeys_available:
