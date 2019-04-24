@@ -1432,44 +1432,10 @@ if __name__ == '__main__':
     def add_hotkeys():
         for key in hotkeys:
             keyboard.add_hotkey(key, kb_callback, args=(key,))
-        # kb_params = [0, wallpaper_mode]
-        # keyboard.add_hotkey('ctrl+alt+esc', kb_callback, args=(0,))
-        # keyboard.add_hotkey('ctrl+alt+right', kb_callback, args=(1,))
-        # keyboard.add_hotkey('ctrl+alt+left', kb_callback, args=(2,))
-        # keyboard.add_hotkey('ctrl+alt+w', kb_callback, args=(3,))
-        # keyboard.add_hotkey('ctrl+alt+shift+w', kb_callback, args=(4,))
-        # keyboard.add_hotkey('ctrl+alt+=', kb_callback, args=(5,))
-        # keyboard.add_hotkey('ctrl+alt+-', kb_callback, args=(6,))
-        # keyboard.add_hotkey('ctrl+alt+b', kb_callback, args=(7,))
-        # keyboard.add_hotkey('ctrl+alt+$', kb_callback, args=(8,))
-        # keyboard.add_hotkey('ctrl+alt+^', kb_callback, args=(9,))
-        # keyboard.add_hotkey('ctrl+alt+!', kb_callback, args=(10,))
-        # keyboard.add_hotkey('ctrl+alt+@', kb_callback, args=(11,))
-        # keyboard.add_hotkey('ctrl+alt+)', kb_callback, args=(12,))
-        # keyboard.add_hotkey('ctrl+alt+up', kb_callback, args=(13,))
-        # keyboard.add_hotkey('ctrl+alt+down', kb_callback, args=(14,))
-        # keyboard.add_hotkey('ctrl+alt+0', kb_callback, args=(15,))
-
 
     def remove_hotkeys():
         for key in hotkeys:
             keyboard.remove_hotkey(key)
-        # keyboard.remove_hotkey('ctrl+alt+esc')
-        # keyboard.remove_hotkey('ctrl+alt+right')
-        # keyboard.remove_hotkey('ctrl+alt+left')
-        # keyboard.remove_hotkey('ctrl+alt+w')
-        # keyboard.remove_hotkey('ctrl+alt+shift+w')
-        # keyboard.remove_hotkey('ctrl+alt+=')
-        # keyboard.remove_hotkey('ctrl+alt+-')
-        # keyboard.remove_hotkey('ctrl+alt+b')
-        # keyboard.remove_hotkey('ctrl+alt+$')
-        # keyboard.remove_hotkey('ctrl+alt+^')
-        # keyboard.remove_hotkey('ctrl+alt+!')
-        # keyboard.remove_hotkey('ctrl+alt+@')
-        # keyboard.remove_hotkey('ctrl+alt+)')
-        # keyboard.remove_hotkey('ctrl+alt+up')
-        # keyboard.remove_hotkey('ctrl+alt+down')
-        # keyboard.remove_hotkey('ctrl+alt+0')
 
 
     # if hotkeys_available:
