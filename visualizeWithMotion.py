@@ -1386,7 +1386,7 @@ if __name__ == '__main__':
                 transition_interval = MAX_TRANSITION_INTERVAL
             print('Setting transition interval to: {}'.format(transition_interval))
             if not video_mode:
-                img_id -= n_images
+                img_id[0] -= n_images
             interrupt_wait.set()
         elif _type == 'ctrl+alt+down':
             if transition_interval == MIN_TRANSITION_INTERVAL:
@@ -1396,7 +1396,7 @@ if __name__ == '__main__':
                 transition_interval = MIN_TRANSITION_INTERVAL
             print('Setting transition interval to: {}'.format(transition_interval))
             if not video_mode:
-                img_id -= n_images
+                img_id[0] -= n_images
             interrupt_wait.set()
         elif _type == 'ctrl+alt+0':
             if n_images == 1:
