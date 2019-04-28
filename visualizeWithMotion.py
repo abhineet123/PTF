@@ -695,7 +695,7 @@ if __name__ == '__main__':
                 src_img = addBorder(src_img, src_border, border_type)
 
             src_img_desktop = resizeAR(src_img, wp_width, wp_height, placement_type=reversed_pos)
-            src_img = addBorder(src_img, bottom_border, 1)
+            # src_img = addBorder(src_img, bottom_border, 1)
 
             wp_end_col = wp_start_col + src_img_desktop.shape[1]
             wp_end_row = wp_start_row + src_img_desktop.shape[0]
