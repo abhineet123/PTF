@@ -694,7 +694,7 @@ if __name__ == '__main__':
                 src_border = int(wp_border * wp_height_ratio)
                 src_img = addBorder(src_img, src_border, border_type)
 
-            src_img_desktop = resizeAR(src_img, wp_width, wp_height)
+            src_img_desktop = resizeAR(src_img, wp_width, wp_height, placement_type=reversed_pos)
             src_img = addBorder(src_img, bottom_border, 1)
 
             wp_end_col = wp_start_col + src_img_desktop.shape[1]
@@ -1304,10 +1304,10 @@ if __name__ == '__main__':
 
     def kb_callback(_type):
         global set_wallpaper, n_images, wallpaper_mode, exit_program, borderless, img_id
-        global old_transition_interval, transition_interval
+        global old_transition_interval, transition_interval, reversed_pos
 
         # print('_params: {}'.format(_params))
-        print('_type: {}'.format(_type))
+        print('hotkey: {}'.format(_type))
 
         if _type == 'ctrl+alt+esc':
             print('exiting...')
@@ -1398,6 +1398,11 @@ if __name__ == '__main__':
             if not video_mode:
                 img_id[0] -= n_images
             interrupt_wait.set()
+        elif _type == 'ctrl+alt+p':
+            reversed_pos = (reversed_pos + 1) % 3
+            if not video_mode:
+                img_id[0] -= n_images
+            interrupt_wait.set()
         elif _type == 'ctrl+alt+0':
             if n_images == 1:
                 print('"' + os.path.abspath(img_fname) + '"')
@@ -1426,6 +1431,7 @@ if __name__ == '__main__':
         'ctrl+alt+up',
         'ctrl+alt+down',
         'ctrl+alt+0',
+        'ctrl+alt+p',
     ]
 
 

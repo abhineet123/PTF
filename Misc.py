@@ -342,7 +342,8 @@ def processArguments(args, params):
                 params[arg[0]] = ''
 
 
-def resizeAR(src_img, width, height, return_factors=False):
+def resizeAR(src_img, width, height, return_factors=False,
+             placement_type=0):
     src_height, src_width, n_channels = src_img.shape
     src_aspect_ratio = float(src_width) / float(src_height)
 
@@ -363,11 +364,23 @@ def resizeAR(src_img, width, height, return_factors=False):
         dst_width = src_width
         dst_height = int(src_width / aspect_ratio)
         start_row = int((dst_height - src_height) / 2.0)
+        if placement_type == 0:
+            start_row = 0
+        elif placement_type == 1:
+            start_row = int((dst_height - src_height) / 2.0)
+        elif placement_type == 2:
+            start_row = int(dst_height - src_height)
         start_col = 0
     else:
         dst_height = src_height
         dst_width = int(src_height * aspect_ratio)
         start_col = int((dst_width - src_width) / 2.0)
+        if placement_type == 0:
+            start_col = 0
+        elif placement_type == 1:
+            start_col = int((dst_width - src_width) / 2.0)
+        elif placement_type == 2:
+            start_col = int(dst_width - src_width)
         start_row = 0
 
     dst_img = np.zeros((dst_height, dst_width, n_channels), dtype=np.uint8)
