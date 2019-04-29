@@ -1379,21 +1379,26 @@ if __name__ == '__main__':
                         print('"' + os.path.abspath(img_fnames[_idx]) + '"')
                 print()
         elif _type == 'ctrl+alt+up':
-            if transition_interval == MAX_TRANSITION_INTERVAL:
-                transition_interval = old_transition_interval
-            else:
-                old_transition_interval = transition_interval
-                transition_interval = MAX_TRANSITION_INTERVAL
+            transition_interval += 1 if transition_interval < 10 else 5
+
+            # if transition_interval == MAX_TRANSITION_INTERVAL:
+            #     transition_interval = old_transition_interval
+            # else:
+            #     old_transition_interval = transition_interval
+            #     transition_interval = MAX_TRANSITION_INTERVAL
             print('Setting transition interval to: {}'.format(transition_interval))
             if not video_mode:
                 img_id[0] -= n_images
             interrupt_wait.set()
         elif _type == 'ctrl+alt+down':
-            if transition_interval == MIN_TRANSITION_INTERVAL:
-                transition_interval = old_transition_interval
-            else:
-                old_transition_interval = transition_interval
-                transition_interval = MIN_TRANSITION_INTERVAL
+            transition_interval -= 1 if transition_interval <= 10 else 5
+            if transition_interval < 0:
+                transition_interval = 0
+            # if transition_interval == MIN_TRANSITION_INTERVAL:
+            #     transition_interval = old_transition_interval
+            # else:
+            #     old_transition_interval = transition_interval
+            #     transition_interval = MIN_TRANSITION_INTERVAL
             print('Setting transition interval to: {}'.format(transition_interval))
             if not video_mode:
                 img_id[0] -= n_images
@@ -1438,6 +1443,7 @@ if __name__ == '__main__':
     def add_hotkeys():
         for key in hotkeys:
             keyboard.add_hotkey(key, kb_callback, args=(key,))
+
 
     def remove_hotkeys():
         for key in hotkeys:

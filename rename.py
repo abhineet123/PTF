@@ -33,12 +33,22 @@ add_as_prefix = 0
 add_as_suffix = 0
 remove_files = 0
 rename_files = 0
+search_all = 0
 
 src_dir = os.path.abspath(src_dir)
+if os.path.isfile(src_dir):
+    src_dir = os.path.dirname(src_dir)
+
 dst_substr_orig = dst_substr
 
 if src_substr == '__all__' or src_substr == '__a__':
     src_substr = ''
+elif src_substr == '__clipboard__' or src_substr == '__cb__':
+    if not src_substr:
+        print('Getting src_substr from clipboard')
+        from Tkinter import Tk
+
+        src_substr = Tk().clipboard_get()
 if src_substr == '__prefix__' or src_substr == '__pf__':
     src_substr = ''
     add_as_prefix = 1
@@ -53,11 +63,10 @@ if dst_substr == '__remove__' or dst_substr == '__rm__':
     remove_files = 1
 if dst_substr == '__space__' or dst_substr == '__sp__':
     dst_substr = ' '
-if dst_substr == '__none__' or dst_substr == '__n__':
+elif dst_substr == '__none__' or dst_substr == '__n__':
     dst_substr = ''
 if dst_substr_orig == '__root__' or dst_substr_orig == '__rf__':
     dst_substr = 'root folder name'
-
 
 if convert_to_lowercase:
     print 'Converting to lower case'
@@ -66,18 +75,13 @@ if add_as_prefix:
     print 'Adding {:s} as prefix'.format(dst_substr)
 elif add_as_suffix:
     print 'Adding {:s} as suffix'.format(dst_substr)
+elif search_all:
+    pass
 elif remove_files:
     print 'Searching for {:s} to remove in {:s}'.format(src_substr, src_dir)
 else:
-    if not src_substr:
-        print('Getting src_substr from clipboard')
-        from Tkinter import Tk
-
-        src_substr = Tk().clipboard_get()
-        if os.path.isfile(src_dir):
-            src_dir = os.path.dirname(src_dir)
-
     print 'Searching for {:s} to replace with {:s} in {:s}'.format(src_substr, dst_substr, src_dir)
+
 if recursive_search:
     print 'Searching for files recursively in all sub folders'
 else:
