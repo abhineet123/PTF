@@ -109,6 +109,7 @@ params = {
     'widescreen_mode': 0,
     'multi_mode': 0,
     'trim_images': 0,
+    'alpha': 1,
 }
 
 if __name__ == '__main__':
@@ -147,6 +148,7 @@ if __name__ == '__main__':
     n_wallpapers = params['n_wallpapers']
     multi_mode = params['multi_mode']
     trim_images = params['trim_images']
+    alpha = params['alpha']
 
     if wallpaper_mode and not set_wallpaper:
         set_wallpaper = 1
@@ -651,6 +653,8 @@ if __name__ == '__main__':
                                                               return_idx=1)
             # print('stack_locations: {}'.format(stack_locations))
 
+        if alpha < 1:
+            src_img = (alpha * src_img).astype(np.uint8)
         if set_wallpaper:
             if not wallpaper_mode:
                 wp_id = (wp_id + 1) % n_wallpapers
@@ -1829,7 +1833,17 @@ if __name__ == '__main__':
             elif k == 2621440:
                 # down
                 updateZoom(_speed=old_speed, _direction=1)
-            elif k == 2555904 or k == 39 or k == ord('d'):
+            elif k == ord('a'):
+                alpha -= 0.1
+                if alpha < 0:
+                    alpha = 1
+                loadImage(0)
+            elif k == ord('A'):
+                alpha += 0.1
+                if alpha > 1:
+                    alpha = 0
+                loadImage(0)
+            elif k == 2555904 or k == 39:
                 # right
                 if video_mode and auto_progress:
                     vid_id = (vid_id + 1) % n_videos
@@ -1841,7 +1855,7 @@ if __name__ == '__main__':
                         auto_progress_type = 1
                     else:
                         loadImage(1)
-            elif k == 2424832 or k == 40 or k == ord('a'):
+            elif k == 2424832 or k == 40:
                 # left
                 if video_mode and auto_progress:
                     vid_id -= 1
