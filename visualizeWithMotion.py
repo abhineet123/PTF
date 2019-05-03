@@ -1308,7 +1308,7 @@ if __name__ == '__main__':
 
     def kb_callback(_type):
         global set_wallpaper, n_images, wallpaper_mode, exit_program, borderless, img_id
-        global old_transition_interval, transition_interval, reversed_pos
+        global old_transition_interval, transition_interval, reversed_pos, alpha
 
         # print('_params: {}'.format(_params))
         print('hotkey: {}'.format(_type))
@@ -1412,6 +1412,20 @@ if __name__ == '__main__':
             if not video_mode:
                 img_id[0] -= n_images
             interrupt_wait.set()
+        elif _type == 'ctrl+alt+a':
+            alpha -= 0.1
+            if alpha < 0:
+                alpha = 1
+            if not video_mode:
+                img_id[0] -= n_images
+            interrupt_wait.set()
+        elif _type == 'ctrl+alt+shift+a':
+            alpha += 0.1
+            if alpha > 1:
+                alpha = 0
+            if not video_mode:
+                img_id[0] -= n_images
+            interrupt_wait.set()
         elif _type == 'ctrl+alt+0':
             if n_images == 1:
                 print('"' + os.path.abspath(img_fname) + '"')
@@ -1441,6 +1455,8 @@ if __name__ == '__main__':
         'ctrl+alt+down',
         'ctrl+alt+0',
         'ctrl+alt+p',
+        'ctrl+alt+a',
+        'ctrl+alt+shift+a',
     ]
 
 
