@@ -185,7 +185,7 @@ if __name__ == '__main__':
             with open(settings_path, "w") as fid:
                 for _line in settings_lines:
                     if _line.startswith('Connection\InterfaceAddress'):
-                        _line = 'Connection\InterfaceAddress={}'.format(ip_address)
+                        _line = 'Connection\InterfaceAddress={}\n'.format(ip_address)
                     fid.write(_line)
 
         os.startfile(tor_path)
