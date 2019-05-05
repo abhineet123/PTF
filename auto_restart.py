@@ -85,6 +85,7 @@ if __name__ == '__main__':
 
     params = {
         'interface_name': 'PPP adapter PureVPN',
+        'utorrent_mode': 1,
         'restart_time': 86400,
         'wait_time': 10800,
         'post_wait_time': 10,
@@ -100,6 +101,7 @@ if __name__ == '__main__':
     }
 
     processArguments(sys.argv[1:], params)
+    utorrent_mode = params['utorrent_mode']
     interface_name = params['interface_name']
     restart_time = params['restart_time']
     wait_time = params['wait_time']
@@ -171,12 +173,20 @@ if __name__ == '__main__':
                 print('Sending email to {} from {}'.format(toaddr, fromaddr))
                 server.sendmail(fromaddr, toaddr, text)
 
-        f = codecs.open(settings_path, "rb").read()
-        d = bencode.bdecode(f)
-        d['net.bind_ip'] = ip_address
-        d['net.outgoing_ip'] = ip_address
-        f_out = bencode.bencode(d)
-        codecs.open(settings_path, "wb").write(f_out)
+        if utorrent_mode:
+            f = codecs.open(settings_path, "rb").read()
+            d = bencode.bdecode(f)
+            d['net.bind_ip'] = ip_address
+            d['net.outgoing_ip'] = ip_address
+            f_out = bencode.bencode(d)
+            codecs.open(settings_path, "wb").write(f_out)
+        else:
+            settings_lines = open(settings_path, "r").readlines()
+            with open(settings_path, "w") as fid:
+                for _line in settings_lines:
+                    if _line.startswith('Connection\InterfaceAddress'):
+                        _line = 'Connection\InterfaceAddress={}'.format(ip_address)
+                    fid.write(_line)
 
         os.startfile(tor_path)
 

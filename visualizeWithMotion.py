@@ -108,7 +108,7 @@ params = {
     'wallpaper_mode': 0,
     'widescreen_mode': 0,
     'multi_mode': 0,
-    'trim_images': 0,
+    'trim_images': 1,
     'alpha': 1,
 }
 
