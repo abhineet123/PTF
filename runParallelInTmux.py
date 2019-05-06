@@ -31,8 +31,8 @@ for line in lines:
     pane_to_commands[pane_id] = '{} "{}" Enter'.format(pane_to_commands[pane_id], _line)
 
 for pane_id in pane_to_commands:
-    print('running: {}'.format(pane_to_commands[pane_id))
-    os.system(pane_to_commands[pane_id)
+    print('running: {}'.format(pane_to_commands[pane_id]))
+    os.system(pane_to_commands[pane_id])
 
     # cmd_prefix = 'tmux send-keys -t {}'.format(pane_id)
     # for _line in pane_to_commands[pane_id]:
