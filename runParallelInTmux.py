@@ -15,7 +15,7 @@ in_fname = params['in_fname']
 lines = open(in_fname, 'r').readlines()
 pane_id = 0
 pane_to_commands = {
-    pane_id: []
+    pane_id: 'tmux send-keys -t {}'.format(pane_id)
 }
 pprint(lines)
 for line in lines:
