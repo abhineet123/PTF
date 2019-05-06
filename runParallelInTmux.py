@@ -1,6 +1,6 @@
 import sys
 import os
-import pprint
+from pprint import pprint
 from Misc import processArguments
 
 params = {
