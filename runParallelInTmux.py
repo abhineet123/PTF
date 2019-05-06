@@ -20,8 +20,8 @@ for line in lines:
     _line = line.strip()
     if not _line:
         continue
-    if line.startswith('#@'):
-        pane_id = int(line.replace('#@', ''))
+    if line.startswith('# @'):
+        pane_id = int(line.replace('# @', ''))
         if pane_id not in pane_to_commands:
             pane_to_commands[pane_id] = []
         continue
