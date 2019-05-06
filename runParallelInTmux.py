@@ -1,5 +1,6 @@
 import sys
 import os
+import pprint
 from Misc import processArguments
 
 params = {
@@ -16,6 +17,7 @@ pane_id = 0
 pane_to_commands = {
     pane_id: []
 }
+pprint(lines)
 for line in lines:
     _line = line.strip()
     if not _line:
