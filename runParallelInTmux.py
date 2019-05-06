@@ -25,13 +25,17 @@ for line in lines:
     if _line.startswith('# @'):
         pane_id = int(_line.replace('# @', ''))
         if pane_id not in pane_to_commands:
-            pane_to_commands[pane_id] = []
+            pane_to_commands[pane_id] = 'tmux send-keys -t {}'.format(pane_id)
         continue
-    pane_to_commands[pane_id].append(_line)
+    # pane_to_commands[pane_id].append(_line)
+    pane_to_commands[pane_id] = '{} "{}" Enter'.format(pane_to_commands[pane_id], _line)
 
 for pane_id in pane_to_commands:
-    cmd_prefix = 'tmux send-keys -t {}'.format(pane_id)
-    for _line in pane_to_commands[pane_id]:
-        cmd = '{} "{}" Enter'.format(cmd_prefix, _line)
-        print('running: {}'.format(cmd))
-        os.system(cmd)
+    print('running: {}'.format(pane_to_commands[pane_id))
+    os.system(pane_to_commands[pane_id)
+
+    # cmd_prefix = 'tmux send-keys -t {}'.format(pane_id)
+    # for _line in pane_to_commands[pane_id]:
+    #     cmd = '{} "{}" Enter'.format(cmd_prefix, _line)
+    #     print('running: {}'.format(cmd))
+    #     os.system(cmd)
