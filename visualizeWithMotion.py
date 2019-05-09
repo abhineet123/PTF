@@ -1393,15 +1393,6 @@ if __name__ == '__main__':
         elif _type == 'ctrl+alt+@':
             n_images = 2
             loadImage(1, 1)
-        elif _type == 'ctrl+alt+)':
-            if n_images == 1:
-                print('"' + os.path.abspath(img_fname) + '"')
-            else:
-                print()
-                for _idx in stack_idx:
-                    if not video_mode:
-                        print('"' + os.path.abspath(img_fnames[_idx]) + '"')
-                print()
         elif _type == 'ctrl+alt+up':
             transition_interval += 1 if transition_interval < 10 else 5
 
@@ -1446,7 +1437,7 @@ if __name__ == '__main__':
             if not video_mode:
                 img_id[0] -= n_images
             interrupt_wait.set()
-        elif _type == 'ctrl+alt+0':
+        elif _type == 'ctrl+alt+0' or _type == 'ctrl+alt+)':
             if n_images == 1:
                 print('"' + os.path.abspath(img_fname) + '"')
             else:
@@ -1455,7 +1446,7 @@ if __name__ == '__main__':
                     if not video_mode:
                         print('"' + os.path.abspath(img_fnames[_idx]) + '"')
                 print()
-
+                
 
     hotkeys = [
         'ctrl+alt+esc',
