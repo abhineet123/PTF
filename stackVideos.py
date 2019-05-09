@@ -71,7 +71,7 @@ if not save_path:
                             '{}.{}'.format(datetime.now().strftime("%y%m%d_%H%M%S"), ext))
 else:
     out_seq_name, out_ext = os.path.splitext(os.path.basename(save_path))
-    dst_path = os.path.join(os.path.dirname(save_path), '{}_{}.{}'.format(
+    dst_path = os.path.join(os.path.dirname(save_path), '{}_{}{}'.format(
         out_seq_name, datetime.now().strftime("%y%m%d_%H%M%S"), out_ext))
 
 save_dir = os.path.dirname(dst_path)
@@ -103,14 +103,14 @@ for src_file in src_files:
     if not cap.open(src_file):
         raise StandardError('The video file ' + src_file + ' could not be opened')
 
-    if cv2.__version__.startswith('3'):
-        cv_prop = cv2.CAP_PROP_FRAME_COUNT
-        h_prop = cv2.CAP_PROP_FRAME_HEIGHT
-        w_prop = cv2.CAP_PROP_FRAME_WIDTH
-    else:
+    if cv2.__version__.startswith('2'):
         cv_prop = cv2.cv.CAP_PROP_FRAME_COUNT
         h_prop = cv2.cv.CAP_PROP_FRAME_HEIGHT
         w_prop = cv2.cv.CAP_PROP_FRAME_WIDTH
+    else:
+        cv_prop = cv2.CAP_PROP_FRAME_COUNT
+        h_prop = cv2.CAP_PROP_FRAME_HEIGHT
+        w_prop = cv2.CAP_PROP_FRAME_WIDTH
 
     total_frames = int(cap.get(cv_prop))
     _height = int(cap.get(h_prop))
@@ -123,6 +123,8 @@ for src_file in src_files:
 frame_id = start_id
 pause_after_frame = 0
 video_out = None
+
+win_name = 'stacked_{}'.format(datetime.now().strftime("%y%m%d_%H%M%S"))
 
 min_n_frames = min(n_frames_list)
 
@@ -179,7 +181,7 @@ while True:
     video_out.write(out_img)
     if show_img:
         out_img_disp = resizeAR(out_img, 1920, 1080)
-        cv2.imshow('stacked', out_img_disp)
+        cv2.imshow(win_name, out_img_disp)
         k = cv2.waitKey(1 - pause_after_frame) & 0xFF
         if k == ord('q') or k == 27:
             break
@@ -198,4 +200,4 @@ sys.stdout.flush()
 video_out.release()
 
 if show_img:
-    cv2.destroyWindow('stacked')
+    cv2.destroyWindow(win_name)

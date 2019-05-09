@@ -20,7 +20,7 @@ def trim(im):
     bg = Image.new(im.mode, im.size, im.getpixel((0, 0)))
     diff = ImageChops.difference(im, bg)
     # diff.show()
-    diff = ImageChops.add(diff, diff, 2.0, -50)
+    diff = ImageChops.add(diff, diff, 2.0, -35)
     # diff.show()
     # diff = ImageChops.add(diff, diff)
     bbox = diff.getbbox()
@@ -351,7 +351,9 @@ if __name__ == '__main__':
     else:
         if src_dirs:
             src_dirs = src_dirs.split(',')
-            src_dirs = [os.path.join(src_dir, k) for k in src_dirs]
+            inc_src_dirs = [os.path.join(src_dir, k) for k in src_dirs if k[0] != '!']
+            exc_src_dirs = [os.path.join('!' + src_dir, k[1:]) for k in src_dirs if k[0] == '!']
+            src_dirs = inc_src_dirs + exc_src_dirs
         else:
             src_dirs = [src_dir, ]
             if multi_mode:
@@ -365,21 +367,36 @@ if __name__ == '__main__':
         else:
             n_src = 1
 
+        excluded_src_files = []
         for _id, src_dir in enumerate(src_dirs):
-            print('Reading source images from: {}'.format(src_dir))
+            if src_dir[0] == '!':
+                src_dir = src_dir[1:]
+                excluded = 1
+            else:
+                excluded = 0
+
             if recursive:
                 src_file_gen = [[os.path.join(dirpath, f) for f in filenames if
                                  os.path.splitext(f.lower())[1] in img_exts]
                                 for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
-                src_files[_id] = [item for sublist in src_file_gen for item in sublist]
+                _src_files = [item for sublist in src_file_gen for item in sublist]
 
                 # _src_file_list = list(src_file_gen)
                 # src_file_list = []
                 # for x in _src_file_list:
                 #     src_file_list += x
             else:
-                src_files[_id] = [os.path.join(src_dir, k) for k in os.listdir(src_dir) if
-                                  os.path.splitext(k.lower())[1] in img_exts]
+                _src_files = [os.path.join(src_dir, k) for k in os.listdir(src_dir) if
+                              os.path.splitext(k.lower())[1] in img_exts]
+
+            _src_files = [os.path.abspath(k) for k in _src_files]
+            _n_src_files = len(_src_files)
+            if excluded:
+                print('Excluding {} images from: {}'.format(_n_src_files, src_dir))
+                excluded_src_files += _src_files
+            else:
+                print('Adding {} images from: {}'.format(_n_src_files, src_dir))
+                src_files[_id] = _src_files
 
             # src_file_list = [list(x) for x in src_file_list]
             # src_file_list = [x for x in src_file_list]
@@ -392,6 +409,9 @@ if __name__ == '__main__':
             #     print('filenames', filenames)
             #     print('dirnames', dirnames)
             #     print()
+        for _id in src_files:
+            if excluded_src_files:
+                src_files[_id] = [k for k in src_files[_id] if k not in excluded_src_files]
 
             total_frames[_id] = len(src_files[_id])
             try:
