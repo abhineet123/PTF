@@ -1446,7 +1446,7 @@ if __name__ == '__main__':
                     if not video_mode:
                         print('"' + os.path.abspath(img_fnames[_idx]) + '"')
                 print()
-                
+
 
     hotkeys = [
         'ctrl+alt+esc',
@@ -1461,7 +1461,6 @@ if __name__ == '__main__':
         'ctrl+alt+^',
         'ctrl+alt+!',
         'ctrl+alt+@',
-        'ctrl+alt+)',
         'ctrl+alt+up',
         'ctrl+alt+down',
         'ctrl+alt+0',
