@@ -755,10 +755,10 @@ def drawRegion(img, corners, color, thickness=1, annotate_corners=False,
     for i in range(n_pts):
         p1 = (int(corners[0, i]), int(corners[1, i]))
         p2 = (int(corners[0, (i + 1) % n_pts]), int(corners[1, (i + 1) % n_pts]))
-        if cv2.__version__.startswith('3'):
-            cv2.line(img, p1, p2, color, thickness, cv2.LINE_AA)
-        else:
+        if cv2.__version__.startswith('21'):
             cv2.line(img, p1, p2, color, thickness, cv2.CV_AA)
+        else:
+            cv2.line(img, p1, p2, color, thickness, cv2.LINE_AA)
         if annotate_corners:
             if annotation_col is None:
                 annotation_col = color
@@ -2048,7 +2048,10 @@ def getJaccardError(tracker_pos, gt_pos, show_img=0, border_size=100, min_thresh
         legend_font_size = 1
         legend_font_thickness = 1
         legend_font_face = cv2.FONT_HERSHEY_COMPLEX_SMALL
-        legend_font_line_type = cv2.CV_AA
+        if cv2.__version__.startswith('2'):
+            legend_font_line_type = cv2.CV_AA
+        else:
+            legend_font_line_type = cv2.LINE_AA
         header_location = (0, 20)
 
         cv2.putText(tracker_img, '{:f}'.format(jacc_error), header_location, legend_font_face,
