@@ -272,13 +272,13 @@ if __name__ == '__main__':
             if show_grid_label_connector:
                 p1 = (int(curr_corners[0, 0]), int(curr_corners[1, 0]))
                 p2 = (int(curr_corners[0, 2]), int(curr_corners[1, 2]))
-                cv2.line(curr_img, p1, conn_end_pt_1, conn_col, conn_thickness, cv2.CV_AA)
-                cv2.line(curr_img, p2, conn_end_pt_2, conn_col, conn_thickness, cv2.CV_AA)
+                cv2.line(curr_img, p1, conn_end_pt_1, conn_col, conn_thickness, legend_font_line_type)
+                cv2.line(curr_img, p2, conn_end_pt_2, conn_col, conn_thickness, legend_font_line_type)
                 if conn_all_corners:
                     p1 = (int(curr_corners[0, 1]), int(curr_corners[1, 1]))
                     p2 = (int(curr_corners[0, 3]), int(curr_corners[1, 3]))
-                    cv2.line(curr_img, p1, conn_end_pt_1, conn_col, conn_thickness, cv2.CV_AA)
-                    cv2.line(curr_img, p2, conn_end_pt_2, conn_col, conn_thickness, cv2.CV_AA)
+                    cv2.line(curr_img, p1, conn_end_pt_1, conn_col, conn_thickness, legend_font_line_type)
+                    cv2.line(curr_img, p2, conn_end_pt_2, conn_col, conn_thickness, legend_font_line_type)
                 if conn_boundary:
                     drawRegion(curr_img, curr_corners, conn_col, conn_thickness, False)
 

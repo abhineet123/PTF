@@ -68,10 +68,11 @@ if __name__ == '__main__':
     legend_font_size = 1.5
     legend_font_thickness = 2
     legend_font_face = cv2.FONT_HERSHEY_COMPLEX_SMALL
-    if cv2.__version__.startswith('3'):
-        legend_font_line_type = cv2.LINE_AA
-    else:
+    if cv2.__version__.startswith('2'):
         legend_font_line_type = cv2.CV_AA
+    else:
+        legend_font_line_type = cv2.LINE_AA
+
     legend_bkg_col = (0, 0, 0)
     legend_gap = 2
 

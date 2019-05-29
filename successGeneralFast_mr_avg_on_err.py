@@ -126,7 +126,10 @@ def getJaccardError(tracker_pos, gt_pos, show_img=0, border_size=100, min_thresh
         legend_font_size = 1
         legend_font_thickness = 1
         legend_font_face = cv2.FONT_HERSHEY_COMPLEX_SMALL
-        legend_font_line_type = cv2.CV_AA
+        if cv2.__version__.startswith('2'):
+            legend_font_line_type = cv2.CV_AA
+        else:
+            legend_font_line_type = cv2.LINE_AA
         header_location = (0, 20)
 
         cv2.putText(tracker_img, '{:f}'.format(jacc_error), header_location, legend_font_face,
