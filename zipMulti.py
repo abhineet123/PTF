@@ -12,6 +12,7 @@ if __name__ == '__main__':
         'switches': '-r',
         'relative': 0,
         'add_time_stamp': 1,
+        'move_to_home': 1,
     }
     processArguments(sys.argv[1:], params)
     _dir_names = params['dir_names']
@@ -21,6 +22,7 @@ if __name__ == '__main__':
     scp_dst = params['scp_dst']
     relative = params['relative']
     add_time_stamp = params['add_time_stamp']
+    move_to_home = params['move_to_home']
 
     print('dir_names: ', _dir_names)
 
@@ -94,7 +96,7 @@ if __name__ == '__main__':
         rm_cmd = 'rm {}'.format(out_path)
         print('\nrunning: {}\n'.format(rm_cmd))
         os.system(rm_cmd)
-    else:
+    elif move_to_home:
         mv_cmd = 'mv {:s} ~'.format(out_path)
         print('\nrunning: {}\n'.format(mv_cmd))
         os.system(mv_cmd)
