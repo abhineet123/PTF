@@ -11,6 +11,7 @@ if __name__ == '__main__':
         'scp_dst': '',
         'switches': '-r',
         'relative': 0,
+        'add_time_stamp': 1,
     }
     processArguments(sys.argv[1:], params)
     _dir_names = params['dir_names']
@@ -19,6 +20,7 @@ if __name__ == '__main__':
     switches = params['switches']
     scp_dst = params['scp_dst']
     relative = params['relative']
+    add_time_stamp = params['add_time_stamp']
 
     print('dir_names: ', _dir_names)
 
@@ -60,8 +62,10 @@ if __name__ == '__main__':
         out_name = '{}_{}'.format(out_name, postfix)
 
     out_name = out_name.replace('.', '_')
-    time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
-    out_name = '{}_{}.zip'.format(out_name, time_stamp)
+    if add_time_stamp:
+        time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+        out_name = '{}_{}'.format(out_name, time_stamp)
+    out_name = '{}.zip'.format(out_name)
 
     if os.path.isdir(zip_path):
         zip_root_path = zip_path
