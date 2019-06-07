@@ -13,13 +13,9 @@ if __name__ == '__main__':
     scp_dst = params['scp_dst']
 
     src_fname = os.path.abspath(src_fname)
+    src_dir = os.path.dirname(src_fname)
 
     # if src_fname.startswith('.'):
-
-    if src_fname.endswith(os.sep):
-        src_dir = src_fname
-    else:
-        src_dir = os.path.dirname(src_fname)
 
     if not os.path.isdir(src_dir):
         print('Creating folder: {}'.format(src_dir))
