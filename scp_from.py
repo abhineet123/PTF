@@ -12,8 +12,9 @@ if __name__ == '__main__':
     src_fname = params['src_fname']
     scp_dst = params['scp_dst']
 
-    if src_fname.startswith('.'):
-        src_fname = os.path.abspath(src_fname)
+    src_fname = os.path.abspath(src_fname)
+
+    # if src_fname.startswith('.'):
 
     if src_fname.endswith(os.sep):
         src_dir = src_fname
@@ -28,4 +29,4 @@ if __name__ == '__main__':
     print('\nrunning: {}\n'.format(scp_cmd))
     os.system(scp_cmd)
 
-    
+
