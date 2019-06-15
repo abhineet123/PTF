@@ -7,11 +7,15 @@ using namespace std;
 static PyObject* hideBorder(PyObject* self, PyObject* args);
 static PyObject* hideBorder2(PyObject* self, PyObject* args);
 static PyObject* loseFocus(PyObject* self, PyObject* args);
+static PyObject* showWindow(PyObject* self, PyObject* args);
+static PyObject* hideWindow(PyObject* self, PyObject* args);
 
 static PyMethodDef winUtilsMethods[] = {
 	{ "hideBorder", hideBorder, METH_VARARGS },
 	{ "hideBorder2", hideBorder2, METH_VARARGS },
 	{ "loseFocus", loseFocus, METH_VARARGS },
+	{ "showWindow", showWindow, METH_VARARGS },
+	{ "hideWindow", hideWindow, METH_VARARGS },
 	{ NULL, NULL, 0, NULL }     /* Sentinel - marks the end of this structure */
 };
 
@@ -34,6 +38,39 @@ PyMODINIT_FUNC PyInit_winUtils(void) {
 	return PyModule_Create(&winUtilsModule);
 }
 #endif
+
+static PyObject* showWindow(PyObject* self, PyObject* args) {
+	char* win_name;
+	int x, y, w, h;
+	if (!PyArg_ParseTuple(args, "z", &win_name)) {
+		PySys_WriteStdout("\n----winUtils::showWindow: Input arguments could not be parsed----\n\n");
+		return Py_BuildValue("i", 0);
+	}
+	HWND win_handle = FindWindow(0, win_name);
+	if (!win_handle) {
+		PySys_WriteStdout("winUtils::showWindow: Failed FindWindow\n");
+		return Py_BuildValue("i", 0);
+	}
+	PySys_WriteStdout("winUtils::showWindow\n");
+	ShowWindow(win_handle, SW_SHOW);
+}
+
+
+static PyObject* hideWindow(PyObject* self, PyObject* args) {
+	char* win_name;
+	int x, y, w, h;
+	if (!PyArg_ParseTuple(args, "z", &win_name)) {
+		PySys_WriteStdout("\n----winUtils::hideWindow: Input arguments could not be parsed----\n\n");
+		return Py_BuildValue("i", 0);
+	}
+	HWND win_handle = FindWindow(0, win_name);
+	if (!win_handle) {
+		PySys_WriteStdout("winUtils::hideWindow: Failed FindWindow\n");
+		return Py_BuildValue("i", 0);
+	}
+	PySys_WriteStdout("winUtils::hideWindow\n");
+	ShowWindow(win_handle, SW_HIDE);
+}
 
 
 static PyObject* hideBorder(PyObject* self, PyObject* args) {

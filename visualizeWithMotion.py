@@ -5,6 +5,7 @@ import numpy as np
 import psutil
 import inspect
 import keyboard
+import win32gui, win32con
 from datetime import datetime
 from threading import Event
 # import threading
@@ -110,6 +111,8 @@ params = {
     'multi_mode': 0,
     'trim_images': 1,
     'alpha': 1,
+    'show_window': 1,
+    'enable_hotkeys': 0,
 }
 
 if __name__ == '__main__':
@@ -149,6 +152,8 @@ if __name__ == '__main__':
     multi_mode = params['multi_mode']
     trim_images = params['trim_images']
     alpha = params['alpha']
+    show_window = params['show_window']
+    enable_hotkeys = params['enable_hotkeys']
 
     if wallpaper_mode and not set_wallpaper:
         set_wallpaper = 1
@@ -188,6 +193,9 @@ if __name__ == '__main__':
         [1920, -1080],
     ]
     widescreen_monitor = [-1920, -1080]
+
+    if wallpaper_mode:
+        enable_hotkeys = 1
 
     predef_n_images = [1, 2, 3, 4, 6, 8, 9, 10, 12, 16, 18, 20, 24]
     predef_grid_sizes = {
@@ -798,6 +806,8 @@ if __name__ == '__main__':
 
         n_switches = 0
         direction = -1
+
+        keyboard.send('y')
         start_time = time.time()
 
         # print('height: ', height)
@@ -1005,6 +1015,9 @@ if __name__ == '__main__':
         global win_offset_x, win_offset_y, width, height, top_border, bottom_border, images_to_sort, \
             images_to_sort_inv, auto_progress, src_files, rotate_images, src_path, vid_id, auto_progress_video
         reset_prev_pos = reset_prev_win_pos = True
+
+        # print('event: {}'.format(event))
+
         try:
             if event == cv2.EVENT_MBUTTONDBLCLK:
                 end_exec = 1
@@ -1042,6 +1055,7 @@ if __name__ == '__main__':
                         loadVideo(0)
                         loadImage()
                     else:
+                        print('next image')
                         loadImage(1)
                 elif flags == 10 or flags == 11:
                     direction = -direction
@@ -1326,11 +1340,15 @@ if __name__ == '__main__':
     old_transition_interval = transition_interval
 
 
-    def kb_callback(_type):
+    def kb_callback(event):
         global set_wallpaper, n_images, wallpaper_mode, exit_program, borderless, img_id
-        global old_transition_interval, transition_interval, reversed_pos, alpha
+        global old_transition_interval, transition_interval, reversed_pos, alpha, show_window
 
         # print('_params: {}'.format(_params))
+
+        # _type = event.name
+        _type = event
+
         print('hotkey: {}'.format(_type))
 
         if _type == 'ctrl+alt+esc':
@@ -1437,6 +1455,35 @@ if __name__ == '__main__':
             if not video_mode:
                 img_id[0] -= n_images
             interrupt_wait.set()
+        elif _type == 'play/pause media' or _type == -179:
+            show_window = 1 - show_window
+            if show_window:
+                print('Showing window')
+                # win_handle = ctypes.windll.user32.FindWindowW(u'{}'.format(win_name), None)
+                # print('win_handle: {}'.format(win_handle))
+                # ctypes.windll.user32.ShowWindow(win_handle, 5)
+                win_handle = win32gui.FindWindow(None, win_name)
+                # print('win_handle: {}'.format(win_handle))
+                win32gui.ShowWindow(win_handle, win32con.SW_RESTORE)
+                keyboard.send('right')
+
+                # if win_utils_available:
+                #     winUtils.showWindow(win_name)
+                # else:
+                #     createWindow()
+            else:
+                print('Hiding window')
+                win_handle = win32gui.FindWindow(None, win_name)
+                # print('win_handle: {}'.format(win_handle))
+                win32gui.ShowWindow(win_handle, win32con.SW_MINIMIZE)
+
+                # win_handle = ctypes.windll.user32.FindWindow(u'{}'.format(win_name), None)
+                # print('win_handle: {}'.format(win_handle))
+                # ctypes.windll.user32.ShowWindow(win_handle, 0)
+                # if win_utils_available:
+                #     winUtils.hideWindow(win_name)
+                # else:
+                #     cv2.destroyWindow(win_name)
         elif _type == 'ctrl+alt+0' or _type == 'ctrl+alt+)':
             if n_images == 1:
                 print('"' + os.path.abspath(img_fname) + '"')
@@ -1467,10 +1514,12 @@ if __name__ == '__main__':
         'ctrl+alt+p',
         'ctrl+alt+a',
         'ctrl+alt+shift+a',
+        -179,
     ]
 
 
     def add_hotkeys():
+        # keyboard.on_press(kb_callback)
         for key in hotkeys:
             keyboard.add_hotkey(key, kb_callback, args=(key,))
 
@@ -1511,10 +1560,22 @@ if __name__ == '__main__':
     images_to_sort = {}
     images_to_sort_inv = {}
 
-    if wallpaper_mode:
+    if enable_hotkeys:
+        print('Hotkeys are enabled')
         add_hotkeys()
 
+    if not show_window:
+        print('Hiding window')
+        win_handle = win32gui.FindWindow(None, win_name)
+        win32gui.ShowWindow(win_handle, win32con.SW_MINIMIZE)
+
     while not exit_program:
+        # print('show_window: {}'.format(show_window))
+
+        # if not show_window:
+        #     time.sleep(1)
+        #     continue
+
         # exit_program = kb_params[0]
         # wallpaper_mode = kb_params[1]
         # if exit_program:
@@ -1601,6 +1662,9 @@ if __name__ == '__main__':
                 k = cv2.waitKeyEx(transition_interval * 1000)
         else:
             k = cv2.waitKeyEx(1)
+
+        # k = cv2.waitKeyEx(0)
+        # k = -1
 
         if k < 0:
             auto_progress_type = 1
