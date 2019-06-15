@@ -1340,6 +1340,36 @@ if __name__ == '__main__':
     old_transition_interval = transition_interval
 
 
+    def showWindow():
+        print('Showing window')
+        # win_handle = ctypes.windll.user32.FindWindowW(u'{}'.format(win_name), None)
+        # print('win_handle: {}'.format(win_handle))
+        # ctypes.windll.user32.ShowWindow(win_handle, 5)
+        win_handle = win32gui.FindWindow(None, win_name)
+        # print('win_handle: {}'.format(win_handle))
+        win32gui.ShowWindow(win_handle, win32con.SW_RESTORE)
+        keyboard.send('right')
+
+        # if win_utils_available:
+        #     winUtils.showWindow(win_name)
+        # else:
+        #     createWindow()
+
+
+    def hideWindow():
+        print('Hiding window')
+        win_handle = win32gui.FindWindow(None, win_name)
+        # print('win_handle: {}'.format(win_handle))
+        win32gui.ShowWindow(win_handle, win32con.SW_MINIMIZE)
+
+        # win_handle = ctypes.windll.user32.FindWindow(u'{}'.format(win_name), None)
+        # print('win_handle: {}'.format(win_handle))
+        # ctypes.windll.user32.ShowWindow(win_handle, 0)
+        # if win_utils_available:
+        #     winUtils.hideWindow(win_name)
+        # else:
+        #     cv2.destroyWindow(win_name)
+
     def kb_callback(event):
         global set_wallpaper, n_images, wallpaper_mode, exit_program, borderless, img_id
         global old_transition_interval, transition_interval, reversed_pos, alpha, show_window
@@ -1458,32 +1488,10 @@ if __name__ == '__main__':
         elif _type == 'play/pause media' or _type == -179:
             show_window = 1 - show_window
             if show_window:
-                print('Showing window')
-                # win_handle = ctypes.windll.user32.FindWindowW(u'{}'.format(win_name), None)
-                # print('win_handle: {}'.format(win_handle))
-                # ctypes.windll.user32.ShowWindow(win_handle, 5)
-                win_handle = win32gui.FindWindow(None, win_name)
-                # print('win_handle: {}'.format(win_handle))
-                win32gui.ShowWindow(win_handle, win32con.SW_RESTORE)
-                keyboard.send('right')
-
-                # if win_utils_available:
-                #     winUtils.showWindow(win_name)
-                # else:
-                #     createWindow()
+                showWindow()
+                interrupt_wait.set()
             else:
-                print('Hiding window')
-                win_handle = win32gui.FindWindow(None, win_name)
-                # print('win_handle: {}'.format(win_handle))
-                win32gui.ShowWindow(win_handle, win32con.SW_MINIMIZE)
-
-                # win_handle = ctypes.windll.user32.FindWindow(u'{}'.format(win_name), None)
-                # print('win_handle: {}'.format(win_handle))
-                # ctypes.windll.user32.ShowWindow(win_handle, 0)
-                # if win_utils_available:
-                #     winUtils.hideWindow(win_name)
-                # else:
-                #     cv2.destroyWindow(win_name)
+                hideWindow()
         elif _type == 'ctrl+alt+0' or _type == 'ctrl+alt+)':
             if n_images == 1:
                 print('"' + os.path.abspath(img_fname) + '"')
@@ -1565,15 +1573,14 @@ if __name__ == '__main__':
         add_hotkeys()
 
     if not show_window:
-        print('Hiding window')
-        win_handle = win32gui.FindWindow(None, win_name)
-        win32gui.ShowWindow(win_handle, win32con.SW_MINIMIZE)
+        hideWindow()
 
     while not exit_program:
         # print('show_window: {}'.format(show_window))
 
         # if not show_window:
-        #     time.sleep(1)
+        #     interrupt_wait.wait(0.1)
+        #     interrupt_wait.clear()
         #     continue
 
         # exit_program = kb_params[0]
