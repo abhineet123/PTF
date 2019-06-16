@@ -1,5 +1,6 @@
 import os
 import cv2
+import math
 import sys, time, random, glob, shutil
 import numpy as np
 import psutil
@@ -113,6 +114,8 @@ params = {
     'alpha': 1,
     'show_window': 1,
     'enable_hotkeys': 0,
+    'move_to_right': 0,
+    'custom_grid_size': '',
 }
 
 if __name__ == '__main__':
@@ -125,14 +128,15 @@ if __name__ == '__main__':
     processArguments(sys.argv[1:], params)
     src_path = params['src_path']
     src_dirs = params['src_dirs']
-    _width = width = params['width']
-    _height = height = params['height']
+    _width = params['width']
+    _height = params['height']
     min_height_ratio = params['min_height_ratio']
     speed = params['speed']
     show_img = params['show_img']
     quality = params['quality']
     resize = params['resize']
     mode = params['mode']
+    move_to_right = params['move_to_right']
     widescreen_mode = params['widescreen_mode']
     auto_progress = params['auto_progress']
     auto_progress_video = params['auto_progress_video']
@@ -154,6 +158,7 @@ if __name__ == '__main__':
     alpha = params['alpha']
     show_window = params['show_window']
     enable_hotkeys = params['enable_hotkeys']
+    custom_grid_size = params['custom_grid_size']
 
     if wallpaper_mode and not set_wallpaper:
         set_wallpaper = 1
@@ -219,7 +224,19 @@ if __name__ == '__main__':
         predef_n_image_id = 0
 
     n_predef_n_images = len(predef_n_images)
-    grid_size = None
+    if custom_grid_size:
+        custom_grid_size = [int(x) for x in custom_grid_size.split('x')]
+        grid_size = custom_grid_size
+        if grid_size[0] == 0 and grid_size[1] == 0:
+            raise IOError('Invalid custom_grid_size: {}'.format(custom_grid_size))
+        if grid_size[0] == 0:
+            grid_size[0] = int(math.ceil(n_images / grid_size[1]))
+        elif grid_size[1] == 0:
+            grid_size[1] = int(math.ceil(n_images / grid_size[0]))
+        set_grid_size = 0
+    else:
+        grid_size = None
+        set_grid_size = 1
     try:
         cv_windowed_mode_flags = cv2.WINDOW_AUTOSIZE | cv2.WINDOW_GUI_NORMAL
     except:
@@ -239,6 +256,16 @@ if __name__ == '__main__':
                 curr_monitor = curr_id
     print('curr_monitor: ', curr_monitor)
     print('transition_interval: ', transition_interval)
+
+    if widescreen_mode:
+        width = 5760
+        height = 2160
+    else:
+        width = 1920
+        if mode == 0:
+            height = 1080
+        else:
+            height = 2160
 
     aspect_ratio = float(width) / float(height)
     direction = -1
@@ -476,8 +503,8 @@ if __name__ == '__main__':
     auto_progress_type = 0
 
 
-    def createWindow(move_to_right=0):
-        global mode
+    def createWindow():
+        global mode, move_to_right
 
         try:
             cv2.destroyWindow(win_name)
@@ -523,7 +550,7 @@ if __name__ == '__main__':
         #             print("Unable to register id", _id)
 
 
-    def changeMode(move_to_right=0):
+    def changeMode():
         global mode, height, width, aspect_ratio, widescreen_mode
         if widescreen_mode:
             width = 5760
@@ -540,7 +567,7 @@ if __name__ == '__main__':
         print('changeMode :: width: ', width)
 
         aspect_ratio = float(width) / float(height)
-        createWindow(move_to_right)
+        createWindow()
         loadImage()
 
 
@@ -1370,6 +1397,7 @@ if __name__ == '__main__':
         # else:
         #     cv2.destroyWindow(win_name)
 
+
     def kb_callback(event):
         global set_wallpaper, n_images, wallpaper_mode, exit_program, borderless, img_id
         global old_transition_interval, transition_interval, reversed_pos, alpha, show_window
@@ -1489,7 +1517,6 @@ if __name__ == '__main__':
             show_window = 1 - show_window
             if show_window:
                 showWindow()
-                interrupt_wait.set()
             else:
                 hideWindow()
         elif _type == 'ctrl+alt+0' or _type == 'ctrl+alt+)':
@@ -1556,7 +1583,7 @@ if __name__ == '__main__':
     #     }
 
     img_id[0] += n_images - 1
-    loadImage(set_grid_size=1)
+    loadImage(set_grid_size=set_grid_size)
     exit_program = 0
 
     numpad_to_ascii = {
@@ -1623,7 +1650,8 @@ if __name__ == '__main__':
             print('_col_offset: ', _col_offset)
             print('_row_offset: ', _row_offset)
 
-        if mode == 0 and not fullscreen:
+        # if mode == 0 and not fullscreen:
+        if not fullscreen:
             temp_height, temp_width, _ = temp.shape
             temp_height_ratio = float(temp_height) / float(height)
 
@@ -1636,15 +1664,27 @@ if __name__ == '__main__':
             dst_img = dst_img[win_start_row:win_end_row, win_start_col:win_end_col, :]
 
             # print(':: reversed_pos: ', reversed_pos)
+            if mode == 0:
+                _curr_monitor = curr_monitor
+            elif mode == 1:
+                if move_to_right:
+                    _curr_monitor = 4
+                else:
+                    _curr_monitor = 2
+
+            _y_offset = win_offset_y + monitors[_curr_monitor][1]
+
             if reversed_pos == 0:
-                cv2.moveWindow(win_name, win_offset_x + monitors[curr_monitor][0],
-                               win_offset_y + monitors[curr_monitor][1])
+
+                cv2.moveWindow(win_name, win_offset_x + monitors[_curr_monitor][0],
+                               _y_offset)
             elif reversed_pos == 1:
-                cv2.moveWindow(win_name, int(win_offset_x + monitors[curr_monitor][0] + (width - dst_img.shape[1]) / 2),
-                               win_offset_y + monitors[curr_monitor][1])
+                cv2.moveWindow(win_name,
+                               int(win_offset_x + monitors[_curr_monitor][0] + (width - dst_img.shape[1]) / 2),
+                               _y_offset)
             elif reversed_pos == 2:
-                cv2.moveWindow(win_name, win_offset_x + int(monitors[curr_monitor][0] + width - dst_img.shape[1]),
-                               win_offset_y + monitors[curr_monitor][1])
+                cv2.moveWindow(win_name, win_offset_x + int(monitors[_curr_monitor][0] + width - dst_img.shape[1]),
+                               _y_offset)
 
             # if win_utils_available:
             #     winUtils.hideBorder2(win_name)
@@ -1684,9 +1724,9 @@ if __name__ == '__main__':
             elif k == 10:
                 if mode == 1:
                     widescreen_mode = 1 - widescreen_mode
-                    changeMode(0)
                 else:
-                    changeMode(1)
+                    move_to_right = 1 - move_to_right
+                changeMode()
             elif k == ord('g'):
                 # grid transpose
                 grid_size = (grid_size[1], grid_size[0])
@@ -1699,6 +1739,12 @@ if __name__ == '__main__':
                 # single row grid
                 grid_size = (1, n_images)
                 loadImage()
+            elif k == ord('h'):
+                show_window = 1 - show_window
+                if show_window:
+                    showWindow()
+                else:
+                    hideWindow()
             elif k == ord('r'):
                 if video_mode:
                     print('Reversing video')
