@@ -1,2 +1,2 @@
 @echo off
-python "%~dp0\..\fixMarkdownHeadings.py"
+python2 "%~dp0\..\fixMarkdownHeadings.py"

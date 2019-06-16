@@ -7,5 +7,5 @@ for %%x in (%*) do (
    set "argVec[!argCount!]=%%~x"
 )
 echo Number of processed arguments: %argCount%
-for /L %%i in (1,1,%argCount%) do python "%~dp0\..\visualizeWithMotion.py" src_path="!argVec[%%i]!"
+for /L %%i in (1,1,%argCount%) do python2 "%~dp0\..\visualizeWithMotion.py" src_path="!argVec[%%i]!"
 

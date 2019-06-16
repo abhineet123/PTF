@@ -1,2 +1,2 @@
 @echo off
-python "%~dp0\..\processBookmarkTimes.py"
+python2 "%~dp0\..\processBookmarkTimes.py"

@@ -1,2 +1,2 @@
 @echo off
-python "%~dp0\..\epsToPDF.py"  folder_name=%1
+python2 "%~dp0\..\epsToPDF.py"  folder_name=%1
