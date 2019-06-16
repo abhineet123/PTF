@@ -85,8 +85,8 @@ except ImportError as e:
 params = {
     'src_path': '.',
     'src_dirs': '',
-    'width': 1920,
-    'height': 1080,
+    'width': 0,
+    'height': 0,
     'min_height_ratio': 0.40,
     'speed': 0.5,
     'show_img': 0,
@@ -257,15 +257,19 @@ if __name__ == '__main__':
     print('curr_monitor: ', curr_monitor)
     print('transition_interval: ', transition_interval)
 
-    if widescreen_mode:
-        width = 5760
-        height = 2160
-    else:
-        width = 1920
-        if mode == 0:
-            height = 1080
-        else:
+    if _width == 0 or _height == 0:
+        if widescreen_mode:
+            width = 5760
             height = 2160
+        else:
+            width = 1920
+            if mode == 0:
+                height = 1080
+            else:
+                height = 2160
+        _width, _height = width, height
+    else:
+        width, height = _width, _height
 
     aspect_ratio = float(width) / float(height)
     direction = -1
