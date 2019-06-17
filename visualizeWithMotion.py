@@ -838,8 +838,9 @@ if __name__ == '__main__':
         n_switches = 0
         direction = -1
 
-        if show_window:
-            keyboard.send('y')
+        # if show_window:
+        #     keyboard.send('y')
+        
         start_time = time.time()
 
         # print('height: ', height)
