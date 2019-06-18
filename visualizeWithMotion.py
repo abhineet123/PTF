@@ -111,7 +111,7 @@ params = {
     'widescreen_mode': 0,
     'multi_mode': 0,
     'trim_images': 1,
-    'alpha': 1,
+    'alpha': 1.0,
     'show_window': 1,
     'enable_hotkeys': 0,
     'move_to_right': 0,
@@ -840,7 +840,7 @@ if __name__ == '__main__':
 
         # if show_window:
         #     keyboard.send('y')
-        
+
         start_time = time.time()
 
         # print('height: ', height)
@@ -1768,8 +1768,8 @@ if __name__ == '__main__':
                     else:
                         print('Random mode disabled')
                         for _id in img_id:
-                            # img_id[_id] = src_files[_id].index(img_fname)
-                            img_id[_id] = 0
+                            img_id[_id] = src_files[_id].index(img_fname)
+                            # img_id[_id] = 0
             elif k == ord('c'):
                 auto_progress = 1 - auto_progress
                 if auto_progress:
