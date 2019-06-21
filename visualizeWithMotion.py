@@ -1708,13 +1708,15 @@ if __name__ == '__main__':
         # else:
         #     cv2.imshow(win_name, dst_img)
 
-        if speed == 0 and auto_progress and show_window:
+        if not show_window:
+            k = cv2.waitKeyEx(0)
+        elif speed == 0 and auto_progress:
             if video_mode:
                 k = cv2.waitKeyEx(transition_interval)
             else:
                 k = cv2.waitKeyEx(transition_interval * 1000)
         else:
-            k = cv2.waitKeyEx(1 - is_paused)
+            k = cv2.waitKeyEx(1)
 
         # k = cv2.waitKeyEx(0)
         # k = -1
