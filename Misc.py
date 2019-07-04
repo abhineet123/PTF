@@ -14,7 +14,7 @@ try:
     import matplotlib
     from matplotlib import pyplot as plt
     from matplotlib import font_manager as ftm
-    from matplotlib.mlab import PCA
+    # from matplotlib.mlab import PCA
     from matplotlib import animation
     from mpl_toolkits.mplot3d import Axes3D
 except ImportError as e:
@@ -310,8 +310,6 @@ def processArguments(args, params):
         if not arg[1] or not arg[0] or arg[1] == '#':
             continue
 
-
-
         if isinstance(params[arg[0]], (list, tuple)):
             # if not ',' in arg[1]:
             #     print('Invalid argument provided for list: {:s}'.format(arg[1]))
@@ -400,11 +398,13 @@ def str2num(s):
     except ValueError:
         return float(s)
 
+
 def print_and_write(_str, fname=None):
     sys.stdout.write(_str + '\n')
     sys.stdout.flush()
     if fname is not None:
         open(fname, 'a').write(_str + '\n')
+
 
 def printMatrixToFile(mat, mat_name, fname, fmt='{:15.9f}', mode='w', sep='\t'):
     fid = open(fname, mode)
@@ -932,8 +932,16 @@ def getGroundTruthUpdates(filename):
 
 
 def plotPCA(data):
+    try:
+        from sklearn.decomposition import PCA
+    except ImportError as e:
+        print('PCA import failed: {}'.format(e))
+        return
     # construct your numpy array of data
-    result = PCA(np.array(data))
+    pca = PCA(n_components=2)
+    pca.fit(X)
+    result = pca.components_
+    # result = PCA(np.array(data))
     x = []
     y = []
     z = []
@@ -3615,16 +3623,15 @@ def addBorder(img, border_size, border_type):
     elif border_type == 'right':
         out_img_w += border_size
     elif border_type == 'top_and_bottom':
-        out_img_h += 2*border_size
+        out_img_h += 2 * border_size
         start_row += border_size
     elif border_type == 'left_and_right':
-        out_img_w += 2*border_size
+        out_img_w += 2 * border_size
         start_col += border_size
 
     out_img = np.zeros((out_img_h, out_img_w, 3), dtype=np.uint8)
-    out_img[start_row:start_row+img_h, start_col:start_col+img_w, :] = img
+    out_img[start_row:start_row + img_h, start_col:start_col + img_w, :] = img
     return out_img
-
 
 
 def putTextWithBackground(img, text, fmt=None):
