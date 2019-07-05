@@ -4,7 +4,7 @@ import sys
 import inspect
 import re
 
-from .Misc import processArguments
+from Misc import processArguments
 
 params = {
     'src_dir': '',
