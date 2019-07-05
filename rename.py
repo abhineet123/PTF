@@ -118,17 +118,34 @@ if write_log:
     log_fid = open(log_file, 'w')
 
 src_file_paths = []
+src_substrs = []
 for root, dirnames, filenames in os.walk(src_dir):
-    if include_folders:
-        for dirname in fnmatch.filter(dirnames, '*{:s}*'.format(src_substr)):
-            src_file_paths.append(os.path.join(root, dirname))
-    if include_folders != 2:
-        for filename in fnmatch.filter(filenames, '*{:s}*'.format(src_substr)):
-            src_file_paths.append(os.path.join(root, filename))
+    if re_mode:
+        if include_folders:
+            for dirname in dirnames:
+                matches = re.findall(dst_substr, dirname)
+                if matches:
+                    print('{} :: {}'.format(dirname, matches))
+                    src_file_paths.append(os.path.join(root, dirname))
+                    src_substrs.append(matches[0])
+        if include_folders != 2:
+            for filename in filenames:
+                matches = re.findall(dst_substr, filename)
+                if matches:
+                    print('{} :: {}'.format(filename, matches))
+                    src_file_paths.append(os.path.join(root, filename))
+                    src_substrs.append(matches[0])
+    else:
+        if include_folders:
+            for dirname in fnmatch.filter(dirnames, '*{:s}*'.format(src_substr)):
+                src_file_paths.append(os.path.join(root, dirname))
+        if include_folders != 2:
+            for filename in fnmatch.filter(filenames, '*{:s}*'.format(src_substr)):
+                src_file_paths.append(os.path.join(root, filename))
     if not recursive_search:
         break
 print('Found {:d} matches'.format(len(src_file_paths)))
-for src_path in src_file_paths:
+for src_id, src_path in enumerate(src_file_paths):
     if remove_files:
         if show_names:
             print('removing {:s}'.format(src_path))
@@ -155,7 +172,7 @@ for src_path in src_file_paths:
             dst_path = os.path.join(src_dir, dst_fname)
         else:
             if re_mode:
-                src_substr = re.findall(dst_substr, src_fname_no_ext)
+                src_substr = src_substrs[src_id]
 
             dst_fname_no_ext = src_fname_no_ext.replace(src_substr, dst_substr)
             if convert_to_lowercase:
