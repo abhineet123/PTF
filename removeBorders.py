@@ -49,9 +49,9 @@ if __name__ == '__main__':
     # print('total_frames after sorting: {}'.format(total_frames))
     # sys.exit()
 
-    if border_type < 0:
+    if border_type == -1:
         print('Trimming images')
-    if border_type == 0:
+    elif border_type == 0:
         print('Removing only LHS borders')
     elif border_type == 1:
         print('Removing only RHS borders')
@@ -120,7 +120,7 @@ if __name__ == '__main__':
 
         if resize:
             dst_img = cv2.resize(dst_img, (out_width, out_height))
-            
+
         dst_img_fname = os.path.join(dst_path, '{}.png'.format(img_fname_no_ext))
         cv2.imwrite(dst_img_fname, dst_img, [int(cv2.IMWRITE_PNG_COMPRESSION), quality])
 
