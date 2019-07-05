@@ -3,6 +3,11 @@ import os
 import sys, re
 
 try:
+    from PIL import Image, ImageChops
+except ImportError as e:
+    print('PIL import failed: {}'.format(e))
+
+try:
     import cv2
 except ImportError as e:
     print('OpenCV import failed: {}'.format(e))
@@ -286,6 +291,17 @@ def sortKeyOld(fname):
     # print('key: ', key)
     return key
 
+def trim(im):
+    bg = Image.new(im.mode, im.size, im.getpixel((0, 0)))
+    diff = ImageChops.difference(im, bg)
+    # diff.show()
+    diff = ImageChops.add(diff, diff, 2.0, -35)
+    # diff.show()
+    # diff = ImageChops.add(diff, diff)
+    bbox = diff.getbbox()
+    if bbox:
+        return im.crop(bbox)
+    return im
 
 def processArguments(args, params):
     # arguments specified as 'arg_name=argv_val'

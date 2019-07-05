@@ -2,7 +2,9 @@ import os
 import cv2
 import sys
 import numpy as np
-from Misc import processArguments
+from PIL import Image
+
+from Misc import processArguments, trim
 
 params = {
     'src_path': '.',
@@ -14,6 +16,7 @@ params = {
     'resize': 0,
     'out_size': '',
 }
+
 
 if __name__ == '__main__':
     processArguments(sys.argv[1:], params)
@@ -46,12 +49,16 @@ if __name__ == '__main__':
     # print('total_frames after sorting: {}'.format(total_frames))
     # sys.exit()
 
+    if border_type < 0:
+        print('Trimming images')
     if border_type == 0:
         print('Removing only LHS borders')
     elif border_type == 1:
         print('Removing only RHS borders')
-    else:
+    elif border_type == 2:
         print('Removing both LHS and RHS borders')
+    else:
+        raise AssertionError('Invalid border type: {}'.format(border_type))
 
     img_id = 0
 
@@ -83,32 +90,37 @@ if __name__ == '__main__':
 
         src_height, src_width, n_channels = src_img.shape
 
-        if border_type == 1:
-            start_col_id = 0
+        if border_type < 0:
+            dst_img = np.asarray(trim(Image.fromarray(src_img)))
         else:
-            patch_size = 0
-            while True:
-                patch = src_img[:patch_size, :patch_size, :]
-                if not np.all(patch <= thresh):
-                    break
-                patch_size += 1
-            start_col_id = patch_size
+            if border_type == 1:
+                start_col_id = 0
+            else:
+                patch_size = 0
+                while True:
+                    patch = src_img[:patch_size, :patch_size, :]
+                    if not np.all(patch <= thresh):
+                        break
+                    patch_size += 1
+                start_col_id = patch_size
 
-        if border_type == 0:
-            end_col_id = src_width
-        else:
-            patch_size = 0
-            while True:
-                patch = src_img[:patch_size, src_width - patch_size - 1:, :]
-                if not np.all(patch <= thresh):
-                    break
-                patch_size += 1
+            if border_type == 0:
+                end_col_id = src_width
+            else:
+                patch_size = 0
+                while True:
+                    patch = src_img[:patch_size, src_width - patch_size - 1:, :]
+                    if not np.all(patch <= thresh):
+                        break
+                    patch_size += 1
 
-            end_col_id = src_width - patch_size - 1
+                end_col_id = src_width - patch_size - 1
 
-        dst_img = src_img[:, start_col_id:end_col_id, :].astype(np.uint8)
+            dst_img = src_img[:, start_col_id:end_col_id, :].astype(np.uint8)
+
         if resize:
             dst_img = cv2.resize(dst_img, (out_width, out_height))
+            
         dst_img_fname = os.path.join(dst_path, '{}.png'.format(img_fname_no_ext))
         cv2.imwrite(dst_img_fname, dst_img, [int(cv2.IMWRITE_PNG_COMPRESSION), quality])
 

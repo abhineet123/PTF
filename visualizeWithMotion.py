@@ -10,26 +10,20 @@ import win32gui, win32con
 from datetime import datetime
 from threading import Event
 # import threading
+from subprocess import Popen, PIPE
 
-from Misc import processArguments, sortKey, stackImages, resizeAR, addBorder
+from Misc import processArguments, sortKey, stackImages, resizeAR, addBorder, trim
 
 from PIL import Image, ImageChops
 
 
 # from wand.image import Image as wandImage
 
-def trim(im):
-    bg = Image.new(im.mode, im.size, im.getpixel((0, 0)))
-    diff = ImageChops.difference(im, bg)
-    # diff.show()
-    diff = ImageChops.add(diff, diff, 2.0, -35)
-    # diff.show()
-    # diff = ImageChops.add(diff, diff)
-    bbox = diff.getbbox()
-    if bbox:
-        return im.crop(bbox)
-    return im
-
+def checkImage(fn):
+  proc = Popen(['identify', '-verbose', fn], stdout=PIPE, stderr=PIPE)
+  out, err = proc.communicate()
+  exitcode = proc.returncode
+  return exitcode, out, err
 
 interrupt_wait = Event()
 
@@ -114,6 +108,7 @@ params = {
     'alpha': 1.0,
     'show_window': 1,
     'enable_hotkeys': 0,
+    'check_images': 0,
     'move_to_right': 0,
     'custom_grid_size': '',
 }
@@ -159,6 +154,7 @@ if __name__ == '__main__':
     show_window = params['show_window']
     enable_hotkeys = params['enable_hotkeys']
     custom_grid_size = params['custom_grid_size']
+    check_images = params['check_images']
 
     if wallpaper_mode and not set_wallpaper:
         set_wallpaper = 1
@@ -506,6 +502,16 @@ if __name__ == '__main__':
 
     auto_progress_type = 0
 
+    if not video_mode and check_images:
+        print('Checking images...')
+        for _set_id in src_files:
+            _n_images = len(src_files[_set_id])
+            for _img_id, img_path in enumerate(src_files[_set_id]):
+                code, output, error = checkImage(img_path)
+                if str(code) != "0" or str(error, "utf-8") != "":
+                    print("\n{} :: ERROR: {}\n".format(img_path, error))
+                sys.stdout.write('\r Set {}: Done {}/{}'.format(
+                    _set_id+1, _img_id+1, _n_images))
 
     def createWindow():
         global mode, move_to_right
