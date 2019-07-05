@@ -145,6 +145,10 @@ for root, dirnames, filenames in os.walk(src_dir):
     if not recursive_search:
         break
 print('Found {:d} matches'.format(len(src_file_paths)))
+
+if re_mode:
+    sys.exit()
+    
 for src_id, src_path in enumerate(src_file_paths):
     if remove_files:
         if show_names:
