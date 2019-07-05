@@ -87,7 +87,7 @@ else:
     print('Searching for {:s} to replace with {:s} in {:s}'.format(src_substr, dst_substr, src_dir))
 
 if re_mode:
-    dst_substr = r'{:s}'.format(dst_substr)
+    src_substr = r'{:s}'.format(src_substr)
     print('Using regular expression mode')
 
 if recursive_search:
