@@ -122,16 +122,17 @@ src_file_paths = []
 src_substrs = []
 for root, dirnames, filenames in os.walk(src_dir):
     if re_mode:
+        dst_substr_re = re.compile(dst_substr)
         if include_folders:
             for dirname in dirnames:
-                matches = re.findall(dst_substr, dirname)
+                matches = re.findall(dst_substr_re, dirname)
                 if matches:
                     print('{} :: {}'.format(dirname, matches))
                     src_file_paths.append(os.path.join(root, dirname))
                     src_substrs.append(matches[0])
         if include_folders != 2:
             for filename in filenames:
-                matches = re.findall(dst_substr, filename)
+                matches = re.findall(dst_substr_re, filename)
                 if matches:
                     print('{} :: {}'.format(filename, matches))
                     src_file_paths.append(os.path.join(root, filename))
