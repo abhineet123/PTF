@@ -87,6 +87,7 @@ else:
     print('Searching for {:s} to replace with {:s} in {:s}'.format(src_substr, dst_substr, src_dir))
 
 if re_mode:
+    dst_substr = r'{:s}'.format(dst_substr)
     print('Using regular expression mode')
 
 if recursive_search:
@@ -148,7 +149,7 @@ print('Found {:d} matches'.format(len(src_file_paths)))
 
 if re_mode:
     sys.exit()
-    
+
 for src_id, src_path in enumerate(src_file_paths):
     if remove_files:
         if show_names:
