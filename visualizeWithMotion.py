@@ -1417,8 +1417,11 @@ if __name__ == '__main__':
         # print('_params: {}'.format(_params))
 
         # _type = event.name
-        _type = event
+        # scan_code = event.scan_code
+        # print('scan_code: {}'.format(scan_code))
 
+
+        _type = event
         print('hotkey: {}'.format(_type))
 
         if _type == 'ctrl+alt+esc':
@@ -1531,6 +1534,12 @@ if __name__ == '__main__':
                 showWindow()
             else:
                 hideWindow()
+        # elif _type == 'previous track' or _type == -177:
+        #     print('sending shift+left')
+        #     keyboard.send('shift+left')
+        # elif _type == 'next track' or _type == -176:
+        #     print('sending shift+right')
+        #     keyboard.send('shift+right')
         elif _type == 'ctrl+alt+0' or _type == 'ctrl+alt+)':
             if n_images == 1:
                 print('"' + os.path.abspath(img_fname) + '"')
@@ -1562,6 +1571,8 @@ if __name__ == '__main__':
         'ctrl+alt+a',
         'ctrl+alt+shift+a',
         -179,
+        # -177,
+        # -176,
     ]
 
 
