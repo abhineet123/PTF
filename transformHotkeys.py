@@ -17,8 +17,9 @@ def kb_callback(event):
         print('removing hotkeys and exiting')
         remove_hotkeys()
         _exit = 1
-    if _type == 'play/pause media' or _type == -179:
-        pass
+    # elif _type == 'play/pause media' or _type == -179:
+    #     print('sending shift+up')
+    #     keyboard.send('shift+up')
     elif _type == 'previous track' or _type == -177:
         print('sending shift+left')
         keyboard.send('shift+left')
@@ -28,7 +29,8 @@ def kb_callback(event):
 
 
 hotkeys = [
-    -179,
+    'ctrl+alt+esc',
+    # -179,
     -177,
     -176,
 ]
@@ -48,6 +50,11 @@ def remove_hotkeys():
 if __name__ == '__main__':
     _exit = 0
     add_hotkeys()
-    while not _exit:
-        time.sleep(1)
 
+    try:
+        while not _exit:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        pass
+    print('removing hotkeys')
+    remove_hotkeys()
