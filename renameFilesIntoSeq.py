@@ -1,7 +1,7 @@
 import sys
 import os
 import random
-from .Misc import sortKey, processArguments
+from Misc import sortKey, processArguments
 import inspect
 
 params = {
@@ -65,9 +65,10 @@ if seq_start_id < 0:
         print(('Looking for sequence prefix in {}'.format(os.path.abspath(src_dir))))
         if recursive:
             print('Searching recursively')
-            src_file_gen = [[os.path.join(dirpath, f) for f in filenames if f != 'Thumbs.db']
-                            for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
-            _src_files = [item for sublist in src_file_gen for item in sublist]
+            src_file_gen = [[f for f in filenames if f != 'Thumbs.db']
+                            for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)
+                            if dirpath !=os.getcwd()]
+            src_file_names = [item for sublist in src_file_gen for item in sublist]
         else:
             src_file_names = [f for f in os.listdir(src_dir) if
                               os.path.isfile(os.path.join(src_dir, f)) and f != 'Thumbs.db']
