@@ -10,9 +10,27 @@ Prerequisites:
 * [Cython](http://cython.org/) (optional)
 * [MTF](http://webdocs.cs.ualberta.ca/~vis/mtf/) (optional)
 * [Xvision](https://bitbucket.org/abhineet123/xvision2) (optional)
-		
+        
 Installation
 ============
+
+# Python packages
+
+```
+wget https://bootstrap.pypa.io/get-pip.py
+python2 get-pip.py
+python3 get-pip.py
+pip3 install six numpy scipy pillow scikit-image matplotlib imutils keyboard mouse psutil
+pip3 install opencv-python==3.4.5.20 opencv-contrib-python==3.4.5.20
+```
+
+## Windows       @ Python_packages
+
+```
+pip3 install win32gui pywin32
+```
+
+# C Modules
 
 All optional Cython and C modules used by PTF can be compiled and installed by simply calling `make` from the root folder. This in turn calls the make commands in the following sub folders: `CModules`, `cython_trackers`, `l1`. 
 
@@ -23,8 +41,8 @@ All optional Cython and C modules used by PTF can be compiled and installed by s
     * `make cython`
     * `make l1`
     * `make mtf`
-	
-* If make does not work on your system (e.g. if it has Windows OS), run `python setup_cython.py build_ext --inplace` to compile the Cython modules.	
+    
+* If make does not work on your system (e.g. if it has Windows OS), run `python setup_cython.py build_ext --inplace` to compile the Cython modules. 
 
 
 Basic Usage
