@@ -40,13 +40,13 @@ class ProgramOptions(object):
 def print_help():
     global opt
     scriptname = os.path.basename(sys.argv[0])
-    print("Usage: {0} [options] files_or_directories".format(scriptname))
-    print("Recursively checks for corrupt JPEG files")
-    print("")
-    print("Options:")
-    long_length = 2 + max(len(int) for x, int, y in available_parameters)
-    for short, int, desc in available_parameters:
-        if short and int:
+    print "Usage: {0} [options] files_or_directories".format(scriptname)
+    print "Recursively checks for corrupt JPEG files"
+    print ""
+    print "Options:"
+    long_length = 2 + max(len(long) for x, long, y in available_parameters)
+    for short, long, desc in available_parameters:
+        if short and long:
             comma = ", "
         else:
             comma = "  "
@@ -56,14 +56,14 @@ def print_help():
         else:
             short = "-" + short[0]
 
-        if int:
-            long = "--" + int
+        if long:
+            long = "--" + long
 
-        print("  {0}{1}{2:{3}}  {4}".format(short, comma, int, long_length, desc))
+        print "  {0}{1}{2:{3}}  {4}".format(short, comma, long, long_length, desc)
 
-    print("")
-    print("Currently (it is hardcoded), it only checks for these files:")
-    print("  " + " ".join(opt.globs))
+    print ""
+    print "Currently (it is hardcoded), it only checks for these files:"
+    print "  " + " ".join(opt.globs)
 
 
 def parse_options(argv, opt):
@@ -74,11 +74,11 @@ def parse_options(argv, opt):
         opts, args = getopt.getopt(
             argv,
             "".join(short for short, x, y in available_parameters),
-            [int for x, int, y in available_parameters]
+            [long for x, long, y in available_parameters]
         )
     except getopt.GetoptError as e:
-        print(str(e))
-        print("Use --help for usage instructions.")
+        print str(e)
+        print "Use --help for usage instructions."
         sys.exit(2)
 
     for o, v in opts:
@@ -88,14 +88,14 @@ def parse_options(argv, opt):
         elif o in ("-v", "--verbose"):
             opt.verbose = True
         else:
-            print("Invalid parameter: {0}".format(o))
-            print("Use --help for usage instructions.")
+            print "Invalid parameter: {0}".format(o)
+            print "Use --help for usage instructions."
             sys.exit(2)
 
     opt.args = args
     if len(args) == 0:
-        print("Missing filename")
-        print("Use --help for usage instructions.")
+        print "Missing filename"
+        print "Use --help for usage instructions."
         sys.exit(2)
 
 
@@ -121,7 +121,7 @@ def check_files(files):
                 status = "Ok"
             if status:
                 os.remove(f)
-                print('Found corrupt file: {:s}'.format(f))
+                print 'Found corrupt file: {:s}'.format(f)
                 # print "{0}: {1}".format(f, status)
 
 
@@ -137,8 +137,14 @@ def main():
             for dirpath, dirnames, filenames in os.walk(pathname):
                 check_files(os.path.join(dirpath, f) for f in filenames)
         else:
-            print("ERROR: '{0}' is neither a file or a dir.".format(pathname))
+            print "ERROR: '{0}' is neither a file or a dir.".format(pathname)
 
 
 if __name__ == "__main__":
-    main()
+    root_dir = '.'
+    arg_id = 1
+    if len(sys.argv) > arg_id:
+        root_dir = sys.argv[arg_id]
+        arg_id += 1
+    for dirpath, dirnames, filenames in os.walk(root_dir):
+        check_files(os.path.join(dirpath, f) for f in filenames)

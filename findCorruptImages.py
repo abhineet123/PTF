@@ -15,14 +15,22 @@ import re
 import os
 import os.path
 import sys
+import functools
 import PIL.Image
+from subprocess import Popen, PIPE
 
+from Misc import sortKey
 
 available_parameters = [
     ("h", "help", "Print help"),
     ("v", "verbose", "Also print clean files"),
 ]
 
+def checkImage(fn):
+  proc = Popen(['identify', '-verbose', fn], stdout=PIPE, stderr=PIPE)
+  out, err = proc.communicate()
+  exitcode = proc.returncode
+  return exitcode, out, err
 
 class ProgramOptions(object):
     """Holds the program options, after they are parsed by parse_options()"""
@@ -40,13 +48,13 @@ class ProgramOptions(object):
 def print_help():
     global opt
     scriptname = os.path.basename(sys.argv[0])
-    print "Usage: {0} [options] files_or_directories".format(scriptname)
-    print "Recursively checks for corrupt JPEG files"
-    print ""
-    print "Options:"
-    long_length = 2 + max(len(long) for x, long, y in available_parameters)
-    for short, long, desc in available_parameters:
-        if short and long:
+    print("Usage: {0} [options] files_or_directories".format(scriptname))
+    print("Recursively checks for corrupt JPEG files")
+    print("")
+    print("Options:")
+    long_length = 2 + max(len(int) for x, int, y in available_parameters)
+    for short, int, desc in available_parameters:
+        if short and int:
             comma = ", "
         else:
             comma = "  "
@@ -56,14 +64,14 @@ def print_help():
         else:
             short = "-" + short[0]
 
-        if long:
-            long = "--" + long
+        if int:
+            long = "--" + int
 
-        print "  {0}{1}{2:{3}}  {4}".format(short, comma, long, long_length, desc)
+        print("  {0}{1}{2:{3}}  {4}".format(short, comma, int, long_length, desc))
 
-    print ""
-    print "Currently (it is hardcoded), it only checks for these files:"
-    print "  " + " ".join(opt.globs)
+    print("")
+    print("Currently (it is hardcoded), it only checks for these files:")
+    print("  " + " ".join(opt.globs))
 
 
 def parse_options(argv, opt):
@@ -74,11 +82,11 @@ def parse_options(argv, opt):
         opts, args = getopt.getopt(
             argv,
             "".join(short for short, x, y in available_parameters),
-            [long for x, long, y in available_parameters]
+            [int for x, int, y in available_parameters]
         )
     except getopt.GetoptError as e:
-        print str(e)
-        print "Use --help for usage instructions."
+        print(str(e))
+        print("Use --help for usage instructions.")
         sys.exit(2)
 
     for o, v in opts:
@@ -88,14 +96,14 @@ def parse_options(argv, opt):
         elif o in ("-v", "--verbose"):
             opt.verbose = True
         else:
-            print "Invalid parameter: {0}".format(o)
-            print "Use --help for usage instructions."
+            print("Invalid parameter: {0}".format(o))
+            print("Use --help for usage instructions.")
             sys.exit(2)
 
     opt.args = args
     if len(args) == 0:
-        print "Missing filename"
-        print "Use --help for usage instructions."
+        print("Missing filename")
+        print("Use --help for usage instructions.")
         sys.exit(2)
 
 
@@ -110,41 +118,66 @@ def is_corrupt(jpegfile):
     return None
 
 
-def check_files(files):
+def check_files(files, method):
     """Receives a list of files and check each one."""
     global opt
-    for f in files:
+    n_files = len(files)
+    for i, f in enumerate(files):
         # Filtering only JPEG images
-        if opt.glob_re.match(f):
+        if not (f.endswith('.jpg') or f.endswith('.jpeg')):
+            continue
+        if method==0:
             status = is_corrupt(f)
-            if opt.verbose and status is None:
-                status = "Ok"
             if status:
-                os.remove(f)
-                print 'Found corrupt file: {:s}'.format(f)
+                # os.remove(f)
+                print('\nFound corrupt file: {:s}\n'.format(f))
                 # print "{0}: {1}".format(f, status)
-
-
-def main():
-    global opt
-    opt = ProgramOptions()
-    parse_options(sys.argv[1:], opt)
-
-    for pathname in opt.args:
-        if os.path.isfile(pathname):
-            check_files([pathname])
-        elif os.path.isdir(pathname):
-            for dirpath, dirnames, filenames in os.walk(pathname):
-                check_files(os.path.join(dirpath, f) for f in filenames)
         else:
-            print "ERROR: '{0}' is neither a file or a dir.".format(pathname)
+            code, output, error = checkImage(f)
+            if str(code) != "0" or str(error) != "":
+                raise IOError("Damaged image found: {} :: {}".format(f, error))
+        sys.stdout.write('\rDone {}/{} images'.format(i+1, n_files))
+        sys.stdout.flush()
+    # print()
+
+# def main():
+#     global opt
+#
+#     opt = ProgramOptions()
+#     parse_options(sys.argv[1:], opt)
+#
+#     for pathname in opt.args:
+#         if os.path.isfile(pathname):
+#             check_files([pathname])
+#         elif os.path.isdir(pathname):
+#             for dirpath, dirnames, filenames in os.walk(pathname):
+#                 check_files([os.path.join(dirpath, f) for f in filenames])
+#         else:
+#             print("ERROR: '{0}' is neither a file or a dir.".format(pathname))
 
 
 if __name__ == "__main__":
     root_dir = '.'
+    method = 0
+
     arg_id = 1
     if len(sys.argv) > arg_id:
         root_dir = sys.argv[arg_id]
         arg_id += 1
-    for dirpath, dirnames, filenames in os.walk(root_dir):
-        check_files(os.path.join(dirpath, f) for f in filenames)
+    if len(sys.argv) > arg_id:
+        method = int(sys.argv[arg_id])
+        arg_id += 1
+
+    img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff')
+
+    src_file_gen = [[os.path.join(dirpath, f) for f in filenames if
+                     os.path.splitext(f.lower())[1] in img_exts]
+                    for (dirpath, dirnames, filenames) in os.walk(root_dir, followlinks=True)]
+    _src_files = [item for sublist in src_file_gen for item in sublist]
+    _src_files = [os.path.abspath(k) for k in _src_files]
+    _src_files.sort(key=functools.partial(sortKey,only_basename=0))
+
+    check_files(_src_files, method)
+
+    # for dirpath, dirnames, filenames in os.walk(root_dir):
+    #     check_files([os.path.join(dirpath, f) for f in filenames])

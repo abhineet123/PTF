@@ -64,6 +64,23 @@ try:
 except ImportError as e:
     mousePos = None
 
+def hideBorder():
+    win_handle = win32gui.FindWindow(None, win_name)
+    style = win32gui.GetWindowLong(win_handle, win32con.GWL_STYLE)
+    style = style & ~win32con.WS_OVERLAPPEDWINDOW
+    style = style | win32con.WS_POPUP
+    if on_top:
+        style = style | win32con.WS_EX_TOPMOST
+        style_2 = win32con.HWND_TOPMOST
+    else:
+        style_2 = win32con.HWND_NOTOPMOST
+
+    # style = style | win32con.WS_EX_TOPMOST
+    # style_2 = win32con.HWND_TOPMOST
+
+    win32gui.SetWindowLong(win_handle, win32con.GWL_STYLE, style)
+    win32gui.SetWindowPos(win_handle, style_2, 0, 0, 0, 0,
+                          win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
 # hotkeys_available = 0
 # try:
 #     import ctypes
@@ -110,6 +127,7 @@ params = {
     'enable_hotkeys': 0,
     'check_images': 0,
     'move_to_right': 0,
+    'on_top': 1,
     'custom_grid_size': '',
 }
 
@@ -147,6 +165,7 @@ if __name__ == '__main__':
     set_wallpaper = params['set_wallpaper']
     wallpaper_dir = params['wallpaper_dir']
     wallpaper_mode = params['wallpaper_mode']
+    on_top = params['on_top']
     n_wallpapers = params['n_wallpapers']
     multi_mode = params['multi_mode']
     trim_images = params['trim_images']
@@ -527,17 +546,20 @@ if __name__ == '__main__':
                 cv2.setWindowProperty(win_name, cv2.WND_PROP_FULLSCREEN, 1)
             else:
                 cv2.namedWindow(win_name, cv_windowed_mode_flags)
-                if win_utils_available:
+                hideBorder()
+                # if win_utils_available:
                     # winUtils.hideBorder(monitors[curr_monitor][0], monitors[curr_monitor][1],
                     #                     width, height, win_name)
-                    winUtils.hideBorder2(win_name)
+                    # winUtils.hideBorder2(win_name)
+
             cv2.moveWindow(win_name, win_offset_x + monitors[curr_monitor][0], win_offset_y + monitors[curr_monitor][1])
         else:
             cv2.namedWindow(win_name, cv_windowed_mode_flags)
             #     winUtils.hideBorder(monitors[2][0], monitors[2][1], width, height, win_name)
             # else:
-            if win_utils_available:
-                winUtils.hideBorder2(win_name)
+            hideBorder()
+            # if win_utils_available:
+            #     winUtils.hideBorder2(win_name)
                 # winUtils.loseFocus(win_name)
             if widescreen_mode:
                 cv2.moveWindow(win_name, win_offset_x + widescreen_monitor[0], win_offset_y + widescreen_monitor[1])
@@ -1378,7 +1400,6 @@ if __name__ == '__main__':
 
     old_transition_interval = transition_interval
 
-
     def showWindow():
         print('Showing window')
         # win_handle = ctypes.windll.user32.FindWindowW(u'{}'.format(win_name), None)
@@ -1879,6 +1900,9 @@ if __name__ == '__main__':
                 elif not reversed_pos:
                     cv2.moveWindow(win_name, win_offset_x + monitors[curr_monitor][0],
                                    win_offset_y + monitors[curr_monitor][1])
+            elif k == ord('v'):
+                on_top = 1- on_top
+                hideBorder()
             elif k == ord('t'):
                 transition_interval -= transition_interval_diff
                 if transition_interval < 1:

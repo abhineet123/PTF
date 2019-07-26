@@ -104,7 +104,9 @@ static PyObject* hideBorder(PyObject* self, PyObject* args) {
 
 static PyObject* hideBorder2(PyObject* self, PyObject* args) {
 	char* win_name;
-	if(!PyArg_ParseTuple(args, "z", &win_name)) {
+	int on_top;
+
+	if(!PyArg_ParseTuple(args, "zi", &win_name, &on_top)) {
 		PySys_WriteStdout("\n----winUtils::hideBorder2: Input arguments could not be parsed----\n\n");
 		return Py_BuildValue("i", 0);
 	}
@@ -117,7 +119,10 @@ static PyObject* hideBorder2(PyObject* self, PyObject* args) {
 	DWORD style = ::GetWindowLong(win_handle, GWL_STYLE);
 	style &= ~WS_OVERLAPPEDWINDOW;
 	style |= WS_POPUP;
-	style |= WS_EX_TOPMOST;
+
+	if (on_top) {
+		style |= WS_EX_TOPMOST;
+	}	
 	::SetWindowLong(win_handle, GWL_STYLE, style);
 
 	// change style of the parent HighGui window
@@ -125,7 +130,9 @@ static PyObject* hideBorder2(PyObject* self, PyObject* args) {
 	style = ::GetWindowLong(hParent, GWL_STYLE);
 	style &= ~WS_OVERLAPPEDWINDOW;
 	style |= WS_POPUP;
-	style |= WS_EX_TOPMOST;
+	if (on_top) {
+		style |= WS_EX_TOPMOST;
+	}
 	::SetWindowLong(hParent, GWL_STYLE, style);
 	SetWindowPos(hParent, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 	return Py_BuildValue("i", 1);
