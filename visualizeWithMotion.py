@@ -550,7 +550,7 @@ if __name__ == '__main__':
                 # if win_utils_available:
                     # winUtils.hideBorder(monitors[curr_monitor][0], monitors[curr_monitor][1],
                     #                     width, height, win_name)
-                    # winUtils.hideBorder2(win_name)
+                    # winUtils.hideBorder2(win_name, on_top)
 
             cv2.moveWindow(win_name, win_offset_x + monitors[curr_monitor][0], win_offset_y + monitors[curr_monitor][1])
         else:
@@ -559,7 +559,7 @@ if __name__ == '__main__':
             # else:
             hideBorder()
             # if win_utils_available:
-            #     winUtils.hideBorder2(win_name)
+            #     winUtils.hideBorder2(win_name, on_top)
                 # winUtils.loseFocus(win_name)
             if widescreen_mode:
                 cv2.moveWindow(win_name, win_offset_x + widescreen_monitor[0], win_offset_y + widescreen_monitor[1])
@@ -1731,14 +1731,14 @@ if __name__ == '__main__':
                                _y_offset)
 
             # if win_utils_available:
-            #     winUtils.hideBorder2(win_name)
+            #     winUtils.hideBorder2(win_name, on_top)
 
         cv2.imshow(win_name, dst_img)
 
         # if win_utils_available:
         #     winUtils.loseFocus(win_name)
 
-        # winUtils.hideBorder2(win_name)
+        # winUtils.hideBorder2(win_name, on_top)
         # winUtils.show2(win_name)
 
         # if win_utils_available:
