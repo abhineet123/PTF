@@ -1,6 +1,9 @@
 from datetime import datetime, timedelta
 import pyperclip
-from Tkinter import Tk
+try:
+    from Tkinter import Tk
+except ImportError:
+    import tkinter as tk
 
 in_txt = Tk().clipboard_get()
 

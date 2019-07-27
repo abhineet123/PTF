@@ -1,6 +1,7 @@
 import sys
 import os
 import argparse
+from datetime import datetime
 
 def parserToParams(parser: argparse.ArgumentParser,
                    class_name='Params'):
@@ -47,7 +48,9 @@ def parserToParams(parser: argparse.ArgumentParser,
     out_text += help_text
 
     out_text = header_text + doc_text + out_text
-    out_fname = '{}.py'.format(class_name)
+    time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+
+    out_fname = '{}_{}.py'.format(class_name, time_stamp)
 
     out_path = os.path.abspath(out_fname)
 
@@ -90,10 +93,26 @@ def dictToParams(param_dict: dict, class_name='Params'):
     out_text += help_text
 
     out_text = header_text + doc_text + out_text
-    out_fname = '{}.py'.format(class_name)
+    time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+
+    out_fname = '{}_{}.py'.format(class_name, time_stamp)
 
     out_path = os.path.abspath(out_fname)
 
     print('Writing output to {}'.format(out_path))
     with open(out_path, 'w') as fid:
         fid.write(out_text)
+
+if __name__ == '__main__':
+    import pyperclip
+    import ast
+
+    try:
+        from Tkinter import Tk
+    except ImportError:
+        import tkinter as tk
+
+    in_txt = Tk().clipboard_get()
+    _dict = ast.literal_eval(in_txt)
+    dictToParams(_dict)
+
