@@ -20,10 +20,11 @@ from PIL import Image, ImageChops
 # from wand.image import Image as wandImage
 
 def checkImage(fn):
-  proc = Popen(['identify', '-verbose', fn], stdout=PIPE, stderr=PIPE)
-  out, err = proc.communicate()
-  exitcode = proc.returncode
-  return exitcode, out, err
+    proc = Popen(['identify', '-verbose', fn], stdout=PIPE, stderr=PIPE)
+    out, err = proc.communicate()
+    exitcode = proc.returncode
+    return exitcode, out, err
+
 
 interrupt_wait = Event()
 
@@ -64,6 +65,7 @@ try:
 except ImportError as e:
     mousePos = None
 
+
 def hideBorder():
     win_handle = win32gui.FindWindow(None, win_name)
     style = win32gui.GetWindowLong(win_handle, win32con.GWL_STYLE)
@@ -81,6 +83,8 @@ def hideBorder():
     win32gui.SetWindowLong(win_handle, win32con.GWL_STYLE, style)
     win32gui.SetWindowPos(win_handle, style_2, 0, 0, 0, 0,
                           win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+
+
 # hotkeys_available = 0
 # try:
 #     import ctypes
@@ -128,6 +132,10 @@ params = {
     'check_images': 0,
     'move_to_right': 0,
     'on_top': 1,
+    'top_border': 0,
+    'bottom_border': 0,
+    'keep_borders': 0,
+    'monitor_id': -1,
     'custom_grid_size': '',
 }
 
@@ -174,6 +182,10 @@ if __name__ == '__main__':
     enable_hotkeys = params['enable_hotkeys']
     custom_grid_size = params['custom_grid_size']
     check_images = params['check_images']
+    top_border = params['top_border']
+    keep_borders = params['keep_borders']
+    bottom_border = params['bottom_border']
+    monitor_id = params['monitor_id']
 
     if wallpaper_mode and not set_wallpaper:
         set_wallpaper = 1
@@ -257,10 +269,8 @@ if __name__ == '__main__':
     except:
         cv_windowed_mode_flags = cv2.WINDOW_AUTOSIZE
 
-    if mousePos is None:
-        curr_monitor = 0
-    else:
-        curr_monitor = 0
+    if monitor_id < 0 and mousePos is not None:
+        monitor_id = 0
         min_dist = np.inf
         for curr_id, monitor in enumerate(monitors):
             centroid_x = (monitor[0] + monitor[0] + 1920) / 2.0
@@ -268,8 +278,10 @@ if __name__ == '__main__':
             dist = (mousePos.x - centroid_x) ** 2 + (mousePos.y - centroid_y) ** 2
             if dist < min_dist:
                 min_dist = dist
-                curr_monitor = curr_id
-    print('curr_monitor: ', curr_monitor)
+                monitor_id = curr_id
+    elif monitor_id >= len(monitors):
+        raise IOError('Invalid monitor_id: {}'.format(monitor_id))
+    print('monitor_id: ', monitor_id)
     print('transition_interval: ', transition_interval)
 
     if _width == 0 or _height == 0:
@@ -299,7 +311,6 @@ if __name__ == '__main__':
     src_images = []
     img_fnames = []
     win_offset_x = win_offset_y = 0
-    top_border = bottom_border = 0
 
     img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff')
     vid_exts = ('.mp4', '.avi', '.mkv')
@@ -530,7 +541,8 @@ if __name__ == '__main__':
                 if str(code) != "0" or str(error, "utf-8") != "":
                     print("\n{} :: ERROR: {}\n".format(img_path, error))
                 sys.stdout.write('\r Set {}: Done {}/{}'.format(
-                    _set_id+1, _img_id+1, _n_images))
+                    _set_id + 1, _img_id + 1, _n_images))
+
 
     def createWindow():
         global mode, move_to_right
@@ -546,20 +558,20 @@ if __name__ == '__main__':
                 cv2.setWindowProperty(win_name, cv2.WND_PROP_FULLSCREEN, 1)
             else:
                 cv2.namedWindow(win_name, cv_windowed_mode_flags)
-                hideBorder()
-                # if win_utils_available:
+                # hideBorder()
+                if win_utils_available:
+                    winUtils.hideBorder2(win_name, on_top)
                     # winUtils.hideBorder(monitors[curr_monitor][0], monitors[curr_monitor][1],
                     #                     width, height, win_name)
-                    # winUtils.hideBorder2(win_name, on_top)
 
-            cv2.moveWindow(win_name, win_offset_x + monitors[curr_monitor][0], win_offset_y + monitors[curr_monitor][1])
+            cv2.moveWindow(win_name, win_offset_x + monitors[monitor_id][0], win_offset_y + monitors[monitor_id][1])
         else:
             cv2.namedWindow(win_name, cv_windowed_mode_flags)
             #     winUtils.hideBorder(monitors[2][0], monitors[2][1], width, height, win_name)
             # else:
-            hideBorder()
-            # if win_utils_available:
-            #     winUtils.hideBorder2(win_name, on_top)
+            # hideBorder()
+            if win_utils_available:
+                winUtils.hideBorder2(win_name, on_top)
                 # winUtils.loseFocus(win_name)
             if widescreen_mode:
                 cv2.moveWindow(win_name, win_offset_x + widescreen_monitor[0], win_offset_y + widescreen_monitor[1])
@@ -637,7 +649,7 @@ if __name__ == '__main__':
         if set_grid_size:
             setGridSize()
 
-        if _type != 0:
+        if _type != 0 and not keep_borders:
             top_border = bottom_border = 0
         aspect_ratio = float(width) / float(height)
 
@@ -1400,6 +1412,7 @@ if __name__ == '__main__':
 
     old_transition_interval = transition_interval
 
+
     def showWindow():
         print('Showing window')
         # win_handle = ctypes.windll.user32.FindWindowW(u'{}'.format(win_name), None)
@@ -1440,7 +1453,6 @@ if __name__ == '__main__':
         # _type = event.name
         # scan_code = event.scan_code
         # print('scan_code: {}'.format(scan_code))
-
 
         _type = event
         print('hotkey: {}'.format(_type))
@@ -1709,7 +1721,7 @@ if __name__ == '__main__':
 
             # print(':: reversed_pos: ', reversed_pos)
             if mode == 0:
-                _curr_monitor = curr_monitor
+                _curr_monitor = monitor_id
             elif mode == 1:
                 if move_to_right:
                     _curr_monitor = 4
@@ -1855,26 +1867,26 @@ if __name__ == '__main__':
                     max_switches = 1
             elif k == ord('N'):
                 max_switches += 1
-            elif k == ord('1'):
-                curr_monitor = 0
-                cv2.moveWindow(win_name, win_offset_x + monitors[0][0], win_offset_y + monitors[0][1])
+            elif ord('1') <= k <= ord('5'):
+                monitor_id = k - ord('1')
+                cv2.moveWindow(win_name, win_offset_x + monitors[monitor_id][0], win_offset_y + monitors[monitor_id][1])
                 # createWindow()
-            elif k == ord('2'):
-                curr_monitor = 1
-                cv2.moveWindow(win_name, win_offset_x + monitors[1][0], win_offset_y + monitors[1][1])
-                # createWindow()
-            elif k == ord('3'):
-                curr_monitor = 2
-                cv2.moveWindow(win_name, win_offset_x + monitors[2][0], win_offset_y + monitors[2][1])
-                # createWindow()
-            elif k == ord('4'):
-                curr_monitor = 3
-                cv2.moveWindow(win_name, win_offset_x + monitors[3][0], win_offset_y + monitors[3][1])
-                # createWindow()
-            elif k == ord('5'):
-                curr_monitor = 4
-                cv2.moveWindow(win_name, win_offset_x + monitors[4][0], win_offset_y + monitors[4][1])
-                # createWindow()
+            # elif k == ord('2'):
+            #     monitor_id = 1
+            #     cv2.moveWindow(win_name, win_offset_x + monitors[1][0], win_offset_y + monitors[1][1])
+            #     # createWindow()
+            # elif k == ord('3'):
+            #     monitor_id = 2
+            #     cv2.moveWindow(win_name, win_offset_x + monitors[2][0], win_offset_y + monitors[2][1])
+            #     # createWindow()
+            # elif k == ord('4'):
+            #     monitor_id = 3
+            #     cv2.moveWindow(win_name, win_offset_x + monitors[3][0], win_offset_y + monitors[3][1])
+            #     # createWindow()
+            # elif k == ord('5'):
+            #     monitor_id = 4
+            #     cv2.moveWindow(win_name, win_offset_x + monitors[4][0], win_offset_y + monitors[4][1])
+            #     # createWindow()
             elif k == 32:
                 is_paused = 1 - is_paused
                 if speed == 0:
@@ -1890,18 +1902,18 @@ if __name__ == '__main__':
                 if fullscreen or mode == 1:
                     loadImage(0)
                 elif not reversed_pos:
-                    cv2.moveWindow(win_name, win_offset_x + monitors[curr_monitor][0],
-                                   win_offset_y + monitors[curr_monitor][1])
+                    cv2.moveWindow(win_name, win_offset_x + monitors[monitor_id][0],
+                                   win_offset_y + monitors[monitor_id][1])
             elif k == ord('p'):
                 reversed_pos = (reversed_pos + 1) % 3
                 # print('reversed_pos: ', reversed_pos)
                 if fullscreen or mode == 1:
                     loadImage(0)
                 elif not reversed_pos:
-                    cv2.moveWindow(win_name, win_offset_x + monitors[curr_monitor][0],
-                                   win_offset_y + monitors[curr_monitor][1])
+                    cv2.moveWindow(win_name, win_offset_x + monitors[monitor_id][0],
+                                   win_offset_y + monitors[monitor_id][1])
             elif k == ord('v'):
-                on_top = 1- on_top
+                on_top = 1 - on_top
                 hideBorder()
             elif k == ord('t'):
                 transition_interval -= transition_interval_diff

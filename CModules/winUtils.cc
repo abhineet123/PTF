@@ -134,7 +134,12 @@ static PyObject* hideBorder2(PyObject* self, PyObject* args) {
 		style |= WS_EX_TOPMOST;
 	}
 	::SetWindowLong(hParent, GWL_STYLE, style);
-	SetWindowPos(hParent, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	if (on_top) {
+		SetWindowPos(hParent, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	}
+	else {
+		SetWindowPos(hParent, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	}
 	return Py_BuildValue("i", 1);
 }
 
