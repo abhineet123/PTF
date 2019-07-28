@@ -136,6 +136,8 @@ params = {
     'bottom_border': 0,
     'keep_borders': 0,
     'monitor_id': -1,
+    'win_offset_x': 0,
+    'win_offset_y': 0,
     'custom_grid_size': '',
 }
 
@@ -186,6 +188,9 @@ if __name__ == '__main__':
     keep_borders = params['keep_borders']
     bottom_border = params['bottom_border']
     monitor_id = params['monitor_id']
+    win_offset_x = params['win_offset_x']
+    win_offset_y = params['win_offset_y']
+
 
     if wallpaper_mode and not set_wallpaper:
         set_wallpaper = 1
@@ -310,7 +315,7 @@ if __name__ == '__main__':
     end_exec = 0
     src_images = []
     img_fnames = []
-    win_offset_x = win_offset_y = 0
+
 
     img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff')
     vid_exts = ('.mp4', '.avi', '.mkv')
