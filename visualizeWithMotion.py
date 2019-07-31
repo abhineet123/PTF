@@ -314,7 +314,7 @@ if __name__ == '__main__':
     prev_pos = prev_win_pos = None
     end_exec = 0
     src_images = []
-    img_fnames = []
+    img_fnames = {}
 
 
     img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff')
@@ -516,6 +516,10 @@ if __name__ == '__main__':
 
         img_id[0] = src_files[0].index(img_fname)
 
+    if not multi_mode:
+        img_id = {
+            0: img_id[0]
+        }
     src_img_ar, start_row, end_row, start_col, end_col, dst_height, dst_width = [None] * 7
     target_height, target_width, min_height, start_col, end_col, height_ratio = [None] * 6
     dst_img = None
@@ -671,7 +675,7 @@ if __name__ == '__main__':
                 elif _type == -1:
                     img_id[0] -= 2 * n_images
             src_images = []
-            img_fnames = []
+            img_fnames = {}
             for _load_id in range(n_images):
 
                 if video_mode:
@@ -738,7 +742,7 @@ if __name__ == '__main__':
 
                     if rotate_images:
                         src_img = np.rot90(src_img, rotate_images)
-                    img_fnames.append(img_fname)
+                    img_fnames[src_id] = img_fname
 
                 src_images.append(src_img)
                 if video_mode:
@@ -1825,7 +1829,7 @@ if __name__ == '__main__':
                     else:
                         print('Random mode disabled')
                         for _id in img_id:
-                            img_id[_id] = src_files[_id].index(img_fname)
+                            img_id[_id] = src_files[_id].index(img_fnames[_id])
                             # img_id[_id] = 0
             elif k == ord('c'):
                 auto_progress = 1 - auto_progress
