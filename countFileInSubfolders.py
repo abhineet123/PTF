@@ -78,6 +78,7 @@ if sort_by_count:
 total_files = 0
 files = []
 empty_folders = []
+out_text=''
 for i, _idx in enumerate(sort_idx):
     subfolders_path = subfolders[_idx]
     src_files = src_files_list[_idx]
