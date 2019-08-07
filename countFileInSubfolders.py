@@ -68,16 +68,17 @@ for subfolders_path in subfolders:
     src_files_list.append(src_files)
     n_files_list.append(n_files)
 
+n_seq = len(n_files_list)
+print('n_seq: {}'.format(n_seq))
 
-
-sort_idx = range(len(n_files_list))
+sort_idx = range(n_seq)
 if sort_by_count:
     sort_idx = sorted(sort_idx, key=lambda k: n_files_list[k])
 
 total_files = 0
 files = []
 empty_folders = []
-for _idx in sort_idx:
+for i, _idx in enumerate(sort_idx):
     subfolders_path = subfolders[_idx]
     src_files = src_files_list[_idx]
     n_files = n_files_list[_idx]
@@ -87,7 +88,7 @@ for _idx in sort_idx:
         empty_folders.append(subfolders_path)
     else:
         files += [os.path.join(subfolders_path, f) for f in src_files]
-        text = '{}:\t{}\t{}'.format(subfolders_path, n_files, total_files)
+        text = '{}\t{}\t{}\t{}'.format(i+1, subfolders_path, n_files, total_files)
         print(text)
         counts_file.write(text + '\n')
 
