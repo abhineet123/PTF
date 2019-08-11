@@ -26,8 +26,10 @@ for seq_id in range(start_id, end_id + 1):
     out_fname = '{:s}/{:s}/Annotations/{:s}.txt'.format(root_dir, actor, seq_name)
     out_fid = open(out_fname, 'w')
 
-    for obj in tree.iter('ignored_region'):
-        bndbox = obj.find('box')
+    ignored_region_obj = tree.find('ignored_region')
+    n_ignored_regions = 0
+
+    for bndbox in ignored_region_obj.iter('box'):
         if bndbox is None:
             continue
         xmin = float(bndbox.attrib['left'])
@@ -36,6 +38,7 @@ for seq_id in range(start_id, end_id + 1):
         height = float(bndbox.attrib['height'])
         out_fid.write('-1,-1,{:f},{:f},{:f},{:f},1,-1,-1,-1\n'.format(
             xmin, ymin, width, height))
+        n_ignored_regions += 1
 
     if ignored_region_only:
         out_fid.close()
@@ -45,7 +48,7 @@ for seq_id in range(start_id, end_id + 1):
     n_frames = len(glob.glob('{:s}/*.jpg'.format(img_dir)))
     n_frames_list.append(n_frames)
 
-    print('Processing sequence {:d} :: {:s}'.format(seq_id, seq_name))
+    print('Processing sequence {:d} :: {:s} n_ignored_regions: {}'.format(seq_id, seq_name, n_ignored_regions))
     for frame_obj in tree.iter('frame'):
         target_list = frame_obj.find('target_list')
         frame_id = int(frame_obj.attrib['num'])
