@@ -6,7 +6,7 @@ root_dir = 'E:/Datasets'
 actor_id = 4
 start_id = 0
 end_id = 2
-ignored_region_only=1
+ignored_region_only = 0
 
 params = getParamDict()
 actors = params['mot_actors']
@@ -19,27 +19,21 @@ for seq_id in range(start_id, end_id + 1):
     tree = ET.parse(fname)
     root = tree.getroot()
 
-    ignored_boxes = []
+    out_fname = '{:s}/{:s}/Annotations/{:s}.txt'.format(root_dir, actor, seq_name)
+    out_fid = open(out_fname, 'w')
+
     for frame_obj in tree.iter('ignored_region'):
         bndbox = obj.find('box')
         xmin = float(bndbox.attrib['left'])
         ymin = float(bndbox.attrib['top'])
         width = float(bndbox.attrib['width'])
         height = float(bndbox.attrib['height'])
-        ignored_boxes.append([xmin, ymin, width, height])
-
-    if ignored_boxes:
-        out_fname = '{:s}/{:s}/Annotations/{:s}_ignored_region.txt'.format(root_dir, actor, seq_name)
-        out_fid = open(out_fname, 'w')
-        for _box in ignored_boxes:
-            out_fid.write('{:f},{:f},{:f},{:f}\n'.format(*_box))
-    out_fid.close()
+        out_fid.write('-1,-1,{:f},{:f},{:f},{:f},1,-1,-1,-1\n'.format(
+            xmin, ymin, width, height))
 
     if ignored_region_only:
+        out_fid.close()
         continue
-
-    out_fname = '{:s}/{:s}/Annotations/{:s}.txt'.format(root_dir, actor, seq_name)
-    out_fid = open(out_fname, 'w')
 
     img_dir = '{:s}/{:s}/Images/{:s}'.format(root_dir, actor, seq_name)
     n_frames = len(glob.glob('{:s}/*.jpg'.format(img_dir)))
@@ -60,6 +54,6 @@ for seq_id in range(start_id, end_id + 1):
                 frame_id, obj_id, xmin, ymin, width, height))
         if frame_id % 100 == 0:
             print('\t Done {:d}/{:d} frames'.format(frame_id, n_frames))
-
     out_fid.close()
+
 print(n_frames_list)
