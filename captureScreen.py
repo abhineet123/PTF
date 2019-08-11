@@ -22,8 +22,8 @@ params = {
     'del_src': 0,
     'start_id': 0,
     'n_frames': 0,
-    'width': 1280,
-    'height': 720,
+    'width': 1440,
+    'height': 900,
     'fps': 30,
     # 'codec': 'FFV1',
     # 'ext': 'avi',
@@ -33,6 +33,8 @@ params = {
     'reverse': 0,
     # coordinates of the region from where streaming image is cropped: [left,top,right,bottom]
     'region_to_crop': [0, 0, 5760, 2160],
+    'roi_resize_factor': 0.5,
+    'vis_resize_factor': 0,
 }
 
 processArguments(sys.argv[1:], params)
@@ -51,6 +53,8 @@ ext = params['ext']
 out_postfix = params['out_postfix']
 reverse = params['reverse']
 region_to_crop = params['region_to_crop']
+roi_resize_factor = params['roi_resize_factor']
+vis_resize_factor = params['vis_resize_factor']
 
 left, top, right, bottom = region_to_crop
 region_to_crop = {
@@ -59,7 +63,6 @@ region_to_crop = {
     "width": right - left,
     "height": bottom - top
 }
-
 
 pause_after_frame = 1
 
@@ -72,11 +75,14 @@ except ScreenShotError as e:
     raise IOError('Screenshot capture failed. Please check the monitor configuration: {}'.format(e))
 
 image = np.array(im, copy=False)
+image = resizeAR(image, resize_factor=roi_resize_factor)
 
 roi = cv2.selectROI('Select ROI', image)
 print('roi: {}'.format(roi))
 
 cv2.destroyWindow('Select ROI')
+
+roi = [int(k / roi_resize_factor) for k in roi]
 
 x1, y1, w, h = roi
 
@@ -103,11 +109,11 @@ with mss() as sct:
 
         proc_end_t = time.time()
 
-
         grab_fps = 1.0 / float(grab_end_t - _start_t)
         proc_fps = 1.0 / float(proc_end_t - _start_t)
 
-        # image = resizeAR(image, width, height)
+        image = resizeAR(image, width, height,
+                         resize_factor=vis_resize_factor, placement_type=1)
 
         if show_img:
             cv2.imshow('screenshot', image)

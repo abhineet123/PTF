@@ -356,13 +356,18 @@ def processArguments(args, params):
                 params[arg[0]] = ''
 
 
-def resizeAR(src_img, width, height, return_factors=False,
-             placement_type=0):
+def resizeAR(src_img, width=0, height=0, return_factors=False,
+             placement_type=0, resize_factor=0):
     src_height, src_width, n_channels = src_img.shape
     src_aspect_ratio = float(src_width) / float(src_height)
 
+    if resize_factor != 0:
+        width, height = int(src_width * resize_factor), int(src_height * resize_factor)
+
     if width <= 0 and height <= 0:
-        raise AssertionError('Both width and height cannot be zero')
+        if resize_factor==0:
+            raise AssertionError(
+                'Both width and height cannot be 0 when resize_factor is 0 too')
     elif height <= 0:
         height = int(width / src_aspect_ratio)
     elif width <= 0:

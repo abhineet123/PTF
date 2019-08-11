@@ -36,7 +36,7 @@ for seq_id in range(start_id, end_id + 1):
         ymin = float(bndbox.attrib['top'])
         width = float(bndbox.attrib['width'])
         height = float(bndbox.attrib['height'])
-        out_fid.write('-1,-1,{:f},{:f},{:f},{:f},1,-1,-1,-1\n'.format(
+        out_fid.write('-1,-1,{:f},{:f},{:f},{:f},-1,-1,-1,-1\n'.format(
             xmin, ymin, width, height))
         n_ignored_regions += 1
 
