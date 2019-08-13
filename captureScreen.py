@@ -4,6 +4,7 @@ import time
 import os, shutil
 import platform
 import numpy as np
+from datetime import datetime
 
 if platform.system() == 'Windows':
     from mss.windows import MSS as mss
@@ -24,7 +25,7 @@ params = {
     'n_frames': 0,
     'width': 1440,
     'height': 900,
-    'fps': 30,
+    'fps': 20,
     # 'codec': 'FFV1',
     # 'ext': 'avi',
     'codec': 'H264',
@@ -35,6 +36,7 @@ params = {
     'region_to_crop': [0, 0, 5760, 2160],
     'roi_resize_factor': 0.5,
     'vis_resize_factor': 0,
+    'out_resize_factor': 1.0,
 }
 
 processArguments(sys.argv[1:], params)
@@ -55,6 +57,7 @@ reverse = params['reverse']
 region_to_crop = params['region_to_crop']
 roi_resize_factor = params['roi_resize_factor']
 vis_resize_factor = params['vis_resize_factor']
+out_resize_factor = params['out_resize_factor']
 
 left, top, right, bottom = region_to_crop
 region_to_crop = {
@@ -93,6 +96,17 @@ region_to_crop['height'] = h
 
 print('region_to_crop: {}'.format(region_to_crop))
 
+time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+out_name = 'screen_capture_{}.{}'.format(time_stamp, ext)
+fourcc = cv2.VideoWriter_fourcc(*codec)
+
+out_w, out_h = int(w*out_resize_factor), int(h*out_resize_factor)
+video_out = cv2.VideoWriter(out_name, fourcc, fps, (out_w, out_h))
+
+if video_out is None:
+    raise IOError('Output video file could not be opened: {}'.format(out_name))
+print('Saving {}x{} output video to {}'.format(out_w, out_h, out_name))
+
 with mss() as sct:
     while True:
         _start_t = time.time()
@@ -109,13 +123,24 @@ with mss() as sct:
 
         proc_end_t = time.time()
 
+        if out_resize_factor != 1:
+            out_image = resizeAR(image, resize_factor=out_resize_factor)
+        else:
+            out_image = image
+
+        video_out.write(out_image)
+
+        vid_end_t = time.time()
+
         grab_fps = 1.0 / float(grab_end_t - _start_t)
         proc_fps = 1.0 / float(proc_end_t - _start_t)
+        vid_fps = 1.0 / float(vid_end_t - _start_t)
 
-        image = resizeAR(image, width, height,
-                         resize_factor=vis_resize_factor, placement_type=1)
 
         if show_img:
+            image = resizeAR(image, width, height,
+                             resize_factor=vis_resize_factor, placement_type=1)
+
             cv2.imshow('screenshot', image)
             k = cv2.waitKey(1 - pause_after_frame) & 0xFF
             if k == ord('q') or k == 27:
@@ -123,7 +148,14 @@ with mss() as sct:
             elif k == 32:
                 pause_after_frame = 1 - pause_after_frame
 
-        print('grab_fps: {} proc_fps: {}'.format(grab_fps, proc_fps))
+        sys.stdout.write('\rgrab: {} proc: {} vid: {}'.format(
+            grab_fps, proc_fps, vid_fps))
+        sys.stdout.flush()
+
+    sys.stdout.write('\n\n')
+    sys.stdout.flush()
+
+    video_out.release()
 
     if show_img:
         cv2.destroyWindow('screenshot')
