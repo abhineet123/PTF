@@ -41,8 +41,14 @@ try:
 
     # Get active window id
     # https://msdn.microsoft.com/en-us/library/ms633505
-    winID = windll.user32.GetForegroundWindow()
-    print("This is your current window ID: {}".format(winID))
+    # winID = windll.user32.GetForegroundWindow()
+    # print("current window ID: {}".format(winID))
+
+    active_winID = win32gui.GetForegroundWindow()
+    print("active_winID: {}".format(active_winID))
+
+    active_win_name = win32gui.GetWindowText(active_winID)
+    print("active_win_name: {}".format(active_win_name))
 
     user32 = windll.user32
 
@@ -138,6 +144,7 @@ params = {
     'monitor_id': -1,
     'win_offset_x': 0,
     'win_offset_y': 0,
+    'duplicate_window': 0,
     'custom_grid_size': '',
 }
 
@@ -190,7 +197,7 @@ if __name__ == '__main__':
     monitor_id = params['monitor_id']
     win_offset_x = params['win_offset_x']
     win_offset_y = params['win_offset_y']
-
+    duplicate_window = params['duplicate_window']
 
     if wallpaper_mode and not set_wallpaper:
         set_wallpaper = 1
@@ -315,7 +322,6 @@ if __name__ == '__main__':
     end_exec = 0
     src_images = []
     img_fnames = {}
-
 
     img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff')
     vid_exts = ('.mp4', '.avi', '.mkv')
@@ -553,44 +559,56 @@ if __name__ == '__main__':
                     _set_id + 1, _img_id + 1, _n_images))
 
 
-    def createWindow():
+    def createWindow(_win_name):
         global mode, move_to_right
 
         try:
-            cv2.destroyWindow(win_name)
+            cv2.destroyWindow(_win_name)
         except:
             pass
 
         if mode == 0:
             if fullscreen:
-                cv2.namedWindow(win_name, cv2.WND_PROP_FULLSCREEN)
-                cv2.setWindowProperty(win_name, cv2.WND_PROP_FULLSCREEN, 1)
+                cv2.namedWindow(_win_name, cv2.WND_PROP_FULLSCREEN)
+
+                # if duplicate_window:
+                #     cv2.namedWindow(_win_name2, cv2.WND_PROP_FULLSCREEN)
+
+                cv2.setWindowProperty(_win_name, cv2.WND_PROP_FULLSCREEN, 1)
             else:
-                cv2.namedWindow(win_name, cv_windowed_mode_flags)
+                cv2.namedWindow(_win_name, cv_windowed_mode_flags)
+
+                # if duplicate_window:
+                #     cv2.namedWindow(_win_name2, cv_windowed_mode_flags)
+
                 # hideBorder()
                 if win_utils_available:
-                    winUtils.hideBorder2(win_name, on_top)
+                    winUtils.hideBorder2(_win_name, on_top)
                     # winUtils.hideBorder(monitors[curr_monitor][0], monitors[curr_monitor][1],
-                    #                     width, height, win_name)
+                    #                     width, height, _win_name)
 
-            cv2.moveWindow(win_name, win_offset_x + monitors[monitor_id][0], win_offset_y + monitors[monitor_id][1])
+            cv2.moveWindow(_win_name, win_offset_x + monitors[monitor_id][0], win_offset_y + monitors[monitor_id][1])
         else:
-            cv2.namedWindow(win_name, cv_windowed_mode_flags)
-            #     winUtils.hideBorder(monitors[2][0], monitors[2][1], width, height, win_name)
+            cv2.namedWindow(_win_name, cv_windowed_mode_flags)
+
+            # if duplicate_window:
+            #     cv2.namedWindow(_win_name2, cv_windowed_mode_flags)
+
+            #     winUtils.hideBorder(monitors[2][0], monitors[2][1], width, height, _win_name)
             # else:
             # hideBorder()
             if win_utils_available:
-                winUtils.hideBorder2(win_name, on_top)
-                # winUtils.loseFocus(win_name)
+                winUtils.hideBorder2(_win_name, on_top)
+                # winUtils.loseFocus(_win_name)
             if widescreen_mode:
-                cv2.moveWindow(win_name, win_offset_x + widescreen_monitor[0], win_offset_y + widescreen_monitor[1])
+                cv2.moveWindow(_win_name, win_offset_x + widescreen_monitor[0], win_offset_y + widescreen_monitor[1])
             else:
                 if move_to_right:
-                    cv2.moveWindow(win_name, win_offset_x + monitors[4][0], win_offset_y + monitors[4][1])
+                    cv2.moveWindow(_win_name, win_offset_x + monitors[4][0], win_offset_y + monitors[4][1])
                 else:
-                    cv2.moveWindow(win_name, win_offset_x + monitors[2][0], win_offset_y + monitors[2][1])
+                    cv2.moveWindow(_win_name, win_offset_x + monitors[2][0], win_offset_y + monitors[2][1])
 
-        cv2.setMouseCallback(win_name, mouseHandler)
+        cv2.setMouseCallback(_win_name, mouseHandler)
 
         # if hotkeys_available:
         #     HOTKEYS = {
@@ -620,7 +638,7 @@ if __name__ == '__main__':
         print('changeMode :: width: ', width)
 
         aspect_ratio = float(width) / float(height)
-        createWindow()
+        createWindow(win_name)
         loadImage()
 
 
@@ -1413,8 +1431,12 @@ if __name__ == '__main__':
     time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
     win_name = 'VWM_{}_{}'.format(os.path.basename(os.path.abspath(src_path)),
                                   time_stamp)
+    win_name2 = '{} 2'.format(win_name)
+
+    monitor_id2 = monitor_id
+
     if not wallpaper_mode:
-        createWindow()
+        createWindow(win_name)
 
     MAX_TRANSITION_INTERVAL = 1000
     MIN_TRANSITION_INTERVAL = 2
@@ -1647,6 +1669,29 @@ if __name__ == '__main__':
     #         2: handle_win_f4
     #     }
 
+    def moveWindow(_monitor_id, _win_name):
+        if mode == 0:
+            _curr_monitor = _monitor_id
+        elif mode == 1:
+            if move_to_right:
+                _curr_monitor = 4
+            else:
+                _curr_monitor = 2
+
+        _y_offset = win_offset_y + monitors[_curr_monitor][1]
+
+        if reversed_pos == 0:
+
+            cv2.moveWindow(_win_name, win_offset_x + monitors[_curr_monitor][0],
+                           _y_offset)
+        elif reversed_pos == 1:
+            cv2.moveWindow(_win_name,
+                           int(win_offset_x + monitors[_curr_monitor][0] + (width - dst_img.shape[1]) / 2),
+                           _y_offset)
+        elif reversed_pos == 2:
+            cv2.moveWindow(_win_name, win_offset_x + int(monitors[_curr_monitor][0] + width - dst_img.shape[1]),
+                           _y_offset)
+
     img_id[0] += n_images - 1
     loadImage(set_grid_size=set_grid_size)
     exit_program = 0
@@ -1729,32 +1774,40 @@ if __name__ == '__main__':
             dst_img = dst_img[win_start_row:win_end_row, win_start_col:win_end_col, :]
 
             # print(':: reversed_pos: ', reversed_pos)
-            if mode == 0:
-                _curr_monitor = monitor_id
-            elif mode == 1:
-                if move_to_right:
-                    _curr_monitor = 4
-                else:
-                    _curr_monitor = 2
 
-            _y_offset = win_offset_y + monitors[_curr_monitor][1]
+            moveWindow(monitor_id, win_name)
+            # if mode == 0:
+            #     _curr_monitor = monitor_id
+            # elif mode == 1:
+            #     if move_to_right:
+            #         _curr_monitor = 4
+            #     else:
+            #         _curr_monitor = 2
+            #
+            # _y_offset = win_offset_y + monitors[_curr_monitor][1]
+            #
+            # if reversed_pos == 0:
+            #
+            #     cv2.moveWindow(win_name, win_offset_x + monitors[_curr_monitor][0],
+            #                    _y_offset)
+            # elif reversed_pos == 1:
+            #     cv2.moveWindow(win_name,
+            #                    int(win_offset_x + monitors[_curr_monitor][0] + (width - dst_img.shape[1]) / 2),
+            #                    _y_offset)
+            # elif reversed_pos == 2:
+            #     cv2.moveWindow(win_name, win_offset_x + int(monitors[_curr_monitor][0] + width - dst_img.shape[1]),
+            #                    _y_offset)
 
-            if reversed_pos == 0:
-
-                cv2.moveWindow(win_name, win_offset_x + monitors[_curr_monitor][0],
-                               _y_offset)
-            elif reversed_pos == 1:
-                cv2.moveWindow(win_name,
-                               int(win_offset_x + monitors[_curr_monitor][0] + (width - dst_img.shape[1]) / 2),
-                               _y_offset)
-            elif reversed_pos == 2:
-                cv2.moveWindow(win_name, win_offset_x + int(monitors[_curr_monitor][0] + width - dst_img.shape[1]),
-                               _y_offset)
+            if duplicate_window:
+                moveWindow(monitor_id2, win_name2)
 
             # if win_utils_available:
             #     winUtils.hideBorder2(win_name, on_top)
 
         cv2.imshow(win_name, dst_img)
+
+        if duplicate_window:
+            cv2.imshow(win_name2, dst_img)
 
         # if win_utils_available:
         #     winUtils.loseFocus(win_name)
@@ -1874,11 +1927,37 @@ if __name__ == '__main__':
                 max_switches -= 1
                 if max_switches < 1:
                     max_switches = 1
+            elif k == ord('d'):
+                createWindow(win_name2)
+                duplicate_window = 1
+                print('duplicate window enabled')
             elif k == ord('N'):
                 max_switches += 1
             elif ord('1') <= k <= ord('5'):
-                monitor_id = k - ord('1')
-                cv2.moveWindow(win_name, win_offset_x + monitors[monitor_id][0], win_offset_y + monitors[monitor_id][1])
+                _monitor_id = k - ord('1')
+                try:
+                    active_win_name = win32gui.GetWindowText(win32gui.GetForegroundWindow())
+                    # success = win32gui.MoveWindow(
+                    #     win32gui.GetForegroundWindow(),
+                    #     int(win_offset_x + monitors[monitor_id][0]),
+                    #     int(win_offset_y + monitors[monitor_id][1]),
+                    #     int(dst_img.shape[1]),
+                    #     int(dst_img.shape[0]),
+                    #     1
+                    # )
+                    # success = 0
+                    # if not success:
+                    #     print('Move failed')
+                except:
+                    active_win_name = win_name
+
+                if active_win_name == win_name:
+                    monitor_id = _monitor_id
+                else:
+                    monitor_id2 = _monitor_id
+                print('moving window {}'.format(active_win_name))
+                cv2.moveWindow(active_win_name, win_offset_x + monitors[_monitor_id][0],
+                               win_offset_y + monitors[_monitor_id][1])
                 # createWindow()
             # elif k == ord('2'):
             #     monitor_id = 1
@@ -1953,7 +2032,7 @@ if __name__ == '__main__':
                     add_hotkeys()
                 else:
                     print('wallpaper mode disabled')
-                    createWindow()
+                    createWindow(win_name)
                     remove_hotkeys()
             elif k == ord(','):
                 height -= 5
@@ -2093,7 +2172,7 @@ if __name__ == '__main__':
                     print()
             elif k == ord('f') or k == ord('/') or k == ord('?'):
                 fullscreen = 1 - fullscreen
-                createWindow()
+                createWindow(win_name)
                 if fullscreen:
                     print('fullscreen mode enabled')
                 else:
