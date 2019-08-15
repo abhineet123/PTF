@@ -1928,9 +1928,13 @@ if __name__ == '__main__':
                 if max_switches < 1:
                     max_switches = 1
             elif k == ord('d'):
-                createWindow(win_name2)
-                duplicate_window = 1
-                print('duplicate window enabled')
+                duplicate_window = 1 - duplicate_window
+                if duplicate_window:
+                    createWindow(win_name2)
+                    print('duplicate window enabled')
+                else:
+                    cv2.destroyWindow(win_name2)
+                    print('duplicate window disabled')
             elif k == ord('N'):
                 max_switches += 1
             elif ord('1') <= k <= ord('5'):
