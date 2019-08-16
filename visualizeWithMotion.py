@@ -760,7 +760,7 @@ if __name__ == '__main__':
 
                     if rotate_images:
                         src_img = np.rot90(src_img, rotate_images)
-                    img_fnames[src_id] = img_fname
+                    img_fnames[_load_id] = img_fname
 
                 src_images.append(src_img)
                 if video_mode:
@@ -1881,9 +1881,11 @@ if __name__ == '__main__':
                             img_id[_id] = 0
                     else:
                         print('Random mode disabled')
-                        for _id in img_id:
-                            img_id[_id] = src_files[_id].index(img_fnames[_id])
-                            # img_id[_id] = 0
+                        if not video_mode:
+                            for _load_id in range(n_images):
+                                src_id = _load_id % n_src
+                                img_id[src_id] = src_files[src_id].index(img_fnames[_load_id])
+                                # img_id[_id] = 0
             elif k == ord('c'):
                 auto_progress = 1 - auto_progress
                 if auto_progress:
