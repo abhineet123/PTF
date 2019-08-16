@@ -142,6 +142,7 @@ params = {
     'bottom_border': 0,
     'keep_borders': 0,
     'monitor_id': -1,
+    'monitor_id2': -1,
     'win_offset_x': 0,
     'win_offset_y': 0,
     'duplicate_window': 0,
@@ -195,6 +196,7 @@ if __name__ == '__main__':
     keep_borders = params['keep_borders']
     bottom_border = params['bottom_border']
     monitor_id = params['monitor_id']
+    monitor_id2 = params['monitor_id2']
     win_offset_x = params['win_offset_x']
     win_offset_y = params['win_offset_y']
     duplicate_window = params['duplicate_window']
@@ -295,6 +297,12 @@ if __name__ == '__main__':
         raise IOError('Invalid monitor_id: {}'.format(monitor_id))
     print('monitor_id: ', monitor_id)
     print('transition_interval: ', transition_interval)
+
+    if monitor_id2<0:
+        monitor_id2 = monitor_id
+
+    if duplicate_window:
+        print('monitor_id2: ', monitor_id2)
 
     if _width == 0 or _height == 0:
         if widescreen_mode:
@@ -639,6 +647,9 @@ if __name__ == '__main__':
 
         aspect_ratio = float(width) / float(height)
         createWindow(win_name)
+        if duplicate_window:
+            createWindow(win_name2)
+
         loadImage()
 
 
@@ -1433,10 +1444,10 @@ if __name__ == '__main__':
                                   time_stamp)
     win_name2 = '{} 2'.format(win_name)
 
-    monitor_id2 = monitor_id
-
     if not wallpaper_mode:
         createWindow(win_name)
+        if duplicate_window:
+            createWindow(win_name2)
 
     MAX_TRANSITION_INTERVAL = 1000
     MIN_TRANSITION_INTERVAL = 2
@@ -2039,6 +2050,8 @@ if __name__ == '__main__':
                 else:
                     print('wallpaper mode disabled')
                     createWindow(win_name)
+                    if duplicate_window:
+                        createWindow(win_name2)
                     remove_hotkeys()
             elif k == ord(','):
                 height -= 5
@@ -2179,6 +2192,8 @@ if __name__ == '__main__':
             elif k == ord('f') or k == ord('/') or k == ord('?'):
                 fullscreen = 1 - fullscreen
                 createWindow(win_name)
+                if duplicate_window:
+                    createWindow(win_name2)
                 if fullscreen:
                     print('fullscreen mode enabled')
                 else:
