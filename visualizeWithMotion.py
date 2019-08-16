@@ -122,6 +122,7 @@ params = {
     'recursive': 1,
     'fullscreen': 0,
     'reversed_pos': 1,
+    'reversed_pos2': -1,
     'double_click_interval': 0.1,
     'n_images': 1,
     'borderless': 1,
@@ -177,6 +178,7 @@ if __name__ == '__main__':
     recursive = params['recursive']
     fullscreen = params['fullscreen']
     reversed_pos = params['reversed_pos']
+    reversed_pos2 = params['reversed_pos2']
     double_click_interval = params['double_click_interval']
     n_images = params['n_images']
     borderless = params['borderless']
@@ -298,11 +300,13 @@ if __name__ == '__main__':
     print('monitor_id: ', monitor_id)
     print('transition_interval: ', transition_interval)
 
-    if monitor_id2<0:
+    if monitor_id2 < 0:
         monitor_id2 = monitor_id
-
     if duplicate_window:
         print('monitor_id2: ', monitor_id2)
+
+    if reversed_pos2 < 0:
+        reversed_pos2 = reversed_pos
 
     if _width == 0 or _height == 0:
         if widescreen_mode:
@@ -1680,7 +1684,7 @@ if __name__ == '__main__':
     #         2: handle_win_f4
     #     }
 
-    def moveWindow(_monitor_id, _win_name):
+    def moveWindow(_monitor_id, _win_name, _reversed_pos):
         if mode == 0:
             _curr_monitor = _monitor_id
         elif mode == 1:
@@ -1691,17 +1695,18 @@ if __name__ == '__main__':
 
         _y_offset = win_offset_y + monitors[_curr_monitor][1]
 
-        if reversed_pos == 0:
+        if _reversed_pos == 0:
 
             cv2.moveWindow(_win_name, win_offset_x + monitors[_curr_monitor][0],
                            _y_offset)
-        elif reversed_pos == 1:
+        elif _reversed_pos == 1:
             cv2.moveWindow(_win_name,
                            int(win_offset_x + monitors[_curr_monitor][0] + (width - dst_img.shape[1]) / 2),
                            _y_offset)
-        elif reversed_pos == 2:
+        elif _reversed_pos == 2:
             cv2.moveWindow(_win_name, win_offset_x + int(monitors[_curr_monitor][0] + width - dst_img.shape[1]),
                            _y_offset)
+
 
     img_id[0] += n_images - 1
     loadImage(set_grid_size=set_grid_size)
@@ -1786,7 +1791,7 @@ if __name__ == '__main__':
 
             # print(':: reversed_pos: ', reversed_pos)
 
-            moveWindow(monitor_id, win_name)
+            moveWindow(monitor_id, win_name, reversed_pos)
             # if mode == 0:
             #     _curr_monitor = monitor_id
             # elif mode == 1:
@@ -1810,7 +1815,7 @@ if __name__ == '__main__':
             #                    _y_offset)
 
             if duplicate_window:
-                moveWindow(monitor_id2, win_name2)
+                moveWindow(monitor_id2, win_name2, reversed_pos2)
 
             # if win_utils_available:
             #     winUtils.hideBorder2(win_name, on_top)
@@ -2000,23 +2005,53 @@ if __name__ == '__main__':
                     old_speed = speed
                     speed = 0
             elif k == ord('P'):
-                reversed_pos -= 1
-                if reversed_pos < 0:
-                    reversed_pos = 2
-                # print('reversed_pos: ', reversed_pos)
-                if fullscreen or mode == 1:
-                    loadImage(0)
-                elif not reversed_pos:
-                    cv2.moveWindow(win_name, win_offset_x + monitors[monitor_id][0],
-                                   win_offset_y + monitors[monitor_id][1])
+                try:
+                    active_win_name = win32gui.GetWindowText(win32gui.GetForegroundWindow())
+                except:
+                    active_win_name = win_name
+
+                if active_win_name == win_name:
+                    reversed_pos -= 1
+                    if reversed_pos < 0:
+                        reversed_pos = 2
+                    # print('reversed_pos: ', reversed_pos)
+                    if fullscreen or mode == 1:
+                        loadImage(0)
+                    elif not reversed_pos:
+                        cv2.moveWindow(win_name, win_offset_x + monitors[monitor_id][0],
+                                       win_offset_y + monitors[monitor_id][1])
+                else:
+                    reversed_pos2 -= 1
+                    if reversed_pos2 < 0:
+                        reversed_pos2 = 2
+                    if fullscreen or mode == 1:
+                        loadImage(0)
+                    elif not reversed_pos2:
+                        cv2.moveWindow(active_win_name, win_offset_x + monitors[monitor_id2][0],
+                                       win_offset_y + monitors[monitor_id2][1])
             elif k == ord('p'):
-                reversed_pos = (reversed_pos + 1) % 3
-                # print('reversed_pos: ', reversed_pos)
-                if fullscreen or mode == 1:
-                    loadImage(0)
-                elif not reversed_pos:
-                    cv2.moveWindow(win_name, win_offset_x + monitors[monitor_id][0],
-                                   win_offset_y + monitors[monitor_id][1])
+                try:
+                    active_win_name = win32gui.GetWindowText(win32gui.GetForegroundWindow())
+                except:
+                    active_win_name = win_name
+
+                if active_win_name == win_name:
+                    reversed_pos = (reversed_pos + 1) % 3
+                    # print('reversed_pos: ', reversed_pos)
+                    if fullscreen or mode == 1:
+                        loadImage(0)
+                    elif not reversed_pos:
+                        cv2.moveWindow(active_win_name, win_offset_x + monitors[monitor_id][0],
+                                       win_offset_y + monitors[monitor_id][1])
+                else:
+                    reversed_pos2 = (reversed_pos2 + 1) % 3
+                    # print('reversed_pos: ', reversed_pos)
+                    if fullscreen or mode == 1:
+                        loadImage(0)
+                    elif not reversed_pos2:
+                        cv2.moveWindow(active_win_name, win_offset_x + monitors[monitor_id2][0],
+                                       win_offset_y + monitors[monitor_id2][1])
+
             elif k == ord('v'):
                 on_top = 1 - on_top
                 hideBorder()
