@@ -122,12 +122,12 @@ def main():
             duplicates = [(filenames, all_stats[k]) for k in all_stats if db[k][1] == file_hash]
         elif os.path.isdir(filenames):
             _src_file_gen = [[os.path.abspath(os.path.join(_dirpath, f)) for f in _filenames]
-                            for (_dirpath, _dirnames, _filenames) in os.walk(filenames, followlinks=True)]
-            _src_file_list = [item for sublist in src_file_gen for item in sublist]
+                             for (_dirpath, _dirnames, _filenames) in os.walk(filenames, followlinks=True)]
+            _src_file_list = [item for sublist in _src_file_gen for item in sublist]
             if valid_exts:
                 print('Looking only for orig files with ext: {}'.format(valid_exts))
                 _src_file_list = [k for k in _src_file_list if
-                                 os.path.splitext(os.path.basename(k).lower())[1] in valid_exts]
+                                  os.path.splitext(os.path.basename(k).lower())[1] in valid_exts]
 
             _all_stats = {k: os.stat(k) for k in _src_file_list}
             # pprint(all_stats)
@@ -136,13 +136,16 @@ def main():
             _n_files = len(_all_stats)
 
             _new_stats = [k for k in _all_stats if k not in db
-                         or db[k][0] != os.path.getmtime(_all_stats[k])]
+                          or db[k][0] != os.path.getmtime(_all_stats[k])]
             _n_new_files = len(_new_stats)
 
             if _new_stats:
                 print('Computing hashes for {}/{} orig files ...'.format(_n_new_files, _n_files))
                 db.update({k: (os.path.getmtime(_all_stats[k]), getHash(_all_stats[k]))
                            for k in _new_stats})
+
+            print('Looking for duplicates of {} files in {} among {} files in {}'.format(
+                _n_files, filenames, n_files, root_dir))
 
             duplicates = [(_all_stats[k1], all_stats[k2]) for k1 in _all_stats for k2 in all_stats
                           if db[k1][1] == db[k2][1] and k2 not in _all_stats]
@@ -160,16 +163,25 @@ def main():
         print('Found {} duplicates:'.format(n_duplicates))
         pprint(duplicates)
         if delete_file or show_img:
+            _pause = 1
             for pair in duplicates:
                 if show_img:
                     vis_img = np.concatenate(
-                        (cv2.imread(pair[0]),cv2.imread(pair[1])), axis=1)
+                        (cv2.imread(pair[0]), cv2.imread(pair[1])), axis=1)
                     cv2.imshow('duplicates', vis_img)
+                    k = cv2.waitKey(1 - _pause)
+                    if k == 32:
+                        _pause = 1 - _pause
+                    elif k == 27:
+                        break
+
                 if delete_file:
                     del_path = pair[delete_file - 1]
                     if os.path.isfile(del_path):
                         print('Deleting {}'.format(del_path))
                         # os.remove(del_path)
+    else:
+        print('No duplicates found')
 
     if db_file and (new_stats or _new_stats):
         print('Saving hash db to: {}'.format(db_file))
