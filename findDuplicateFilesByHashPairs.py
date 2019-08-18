@@ -179,7 +179,7 @@ def main():
                     del_path = pair[delete_file - 1]
                     if os.path.isfile(del_path):
                         print('Deleting {}'.format(del_path))
-                        # os.remove(del_path)
+                        os.remove(del_path)
     else:
         print('No duplicates found')
 

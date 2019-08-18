@@ -28,7 +28,7 @@ def getHist(full_path):
     return curr_hist
 
 
-def check_for_similar_images(_filename, paths, db_file, methodName="Hellinger", n_results=10, thresh=0.1):
+def check_for_similar_images(files, paths, db_file, methodName="Hellinger", n_results=10, thresh=0.1):
     valid_exts = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif']
 
     OPENCV_METHODS = (
@@ -64,8 +64,8 @@ def check_for_similar_images(_filename, paths, db_file, methodName="Hellinger", 
     all_files_list = []
     for path in paths:
         _path = os.path.abspath(path)
-        src_file_gen = [[os.path.join(dirpath, f) for f in filenames]
-                        for (dirpath, dirnames, filenames) in os.walk(_path, followlinks=True)]
+        src_file_gen = [[os.path.join(dirpath, f) for f in files]
+                        for (dirpath, dirnames, files) in os.walk(_path, followlinks=True)]
         src_file_list = [item for sublist in src_file_gen for item in sublist]
 
         if valid_exts:
@@ -130,32 +130,75 @@ def check_for_similar_images(_filename, paths, db_file, methodName="Hellinger", 
 
     print()
 
-    if _filename:
-        print('Looking for images similar to {} in {}'.format(_filename, paths))
+    all_files_features_pairs = []
 
-        img_hist = getHist(_filename)
+    if files:
+        if os.path.isfile(files):
+            print('Looking for images similar to {} in {}'.format(files, paths))
 
-        # image = cv2.imread(_filename)
-        # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        # img_hist = cv2.calcHist([image], [0, 1, 2], None, [8, 8, 8],
-        #                         [0, 256, 0, 256, 0, 256])
-        # cv2.normalize(img_hist, img_hist).flatten()
-        # print('img_hist: {}'.format(img_hist))
+            img_hist = getHist(files)
 
-        print('Comparing features...')
+            # image = cv2.imread(_filename)
+            # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            # img_hist = cv2.calcHist([image], [0, 1, 2], None, [8, 8, 8],
+            #                         [0, 256, 0, 256, 0, 256])
+            # cv2.normalize(img_hist, img_hist).flatten()
+            # print('img_hist: {}'.format(img_hist))
 
-        results = {all_stats[k]: cv2.compareHist(img_hist, db[k][1], method) for k in all_stats}
-        results = sorted([(v, k) for (k, v) in results.items()], reverse=reverse)
-        # print('\nTotal files searched: {}'.format(n_files))
+            print('Comparing features...')
 
-        print('Similar files found: ')
-        for (i, (v, k)) in enumerate(results):
-            print('{} :: {}'.format(k, v))
-            curr_image = cv2.imread(k)
-            cv2.imshow('curr_image', curr_image)
-            k = cv2.waitKey(0)
-            if k == 27 or i >= n_results:
-                break
+            results = {all_stats[k]: cv2.compareHist(img_hist, db[k][1], method) for k in all_stats}
+            results = sorted([(v, k) for (k, v) in results.items()], reverse=reverse)
+            # print('\nTotal files searched: {}'.format(n_files))
+
+            print('Similar files found: ')
+            for (i, (v, k)) in enumerate(results):
+                print('{} :: {}'.format(k, v))
+                curr_image = cv2.imread(k)
+                cv2.imshow('curr_image', curr_image)
+                k = cv2.waitKey(0)
+                if k == 27 or i >= n_results:
+                    break
+        elif os.path.isdir(files):
+            all_files_list = []
+
+            _path = os.path.abspath(files)
+            _src_file_gen = [[os.path.join(_dirpath, f) for f in _files]
+                            for (_dirpath, _dirnames, _files) in os.walk(_path, followlinks=True)]
+            _src_file_list = [item for sublist in _src_file_gen for item in sublist]
+
+            if valid_exts:
+                _src_file_list = [k for k in _src_file_list if
+                                 os.path.splitext(os.path.basename(k).lower())[1][1:] in valid_exts]
+            _all_files_list = _src_file_list
+
+            _n_all_files = len(_all_files_list)
+            print('Searching {} files in all'.format(_n_all_files))
+
+            # pprint(all_files_list)
+
+            _all_stats = {k: os.stat(k) for k in _all_files_list}
+            _all_stats = {'{}_{}'.format(st.st_ino, st.st_dev): k for k, st in _all_stats.items()}
+
+            _new_stats = [k for k in _all_stats if k not in db
+                         or db[k][0] != os.path.getmtime(_all_stats[k])]
+
+            _n_new_files = len(_new_stats)
+            _n_files = len(_all_files_list)
+
+            if _new_stats:
+                print('Computing features for {}/{} orig files ...'.format(_n_new_files, _n_files))
+                db.update({k: (os.path.getmtime(_all_stats[k]), getHist(_all_stats[k]))
+                           for k in _new_stats})
+
+            print('Looking for images similar to {} images in among {} images in {}'.format(
+                _n_files, files, n_files, paths))
+
+            print('Comparing features...')
+            all_files_features_pairs = [(_all_stats[k1], all_stats[k2], cv2.compareHist(db[k1][1], db[k2][1], method))
+                       for k1 in _all_stats
+                       for k2 in all_stats
+                       if k2 not in _all_stats]
     else:
         # pairwise search
         print('Looking for pairwise similar images using thresh: {}'.format(thresh))
@@ -163,6 +206,7 @@ def check_for_similar_images(_filename, paths, db_file, methodName="Hellinger", 
         all_files_features_pairs = [(all_stats[k[0]], all_stats[k[1]],
                                      cv2.compareHist(db[k[0]][1], db[k[1]][1], method)) for k in
                                     itertools.combinations(list(all_stats.keys()), r=2)]
+    if all_files_features_pairs:
         print('Thresholding...')
         similar_img_pairs = [k for k in all_files_features_pairs if k[2] < thresh]
         print('Sorting...')
@@ -170,7 +214,7 @@ def check_for_similar_images(_filename, paths, db_file, methodName="Hellinger", 
 
         n_pairs = len(similar_img_pairs)
         cwd = os.getcwd()
-        print('Found {} pairs'.format(n_pairs))
+        print('Found {} similar pairs'.format(n_pairs))
         for pair in similar_img_pairs:
             if not os.path.isfile(pair[0]):
                 print('{} does not exist'.format(pair[0]))
