@@ -160,8 +160,6 @@ def check_for_similar_images(files, paths, db_file, methodName="Hellinger", n_re
                 if k == 27 or i >= n_results:
                     break
         elif os.path.isdir(files):
-            all_files_list = []
-
             _path = os.path.abspath(files)
             _src_file_gen = [[os.path.join(_dirpath, f) for f in _files]
                             for (_dirpath, _dirnames, _files) in os.walk(_path, followlinks=True)]
@@ -173,7 +171,7 @@ def check_for_similar_images(files, paths, db_file, methodName="Hellinger", n_re
             _all_files_list = _src_file_list
 
             _n_all_files = len(_all_files_list)
-            print('Searching {} files in all'.format(_n_all_files))
+            print('Searching {} orig files in all'.format(_n_all_files))
 
             # pprint(all_files_list)
 
@@ -191,7 +189,7 @@ def check_for_similar_images(files, paths, db_file, methodName="Hellinger", n_re
                 db.update({k: (os.path.getmtime(_all_stats[k]), getHist(_all_stats[k]))
                            for k in _new_stats})
 
-            print('Looking for images similar to {} images in among {} images in {}'.format(
+            print('Looking for images similar to {} images in {} among {} images in {}'.format(
                 _n_files, files, n_files, paths))
 
             print('Comparing features...')
@@ -253,21 +251,21 @@ def check_for_similar_images(files, paths, db_file, methodName="Hellinger", n_re
 
 def main():
     params = {
-        'filename': '',
-        'root_dir': '.',
+        'files': '',
+        'root_dir': ['.',],
         'delete_file': 0,
         'db_file': '',
         'thresh': 0.1,
     }
 
     processArguments(sys.argv[1:], params)
-    filename = params['filename']
+    files = params['files']
     root_dir = params['root_dir']
     delete_file = params['delete_file']
     db_file = params['db_file']
     thresh = params['thresh']
 
-    check_for_similar_images(filename, root_dir, db_file, thresh=thresh)
+    check_for_similar_images(files, root_dir, db_file, thresh=thresh)
 
 
 if __name__ == "__main__":

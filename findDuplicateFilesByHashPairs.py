@@ -34,7 +34,7 @@ def getHash(file_path):
 
 def main():
     params = {
-        'filenames': '',
+        'files': '',
         'root_dir': '.',
         'delete_file': 0,
         'db_file': '',
@@ -42,7 +42,7 @@ def main():
         'show_img': 0,
     }
     processArguments(sys.argv[1:], params)
-    filenames = params['filenames']
+    files = params['files']
     root_dir = params['root_dir']
     delete_file = params['delete_file']
     db_file = params['db_file']
@@ -65,8 +65,8 @@ def main():
         else:
             valid_exts = None
 
-    src_file_gen = [[os.path.abspath(os.path.join(dirpath, f)) for f in filenames]
-                    for (dirpath, dirnames, filenames) in os.walk(root_dir, followlinks=True)]
+    src_file_gen = [[os.path.abspath(os.path.join(dirpath, f)) for f in files]
+                    for (dirpath, dirnames, files) in os.walk(root_dir, followlinks=True)]
     src_file_list = [item for sublist in src_file_gen for item in sublist]
 
     if valid_exts:
@@ -115,14 +115,14 @@ def main():
     # src_file_hash_set = set(src_file_hash_list)
     _new_stats = []
 
-    if filenames:
-        if os.path.isfile(filenames):
-            print('Looking for duplicates of {}'.format(filenames))
-            file_hash = getHash(filenames)
-            duplicates = [(filenames, all_stats[k]) for k in all_stats if db[k][1] == file_hash]
-        elif os.path.isdir(filenames):
+    if files:
+        if os.path.isfile(files):
+            print('Looking for duplicates of {}'.format(files))
+            file_hash = getHash(files)
+            duplicates = [(files, all_stats[k]) for k in all_stats if db[k][1] == file_hash]
+        elif os.path.isdir(files):
             _src_file_gen = [[os.path.abspath(os.path.join(_dirpath, f)) for f in _filenames]
-                             for (_dirpath, _dirnames, _filenames) in os.walk(filenames, followlinks=True)]
+                             for (_dirpath, _dirnames, _filenames) in os.walk(files, followlinks=True)]
             _src_file_list = [item for sublist in _src_file_gen for item in sublist]
             if valid_exts:
                 print('Looking only for orig files with ext: {}'.format(valid_exts))
@@ -145,7 +145,7 @@ def main():
                            for k in _new_stats})
 
             print('Looking for duplicates of {} files in {} among {} files in {}'.format(
-                _n_files, filenames, n_files, root_dir))
+                _n_files, files, n_files, root_dir))
 
             duplicates = [(_all_stats[k1], all_stats[k2]) for k1 in _all_stats for k2 in all_stats
                           if db[k1][1] == db[k2][1] and k2 not in _all_stats]
