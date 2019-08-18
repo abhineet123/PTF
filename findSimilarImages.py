@@ -1,6 +1,7 @@
 import sys, os, inspect, itertools
 import cv2
 from pprint import pprint
+from datetime import datetime
 
 try:
     import cPickle as pickle
@@ -162,12 +163,12 @@ def check_for_similar_images(files, paths, db_file, methodName="Hellinger", n_re
         elif os.path.isdir(files):
             _path = os.path.abspath(files)
             _src_file_gen = [[os.path.join(_dirpath, f) for f in _files]
-                            for (_dirpath, _dirnames, _files) in os.walk(_path, followlinks=True)]
+                             for (_dirpath, _dirnames, _files) in os.walk(_path, followlinks=True)]
             _src_file_list = [item for sublist in _src_file_gen for item in sublist]
 
             if valid_exts:
                 _src_file_list = [k for k in _src_file_list if
-                                 os.path.splitext(os.path.basename(k).lower())[1][1:] in valid_exts]
+                                  os.path.splitext(os.path.basename(k).lower())[1][1:] in valid_exts]
             _all_files_list = _src_file_list
 
             _n_all_files = len(_all_files_list)
@@ -179,7 +180,7 @@ def check_for_similar_images(files, paths, db_file, methodName="Hellinger", n_re
             _all_stats = {'{}_{}'.format(st.st_ino, st.st_dev): k for k, st in _all_stats.items()}
 
             _new_stats = [k for k in _all_stats if k not in db
-                         or db[k][0] != os.path.getmtime(_all_stats[k])]
+                          or db[k][0] != os.path.getmtime(_all_stats[k])]
 
             _n_new_files = len(_new_stats)
             _n_files = len(_all_files_list)
@@ -194,9 +195,9 @@ def check_for_similar_images(files, paths, db_file, methodName="Hellinger", n_re
 
             print('Comparing features...')
             all_files_features_pairs = [(_all_stats[k1], all_stats[k2], cv2.compareHist(db[k1][1], db[k2][1], method))
-                       for k1 in _all_stats
-                       for k2 in all_stats
-                       if k2 not in _all_stats]
+                                        for k1 in _all_stats
+                                        for k2 in all_stats
+                                        if k2 not in _all_stats]
     else:
         # pairwise search
         print('Looking for pairwise similar images using thresh: {}'.format(thresh))
@@ -227,7 +228,7 @@ def check_for_similar_images(files, paths, db_file, methodName="Hellinger", n_re
             h1, w1 = curr_image_1.shape[:2]
             h2, w2 = curr_image_2.shape[:2]
 
-            print('{}({}, {} x {})\t{}({}, {} x {})\t{}'.format(
+            print('\n1: {:50s}({}, {:5d} x {:5d})\n2: {:50s}({}, {:5d} x {:5d})\t{}'.format(
                 os.path.relpath(pair[0], cwd), os.path.getsize(pair[0]) / 1000.0, w1, h1,
                 os.path.relpath(pair[1], cwd), os.path.getsize(pair[1]) / 1000.0, w2, h2,
                 pair[2]))
@@ -242,7 +243,26 @@ def check_for_similar_images(files, paths, db_file, methodName="Hellinger", n_re
             elif k == ord('2'):
                 print('Deleting {}'.format(pair[1]))
                 os.remove(pair[1])
-
+            elif k == ord('!'):
+                print('Deleting {} and moving {} to take its place'.format(pair[0], pair[1]))
+                os.remove(pair[0])
+                os.rename(pair[1], pair[0])
+            elif k == ord('@'):
+                print('Deleting {} and moving {} to take its place'.format(pair[1], pair[0]))
+                os.remove(pair[1])
+                os.rename(pair[0], pair[1])
+            elif k == ord('q'):
+                fname, ext = os.path.splitext(os.path.basename(pair[1]))
+                time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+                dst_fname = os.path.join(os.path.dirname(pair[1]), '{}_{}.{}'.format(fname, time_stamp, ext))
+                print('moving {} to {}'.format(pair[0], dst_fname))
+                os.rename(pair[0], dst_fname)
+            elif k == ord('w'):
+                fname, ext = os.path.splitext(os.path.basename(pair[0]))
+                time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+                dst_fname = os.path.join(os.path.dirname(pair[0]), '{}_{}.{}'.format(fname, time_stamp, ext))
+                print('moving {} to {}'.format(pair[1], dst_fname))
+                os.rename(pair[1], dst_fname)
     # print('Files skipped: {}'.format(n_skips))
     if db_file and new_stats:
         print('Saving feature db to: {}'.format(db_file))
@@ -252,7 +272,7 @@ def check_for_similar_images(files, paths, db_file, methodName="Hellinger", n_re
 def main():
     params = {
         'files': '',
-        'root_dir': ['.',],
+        'root_dir': ['.', ],
         'delete_file': 0,
         'db_file': '',
         'thresh': 0.1,
