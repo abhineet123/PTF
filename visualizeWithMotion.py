@@ -1821,9 +1821,11 @@ if __name__ == '__main__':
             #     winUtils.hideBorder2(win_name, on_top)
 
         cv2.imshow(win_name, dst_img)
+        # winUtils.setBehindTopMost(win_name)
 
         if duplicate_window:
             cv2.imshow(win_name2, dst_img)
+            # winUtils.setBehindTopMost(win_name2)
 
         # if win_utils_available:
         #     winUtils.loseFocus(win_name)

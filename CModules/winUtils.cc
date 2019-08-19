@@ -9,6 +9,7 @@ static PyObject* hideBorder2(PyObject* self, PyObject* args);
 static PyObject* loseFocus(PyObject* self, PyObject* args);
 static PyObject* showWindow(PyObject* self, PyObject* args);
 static PyObject* hideWindow(PyObject* self, PyObject* args);
+static PyObject* setBehindTopMost(PyObject* self, PyObject* args);
 
 static PyMethodDef winUtilsMethods[] = {
 	{ "hideBorder", hideBorder, METH_VARARGS },
@@ -16,6 +17,7 @@ static PyMethodDef winUtilsMethods[] = {
 	{ "loseFocus", loseFocus, METH_VARARGS },
 	{ "showWindow", showWindow, METH_VARARGS },
 	{ "hideWindow", hideWindow, METH_VARARGS },
+	{ "setBehindTopMost", setBehindTopMost, METH_VARARGS },
 	{ NULL, NULL, 0, NULL }     /* Sentinel - marks the end of this structure */
 };
 
@@ -101,6 +103,41 @@ static PyObject* hideBorder(PyObject* self, PyObject* args) {
 
 	return Py_BuildValue("i", 1);
 }
+
+static PyObject* setBehindTopMost(PyObject* self, PyObject* args) {
+
+	char* win_name;
+	if (!PyArg_ParseTuple(args, "z", &win_name)) {
+		PySys_WriteStdout("\n----winUtils::setBehindTopMost: Input arguments could not be parsed----\n\n");
+		return Py_BuildValue("i", 0);
+	}
+
+	PySys_WriteStdout("winUtils::setBehindTopMost : %s\n", win_name);
+
+	HWND hParent = FindWindow(0, win_name);
+	if (!hParent) {
+		PySys_WriteStdout("setBehindTopMost :: Failed FindWindow\n");
+		return Py_BuildValue("i", 0);
+	}
+	//HWND win_handle = GetTopWindow(NULL);
+
+	HWND win_handle = GetWindow(hParent, GW_HWNDFIRST);
+
+	if (!win_handle) {
+		PySys_WriteStdout("setBehindTopMost :: Failed GetTopWindow\n");
+		return Py_BuildValue("i", 0);
+	}
+	char top_win_title[500];
+	GetWindowTextA(
+		win_handle,
+		top_win_title,
+		500
+	);
+	PySys_WriteStdout("winUtils::setBehindTopMost::top_win_title : %s\n", top_win_title);
+	SetWindowPos(hParent, win_handle, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	return Py_BuildValue("i", 1);
+}
+
 
 static PyObject* hideBorder2(PyObject* self, PyObject* args) {
 	char* win_name;

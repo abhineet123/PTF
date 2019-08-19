@@ -254,13 +254,13 @@ def check_for_similar_images(files, paths, db_file, methodName="Hellinger", n_re
             elif k == ord('q'):
                 fname, ext = os.path.splitext(os.path.basename(pair[1]))
                 time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
-                dst_fname = os.path.join(os.path.dirname(pair[1]), '{}_{}.{}'.format(fname, time_stamp, ext))
+                dst_fname = os.path.join(os.path.dirname(pair[1]), '{}_{}{}'.format(fname, time_stamp, ext))
                 print('moving {} to {}'.format(pair[0], dst_fname))
                 os.rename(pair[0], dst_fname)
             elif k == ord('w'):
                 fname, ext = os.path.splitext(os.path.basename(pair[0]))
                 time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
-                dst_fname = os.path.join(os.path.dirname(pair[0]), '{}_{}.{}'.format(fname, time_stamp, ext))
+                dst_fname = os.path.join(os.path.dirname(pair[0]), '{}_{}{}'.format(fname, time_stamp, ext))
                 print('moving {} to {}'.format(pair[1], dst_fname))
                 os.rename(pair[1], dst_fname)
     # print('Files skipped: {}'.format(n_skips))
