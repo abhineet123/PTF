@@ -556,6 +556,7 @@ if __name__ == '__main__':
     log_file = os.path.join(log_dir, 'vwm_log.txt')
     print('Saving log to {}'.format(log_file))
 
+
     if not wallpaper_dir:
         wallpaper_dir = os.path.join(log_dir, 'vwm')
     if not os.path.isdir(wallpaper_dir):
@@ -1452,6 +1453,14 @@ if __name__ == '__main__':
     win_name = 'VWM_{}_{}'.format(os.path.basename(os.path.abspath(src_path)),
                                   time_stamp)
     win_name2 = '{} 2'.format(win_name)
+
+
+    win_names_file = os.path.join(log_dir, 'vwm_win_names.txt')
+    print('Writing win_names to {}'.format(log_file))
+
+    with open(win_names_file, 'w') as fid:
+        fid.write(win_name + '\n')
+        fid.write(win_name2 + '\n')
 
     if not wallpaper_mode:
         createWindow(win_name)
