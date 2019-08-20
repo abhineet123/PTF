@@ -6,11 +6,14 @@ import numpy as np
 import psutil
 import inspect
 import keyboard
+# import mouse
 import win32gui, win32con
 from datetime import datetime
 from threading import Event
 # import threading
 from subprocess import Popen, PIPE
+# from multiprocessing import Process, Queue
+# import threading
 
 from Misc import processArguments, sortKey, stackImages, resizeAR, addBorder, trim
 
@@ -541,6 +544,8 @@ if __name__ == '__main__':
     src_img_ar, start_row, end_row, start_col, end_col, dst_height, dst_width = [None] * 7
     target_height, target_width, min_height, start_col, end_col, height_ratio = [None] * 6
     dst_img = None
+
+    prev_active_win_name = None
 
     script_filename = inspect.getframeinfo(inspect.currentframe()).filename
     script_path = os.path.dirname(os.path.abspath(script_filename))
@@ -1725,6 +1730,56 @@ if __name__ == '__main__':
         print('Hotkeys are enabled')
         add_hotkeys()
 
+    def mouse_click_callback():
+        global prev_active_win_name
+
+        while True:
+            active_win_name = win32gui.GetWindowText(win32gui.GetForegroundWindow())
+            print('active_win_name: {}'.format(active_win_name))
+
+            if (prev_active_win_name is None or prev_active_win_name != active_win_name) and active_win_name not in (
+            win_name, win_name2):
+                prev_active_win_name = active_win_name
+
+                win_handle = win32gui.FindWindow(None, active_win_name)
+                rect = win32gui.GetWindowRect(win_handle)
+                x = (rect[0] + rect[2]) / 2.0
+                y = (rect[1] + rect[3]) / 2.0
+
+                _monitor_id = 0
+                min_dist = np.inf
+                for curr_id, monitor in enumerate(monitors):
+                    _centroid_x = (monitor[0] + monitor[0] + 1920) / 2.0
+                    _centroid_y = (monitor[1] + monitor[1] + 1080) / 2.0
+                    dist = (x - _centroid_x) ** 2 + (y - _centroid_y) ** 2
+                    if dist < min_dist:
+                        min_dist = dist
+                        _monitor_id = curr_id
+
+                print('active_win_name: {} with pos: {} on monitor {}'.format(active_win_name, rect, _monitor_id))
+
+                if _monitor_id == monitor_id:
+                    _win_handle = win32gui.FindWindow(None, win_name)
+                    win32gui.ShowWindow(_win_handle, 5)
+                    win32gui.SetForegroundWindow(_win_handle)
+
+                    win32gui.ShowWindow(win_handle, 5)
+                    win32gui.SetForegroundWindow(win_handle)
+
+                elif _monitor_id == monitor_id2:
+                    _win_handle = win32gui.FindWindow(None, win_name2)
+                    win32gui.ShowWindow(_win_handle, 5)
+                    win32gui.SetForegroundWindow(_win_handle)
+
+                    win32gui.ShowWindow(win_handle, 5)
+                    win32gui.SetForegroundWindow(win_handle)
+
+
+    # thread = threading.Thread(target=mouse_click_callback)
+    # thread.start()
+
+    # mouse.on_click(mouse_click_callback, args=())
+
     if not show_window:
         hideWindow()
 
@@ -1821,6 +1876,19 @@ if __name__ == '__main__':
             #     winUtils.hideBorder2(win_name, on_top)
 
         cv2.imshow(win_name, dst_img)
+
+        # def callback(hwnd, extra):
+        #     rect = win32gui.GetWindowRect(hwnd)
+        #     x = rect[0]
+        #     y = rect[1]
+        #     w = rect[2] - x
+        #     h = rect[3] - y
+        #     print("Window %s:" % win32gui.GetWindowText(hwnd))
+        #     print("\tLocation: (%d, %d)" % (x, y))
+        #     print("\t    Size: (%d, %d)" % (w, h))
+        #
+        # win32gui.EnumWindows(callback, None)
+
         # winUtils.setBehindTopMost(win_name)
 
         if duplicate_window:
@@ -1837,6 +1905,44 @@ if __name__ == '__main__':
         #     winUtils.show(win_name, dst_img, 0)
         # else:
         #     cv2.imshow(win_name, dst_img)
+
+        # active_win_name = win32gui.GetWindowText(win32gui.GetForegroundWindow())
+        # print('active_win_name: {}'.format(active_win_name))
+        #
+        # if (prev_active_win_name is None or prev_active_win_name != active_win_name) and active_win_name not in (
+        #         win_name, win_name2):
+        #     prev_active_win_name = active_win_name
+        #
+        #     win_handle = win32gui.FindWindow(None, active_win_name)
+        #     rect = win32gui.GetWindowRect(win_handle)
+        #     x = (rect[0] + rect[2]) / 2.0
+        #     y = (rect[1] + rect[3]) / 2.0
+        #
+        #     _monitor_id = 0
+        #     min_dist = np.inf
+        #     for curr_id, monitor in enumerate(monitors):
+        #         _centroid_x = (monitor[0] + monitor[0] + 1920) / 2.0
+        #         _centroid_y = (monitor[1] + monitor[1] + 1080) / 2.0
+        #         dist = (x - _centroid_x) ** 2 + (y - _centroid_y) ** 2
+        #         if dist < min_dist:
+        #             min_dist = dist
+        #             _monitor_id = curr_id
+        #
+        #     print('active_win_name: {} with pos: {} on monitor {}'.format(active_win_name, rect, _monitor_id))
+        #
+        #     if _monitor_id == monitor_id:
+        #         _win_handle = win32gui.FindWindow(None, win_name)
+        #         # win32gui.ShowWindow(_win_handle, 5)
+        #         win32gui.SetForegroundWindow(_win_handle)
+        #         # win32gui.ShowWindow(win_handle, 5)
+        #         win32gui.SetForegroundWindow(win_handle)
+        #
+        #     elif _monitor_id == monitor_id2:
+        #         _win_handle = win32gui.FindWindow(None, win_name2)
+        #         # win32gui.ShowWindow(_win_handle, 5)
+        #         win32gui.SetForegroundWindow(_win_handle)
+        #         # win32gui.ShowWindow(win_handle, 5)
+        #         win32gui.SetForegroundWindow(win_handle)
 
         if not show_window:
             k = cv2.waitKeyEx(0)
