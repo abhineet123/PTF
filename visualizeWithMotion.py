@@ -1753,8 +1753,8 @@ if __name__ == '__main__':
         active_win_name = win32gui.GetWindowText(active_handle)
         # print('active_win_name: {}'.format(active_win_name))
 
-        if (prev_active_handle is None or prev_active_handle != active_handle) and active_win_name not in (
-                win_name, win_name2):
+        if active_win_name and (prev_active_handle is None or prev_active_handle != active_handle) and \
+                active_win_name not in (win_name, win_name2):
             prev_active_handle = active_handle
             prev_active_win_name = active_win_name
 
@@ -2189,8 +2189,6 @@ if __name__ == '__main__':
                                        win_offset_y + monitors[monitor_id2][1])
 
             elif k == ord('B'):
-                print('21')
-
                 # winUtils.setBehindTopMost(win_name, prev_active_win_name)
 
                 # cv2.destroyWindow(win_name)
@@ -2216,7 +2214,8 @@ if __name__ == '__main__':
                         win_name, prev_active_win_name, e))
                     # continue
                 else:
-                    print('Successfully changed window status for {}'.format(win_name))
+                    print('Changed window status for {} wrt {}'.format(
+                        win_name, prev_active_win_name))
 
                 # try:
                 #     win32gui.SetForegroundWindow(active_win_handle)
@@ -2231,8 +2230,6 @@ if __name__ == '__main__':
                 # hideBorder(win_name)
 
             elif k == ord('D'):
-                print('22')
-
                 # winUtils.setBehindTopMost(win_name2, prev_active_win_name)
 
                 # cv2.destroyWindow(win_name2)
@@ -2261,7 +2258,8 @@ if __name__ == '__main__':
                         win_name2, prev_active_win_name, e))
                     # continue
                 else:
-                    print('Successfully Changed window status for {}'.format(win_name2))
+                    print('Changed window status for {} wrt {}'.format(
+                        win_name2, prev_active_win_name))
 
                 # try:
                 #     win32gui.SetForegroundWindow(active_win_handle)
