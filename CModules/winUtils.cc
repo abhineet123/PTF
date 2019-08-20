@@ -106,35 +106,44 @@ static PyObject* hideBorder(PyObject* self, PyObject* args) {
 
 static PyObject* setBehindTopMost(PyObject* self, PyObject* args) {
 
-	char* win_name;
-	if (!PyArg_ParseTuple(args, "z", &win_name)) {
+	char* win_name, *active_win_name;
+	if (!PyArg_ParseTuple(args, "zz", &win_name, &active_win_name)) {
 		PySys_WriteStdout("\n----winUtils::setBehindTopMost: Input arguments could not be parsed----\n\n");
 		return Py_BuildValue("i", 0);
 	}
 
 	PySys_WriteStdout("winUtils::setBehindTopMost : %s\n", win_name);
 
-	HWND hParent = FindWindow(0, win_name);
-	if (!hParent) {
-		PySys_WriteStdout("setBehindTopMost :: Failed FindWindow\n");
-		return Py_BuildValue("i", 0);
-	}
-	//HWND win_handle = GetTopWindow(NULL);
-
-	HWND win_handle = GetWindow(hParent, GW_HWNDFIRST);
-
+	HWND win_handle = FindWindow(0, win_name);
 	if (!win_handle) {
-		PySys_WriteStdout("setBehindTopMost :: Failed GetTopWindow\n");
+		PySys_WriteStdout("setBehindTopMost :: Failed FindWindow on %s\n", win_name);
 		return Py_BuildValue("i", 0);
 	}
-	char top_win_title[500];
-	GetWindowTextA(
-		win_handle,
-		top_win_title,
-		500
-	);
-	PySys_WriteStdout("winUtils::setBehindTopMost::top_win_title : %s\n", top_win_title);
-	SetWindowPos(hParent, win_handle, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+
+	HWND active_win_handle = FindWindow(0, active_win_name);
+	if (!active_win_handle) {
+		PySys_WriteStdout("setBehindTopMost :: Failed FindWindow on %s\n", active_win_name);
+		return Py_BuildValue("i", 0);
+	}
+
+	bool res = SetForegroundWindow(win_handle);
+	if (!res) {
+		PySys_WriteStdout("setBehindTopMost :: Failed SetForegroundWindow on %s\n", win_name);
+		return Py_BuildValue("i", 0);
+	}
+	res = SetForegroundWindow(active_win_handle);
+	if (!res) {
+		PySys_WriteStdout("setBehindTopMost :: Failed SetForegroundWindow on %s\n", active_win_name);
+		return Py_BuildValue("i", 0);
+	}
+	//char top_win_title[500];
+	//GetWindowTextA(
+	//	win_handle,
+	//	top_win_title,
+	//	500
+	//);
+	//PySys_WriteStdout("winUtils::setBehindTopMost::top_win_title : %s\n", top_win_title);
+	//SetWindowPos(hParent, win_handle, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 	return Py_BuildValue("i", 1);
 }
 

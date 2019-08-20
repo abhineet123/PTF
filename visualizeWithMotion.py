@@ -6,14 +6,16 @@ import numpy as np
 import psutil
 import inspect
 import keyboard
-# import mouse
+import mouse
 import win32gui, win32con
+import win32api
+
 from datetime import datetime
 from threading import Event
 # import threading
 from subprocess import Popen, PIPE
 # from multiprocessing import Process, Queue
-# import threading
+import threading
 
 from Misc import processArguments, sortKey, stackImages, resizeAR, addBorder, trim
 
@@ -75,8 +77,8 @@ except ImportError as e:
     mousePos = None
 
 
-def hideBorder():
-    win_handle = win32gui.FindWindow(None, win_name)
+def hideBorder(_win_name):
+    win_handle = win32gui.FindWindow(None, _win_name)
     style = win32gui.GetWindowLong(win_handle, win32con.GWL_STYLE)
     style = style & ~win32con.WS_OVERLAPPEDWINDOW
     style = style | win32con.WS_POPUP
@@ -142,6 +144,7 @@ params = {
     'check_images': 0,
     'move_to_right': 0,
     'on_top': 1,
+    'second_from_top': 0,
     'top_border': 0,
     'bottom_border': 0,
     'keep_borders': 0,
@@ -189,6 +192,7 @@ if __name__ == '__main__':
     wallpaper_dir = params['wallpaper_dir']
     wallpaper_mode = params['wallpaper_mode']
     on_top = params['on_top']
+    second_from_top = params['second_from_top']
     n_wallpapers = params['n_wallpapers']
     multi_mode = params['multi_mode']
     trim_images = params['trim_images']
@@ -545,6 +549,7 @@ if __name__ == '__main__':
     target_height, target_width, min_height, start_col, end_col, height_ratio = [None] * 6
     dst_img = None
 
+    prev_active_handle = None
     prev_active_win_name = None
 
     script_filename = inspect.getframeinfo(inspect.currentframe()).filename
@@ -555,7 +560,6 @@ if __name__ == '__main__':
         os.makedirs(log_dir)
     log_file = os.path.join(log_dir, 'vwm_log.txt')
     print('Saving log to {}'.format(log_file))
-
 
     if not wallpaper_dir:
         wallpaper_dir = os.path.join(log_dir, 'vwm')
@@ -1454,7 +1458,6 @@ if __name__ == '__main__':
                                   time_stamp)
     win_name2 = '{} 2'.format(win_name)
 
-
     win_names_file = os.path.join(log_dir, 'vwm_win_names.txt')
     print('Writing win_names to {}'.format(log_file))
 
@@ -1739,55 +1742,71 @@ if __name__ == '__main__':
         print('Hotkeys are enabled')
         add_hotkeys()
 
-    def mouse_click_callback():
-        global prev_active_win_name
 
-        while True:
-            active_win_name = win32gui.GetWindowText(win32gui.GetForegroundWindow())
-            print('active_win_name: {}'.format(active_win_name))
+    # elif not on_top and second_from_top:
+    #     keyboard.add_hotkey('ctrl+alt+shift+a', mouse_click_callback, args=(key,))
 
-            if (prev_active_win_name is None or prev_active_win_name != active_win_name) and active_win_name not in (
-            win_name, win_name2):
-                prev_active_win_name = active_win_name
+    def second_from_top_callback():
+        global prev_active_handle, prev_active_win_name
 
-                win_handle = win32gui.FindWindow(None, active_win_name)
-                rect = win32gui.GetWindowRect(win_handle)
-                x = (rect[0] + rect[2]) / 2.0
-                y = (rect[1] + rect[3]) / 2.0
+        active_handle = win32gui.GetForegroundWindow()
+        active_win_name = win32gui.GetWindowText(active_handle)
+        # print('active_win_name: {}'.format(active_win_name))
 
-                _monitor_id = 0
-                min_dist = np.inf
-                for curr_id, monitor in enumerate(monitors):
-                    _centroid_x = (monitor[0] + monitor[0] + 1920) / 2.0
-                    _centroid_y = (monitor[1] + monitor[1] + 1080) / 2.0
-                    dist = (x - _centroid_x) ** 2 + (y - _centroid_y) ** 2
-                    if dist < min_dist:
-                        min_dist = dist
-                        _monitor_id = curr_id
+        if (prev_active_handle is None or prev_active_handle != active_handle) and active_win_name not in (
+                win_name, win_name2):
+            prev_active_handle = active_handle
+            prev_active_win_name = active_win_name
 
-                print('active_win_name: {} with pos: {} on monitor {}'.format(active_win_name, rect, _monitor_id))
+            rect = win32gui.GetWindowRect(active_handle)
+            x = (rect[0] + rect[2]) / 2.0
+            y = (rect[1] + rect[3]) / 2.0
 
-                if _monitor_id == monitor_id:
-                    _win_handle = win32gui.FindWindow(None, win_name)
-                    win32gui.ShowWindow(_win_handle, 5)
-                    win32gui.SetForegroundWindow(_win_handle)
+            _monitor_id = 0
+            min_dist = np.inf
+            for curr_id, monitor in enumerate(monitors):
+                _centroid_x = (monitor[0] + monitor[0] + 1920) / 2.0
+                _centroid_y = (monitor[1] + monitor[1] + 1080) / 2.0
+                dist = (x - _centroid_x) ** 2 + (y - _centroid_y) ** 2
+                if dist < min_dist:
+                    min_dist = dist
+                    _monitor_id = curr_id
 
-                    win32gui.ShowWindow(win_handle, 5)
-                    win32gui.SetForegroundWindow(win_handle)
+            print('active_win_name: {} with pos: {} on monitor {}'.format(active_win_name, rect, _monitor_id))
 
-                elif _monitor_id == monitor_id2:
-                    _win_handle = win32gui.FindWindow(None, win_name2)
-                    win32gui.ShowWindow(_win_handle, 5)
-                    win32gui.SetForegroundWindow(_win_handle)
+            if _monitor_id == monitor_id:
+                _win_handle = win32gui.FindWindow(None, win_name)
 
-                    win32gui.ShowWindow(win_handle, 5)
-                    win32gui.SetForegroundWindow(win_handle)
+                win32api.PostMessage(_win_handle, win32con.WM_CHAR, 0x42, 0)
+                # print('temp: {}'.format(temp))
+
+                # win32gui.ShowWindow(_win_handle, 5)
+                # win32gui.SetForegroundWindow(_win_handle)
+                #
+                # win32gui.ShowWindow(win_handle, 5)
+                # win32gui.SetForegroundWindow(win_handle)
+
+            elif duplicate_window and second_from_top == 2 and _monitor_id == monitor_id2:
+                _win_handle = win32gui.FindWindow(None, win_name2)
+                win32api.PostMessage(_win_handle, win32con.WM_CHAR, 0x44, 0)
+                # print('temp: {}'.format(temp))
+
+                # win32gui.ShowWindow(_win_handle, 5)
+                # win32gui.SetForegroundWindow(_win_handle)
+                #
+                # win32gui.ShowWindow(win_handle, 5)
+                # win32gui.SetForegroundWindow(win_handle)
 
 
-    # thread = threading.Thread(target=mouse_click_callback)
-    # thread.start()
+    def second_from_top_thread():
+        while not exit_program:
+            time.sleep(1)
+            second_from_top_callback()
 
-    # mouse.on_click(mouse_click_callback, args=())
+
+    if second_from_top:
+        # threading.Thread(target=second_from_top_thread).start()
+        mouse.on_click(second_from_top_callback, args=())
 
     if not show_window:
         hideWindow()
@@ -2169,9 +2188,99 @@ if __name__ == '__main__':
                         cv2.moveWindow(active_win_name, win_offset_x + monitors[monitor_id2][0],
                                        win_offset_y + monitors[monitor_id2][1])
 
+            elif k == ord('B'):
+                print('21')
+
+                # winUtils.setBehindTopMost(win_name, prev_active_win_name)
+
+                # cv2.destroyWindow(win_name)
+                # win_name += 'k'
+                # createWindow(win_name)
+                # on_top = 1
+                # hideBorder(win_name)
+
+                win_handle = win32gui.FindWindow(None, win_name)
+                active_win_handle = prev_active_handle
+                # active_win_handle = win32gui.FindWindow(None, prev_active_win_name)
+                # print('_win_handle: {}'.format(_win_handle))
+                print('active_win_handle: {}'.format(active_win_handle))
+
+                # while True:
+                try:
+                    # win32gui.SetForegroundWindow(win_handle)
+                    # win32gui.SetFocus(win_handle)
+                    win32gui.SetWindowPos(win_handle, active_win_handle, 0, 0, 0, 0,
+                                          win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+                except BaseException as e:
+                    print('Failed to change window status for {} wrt {} : {}'.format(
+                        win_name, prev_active_win_name, e))
+                    # continue
+                else:
+                    print('Successfully changed window status for {}'.format(win_name))
+
+                # try:
+                #     win32gui.SetForegroundWindow(active_win_handle)
+                #     # win32gui.SetFocus(active_win_handle)
+                # except BaseException as e:
+                #     print('Failed to change window status for {} : {}'.format(prev_active_win_name, e))
+                #     continue
+                # print('Successfully Changed window status for {}'.format(prev_active_win_name))
+
+                # break
+                # on_top = 0
+                # hideBorder(win_name)
+
+            elif k == ord('D'):
+                print('22')
+
+                # winUtils.setBehindTopMost(win_name2, prev_active_win_name)
+
+                # cv2.destroyWindow(win_name2)
+                # win_name2 += 'k'
+                # createWindow(win_name2)
+
+                # on_top = 1
+                # hideBorder(win_name2)
+
+                win_handle = win32gui.FindWindow(None, win_name2)
+                active_win_handle = prev_active_handle
+                # active_win_handle = win32gui.FindWindow(None, prev_active_win_name)
+                # print('_win_handle: {}'.format(_win_handle))
+                print('active_win_handle: {}'.format(active_win_handle))
+
+                # while True:
+                try:
+                    # win32gui.SetForegroundWindow(win_handle)
+                    # win32gui.SetFocus(win_handle)
+                    win32gui.SetWindowPos(win_handle, active_win_handle, 0, 0, 0, 0,
+                                          win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+                    # win32gui.SetWindowPos(win_handle, win32con.HWND_NOTOPMOST, 0, 0, 0, 0,
+                    #                       win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+                except BaseException as e:
+                    print('Failed to change window status for {} wrt {} : {}'.format(
+                        win_name2, prev_active_win_name, e))
+                    # continue
+                else:
+                    print('Successfully Changed window status for {}'.format(win_name2))
+
+                # try:
+                #     win32gui.SetForegroundWindow(active_win_handle)
+                #     # win32gui.SetFocus(active_win_handle)
+                # except BaseException as e:
+                #     print('Failed to change window status for {} : {}'.format(prev_active_win_name, e))
+                #     continue
+                # print('Successfully Changed window status for {}'.format(prev_active_win_name))
+
+                # break
+
+                # on_top = 0
+                # hideBorder(win_name2)
+
             elif k == ord('v'):
                 on_top = 1 - on_top
-                hideBorder()
+                hideBorder(win_name)
+                if duplicate_window:
+                    hideBorder(win_name2)
             elif k == ord('t'):
                 transition_interval -= transition_interval_diff
                 if transition_interval < 1:
