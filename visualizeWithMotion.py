@@ -251,6 +251,10 @@ if __name__ == '__main__':
     ]
     sft_exceptions = ['PotPlayer', 'Free Alarm Clock', 'MPC-HC', 'DisplayFusion',
                       'GPU-Z', 'IrfanView', 'WinRAR']
+
+    sft_exceptions_multi = [('XY:(', ') - RGB:(', ', HTML:('),]
+
+
     widescreen_monitor = [-1920, -1080]
 
     if wallpaper_mode:
@@ -1763,7 +1767,9 @@ if __name__ == '__main__':
         # print('active_win_name: {}'.format(active_win_name))
 
         if active_win_name and (prev_active_handle is None or prev_active_handle != active_handle) and \
-                active_win_name not in (win_name, win_name2) and all([k not in active_win_name for k in sft_exceptions]):
+                active_win_name not in (win_name, win_name2) and \
+                all([k not in active_win_name for k in sft_exceptions]) and \
+                all([any([k1 not in active_win_name for k1 in k]) for k in sft_exceptions_multi]):
             prev_active_handle = active_handle
             prev_active_win_name = active_win_name
 
