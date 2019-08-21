@@ -7,6 +7,8 @@ import psutil
 import inspect
 import keyboard
 import mouse
+# from pynput import mouse
+
 import win32gui, win32con
 import win32api
 
@@ -247,6 +249,7 @@ if __name__ == '__main__':
         [1920, 0],
         [1920, -1080],
     ]
+    sft_exceptions = ['PotPlayer', 'Free Alarm Clock', 'MPC-HC', 'DisplayFusion', 'GPU-Z', 'IrfanView']
     widescreen_monitor = [-1920, -1080]
 
     if wallpaper_mode:
@@ -1746,15 +1749,20 @@ if __name__ == '__main__':
     # elif not on_top and second_from_top:
     #     keyboard.add_hotkey('ctrl+alt+shift+a', mouse_click_callback, args=(key,))
 
-    def second_from_top_callback():
+    def second_from_top_callback(
+            # x, y, button, pressed
+    ):
         global prev_active_handle, prev_active_win_name
+
+        # print('button: {}'.format(button))
+        # print('pressed: {}'.format(pressed))
 
         active_handle = win32gui.GetForegroundWindow()
         active_win_name = win32gui.GetWindowText(active_handle)
         # print('active_win_name: {}'.format(active_win_name))
 
         if active_win_name and (prev_active_handle is None or prev_active_handle != active_handle) and \
-                active_win_name not in (win_name, win_name2):
+                active_win_name not in (win_name, win_name2) and all([k not in active_win_name for k in sft_exceptions]):
             prev_active_handle = active_handle
             prev_active_win_name = active_win_name
 
@@ -1772,7 +1780,7 @@ if __name__ == '__main__':
                     min_dist = dist
                     _monitor_id = curr_id
 
-            print('active_win_name: {} with pos: {} on monitor {}'.format(active_win_name, rect, _monitor_id))
+            # print('active_win_name: {} with pos: {} on monitor {}'.format(active_win_name, rect, _monitor_id))
 
             if _monitor_id == monitor_id:
                 _win_handle = win32gui.FindWindow(None, win_name)
@@ -1798,15 +1806,20 @@ if __name__ == '__main__':
                 # win32gui.SetForegroundWindow(win_handle)
 
 
-    def second_from_top_thread():
-        while not exit_program:
-            time.sleep(1)
-            second_from_top_callback()
+    # def second_from_top_thread():
+    #     while not exit_program:
+    #         time.sleep(1)
+    #         second_from_top_callback()
 
 
     if second_from_top:
         # threading.Thread(target=second_from_top_thread).start()
+
         mouse.on_click(second_from_top_callback, args=())
+
+        # mouse_listener = mouse.Listener(
+        #     on_click=second_from_top_callback)
+        # mouse_listener.start()
 
     if not show_window:
         hideWindow()
@@ -2201,7 +2214,7 @@ if __name__ == '__main__':
                 active_win_handle = prev_active_handle
                 # active_win_handle = win32gui.FindWindow(None, prev_active_win_name)
                 # print('_win_handle: {}'.format(_win_handle))
-                print('active_win_handle: {}'.format(active_win_handle))
+                # print('active_win_handle: {}'.format(active_win_handle))
 
                 # while True:
                 try:
@@ -2210,11 +2223,11 @@ if __name__ == '__main__':
                     win32gui.SetWindowPos(win_handle, active_win_handle, 0, 0, 0, 0,
                                           win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
                 except BaseException as e:
-                    print('Failed to change window status for {} wrt {} : {}'.format(
+                    print('Failed {} --> {} : {}'.format(
                         win_name, prev_active_win_name, e))
                     # continue
                 else:
-                    print('Changed window status for {} wrt {}'.format(
+                    print('{} --> {}'.format(
                         win_name, prev_active_win_name))
 
                 # try:
@@ -2243,7 +2256,7 @@ if __name__ == '__main__':
                 active_win_handle = prev_active_handle
                 # active_win_handle = win32gui.FindWindow(None, prev_active_win_name)
                 # print('_win_handle: {}'.format(_win_handle))
-                print('active_win_handle: {}'.format(active_win_handle))
+                # print('active_win_handle: {}'.format(active_win_handle))
 
                 # while True:
                 try:
@@ -2254,11 +2267,11 @@ if __name__ == '__main__':
                     # win32gui.SetWindowPos(win_handle, win32con.HWND_NOTOPMOST, 0, 0, 0, 0,
                     #                       win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
                 except BaseException as e:
-                    print('Failed to change window status for {} wrt {} : {}'.format(
+                    print('Failed {} --> {} : {}'.format(
                         win_name2, prev_active_win_name, e))
                     # continue
                 else:
-                    print('Changed window status for {} wrt {}'.format(
+                    print('{} --> {}'.format(
                         win_name2, prev_active_win_name))
 
                 # try:
