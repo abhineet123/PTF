@@ -249,7 +249,8 @@ if __name__ == '__main__':
         [1920, 0],
         [1920, -1080],
     ]
-    sft_exceptions = ['PotPlayer', 'Free Alarm Clock', 'MPC-HC', 'DisplayFusion', 'GPU-Z', 'IrfanView']
+    sft_exceptions = ['PotPlayer', 'Free Alarm Clock', 'MPC-HC', 'DisplayFusion',
+                      'GPU-Z', 'IrfanView', 'WinRAR']
     widescreen_monitor = [-1920, -1080]
 
     if wallpaper_mode:
