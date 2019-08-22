@@ -129,7 +129,7 @@ params = {
     'recursive': 1,
     'fullscreen': 0,
     'reversed_pos': 1,
-    'reversed_pos2': -1,
+    'dup_reversed_pos': [],
     'double_click_interval': 0.1,
     'n_images': 1,
     'borderless': 1,
@@ -151,7 +151,7 @@ params = {
     'bottom_border': 0,
     'keep_borders': 0,
     'monitor_id': -1,
-    'monitor_id2': -1,
+    'dup_monitor_ids': [],
     'win_offset_x': 0,
     'win_offset_y': 0,
     'duplicate_window': 0,
@@ -186,7 +186,7 @@ if __name__ == '__main__':
     recursive = params['recursive']
     fullscreen = params['fullscreen']
     reversed_pos = params['reversed_pos']
-    reversed_pos2 = params['reversed_pos2']
+    dup_reversed_pos = params['dup_reversed_pos']
     double_click_interval = params['double_click_interval']
     n_images = params['n_images']
     borderless = params['borderless']
@@ -207,7 +207,7 @@ if __name__ == '__main__':
     keep_borders = params['keep_borders']
     bottom_border = params['bottom_border']
     monitor_id = params['monitor_id']
-    monitor_id2 = params['monitor_id2']
+    dup_monitor_ids = params['dup_monitor_ids']
     win_offset_x = params['win_offset_x']
     win_offset_y = params['win_offset_y']
     duplicate_window = params['duplicate_window']
@@ -315,13 +315,15 @@ if __name__ == '__main__':
     print('monitor_id: ', monitor_id)
     print('transition_interval: ', transition_interval)
 
-    if monitor_id2 < 0:
-        monitor_id2 = monitor_id
+    if not dup_monitor_ids:
+        dup_monitor_ids = [monitor_id, ]
     if duplicate_window:
-        print('monitor_id2: ', monitor_id2)
+        print('dup_monitor_ids: {}'.format(dup_monitor_ids))
 
-    if reversed_pos2 < 0:
-        reversed_pos2 = reversed_pos
+    if not dup_reversed_pos:
+        dup_reversed_pos = []
+        for _i, _ in enumerate(dup_monitor_ids):
+            dup_reversed_pos.append(reversed_pos)
 
     if _width == 0 or _height == 0:
         if widescreen_mode:
@@ -559,6 +561,7 @@ if __name__ == '__main__':
 
     prev_active_handle = None
     prev_active_win_name = None
+    active_monitor_id = None
 
     script_filename = inspect.getframeinfo(inspect.currentframe()).filename
     script_path = os.path.dirname(os.path.abspath(script_filename))
@@ -670,7 +673,8 @@ if __name__ == '__main__':
         aspect_ratio = float(width) / float(height)
         createWindow(win_name)
         if duplicate_window:
-            createWindow(win_name2)
+            for _win_name2 in dup_win_names:
+                createWindow(_win_name2)
 
         loadImage()
 
@@ -1464,19 +1468,22 @@ if __name__ == '__main__':
     time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
     win_name = 'VWM_{}_{}'.format(os.path.basename(os.path.abspath(src_path)),
                                   time_stamp)
-    win_name2 = '{} 2'.format(win_name)
+    dup_win_names = []
+    for _i, _ in enumerate(dup_monitor_ids):
+        dup_win_names.append('{} {}'.format(win_name, _i))
 
-    win_names_file = os.path.join(log_dir, 'vwm_win_names.txt')
-    print('Writing win_names to {}'.format(log_file))
-
-    with open(win_names_file, 'w') as fid:
-        fid.write(win_name + '\n')
-        fid.write(win_name2 + '\n')
+    # win_names_file = os.path.join(log_dir, 'vwm_win_names.txt')
+    # print('Writing win_names to {}'.format(log_file))
+    #
+    # with open(win_names_file, 'w') as fid:
+    #     fid.write(win_name + '\n')
+    #     fid.write(dup_win_names + '\n')
 
     if not wallpaper_mode:
         createWindow(win_name)
         if duplicate_window:
-            createWindow(win_name2)
+            for _win_name2 in dup_win_names:
+                createWindow(_win_name2)
 
     MAX_TRANSITION_INTERVAL = 1000
     MIN_TRANSITION_INTERVAL = 2
@@ -1757,7 +1764,7 @@ if __name__ == '__main__':
     def second_from_top_callback(
             # x, y, button, pressed
     ):
-        global prev_active_handle, prev_active_win_name
+        global prev_active_handle, prev_active_win_name, active_monitor_id
 
         # print('button: {}'.format(button))
         # print('pressed: {}'.format(pressed))
@@ -1767,7 +1774,7 @@ if __name__ == '__main__':
         # print('active_win_name: {}'.format(active_win_name))
 
         if active_win_name and (prev_active_handle is None or prev_active_handle != active_handle) and \
-                active_win_name not in (win_name, win_name2) and \
+                active_win_name not in (win_name, dup_win_names) and \
                 all([k not in active_win_name for k in sft_exceptions]) and \
                 all([any([k1 not in active_win_name for k1 in k]) for k in sft_exceptions_multi]):
             prev_active_handle = active_handle
@@ -1788,6 +1795,7 @@ if __name__ == '__main__':
                     _monitor_id = curr_id
 
             # print('active_win_name: {} with pos: {} on monitor {}'.format(active_win_name, rect, _monitor_id))
+            active_monitor_id = _monitor_id
 
             if _monitor_id == monitor_id:
                 _win_handle = win32gui.FindWindow(None, win_name)
@@ -1801,8 +1809,9 @@ if __name__ == '__main__':
                 # win32gui.ShowWindow(win_handle, 5)
                 # win32gui.SetForegroundWindow(win_handle)
 
-            elif duplicate_window and second_from_top == 2 and _monitor_id == monitor_id2:
-                _win_handle = win32gui.FindWindow(None, win_name2)
+            elif duplicate_window and second_from_top == 2 and _monitor_id in dup_monitor_ids:
+
+                _win_handle = win32gui.FindWindow(None, dup_win_names[dup_monitor_ids.index(_monitor_id)])
                 win32api.PostMessage(_win_handle, win32con.WM_CHAR, 0x44, 0)
                 # print('temp: {}'.format(temp))
 
@@ -1918,7 +1927,8 @@ if __name__ == '__main__':
             #                    _y_offset)
 
             if duplicate_window:
-                moveWindow(monitor_id2, win_name2, reversed_pos2)
+                for _i, _win_name2 in enumerate(dup_win_names):
+                    moveWindow(dup_monitor_ids[_i], _win_name2, dup_reversed_pos[_i])
 
             # if win_utils_available:
             #     winUtils.hideBorder2(win_name, on_top)
@@ -1940,8 +1950,9 @@ if __name__ == '__main__':
         # winUtils.setBehindTopMost(win_name)
 
         if duplicate_window:
-            cv2.imshow(win_name2, dst_img)
-            # winUtils.setBehindTopMost(win_name2)
+            for _i, _win_name2 in enumerate(dup_win_names):
+                cv2.imshow(_win_name2, dst_img)
+            # winUtils.setBehindTopMost(dup_win_names)
 
         # if win_utils_available:
         #     winUtils.loseFocus(win_name)
@@ -1958,7 +1969,7 @@ if __name__ == '__main__':
         # print('active_win_name: {}'.format(active_win_name))
         #
         # if (prev_active_win_name is None or prev_active_win_name != active_win_name) and active_win_name not in (
-        #         win_name, win_name2):
+        #         win_name, dup_win_names):
         #     prev_active_win_name = active_win_name
         #
         #     win_handle = win32gui.FindWindow(None, active_win_name)
@@ -1985,8 +1996,8 @@ if __name__ == '__main__':
         #         # win32gui.ShowWindow(win_handle, 5)
         #         win32gui.SetForegroundWindow(win_handle)
         #
-        #     elif _monitor_id == monitor_id2:
-        #         _win_handle = win32gui.FindWindow(None, win_name2)
+        #     elif _monitor_id == dup_monitor_ids:
+        #         _win_handle = win32gui.FindWindow(None, dup_win_names)
         #         # win32gui.ShowWindow(_win_handle, 5)
         #         win32gui.SetForegroundWindow(_win_handle)
         #         # win32gui.ShowWindow(win_handle, 5)
@@ -2104,10 +2115,11 @@ if __name__ == '__main__':
             elif k == ord('d'):
                 duplicate_window = 1 - duplicate_window
                 if duplicate_window:
-                    createWindow(win_name2)
-                    print('duplicate window enabled')
+                    for _i, _win_name2 in enumerate(dup_win_names):
+                        createWindow(_win_name2)
+                    print('{} duplicate windows enabled'.format(len(_win_name2)))
                 else:
-                    cv2.destroyWindow(win_name2)
+                    cv2.destroyWindow(dup_win_names)
                     print('duplicate window disabled')
             elif k == ord('N'):
                 max_switches += 1
@@ -2131,8 +2143,9 @@ if __name__ == '__main__':
 
                 if active_win_name == win_name:
                     monitor_id = _monitor_id
-                else:
-                    monitor_id2 = _monitor_id
+                elif active_win_name  in dup_win_names:
+                    _i = dup_win_names.index(active_win_name)
+                    dup_monitor_ids[_i] = _monitor_id
                 print('moving window {}'.format(active_win_name))
                 cv2.moveWindow(active_win_name, win_offset_x + monitors[_monitor_id][0],
                                win_offset_y + monitors[_monitor_id][1])
@@ -2176,15 +2189,19 @@ if __name__ == '__main__':
                     elif not reversed_pos:
                         cv2.moveWindow(win_name, win_offset_x + monitors[monitor_id][0],
                                        win_offset_y + monitors[monitor_id][1])
-                else:
-                    reversed_pos2 -= 1
-                    if reversed_pos2 < 0:
-                        reversed_pos2 = 2
+                elif active_win_name in dup_win_names:
+                    _i = dup_win_names.index(active_win_name)
+                    _monitor_id2 = dup_monitor_ids[_i]
+                    _dup_reversed_pos = dup_reversed_pos[_i]
+                    _dup_reversed_pos -= 1
+                    dup_reversed_pos[_i] = _dup_reversed_pos
+                    if _dup_reversed_pos < 0:
+                        _dup_reversed_pos = 2
                     if fullscreen or mode == 1:
                         loadImage(0)
-                    elif not reversed_pos2:
-                        cv2.moveWindow(active_win_name, win_offset_x + monitors[monitor_id2][0],
-                                       win_offset_y + monitors[monitor_id2][1])
+                    elif not _dup_reversed_pos:
+                        cv2.moveWindow(active_win_name, win_offset_x + monitors[_monitor_id2][0],
+                                       win_offset_y + monitors[_monitor_id2][1])
             elif k == ord('p'):
                 try:
                     active_win_name = win32gui.GetWindowText(win32gui.GetForegroundWindow())
@@ -2199,14 +2216,19 @@ if __name__ == '__main__':
                     elif not reversed_pos:
                         cv2.moveWindow(active_win_name, win_offset_x + monitors[monitor_id][0],
                                        win_offset_y + monitors[monitor_id][1])
-                else:
-                    reversed_pos2 = (reversed_pos2 + 1) % 3
+                elif active_win_name in dup_win_names:
+                    _i = dup_win_names.index(active_win_name)
+                    _monitor_id2 = dup_monitor_ids[_i]
+                    _dup_reversed_pos = dup_reversed_pos[_i]
+                    _dup_reversed_pos = (_dup_reversed_pos + 1) % 3
+                    dup_reversed_pos[_i] = _dup_reversed_pos
+
                     # print('reversed_pos: ', reversed_pos)
                     if fullscreen or mode == 1:
                         loadImage(0)
-                    elif not reversed_pos2:
-                        cv2.moveWindow(active_win_name, win_offset_x + monitors[monitor_id2][0],
-                                       win_offset_y + monitors[monitor_id2][1])
+                    elif not _dup_reversed_pos:
+                        cv2.moveWindow(active_win_name, win_offset_x + monitors[_monitor_id2][0],
+                                       win_offset_y + monitors[_monitor_id2][1])
 
             elif k == ord('B'):
                 # winUtils.setBehindTopMost(win_name, prev_active_win_name)
@@ -2250,16 +2272,17 @@ if __name__ == '__main__':
                 # hideBorder(win_name)
 
             elif k == ord('D'):
-                # winUtils.setBehindTopMost(win_name2, prev_active_win_name)
+                # winUtils.setBehindTopMost(dup_win_names, prev_active_win_name)
 
-                # cv2.destroyWindow(win_name2)
-                # win_name2 += 'k'
-                # createWindow(win_name2)
+                # cv2.destroyWindow(dup_win_names)
+                # dup_win_names += 'k'
+                # createWindow(dup_win_names)
 
                 # on_top = 1
-                # hideBorder(win_name2)
+                # hideBorder(dup_win_names)
 
-                win_handle = win32gui.FindWindow(None, win_name2)
+                _i = dup_monitor_ids.index(active_monitor_id)
+                win_handle = win32gui.FindWindow(None, dup_win_names[_i])
                 active_win_handle = prev_active_handle
                 # active_win_handle = win32gui.FindWindow(None, prev_active_win_name)
                 # print('_win_handle: {}'.format(_win_handle))
@@ -2275,11 +2298,11 @@ if __name__ == '__main__':
                     #                       win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
                 except BaseException as e:
                     print('Failed {} --> {} : {}'.format(
-                        win_name2, prev_active_win_name, e))
+                        dup_win_names[_i], prev_active_win_name, e))
                     # continue
                 else:
                     print('{} --> {}'.format(
-                        win_name2, prev_active_win_name))
+                        dup_win_names[_i], prev_active_win_name))
 
                 # try:
                 #     win32gui.SetForegroundWindow(active_win_handle)
@@ -2292,13 +2315,14 @@ if __name__ == '__main__':
                 # break
 
                 # on_top = 0
-                # hideBorder(win_name2)
+                # hideBorder(dup_win_names)
 
             elif k == ord('v'):
                 on_top = 1 - on_top
                 hideBorder(win_name)
                 if duplicate_window:
-                    hideBorder(win_name2)
+                    for _win_name2 in dup_win_names:
+                        hideBorder(_win_name2)
             elif k == ord('t'):
                 transition_interval -= transition_interval_diff
                 if transition_interval < 1:
@@ -2330,7 +2354,8 @@ if __name__ == '__main__':
                     print('wallpaper mode disabled')
                     createWindow(win_name)
                     if duplicate_window:
-                        createWindow(win_name2)
+                        for _win_name2 in dup_win_names:
+                            createWindow(_win_name2)
                     remove_hotkeys()
             elif k == ord(','):
                 height -= 5
@@ -2472,7 +2497,8 @@ if __name__ == '__main__':
                 fullscreen = 1 - fullscreen
                 createWindow(win_name)
                 if duplicate_window:
-                    createWindow(win_name2)
+                    for _win_name2 in dup_win_names:
+                        createWindow(_win_name2)
                 if fullscreen:
                     print('fullscreen mode enabled')
                 else:
