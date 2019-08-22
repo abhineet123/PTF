@@ -3,6 +3,48 @@ import cv2
 import os
 from Misc import sortKey
 
+
+class ImageSequenceWriter:
+    def __init__(self, file_path, fmt='image%06d', logger=None):
+        self._file_path = file_path
+        self._logger = logger
+        self._fmt = fmt
+        split_path = os.path.splitext(file_path)
+        self._save_dir = split_path[0]
+        try:
+            self._ext = split_path[1][1:]
+        except IndexError:
+            self._ext = 'jpg'
+        if not self._ext:
+            self._ext = 'jpg'
+
+        if not os.path.isdir(self._save_dir):
+            os.makedirs(self._save_dir)
+        self.frame_id = 0
+        self.filename = self._fmt % self.frame_id + '.{}'.format(self._ext)
+        if self._logger is None:
+            self._logger = print
+        else:
+            self._logger = self._logger.info
+        self._logger('Saving images of type {:s} to {:s}\n'.format(self._ext, self._save_dir))
+
+    def write(self, frame, frame_id=None, prefix=''):
+        if frame_id is None:
+            self.frame_id += 1
+        else:
+            self.frame_id = frame_id
+        if prefix:
+            self.filename = '{:s}.{:s}'.format(prefix, self._ext)
+        else:
+            self.filename = self._fmt % self.frame_id + '.{}'.format(self._ext)
+
+        self.curr_file_path = os.path.join(self._save_dir, self.filename)
+        cv2.imwrite(self.curr_file_path, frame, (cv2.IMWRITE_JPEG_QUALITY, 100))
+
+    def release(self):
+        pass
+
+
 class ImageSequenceCapture:
     """
     :param str src_path
@@ -41,8 +83,19 @@ class ImageSequenceCapture:
             self.frame_id = _id
 
     def get(self, cv_prop):
-        if cv_prop == cv2.CAP_PROP_POS_FRAMES:
+        if cv_prop == cv2.CAP_PROP_FRAME_COUNT:
+            return self.n_src_files
+        elif cv_prop == cv2.CAP_PROP_POS_FRAMES:
             return self.frame_id
+        elif cv_prop in (cv2.CAP_PROP_FRAME_HEIGHT, cv2.CAP_PROP_FRAME_WIDTH):
+            frame = cv2.imread(self.src_files[self.frame_id])
+            h, w = frame.shape[:2]
+            if cv_prop == cv2.CAP_PROP_FRAME_HEIGHT:
+                return h
+            else:
+                return w
+        else:
+            raise IOError('Invalid cv_prop: {}'.format(cv_prop))
 
     def open(self, src_path='', recursive=0, img_exts=()):
         if src_path:

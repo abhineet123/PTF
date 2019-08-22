@@ -4,7 +4,7 @@ import os, shutil
 from pprint import pprint
 from datetime import datetime
 from Misc import processArguments, sortKey, resizeAR, stackImages
-from ImageSequenceCapture import ImageSequenceCapture
+from ImageSequenceIO import ImageSequenceCapture, ImageSequenceWriter
 
 params = {
     'src_paths': [],
@@ -52,6 +52,7 @@ ann_fmt = params['ann_fmt']
 resize_factor = params['resize_factor']
 
 vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv']
+image_exts = ['jpg', 'bmp', 'png', 'tif']
 
 if len(_src_path) == 1:
     _src_path = _src_path[0]
@@ -62,10 +63,11 @@ if len(_src_path) == 1:
         src_files.sort(key=sortKey)
     else:
         src_files = [x.strip() for x in open(_src_path).readlines() if x.strip()]
-        if root_dir:
-            src_files = [os.path.join(root_dir, name) for name in src_files]
 else:
     src_files = _src_path
+
+if root_dir:
+    src_files = [os.path.join(root_dir, name) for name in src_files]
 
 if not save_path:
     dst_path = os.path.join(os.path.dirname(src_files[0]), 'stacked',
@@ -103,6 +105,8 @@ for src_file in src_files:
         cap = cv2.VideoCapture()
     elif os.path.isdir(src_file):
         cap = ImageSequenceCapture(src_file)
+    else:
+        raise IOError('Invalid src_file: {}'.format(src_file))
 
     if not cap.open(src_file):
         raise IOError('The video file ' + src_file + ' could not be opened')
@@ -174,8 +178,14 @@ while True:
 
     if video_out is None:
         dst_height, dst_width = out_img.shape[:2]
-        fourcc = cv2.VideoWriter_fourcc(*codec)
-        video_out = cv2.VideoWriter(dst_path, fourcc, fps, (dst_width, dst_height))
+
+        if ext in vid_exts:
+            fourcc = cv2.VideoWriter_fourcc(*codec)
+            video_out = cv2.VideoWriter(dst_path, fourcc, fps, (dst_width, dst_height))
+        elif ext in image_exts:
+            video_out = ImageSequenceWriter(dst_path)
+        else:
+            raise IOError('Invalid ext: {}'.format(ext))
 
         if video_out is None:
             raise IOError('Output video file could not be opened: {}'.format(dst_path))
