@@ -5,18 +5,22 @@ from Misc import sortKey
 
 
 class ImageSequenceWriter:
-    def __init__(self, file_path, fmt='image%06d', logger=None):
+    def __init__(self, file_path, fmt='image%06d', ext='jpg', logger=None):
         self._file_path = file_path
         self._logger = logger
         self._fmt = fmt
+        self._ext = ext
+
         split_path = os.path.splitext(file_path)
         self._save_dir = split_path[0]
-        try:
-            self._ext = split_path[1][1:]
-        except IndexError:
-            self._ext = 'jpg'
+
         if not self._ext:
-            self._ext = 'jpg'
+            try:
+                self._ext = split_path[1][1:]
+            except IndexError:
+                self._ext = 'jpg'
+            if not self._ext:
+                self._ext = 'jpg'
 
         if not os.path.isdir(self._save_dir):
             os.makedirs(self._save_dir)

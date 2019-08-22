@@ -51,7 +51,7 @@ preserve_order = params['preserve_order']
 ann_fmt = params['ann_fmt']
 resize_factor = params['resize_factor']
 
-vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv']
+vid_exts = ['mkv', 'mp4', 'avi', 'mjpg', 'wmv']
 image_exts = ['jpg', 'bmp', 'png', 'tif']
 
 if len(_src_path) == 1:
@@ -59,7 +59,7 @@ if len(_src_path) == 1:
     print('Reading source videos from: {}'.format(_src_path))
     if os.path.isdir(_src_path):
         src_files = [os.path.join(_src_path, k) for k in os.listdir(_src_path) for _ext in vid_exts if
-                     k.endswith(_ext)]
+                     k.endswith('.{}'.format(_ext))]
         src_files.sort(key=sortKey)
     else:
         src_files = [x.strip() for x in open(_src_path).readlines() if x.strip()]
