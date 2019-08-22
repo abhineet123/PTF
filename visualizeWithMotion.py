@@ -1774,7 +1774,7 @@ if __name__ == '__main__':
         # print('active_win_name: {}'.format(active_win_name))
 
         if active_win_name and (prev_active_handle is None or prev_active_handle != active_handle) and \
-                active_win_name not in (win_name, dup_win_names) and \
+                active_win_name not in [win_name,] + dup_win_names and \
                 all([k not in active_win_name for k in sft_exceptions]) and \
                 all([any([k1 not in active_win_name for k1 in k]) for k in sft_exceptions_multi]):
             prev_active_handle = active_handle
