@@ -4,6 +4,7 @@ import os, shutil
 from pprint import pprint
 from datetime import datetime
 from Misc import processArguments, sortKey, resizeAR, stackImages
+from ImageSequenceCapture import ImageSequenceCapture
 
 params = {
     'src_paths': [],
@@ -98,10 +99,13 @@ size_list = []
 for src_file in src_files:
     src_file = os.path.abspath(src_file)
     seq_name = os.path.splitext(os.path.basename(src_file))[0]
+    if os.path.isfile(src_file):
+        cap = cv2.VideoCapture()
+    elif os.path.isdir(src_file):
+        cap = ImageSequenceCapture(src_file)
 
-    cap = cv2.VideoCapture()
     if not cap.open(src_file):
-        raise StandardError('The video file ' + src_file + ' could not be opened')
+        raise IOError('The video file ' + src_file + ' could not be opened')
 
     if cv2.__version__.startswith('2'):
         cv_prop = cv2.cv.CAP_PROP_FRAME_COUNT
