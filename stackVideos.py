@@ -21,6 +21,7 @@ params = {
     'ann_fmt': (0, 5, 45, 3, 2, 255, 255, 255, 0, 0, 0),
     'preserve_order': 1,
     'borderless': 0,
+    'only_height': 1,
     'width': 0,
     'height': 0,
     'fps': 30,
@@ -46,6 +47,7 @@ fps = params['fps']
 codec = params['codec']
 ext = params['ext']
 grid_size = params['grid_size']
+only_height = params['only_height']
 borderless = params['borderless']
 preserve_order = params['preserve_order']
 ann_fmt = params['ann_fmt']
@@ -172,7 +174,7 @@ while True:
         break
 
     out_img = stackImages(images, grid_size, borderless=borderless, preserve_order=preserve_order,
-                          annotations=annotations, ann_fmt=ann_fmt)
+                          annotations=annotations, ann_fmt=ann_fmt, only_height=only_height)
     if resize_factor != 1:
         out_img = cv2.resize(out_img, (0, 0), fx=resize_factor, fy=resize_factor)
 

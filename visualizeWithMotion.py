@@ -1809,17 +1809,18 @@ if __name__ == '__main__':
                 # win32gui.ShowWindow(win_handle, 5)
                 # win32gui.SetForegroundWindow(win_handle)
 
-            elif duplicate_window and second_from_top == 2 and _monitor_id in dup_monitor_ids:
+            elif duplicate_window and _monitor_id in dup_monitor_ids:
+                _i = dup_monitor_ids.index(_monitor_id)
+                if second_from_top >= _i + 1:
+                    _win_handle = win32gui.FindWindow(None, dup_win_names[_i])
+                    win32api.PostMessage(_win_handle, win32con.WM_CHAR, 0x44, 0)
+                    # print('temp: {}'.format(temp))
 
-                _win_handle = win32gui.FindWindow(None, dup_win_names[dup_monitor_ids.index(_monitor_id)])
-                win32api.PostMessage(_win_handle, win32con.WM_CHAR, 0x44, 0)
-                # print('temp: {}'.format(temp))
-
-                # win32gui.ShowWindow(_win_handle, 5)
-                # win32gui.SetForegroundWindow(_win_handle)
-                #
-                # win32gui.ShowWindow(win_handle, 5)
-                # win32gui.SetForegroundWindow(win_handle)
+                    # win32gui.ShowWindow(_win_handle, 5)
+                    # win32gui.SetForegroundWindow(_win_handle)
+                    #
+                    # win32gui.ShowWindow(win_handle, 5)
+                    # win32gui.SetForegroundWindow(win_handle)
 
 
     # def second_from_top_thread():

@@ -3707,7 +3707,7 @@ def putTextWithBackground(img, text, fmt=None):
 # import gmpy
 def stackImages(img_list, grid_size=None, stack_order=0, borderless=1,
                 preserve_order=0, return_idx=0, annotations=None,
-                ann_fmt=(0, 5, 15, 1, 1, 255, 255, 255, 0, 0, 0)):
+                ann_fmt=(0, 5, 15, 1, 1, 255, 255, 255, 0, 0, 0), only_height=0):
     n_images = len(img_list)
     # print('grid_size: {}'.format(grid_size))
 
@@ -3741,6 +3741,8 @@ def stackImages(img_list, grid_size=None, stack_order=0, borderless=1,
     img_size = img_list[shape_img_id].shape
     height, width = img_size[:2]
 
+    if only_height:
+        width = 0
     # grid_size = [n_rows, n_cols]
     # print 'img_size: ', img_size
     # print 'n_images: ', n_images
