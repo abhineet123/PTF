@@ -1811,7 +1811,7 @@ if __name__ == '__main__':
 
             elif duplicate_window and _monitor_id in dup_monitor_ids:
                 _i = dup_monitor_ids.index(_monitor_id)
-                if second_from_top >= _i + 1:
+                if second_from_top > _i + 1:
                     _win_handle = win32gui.FindWindow(None, dup_win_names[_i])
                     win32api.PostMessage(_win_handle, win32con.WM_CHAR, 0x44, 0)
                     # print('temp: {}'.format(temp))

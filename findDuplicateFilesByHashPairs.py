@@ -180,7 +180,7 @@ def main():
                     if os.path.isfile(del_path):
                         print('Deleting {}'.format(del_path))
                         os.remove(del_path)
-                        
+
             if delete_file:
                 print('Deleted {} duplicates:'.format(n_duplicates))
 
