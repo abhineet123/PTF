@@ -19,7 +19,7 @@ import functools
 import PIL.Image
 from subprocess import Popen, PIPE
 
-from Misc import sortKey
+from Misc import sortKey, processArguments
 
 available_parameters = [
     ("h", "help", "Print help"),
@@ -118,7 +118,7 @@ def is_corrupt(jpegfile):
     return None
 
 
-def check_files(files, method):
+def check_files(files, method, delete_file=0):
     """Receives a list of files and check each one."""
     global opt
     n_files = len(files)
@@ -130,7 +130,11 @@ def check_files(files, method):
             status = is_corrupt(f)
             if status:
                 # os.remove(f)
-                print('\nFound corrupt file: {:s}\n'.format(f))
+                if delete_file:
+                    print('\nDeleting corrupt file: {}'.format(f))
+                    os.remove(f)
+                else:
+                    print('\nFound corrupt file: {:s}\n'.format(f))
                 # print "{0}: {1}".format(f, status)
         else:
             code, output, error = checkImage(f)
@@ -157,16 +161,20 @@ def check_files(files, method):
 
 
 if __name__ == "__main__":
-    root_dir = '.'
-    method = 0
 
-    arg_id = 1
-    if len(sys.argv) > arg_id:
-        root_dir = sys.argv[arg_id]
-        arg_id += 1
-    if len(sys.argv) > arg_id:
-        method = int(sys.argv[arg_id])
-        arg_id += 1
+    params = {
+        'root_dir': '.',
+        'delete_file': 0,
+        'method': 0,
+        'file_type': '',
+        'show_img': 0,
+    }
+    processArguments(sys.argv[1:], params)
+    root_dir = params['root_dir']
+    delete_file = params['delete_file']
+    method = params['method']
+    file_type = params['file_type']
+    show_img = params['show_img']
 
     img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff')
 
@@ -177,7 +185,7 @@ if __name__ == "__main__":
     _src_files = [os.path.abspath(k) for k in _src_files]
     _src_files.sort(key=functools.partial(sortKey,only_basename=0))
 
-    check_files(_src_files, method)
+    check_files(_src_files, method, delete_file)
 
     # for dirpath, dirnames, filenames in os.walk(root_dir):
     #     check_files([os.path.join(dirpath, f) for f in filenames])
