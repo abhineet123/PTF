@@ -480,7 +480,7 @@ if __name__ == '__main__':
             else:
                 _src_dirs.append(src_dir)
         src_dirs = _src_dirs
-        
+
 
         if multi_mode or video_mode:
             n_src = len(src_dirs)
