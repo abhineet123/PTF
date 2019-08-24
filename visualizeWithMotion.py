@@ -252,8 +252,7 @@ if __name__ == '__main__':
     sft_exceptions = ['PotPlayer', 'Free Alarm Clock', 'MPC-HC', 'DisplayFusion',
                       'GPU-Z', 'IrfanView', 'WinRAR']
 
-    sft_exceptions_multi = [('XY:(', ') - RGB:(', ', HTML:('),]
-
+    sft_exceptions_multi = [('XY:(', ') - RGB:(', ', HTML:('), ]
 
     widescreen_monitor = [-1920, -1080]
 
@@ -467,6 +466,22 @@ if __name__ == '__main__':
                 src_dirs += [os.path.join(root_dir, k) for k in os.listdir(root_dir)
                              if os.path.isdir(os.path.join(root_dir, k)) and k != src_dir_name]
 
+        # Process optional counts
+        _src_dirs = []
+        for _id, src_dir in enumerate(src_dirs):
+            _count = 1
+            if '*' in src_dir:
+                _src_dir, _count = src_dir.split('*')
+                _count = int(_count)
+                src_dir = _src_dir
+
+            if _count > 1:
+                _src_dirs += [src_dir, ] * _count
+            else:
+                _src_dirs.append(src_dir)
+        src_dirs = _src_dirs
+        
+
         if multi_mode or video_mode:
             n_src = len(src_dirs)
         else:
@@ -474,6 +489,7 @@ if __name__ == '__main__':
 
         excluded_src_files = []
         for _id, src_dir in enumerate(src_dirs):
+
             if src_dir[0] == '!':
                 src_dir = src_dir[1:]
                 excluded = 1
@@ -1774,7 +1790,7 @@ if __name__ == '__main__':
         # print('active_win_name: {}'.format(active_win_name))
 
         if active_win_name and (prev_active_handle is None or prev_active_handle != active_handle) and \
-                active_win_name not in [win_name,] + dup_win_names and \
+                active_win_name not in [win_name, ] + dup_win_names and \
                 all([k not in active_win_name for k in sft_exceptions]) and \
                 all([any([k1 not in active_win_name for k1 in k]) for k in sft_exceptions_multi]):
             prev_active_handle = active_handle
@@ -1795,11 +1811,10 @@ if __name__ == '__main__':
                     _monitor_id = curr_id
 
             # print('active_win_name: {} with pos: {} on monitor {}'.format(active_win_name, rect, _monitor_id))
-            active_monitor_id = _monitor_id
 
             if _monitor_id == monitor_id:
                 _win_handle = win32gui.FindWindow(None, win_name)
-
+                active_monitor_id = _monitor_id
                 win32api.PostMessage(_win_handle, win32con.WM_CHAR, 0x42, 0)
                 # print('temp: {}'.format(temp))
 
@@ -1813,6 +1828,7 @@ if __name__ == '__main__':
                 _i = dup_monitor_ids.index(_monitor_id)
                 if second_from_top > _i + 1:
                     _win_handle = win32gui.FindWindow(None, dup_win_names[_i])
+                    active_monitor_id = _monitor_id
                     win32api.PostMessage(_win_handle, win32con.WM_CHAR, 0x44, 0)
                     # print('temp: {}'.format(temp))
 
@@ -1827,7 +1843,6 @@ if __name__ == '__main__':
     #     while not exit_program:
     #         time.sleep(1)
     #         second_from_top_callback()
-
 
     if second_from_top:
         # threading.Thread(target=second_from_top_thread).start()
@@ -2144,7 +2159,7 @@ if __name__ == '__main__':
 
                 if active_win_name == win_name:
                     monitor_id = _monitor_id
-                elif active_win_name  in dup_win_names:
+                elif active_win_name in dup_win_names:
                     _i = dup_win_names.index(active_win_name)
                     dup_monitor_ids[_i] = _monitor_id
                 print('moving window {}'.format(active_win_name))
@@ -2282,41 +2297,45 @@ if __name__ == '__main__':
                 # on_top = 1
                 # hideBorder(dup_win_names)
 
-                _i = dup_monitor_ids.index(active_monitor_id)
-                win_handle = win32gui.FindWindow(None, dup_win_names[_i])
-                active_win_handle = prev_active_handle
-                # active_win_handle = win32gui.FindWindow(None, prev_active_win_name)
-                # print('_win_handle: {}'.format(_win_handle))
-                # print('active_win_handle: {}'.format(active_win_handle))
-
-                # while True:
                 try:
-                    # win32gui.SetForegroundWindow(win_handle)
-                    # win32gui.SetFocus(win_handle)
-                    win32gui.SetWindowPos(win_handle, active_win_handle, 0, 0, 0, 0,
-                                          win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
-                    # win32gui.SetWindowPos(win_handle, win32con.HWND_NOTOPMOST, 0, 0, 0, 0,
-                    #                       win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
-                except BaseException as e:
-                    print('Failed {} --> {} : {}'.format(
-                        dup_win_names[_i], prev_active_win_name, e))
-                    # continue
+                    _i = dup_monitor_ids.index(active_monitor_id)
+                except ValueError as e:
+                    print('Window switching failed: {}'.format(e))
                 else:
-                    print('{} --> {}'.format(
-                        dup_win_names[_i], prev_active_win_name))
+                    win_handle = win32gui.FindWindow(None, dup_win_names[_i])
+                    active_win_handle = prev_active_handle
+                    # active_win_handle = win32gui.FindWindow(None, prev_active_win_name)
+                    # print('_win_handle: {}'.format(_win_handle))
+                    # print('active_win_handle: {}'.format(active_win_handle))
 
-                # try:
-                #     win32gui.SetForegroundWindow(active_win_handle)
-                #     # win32gui.SetFocus(active_win_handle)
-                # except BaseException as e:
-                #     print('Failed to change window status for {} : {}'.format(prev_active_win_name, e))
-                #     continue
-                # print('Successfully Changed window status for {}'.format(prev_active_win_name))
+                    # while True:
+                    try:
+                        # win32gui.SetForegroundWindow(win_handle)
+                        # win32gui.SetFocus(win_handle)
+                        win32gui.SetWindowPos(win_handle, active_win_handle, 0, 0, 0, 0,
+                                              win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+                        # win32gui.SetWindowPos(win_handle, win32con.HWND_NOTOPMOST, 0, 0, 0, 0,
+                        #                       win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+                    except BaseException as e:
+                        print('Failed {} --> {} : {}'.format(
+                            dup_win_names[_i], prev_active_win_name, e))
+                        # continue
+                    else:
+                        print('{} --> {}'.format(
+                            dup_win_names[_i], prev_active_win_name))
 
-                # break
+                    # try:
+                    #     win32gui.SetForegroundWindow(active_win_handle)
+                    #     # win32gui.SetFocus(active_win_handle)
+                    # except BaseException as e:
+                    #     print('Failed to change window status for {} : {}'.format(prev_active_win_name, e))
+                    #     continue
+                    # print('Successfully Changed window status for {}'.format(prev_active_win_name))
 
-                # on_top = 0
-                # hideBorder(dup_win_names)
+                    # break
+
+                    # on_top = 0
+                    # hideBorder(dup_win_names)
 
             elif k == ord('v'):
                 on_top = 1 - on_top
