@@ -12,16 +12,17 @@ import mouse
 import win32gui, win32con
 import win32api
 
+from pprint import pformat
 from datetime import datetime
 from threading import Event
 # import threading
 from subprocess import Popen, PIPE
 # from multiprocessing import Process, Queue
 import threading
+import imageio
+from PIL import Image, ImageChops
 
 from Misc import processArguments, sortKey, stackImages, resizeAR, addBorder, trim
-
-from PIL import Image, ImageChops
 
 
 # from wand.image import Image as wandImage
@@ -156,6 +157,7 @@ params = {
     'win_offset_y': 0,
     'duplicate_window': 0,
     'custom_grid_size': '',
+    'reverse_video': 1,
 }
 
 if __name__ == '__main__':
@@ -211,6 +213,7 @@ if __name__ == '__main__':
     win_offset_x = params['win_offset_x']
     win_offset_y = params['win_offset_y']
     duplicate_window = params['duplicate_window']
+    reverse_video = params['reverse_video']
 
     if wallpaper_mode and not set_wallpaper:
         set_wallpaper = 1
@@ -352,7 +355,7 @@ if __name__ == '__main__':
     img_fnames = {}
 
     img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff')
-    vid_exts = ('.mp4', '.avi', '.mkv')
+    vid_exts = ('.mp4', '.avi', '.mkv', '.gif')
 
     transition_interval_diff = 1
 
@@ -390,18 +393,27 @@ if __name__ == '__main__':
         global src_files, total_frames, img_id
 
         print('Reading frames from video file {}'.format(src_path))
-        cap = cv2.VideoCapture()
-        if not cap.open(src_path):
-            raise IOError('The video file ' + src_path + ' could not be opened')
+        _ext = os.path.splitext(src_path)[1]
 
         _src_files = []
 
-        while True:
-            ret, src_img = cap.read()
-            if not ret:
-                break
-            _src_files.append(src_img)
-            # total_frames += 1
+        if _ext == '.gif':
+            gif = imageio.mimread(src_path)
+            meta_data = [img.meta for img in gif]
+            print('gif meta_data: {}'.format(pformat(meta_data)))
+            _src_files = [cv2.cvtColor(img, cv2.COLOR_RGB2BGR) if img.shape[2] == 3
+                          else cv2.cvtColor(img, cv2.COLOR_RGBA2BGR)
+                          for img in gif]
+        else:
+            cap = cv2.VideoCapture()
+            if not cap.open(src_path):
+                raise IOError('The video file ' + src_path + ' could not be opened')
+            while True:
+                ret, src_img = cap.read()
+                if not ret:
+                    break
+                _src_files.append(src_img)
+                # total_frames += 1
 
         total_frames[_load_id] = len(_src_files)
         src_files[_load_id] = _src_files
@@ -480,7 +492,6 @@ if __name__ == '__main__':
             else:
                 _src_dirs.append(src_dir)
         src_dirs = _src_dirs
-
 
         if multi_mode or video_mode:
             n_src = len(src_dirs)
@@ -780,6 +791,8 @@ if __name__ == '__main__':
                         loadVideo(_load_id)
                         _img_id = 0
                     else:
+                        if video_mode and reverse_video:
+                            src_files[_load_id] = list(reversed(src_files[_load_id]))
                         _img_id -= _total_frames
                         if auto_progress and random_mode:
                             print('Resetting randomisation')
@@ -1848,7 +1861,8 @@ if __name__ == '__main__':
         # threading.Thread(target=second_from_top_thread).start()
 
         mouse.on_click(second_from_top_callback, args=())
-
+        # mouse.on_middle_click(second_from_top_callback, args=())
+        # mouse.on_button(second_from_top_callback, buttons=('x', 'x2'), types=('down'))
         # mouse_listener = mouse.Listener(
         #     on_click=second_from_top_callback)
         # mouse_listener.start()
@@ -2337,6 +2351,14 @@ if __name__ == '__main__':
                     # on_top = 0
                     # hideBorder(dup_win_names)
 
+            elif k == ord('V'):
+                second_from_top = 1 - second_from_top
+                if second_from_top:
+                    print('second_from_top enabled')
+                    mouse.on_click(second_from_top_callback, args=())
+                else:
+                    print('second_from_top disabled')
+                    mouse.unhook(second_from_top_callback)
             elif k == ord('v'):
                 on_top = 1 - on_top
                 hideBorder(win_name)
