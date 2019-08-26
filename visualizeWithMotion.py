@@ -253,7 +253,7 @@ if __name__ == '__main__':
         [1920, -1080],
     ]
     sft_exceptions = ['PotPlayer', 'Free Alarm Clock', 'MPC-HC', 'DisplayFusion',
-                      'GPU-Z', 'IrfanView', 'WinRAR']
+                      'GPU-Z', 'IrfanView', 'WinRAR', 'Jump List for ']
 
     sft_exceptions_multi = [('XY:(', ') - RGB:(', ', HTML:('), ]
 
