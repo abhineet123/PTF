@@ -1887,6 +1887,7 @@ if __name__ == '__main__':
 
     sft_active_monitor_id = multiprocessing.Value('I', lock=False)
     sft_active_win_handle = multiprocessing.Value('L', lock=False)
+    sft_exit_program = multiprocessing.Value('L', 0, lock=False)
     # sft_active_win_name = multiprocessing.Value(ctypes.c_char_p, lock=False)
 
     # manager = multiprocessing.Manager()
@@ -1895,7 +1896,7 @@ if __name__ == '__main__':
     second_from_top_thread = None
     if second_from_top:
         second_from_top_thread = Process(target=sft.second_from_top_fn,
-                                         args=(sft_active_monitor_id, sft_active_win_handle,
+                                         args=(sft_active_monitor_id, sft_active_win_handle, sft_exit_program,
                                                second_from_top, monitors, win_name,
                                                dup_win_names, monitor_id, dup_monitor_ids,
                                                duplicate_window))
@@ -2097,6 +2098,8 @@ if __name__ == '__main__':
             # print('k: {}'.format(k))
             if k == 27 or end_exec:
                 exit_program = 1
+                if second_from_top:
+                    sft_exit_program.value = 1
                 break
             elif k == 13:
                 changeMode()
@@ -2435,16 +2438,18 @@ if __name__ == '__main__':
                     second_from_top = 0
                     print('second_from_top disabled')
                     sys.stdout.write('waiting for second_from_top_thread to exit...')
-                    second_from_top_thread.terminate()
+                    sft_exit_program.value = 1
+                    # second_from_top_thread.terminate()
                     sys.stdout.write('done\n')
                 else:
                     second_from_top = 1
                     print('second_from_top enabled')
                     second_from_top_thread = Process(target=sft.second_from_top_fn,
-                                                     args=(sft_active_monitor_id, sft_active_win_handle,
-                                                           second_from_top, monitors, win_name,
-                                                           dup_win_names, monitor_id, dup_monitor_ids,
-                                                           duplicate_window))
+                                                     args=(
+                                                         sft_active_monitor_id, sft_active_win_handle, sft_exit_program,
+                                                         second_from_top, monitors, win_name,
+                                                         dup_win_names, monitor_id, dup_monitor_ids,
+                                                         duplicate_window))
                     second_from_top_thread.start()
                     # mouse.on_click(second_from_top_callback, args=())
                     # mouse.unhook(second_from_top_callback)
@@ -2676,10 +2681,10 @@ if __name__ == '__main__':
     else:
         cv2.destroyWindow(win_name)
 
-    if second_from_top:
-        sys.stdout.write('waiting for second_from_top_thread to exit...')
-        second_from_top_thread.terminate()
-        sys.stdout.write('done\n')
+    # if second_from_top:
+    #     sys.stdout.write('waiting for second_from_top_thread to exit...')
+    #     second_from_top_thread.terminate()
+    #     sys.stdout.write('done\n')
 
     if images_to_sort:
         for k in images_to_sort.keys():

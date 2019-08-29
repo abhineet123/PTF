@@ -10,7 +10,7 @@ sft_exceptions = ['PotPlayer', 'Free Alarm Clock', 'MPC-HC', 'DisplayFusion',
 sft_exceptions_multi = [('XY:(', ') - RGB:(', ', HTML:('), ]
 
 
-def second_from_top_fn(active_monitor_id, active_win_handle,
+def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
                        second_from_top, monitors, win_name, dup_win_names,
                        monitor_id, dup_monitor_ids, duplicate_window):
     prev_active_handle = None
@@ -18,6 +18,9 @@ def second_from_top_fn(active_monitor_id, active_win_handle,
     # active_monitor_id = None
 
     while True:
+        _exit_program = int(exit_program.value)
+        if _exit_program:
+            break
         time.sleep(1)
         # print('button: {}'.format(button))
         # print('pressed: {}'.format(pressed))
@@ -99,3 +102,5 @@ def second_from_top_fn(active_monitor_id, active_win_handle,
                     #
                     # win32gui.ShowWindow(win_handle, 5)
                     # win32gui.SetForegroundWindow(win_handle)
+
+    print('Exiting sft')
