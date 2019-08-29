@@ -2440,8 +2440,11 @@ if __name__ == '__main__':
                 else:
                     second_from_top = 1
                     print('second_from_top enabled')
-                    second_from_top_thread = Process(target=second_from_top_fn,
-                                                     args=(second_from_top_callback,))
+                    second_from_top_thread = Process(target=sft.second_from_top_fn,
+                                                     args=(sft_active_monitor_id, sft_active_win_handle,
+                                                           second_from_top, monitors, win_name,
+                                                           dup_win_names, monitor_id, dup_monitor_ids,
+                                                           duplicate_window))
                     second_from_top_thread.start()
                     # mouse.on_click(second_from_top_callback, args=())
                     # mouse.unhook(second_from_top_callback)
