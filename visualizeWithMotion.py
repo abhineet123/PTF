@@ -11,18 +11,21 @@ import mouse
 
 import win32gui, win32con
 import win32api
+import ctypes
 
 from pprint import pformat
 from datetime import datetime
 from threading import Event
 # import threading
 from subprocess import Popen, PIPE
-# from multiprocessing import Process, Queue
+from multiprocessing import Process
+import multiprocessing
 import threading
 import imageio
-from PIL import Image, ImageChops
+from PIL import Image
 
 from Misc import processArguments, sortKey, stackImages, resizeAR, addBorder, trim
+import sft
 
 
 # from wand.image import Image as wandImage
@@ -1852,13 +1855,55 @@ if __name__ == '__main__':
                     # win32gui.SetForegroundWindow(win_handle)
 
 
-    def second_from_top_thread():
+    def second_from_top_fn():
         while second_from_top and not exit_program:
             time.sleep(1)
             second_from_top_callback()
 
+
+    # class StoppableThread(threading.Thread):
+    #     """Thread class with a stop() method. The thread itself has to check
+    #     regularly for the stopped() condition."""
+    #
+    #     def __init__(self, *args, **kwargs):
+    #         super(StoppableThread, self).__init__(*args, **kwargs)
+    #         self._stop_event = threading.Event()
+    #
+    #     def stop(self):
+    #         self._stop_event.set()
+    #
+    #     def stopped(self):
+    #         return self._stop_event.is_set()
+    #
+    #
+    # class MyTask(StoppableThread):
+    #     def run(self):
+    #         while not self.stopped():
+    #             time.sleep(1)
+    #             second_from_top_callback()
+
+    # active_win_info = [None, None, None]
+    # active_monitor_id, active_win_name, active_win_handle = active_win_info
+
+    sft_active_monitor_id = multiprocessing.Value('I', lock=False)
+    sft_active_win_handle = multiprocessing.Value('L', lock=False)
+    # sft_active_win_name = multiprocessing.Value(ctypes.c_char_p, lock=False)
+
+    # manager = multiprocessing.Manager()
+    # active_win_info = manager.dict()
+
+    second_from_top_thread = None
     if second_from_top:
-        threading.Thread(target=second_from_top_thread).start()
+        second_from_top_thread = Process(target=sft.second_from_top_fn,
+                                         args=(sft_active_monitor_id, sft_active_win_handle,
+                                               second_from_top, monitors, win_name,
+                                               dup_win_names, monitor_id, dup_monitor_ids,
+                                               duplicate_window))
+
+        # second_from_top_thread = threading.Thread(target=second_from_top_fn)
+        # second_from_top_thread = MyTask()
+
+        second_from_top_thread.start()
 
         # mouse.on_click(second_from_top_callback, args=())
         # mouse.on_middle_click(second_from_top_callback, args=())
@@ -2271,8 +2316,19 @@ if __name__ == '__main__':
                 # on_top = 1
                 # hideBorder(win_name)
 
+                # active_monitor_id, active_win_name, active_win_handle = active_win_info
+
+                _active_monitor_id = int(sft_active_monitor_id.value)
+                _active_win_handle = int(sft_active_win_handle.value)
+
+                _active_win_name = win32gui.GetWindowText(_active_win_handle)
+                # _active_win_name = sft_active_win_name.value.decode("utf-8")
+
+                # print('vwm: _active_win_handle: {}'.format(_active_win_handle))
+
                 win_handle = win32gui.FindWindow(None, win_name)
-                active_win_handle = prev_active_handle
+
+                # active_win_handle = prev_active_handle
                 # active_win_handle = win32gui.FindWindow(None, prev_active_win_name)
                 # print('_win_handle: {}'.format(_win_handle))
                 # print('active_win_handle: {}'.format(active_win_handle))
@@ -2281,13 +2337,15 @@ if __name__ == '__main__':
                 try:
                     # win32gui.SetForegroundWindow(win_handle)
                     # win32gui.SetFocus(win_handle)
-                    win32gui.SetWindowPos(win_handle, active_win_handle, 0, 0, 0, 0,
+                    win32gui.SetWindowPos(win_handle, _active_win_handle, 0, 0, 0, 0,
                                           win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
                 except BaseException as e:
                     print('Failed {} --> {} : {}'.format(
                         win_name, prev_active_win_name, e))
                     # continue
                 else:
+                    prev_active_win_name = _active_win_name
+
                     print('{} --> {}'.format(
                         win_name, prev_active_win_name))
 
@@ -2313,13 +2371,32 @@ if __name__ == '__main__':
                 # on_top = 1
                 # hideBorder(dup_win_names)
 
+                _active_monitor_id = int(sft_active_monitor_id.value)
+                _active_win_handle = int(sft_active_win_handle.value)
+
+                _active_win_name = win32gui.GetWindowText(_active_win_handle)
+
+                # _active_win_name = sft_active_win_name.value.decode("utf-8")
+
+                # print('vwm: _active_win_handle: {}'.format(_active_win_handle))
+
+                # active_monitor_id, active_win_name, active_win_handle = active_win_info
+
                 try:
-                    _i = dup_monitor_ids.index(active_monitor_id)
+                    _i = dup_monitor_ids.index(_active_monitor_id)
                 except ValueError as e:
                     print('Window switching failed: {}'.format(e))
                 else:
+
                     win_handle = win32gui.FindWindow(None, dup_win_names[_i])
-                    active_win_handle = prev_active_handle
+
+                    # active_win_handle = win32gui.GetForegroundWindow()
+                    # active_win_name = win32gui.GetWindowText(active_win_handle)
+
+                    prev_active_win_name = _active_win_name
+
+                    # active_win_handle = prev_active_handle
+
                     # active_win_handle = win32gui.FindWindow(None, prev_active_win_name)
                     # print('_win_handle: {}'.format(_win_handle))
                     # print('active_win_handle: {}'.format(active_win_handle))
@@ -2328,7 +2405,7 @@ if __name__ == '__main__':
                     try:
                         # win32gui.SetForegroundWindow(win_handle)
                         # win32gui.SetFocus(win_handle)
-                        win32gui.SetWindowPos(win_handle, active_win_handle, 0, 0, 0, 0,
+                        win32gui.SetWindowPos(win_handle, _active_win_handle, 0, 0, 0, 0,
                                               win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
                         # win32gui.SetWindowPos(win_handle, win32con.HWND_NOTOPMOST, 0, 0, 0, 0,
                         #                       win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
@@ -2354,13 +2431,19 @@ if __name__ == '__main__':
                     # hideBorder(dup_win_names)
 
             elif k == ord('V'):
-                second_from_top = 1 - second_from_top
                 if second_from_top:
-                    print('second_from_top enabled')
-                    # mouse.on_click(second_from_top_callback, args=())
-                    threading.Thread(target=second_from_top_thread).start()
-                else:
+                    second_from_top = 0
                     print('second_from_top disabled')
+                    sys.stdout.write('waiting for second_from_top_thread to exit...')
+                    second_from_top_thread.terminate()
+                    sys.stdout.write('done\n')
+                else:
+                    second_from_top = 1
+                    print('second_from_top enabled')
+                    second_from_top_thread = Process(target=second_from_top_fn,
+                                                     args=(second_from_top_callback,))
+                    second_from_top_thread.start()
+                    # mouse.on_click(second_from_top_callback, args=())
                     # mouse.unhook(second_from_top_callback)
             elif k == ord('v'):
                 on_top = 1 - on_top
@@ -2589,6 +2672,11 @@ if __name__ == '__main__':
         remove_hotkeys()
     else:
         cv2.destroyWindow(win_name)
+
+    if second_from_top:
+        sys.stdout.write('waiting for second_from_top_thread to exit...')
+        second_from_top_thread.terminate()
+        sys.stdout.write('done\n')
 
     if images_to_sort:
         for k in images_to_sort.keys():
