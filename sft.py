@@ -16,7 +16,7 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
     prev_active_handle = None
     # prev_active_win_name = None
     # active_monitor_id = None
-
+    exit_program.value = 0
     while True:
         _exit_program = int(exit_program.value)
         if _exit_program:

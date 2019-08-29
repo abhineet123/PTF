@@ -2444,6 +2444,7 @@ if __name__ == '__main__':
                 else:
                     second_from_top = 1
                     print('second_from_top enabled')
+                    sft_exit_program.value = 0
                     second_from_top_thread = Process(target=sft.second_from_top_fn,
                                                      args=(
                                                          sft_active_monitor_id, sft_active_win_handle, sft_exit_program,
