@@ -1852,15 +1852,15 @@ if __name__ == '__main__':
                     # win32gui.SetForegroundWindow(win_handle)
 
 
-    # def second_from_top_thread():
-    #     while not exit_program:
-    #         time.sleep(1)
-    #         second_from_top_callback()
+    def second_from_top_thread():
+        while second_from_top and not exit_program:
+            time.sleep(1)
+            second_from_top_callback()
 
     if second_from_top:
-        # threading.Thread(target=second_from_top_thread).start()
+        threading.Thread(target=second_from_top_thread).start()
 
-        mouse.on_click(second_from_top_callback, args=())
+        # mouse.on_click(second_from_top_callback, args=())
         # mouse.on_middle_click(second_from_top_callback, args=())
         # mouse.on_button(second_from_top_callback, buttons=('x', 'x2'), types=('down'))
         # mouse_listener = mouse.Listener(
@@ -2051,6 +2051,7 @@ if __name__ == '__main__':
         else:
             # print('k: {}'.format(k))
             if k == 27 or end_exec:
+                exit_program = 1
                 break
             elif k == 13:
                 changeMode()
@@ -2149,7 +2150,8 @@ if __name__ == '__main__':
                         createWindow(_win_name2)
                     print('{} duplicate windows enabled'.format(len(_win_name2)))
                 else:
-                    cv2.destroyWindow(dup_win_names)
+                    for _i, _win_name2 in enumerate(dup_win_names):
+                        cv2.destroyWindow(_win_name2)
                     print('duplicate window disabled')
             elif k == ord('N'):
                 max_switches += 1
@@ -2355,10 +2357,11 @@ if __name__ == '__main__':
                 second_from_top = 1 - second_from_top
                 if second_from_top:
                     print('second_from_top enabled')
-                    mouse.on_click(second_from_top_callback, args=())
+                    # mouse.on_click(second_from_top_callback, args=())
+                    threading.Thread(target=second_from_top_thread).start()
                 else:
                     print('second_from_top disabled')
-                    mouse.unhook(second_from_top_callback)
+                    # mouse.unhook(second_from_top_callback)
             elif k == ord('v'):
                 on_top = 1 - on_top
                 hideBorder(win_name)

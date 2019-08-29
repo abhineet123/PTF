@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-import pyperclip
 try:
     from Tkinter import Tk
 except ImportError:
@@ -55,7 +54,9 @@ print(out_txt)
 # with open(out_fname, 'w') as out_fid:
 #     out_fid.write(out_txt)
 try:
+    import pyperclip
+
     pyperclip.copy(out_txt)
     spam = pyperclip.paste()
-except pyperclip.PyperclipException as e:
+except BaseException as e:
     print('Copying to clipboard failed: {}'.format(e))
