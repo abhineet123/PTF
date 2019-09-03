@@ -3,6 +3,7 @@ import cv2
 import math
 import sys, time, random, glob, shutil
 import numpy as np
+import functools
 import psutil
 import inspect
 import keyboard
@@ -446,6 +447,8 @@ if __name__ == '__main__':
     total_frames = {}
     img_id = {}
 
+    img_sortKey = functools.partial(sortKey, only_basename=0)
+
     if video_mode:
         if recursive:
             video_file_gen = [[os.path.join(dirpath, f) for f in filenames if
@@ -551,7 +554,7 @@ if __name__ == '__main__':
             total_frames[_id] = len(src_files[_id])
             try:
                 # nums = int(os.path.splitext(img_fname)[0].split('_')[-1])
-                src_files[_id].sort(key=sortKey)
+                src_files[_id].sort(key=img_sortKey)
             except:
                 src_files[_id].sort()
 
