@@ -1,6 +1,7 @@
 import paramparse
 import math
 import os
+import subprocess
 
 
 class WgetByPartsParams:
@@ -25,21 +26,31 @@ if __name__ == '__main__':
 
     if not params.url:
         raise IOError('URL must be provided')
-    if not params.size:
-        raise IOError('Size must be provided')
 
     if not params.n_parts and not params.part_size:
         raise IOError('Either n_parts or part_size must be provided')
 
+    if not params.size:
+        print('Attempting to get size using curl')
+        curl_cmd = "curl -sI {}  | grep -i Content-Length | awk '{print $2}'"
+        size_output = subprocess.Popen(curl_cmd, stdout=subprocess.PIPE).communicate()[0]
+        try:
+            size = int(size_output)
+        except BaseException as e:
+            raise IOError('Failed to get size : {} :: {}'.format(e, size_output))
+        size = float(size) / 1e9
+    else:
+        size = params.size
+
     if params.n_parts:
-        part_size = float(params.size) / float(params.n_parts)
+        part_size = size / params.n_parts
         n_parts = params.n_parts
     elif params.part_size:
         part_size = params.part_size
-        n_parts = math.ceil(params.size / part_size)
+        n_parts = math.ceil(size / part_size)
 
     print('Downloading file of size {} GB from {} in {} parts of size {} each'.format(
-        params.size, params.url, n_parts, part_size
+        size, params.url, n_parts, part_size
     ))
 
     start_range = 0
