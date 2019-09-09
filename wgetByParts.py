@@ -36,7 +36,8 @@ if __name__ == '__main__':
         # curl_cmd = "curl -sI {}".format(params.url)
         curl_cmd_list = [k for k in curl_cmd.split(' ') if k]
         print('Running command:\n{}\n{}'.format(curl_cmd, curl_cmd_list))
-        size_output = subprocess.Popen(curl_cmd_list, stdout=subprocess.PIPE).communicate()[0]
+        size_output = subprocess.Popen(curl_cmd_list, stdout=subprocess.PIPE).communicate()
+        print('size_output: {}'.format(size_output))
         try:
             size = int(size_output)
         except BaseException as e:
