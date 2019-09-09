@@ -73,7 +73,7 @@ if __name__ == '__main__':
 
     start_range = 0
     cat_files = 1
-    for i in range(params.n_parts):
+    for i in range(n_parts):
         end_range = start_range + part_size
 
         if i == params.n_parts - 1:
@@ -82,22 +82,23 @@ if __name__ == '__main__':
             end_range_str = '{}'.format(int(end_range * 1e9))
 
         start_range_str = '{}'.format(int(start_range * 1e9))
-        print('Downloading part {} with range {} - {} GB'.format(i + 1, start_range, end_range))
+        print('Downloading part {} / {} with range {} - {} GB'.format(i + 1, n_parts, start_range, end_range))
 
         curl_cmd = 'curl --range {}-{} -o {}.part{} {}'.format(
             start_range_str, end_range_str, params.out_name, i + 1, params.url)
 
         print('Running command: {}'.format(curl_cmd))
         try:
-            os.system(curl_cmd)
-        except KeyboardInterrupt:
+            # os.system(curl_cmd)
+            subprocess.check_call(curl_cmd)
+        except subprocess.CalledProcessError:
             cat_files = 0
             break
 
         start_range = end_range + 1
 
     if cat_files:
-        cat_cmd = 'cat {}.part? > {}'.format(params.out_name)
+        cat_cmd = 'cat {}.part? > {}'.format(params.out_name, params.out_name)
         print('Running cat_cmd: {}'.format(cat_cmd))
         os.system(cat_cmd)
 
