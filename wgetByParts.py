@@ -90,3 +90,8 @@ if __name__ == '__main__':
         os.system(curl_cmd)
 
         start_range = end_range + 1
+
+    cat_cmd = 'cat {}.part? > {}'.format(params.out_name)
+    print('Running cat_cmd: {}'.format(cat_cmd))
+    os.system(cat_cmd)
+
