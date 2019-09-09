@@ -32,14 +32,27 @@ if __name__ == '__main__':
 
     if not params.size:
         print('Attempting to get size using curl')
-        curl_cmd = "curl -sI {} | grep -i Content-Length | awk '{{print $2}}'".format(params.url)
-        # curl_cmd = "curl -sI {}".format(params.url)
+        # curl_cmd = "curl -sI {} | grep -i Content-Length | awk '{{print $2}}'".format(params.url)
+        curl_cmd = "curl -sI {}".format(params.url)
         curl_cmd_list = [k for k in curl_cmd.split(' ') if k]
         print('Running command:\n{}\n{}'.format(curl_cmd, curl_cmd_list))
-        size_output = subprocess.Popen(curl_cmd_list, stdout=subprocess.PIPE).communicate()
+        size_output = subprocess.Popen(curl_cmd_list, stdout=subprocess.PIPE).communicate()[0]
+
+        size_output_lines = size_output.splitlines()
+        size_line = [k for k in size_output if k.startswith('Content-Length: ')]
+
         print('size_output: {}'.format(size_output))
+        print('size_output_lines: {}'.format(size_output_lines))
+        print('size_line: {}'.format(size_line))
+
+        if not size_line:
+            raise IOError('Invalid size_line : {}'.format(size_line))
+
+        size_str = size_line[0].replace('Content-Length: ', '')
+        print('size_str: {}'.format(size_str))
+
         try:
-            size = int(size_output)
+            size = int(size_str)
         except BaseException as e:
             raise IOError('Failed to get size : {} :: {}'.format(e, size_output))
         size = float(size) / 1e9
