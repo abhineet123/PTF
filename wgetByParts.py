@@ -40,7 +40,7 @@ if __name__ == '__main__':
         size_output = subprocess.Popen(curl_cmd_list, stdout=subprocess.PIPE).communicate()[0]
         print('size_output: {}'.format(size_output))
 
-        size_output_lines = size_output.splitlines()
+        size_output_lines = [k.decode("utf-8") for k in  size_output.splitlines() if k.decode("utf-8")]
         print('size_output_lines: {}'.format(size_output_lines))
 
         size_line = [str(k) for k in size_output_lines if str(k) and str(k).startswith('Content-Length: ')]
