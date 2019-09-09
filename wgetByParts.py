@@ -45,14 +45,19 @@ if __name__ == '__main__':
     start_range = 0
     for i in range(params.n_parts):
         end_range = start_range + part_size
-        start_range_b = int(start_range*1e9)
-        end_range_b = int(end_range*1e9)
 
-        print('Downloading part {} with range {} - {} GB'.format(i+1, start_range, end_range))
+        if i == params.n_parts - 1:
+            end_range_str = ''
+        else:
+            end_range_str = '{}'.format(int(end_range * 1e9))
+
+        start_range_str = '{}'.format(int(start_range * 1e9))
+        print('Downloading part {} with range {} - {} GB'.format(i + 1, start_range, end_range))
 
         curl_cmd = 'curl --range {}-{} -o {}.part{} {}'.format(
-            start_range_b, end_range_b, params.out_name, i+1, params.url)
+            start_range_str, end_range_str, params.out_name, i + 1, params.url)
 
         print('Running command: {}'.format(curl_cmd))
         os.system(curl_cmd)
 
+        start_range = end_range + 1
