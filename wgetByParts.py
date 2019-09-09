@@ -32,10 +32,11 @@ if __name__ == '__main__':
 
     if not params.size:
         print('Attempting to get size using curl')
-        # curl_cmd = "curl -sI {}  | grep -i Content-Length | awk '{{print $2}}'".format(params.url)
-        curl_cmd = "curl -sI {}".format(params.url)
-        print('Running command: {}'.format(curl_cmd))
-        size_output = subprocess.Popen(curl_cmd, stdout=subprocess.PIPE).communicate()[0]
+        curl_cmd = "curl -sI {}  | grep -i Content-Length | awk '{{print $2}}'".format(params.url)
+        # curl_cmd = "curl -sI {}".format(params.url)
+        curl_cmd_list = curl_cmd.split(' ')
+        print('Running command: {} :: {}'.format(curl_cmd, curl_cmd_list))
+        size_output = subprocess.Popen(curl_cmd_list, stdout=subprocess.PIPE).communicate()[0]
         try:
             size = int(size_output)
         except BaseException as e:
