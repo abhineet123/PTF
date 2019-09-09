@@ -86,11 +86,11 @@ if __name__ == '__main__':
 
         curl_cmd = 'curl --range {}-{} -o {}.part{} {}'.format(
             start_range_str, end_range_str, params.out_name, i + 1, params.url)
-
+        curl_cmd_list = [k for k in curl_cmd.split(' ') if k]
         print('Running command: {}'.format(curl_cmd))
         try:
             # os.system(curl_cmd)
-            subprocess.check_call(curl_cmd)
+            subprocess.check_call(curl_cmd_list)
         except subprocess.CalledProcessError:
             cat_files = 0
             break
