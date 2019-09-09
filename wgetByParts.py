@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     if not params.size:
         print('Attempting to get size using curl')
-        curl_cmd = "curl -sI {}  | grep -i Content-Length | awk '{{print $2}}'".format(params.url)
+        curl_cmd = "curl -sI {} | grep -i Content-Length | awk '{{print $2}}'".format(params.url)
         # curl_cmd = "curl -sI {}".format(params.url)
         curl_cmd_list = curl_cmd.split(' ')
         print('Running command: {} :: {}'.format(curl_cmd, curl_cmd_list))
