@@ -72,6 +72,7 @@ if __name__ == '__main__':
     ))
 
     start_range = 0
+    cat_files = 1
     for i in range(params.n_parts):
         end_range = start_range + part_size
 
@@ -87,11 +88,16 @@ if __name__ == '__main__':
             start_range_str, end_range_str, params.out_name, i + 1, params.url)
 
         print('Running command: {}'.format(curl_cmd))
-        os.system(curl_cmd)
+        try:
+            os.system(curl_cmd)
+        except KeyboardInterrupt:
+            cat_files = 0
+            break
 
         start_range = end_range + 1
 
-    cat_cmd = 'cat {}.part? > {}'.format(params.out_name)
-    print('Running cat_cmd: {}'.format(cat_cmd))
-    os.system(cat_cmd)
+    if cat_files:
+        cat_cmd = 'cat {}.part? > {}'.format(params.out_name)
+        print('Running cat_cmd: {}'.format(cat_cmd))
+        os.system(cat_cmd)
 
