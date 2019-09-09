@@ -43,7 +43,7 @@ if __name__ == '__main__':
         size_output_lines = size_output.splitlines()
         print('size_output_lines: {}'.format(size_output_lines))
 
-        size_line = [k for k in size_output_lines if k and k.startswith('Content-Length: ')]
+        size_line = [str(k) for k in size_output_lines if str(k) and str(k).startswith('Content-Length: ')]
         print('size_line: {}'.format(size_line))
 
         if not size_line:
