@@ -87,6 +87,6 @@ if __name__ == '__main__':
             start_range_str, end_range_str, params.out_name, i + 1, params.url)
 
         print('Running command: {}'.format(curl_cmd))
-        # os.system(curl_cmd)
+        os.system(curl_cmd)
 
         start_range = end_range + 1
