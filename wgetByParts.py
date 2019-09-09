@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     if not params.size:
         print('Attempting to get size using curl')
-        curl_cmd = "curl -sI {}  | grep -i Content-Length | awk '{print $2}'"
+        curl_cmd = "curl -sI {}  | grep -i Content-Length | awk '{{print $2}}'".format(params.url)
         size_output = subprocess.Popen(curl_cmd, stdout=subprocess.PIPE).communicate()[0]
         try:
             size = int(size_output)
