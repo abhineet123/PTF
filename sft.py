@@ -33,6 +33,18 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
                 active_name not in [win_name, ] + dup_win_names and \
                 all([k not in active_name for k in sft_exceptions]) and \
                 all([any([k1 not in active_name for k1 in k]) for k in sft_exceptions_multi]):
+
+            tup = win32gui.GetWindowPlacement(active_handle)
+            if tup[1] == win32con.SW_SHOWMAXIMIZED:
+                # print("sft :: {} is maximized".format(active_name))
+                pass
+            elif tup[1] == win32con.SW_SHOWMINIMIZED:
+                # print("sft :: {} is minimized".format(active_name))
+                continue
+            elif tup[1] == win32con.SW_SHOWNORMAL:
+                # print("sft :: {} is normal".format(active_name))
+                continue
+
             prev_active_handle = active_handle
             # prev_active_win_name = active_win_name
 
