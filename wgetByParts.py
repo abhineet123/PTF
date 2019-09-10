@@ -75,7 +75,7 @@ if __name__ == '__main__':
     if params.start_id > 0:
         print('Starting to download from part {}'.format(params.start_id + 1))
 
-        start_range = 0
+    start_range = 0
     cat_files = 1
     for i in range(n_parts):
         end_range = start_range + part_size
