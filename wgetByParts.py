@@ -18,6 +18,7 @@ class WgetByPartsParams:
         self.size = 0.0
         self.n_parts = 0
         self.part_size = 0.0
+        self.start_id = 0
 
 
 if __name__ == '__main__':
@@ -40,7 +41,7 @@ if __name__ == '__main__':
         size_output = subprocess.Popen(curl_cmd_list, stdout=subprocess.PIPE).communicate()[0]
         print('size_output: {}'.format(size_output))
 
-        size_output_lines = [k.decode("utf-8") for k in  size_output.splitlines() if k.decode("utf-8")]
+        size_output_lines = [k.decode("utf-8") for k in size_output.splitlines() if k.decode("utf-8")]
         print('size_output_lines: {}'.format(size_output_lines))
 
         size_line = [str(k) for k in size_output_lines if str(k) and str(k).startswith('Content-Length: ')]
@@ -71,10 +72,18 @@ if __name__ == '__main__':
         size, params.url, n_parts, part_size
     ))
 
-    start_range = 0
+    if params.start_id > 0:
+        print('Starting to download from part {}'.format(params.start_id + 1))
+
+        start_range = 0
     cat_files = 1
     for i in range(n_parts):
         end_range = start_range + part_size
+
+        if i < params.start_id:
+            print('Skiping part {} with range {} - {} GB'.format(i + 1, n_parts, start_range, end_range))
+            start_range = end_range + 1
+            continue
 
         if i == params.n_parts - 1:
             end_range_str = ''
@@ -101,4 +110,3 @@ if __name__ == '__main__':
         cat_cmd = 'cat {}.part? > {}'.format(params.out_name, params.out_name)
         print('Running cat_cmd: {}'.format(cat_cmd))
         os.system(cat_cmd)
-
