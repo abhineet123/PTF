@@ -12,12 +12,22 @@ sft_exceptions_multi = [('XY:(', ') - RGB:(', ', HTML:('), ]
 def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
                        second_from_top, monitors, win_name, dup_win_names,
                        monitor_id, dup_monitor_ids, duplicate_window):
-    prev_active_handle = None
     # prev_active_win_name = None
     # active_monitor_id = None
     exit_program.value = 0
     win_names = [win_name, ] + dup_win_names
-    # monitor_ids = [monitor_id, ] + dup_monitor_ids
+    monitor_ids = [monitor_id, ] + dup_monitor_ids
+    prev_active_handles = {i: None for i in monitor_ids}
+
+
+    centroids = []
+    for curr_id, monitor in enumerate(monitors):
+        _centroid_x = (monitor[0] + monitor[0] + 1920) / 2.0
+        _centroid_y = (monitor[1] + monitor[1] + 1080) / 2.0
+
+        centroids.append((_centroid_x, _centroid_y))
+
+
     while True:
         _exit_program = int(exit_program.value)
         if _exit_program:
@@ -32,10 +42,6 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
 
         if not active_name:
             # print('empty active_name')
-            continue
-
-        if prev_active_handle is not None and prev_active_handle == active_handle:
-            # print('prev_active_handle')
             continue
 
         if active_name in win_names:
@@ -70,15 +76,28 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
         x = (rect[0] + rect[2]) / 2.0
         y = (rect[1] + rect[3]) / 2.0
 
-        _monitor_id = 0
-        min_dist = np.inf
-        for curr_id, monitor in enumerate(monitors):
-            _centroid_x = (monitor[0] + monitor[0] + 1920) / 2.0
-            _centroid_y = (monitor[1] + monitor[1] + 1080) / 2.0
-            dist = (x - _centroid_x) ** 2 + (y - _centroid_y) ** 2
-            if dist < min_dist:
-                min_dist = dist
-                _monitor_id = curr_id
+        dists = [(x - _centroid_x) ** 2 + (y - _centroid_y) ** 2 for (_centroid_x, _centroid_y) in centroids]
+        _monitor_id = np.argmin(dists)
+
+        if _monitor_id not in monitor_ids:
+            # print('_monitor_id: {}'.format(_monitor_id))
+            # print('monitor_ids: {}'.format(monitor_ids))
+            continue
+
+        prev_active_handle = prev_active_handles[_monitor_id]
+        if prev_active_handle is not None and prev_active_handle == active_handle:
+            # print('prev_active_handle')
+            continue
+
+        # _monitor_id = 0
+        # min_dist = np.inf
+        # for curr_id, monitor in enumerate(monitors):
+        #     _centroid_x = (monitor[0] + monitor[0] + 1920) / 2.0
+        #     _centroid_y = (monitor[1] + monitor[1] + 1080) / 2.0
+        #     dist = (x - _centroid_x) ** 2 + (y - _centroid_y) ** 2
+        #     if dist < min_dist:
+        #         min_dist = dist
+        #         _monitor_id = curr_id
 
         # print('active_win_name: {} with pos: {} on monitor {}'.format(active_name, rect, _monitor_id))
 
@@ -108,10 +127,10 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
             # win32gui.ShowWindow(win_handle, 5)
             # win32gui.SetForegroundWindow(win_handle)
 
-            prev_active_handle = active_handle
+            prev_active_handles[_monitor_id] = active_handle
             # prev_active_win_name = active_win_name
 
-        elif duplicate_window and _monitor_id in dup_monitor_ids:
+        elif duplicate_window:
             # print('sft: here we are in dup_monitor_ids')
 
             _i = dup_monitor_ids.index(_monitor_id)
@@ -144,7 +163,7 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
             # win32gui.ShowWindow(win_handle, 5)
             # win32gui.SetForegroundWindow(win_handle)
 
-            prev_active_handle = active_handle
+            prev_active_handles[_monitor_id] = active_handle
             # prev_active_win_name = active_win_name
         # else:
         #     print('_monitor_id: {}'.format(_monitor_id))
