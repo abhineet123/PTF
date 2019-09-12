@@ -40,7 +40,8 @@ else:
                           for (dirpath, dirnames, filenames) in os.walk(folder_name, followlinks=True)]
         subfolders = [item for sublist in subfolders_gen for item in sublist]
     else:
-        subfolders = [os.path.join(folder_name, name) for name in os.listdir(folder_name) if os.path.isdir(os.path.join(folder_name, name))]
+        subfolders = [os.path.join(folder_name, name) for name in os.listdir(folder_name) if
+                      os.path.isdir(os.path.join(folder_name, name))]
 if prefix:
     print('Limiting search to only sub folders starting with {}'.format(prefix))
     subfolders = [x for x in subfolders if os.path.basename(x).startswith(prefix)]
@@ -78,7 +79,8 @@ if sort_by_count:
 total_files = 0
 files = []
 empty_folders = []
-out_text=''
+out_text = ''
+n_non_empty = 0
 for i, _idx in enumerate(sort_idx):
     subfolders_path = subfolders[_idx]
     src_files = src_files_list[_idx]
@@ -88,8 +90,9 @@ for i, _idx in enumerate(sort_idx):
     if n_files == 0:
         empty_folders.append(subfolders_path)
     else:
+        n_non_empty += 1
         files += [os.path.join(subfolders_path, f) for f in src_files]
-        text = '{}\t{}\t{}\t{}'.format(i+1, subfolders_path, n_files, total_files)
+        text = '{}\t{}\t{}\t{}'.format(n_non_empty, subfolders_path, n_files, total_files)
         print(text)
         counts_file.write(text + '\n')
 
@@ -112,5 +115,3 @@ out_fid = open(out_file, 'w')
 for f in files:
     out_fid.write(f + '\n')
 out_fid.close()
-
-

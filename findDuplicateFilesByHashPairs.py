@@ -182,7 +182,7 @@ def main():
                         os.remove(del_path)
 
             if delete_file:
-                print('Deleted {} duplicates:'.format(n_duplicates))
+                print('Deleted {} duplicates'.format(n_duplicates))
 
     else:
         print('No duplicates found')
