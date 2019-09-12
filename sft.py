@@ -3,7 +3,6 @@ import win32gui, win32con
 import win32api
 import numpy as np
 
-
 sft_exceptions = ['PotPlayer', 'Free Alarm Clock', 'MPC-HC', 'DisplayFusion',
                   'GPU-Z', 'IrfanView', 'WinRAR', 'Jump List for ']
 
@@ -90,8 +89,6 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
             elif duplicate_window and _monitor_id in dup_monitor_ids:
                 _i = dup_monitor_ids.index(_monitor_id)
                 if second_from_top > _i + 1:
-
-
                     _win_handle = win32gui.FindWindow(None, dup_win_names[_i])
 
                     # active_win_info[0] = _monitor_id
