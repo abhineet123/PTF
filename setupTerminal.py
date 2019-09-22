@@ -44,6 +44,7 @@ if __name__ == '__main__':
         for key in keys:
             keyboard.send(key)
 
+        time.sleep(2)
         keyboard.send('shift+right')
         keys = list('tmux a -t orca') + ['enter', ]
         for key in keys:
@@ -53,6 +54,7 @@ if __name__ == '__main__':
         for key in keys:
             keyboard.send(key)
 
+        time.sleep(2)
         keyboard.send('shift+right')
         keys = list('tmux a -t orca2') + ['enter', ]
         for key in keys:
