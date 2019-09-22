@@ -1,36 +1,59 @@
 import keyboard
 import time
+import os, sys
 
-time.sleep(1)
+from Misc import processArguments, sortKey
 
-keyboard.send('t')
-keyboard.send('enter')
-keyboard.send('ctrl+shift+t')
+if __name__ == '__main__':
+    params = {
+        'config': 0,
+    }
+    processArguments(sys.argv[1:], params)
+    config = params['config']
 
-keyboard.send('f')
-keyboard.send('enter')
-keyboard.send('ctrl+shift+t')
+    time.sleep(1)
 
-keys = list('sstg tb') + ['enter', ]
-keys += list('sudo -s') + ['enter', ]
-keys += list("';';';';") + ['enter', ]
-for key in keys:
-    keyboard.send(key)
-time.sleep(2)
-keys += list('tmux a') + ['enter', ]
-for key in keys:
-    keyboard.send(key)
+    keyboard.send('t')
+    keyboard.send('enter')
+    keyboard.send('ctrl+shift+t')
 
-keyboard.send('ctrl+shift+t')
+    keyboard.send('f')
+    keyboard.send('enter')
+    keyboard.send('ctrl+shift+t')
+    keys = list('sstg tb') + ['enter', ]
+    keys += list('sudo -s') + ['enter', ]
+    keys += list("';';';';") + ['enter', ]
+    for key in keys:
+        keyboard.send(key)
 
-keys = list('sstg2') + ['enter', ]
-keys += list('sstz') + ['enter', ]
-keys += list('sudo -s') + ['enter', ]
-keys += list("'''") + ['enter', ]
-for key in keys:
-    keyboard.send(key)
+    keyboard.send('ctrl+shift+t')
 
-time.sleep(2)
-keys = list('tmux a') + ['enter', ]
-for key in keys:
-    keyboard.send(key)
+    keys = list('sstg2') + ['enter', ]
+    keys += list('sstz') + ['enter', ]
+    keys += list('sudo -s') + ['enter', ]
+    keys += list("'''") + ['enter', ]
+    for key in keys:
+        keyboard.send(key)
+
+    time.sleep(2)
+
+    keyboard.send('shift+left')
+
+    if config == 0:
+        keys = list('tmux a -t grs') + ['enter', ]
+        for key in keys:
+            keyboard.send(key)
+
+        keyboard.send('shift+right')
+        keys = list('tmux a -t orca') + ['enter', ]
+        for key in keys:
+            keyboard.send(key)
+    else:
+        keys = list('tmux a -t grs2') + ['enter', ]
+        for key in keys:
+            keyboard.send(key)
+
+        keyboard.send('shift+right')
+        keys = list('tmux a -t orca2') + ['enter', ]
+        for key in keys:
+            keyboard.send(key)
