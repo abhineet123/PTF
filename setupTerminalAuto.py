@@ -28,6 +28,8 @@ if __name__ == '__main__':
 
         apps.append(app2)
 
+        # tmux_names = (('grs', 'grs2'), ('orca', 'orca2'))
+
         for _app in apps:
             _app.fatty.type_keys("t~")
             _app.fatty.type_keys("^+t")
@@ -37,28 +39,38 @@ if __name__ == '__main__':
             _app.fatty.type_keys("sudo{VK_SPACE}-s~")
             _app.fatty.type_keys("';';';';~")
 
+            # time.sleep(1)
+
+        app3 = application.Application().start(exe_path)
+        app3.window().maximize()
+        app3.fatty.type_keys("tmux{VK_SPACE}new~")
+
+        time.sleep(5)
+
+        app.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}grs~")
+        app2.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}grs2~")
+
+        for _app in apps:
             _app.fatty.type_keys("^+t")
             _app.fatty.type_keys("sstg2~")
             _app.fatty.type_keys("sstz~")
             _app.fatty.type_keys("sudo{VK_SPACE}-s~")
             _app.fatty.type_keys("'''~")
 
-            _app.fatty.type_keys("+{LEFT}")
-
-        app.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}grs~")
-        app2.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}grs2~")
-
-        app3 = application.Application().start(exe_path)
-        app3.window().maximize()
-
-        app3.fatty.type_keys("tmux{VK_SPACE}new~")
         time.sleep(5)
-        app3.fatty.type_keys("^b^r")
 
-        app.fatty.type_keys("+{RIGHT}")
-        app2.fatty.type_keys("+{RIGHT}")
         app.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}orca~")
         app2.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}orca2~")
+
+        # time.sleep(1)
+
+        app3.fatty.type_keys("^b^r")
+
+        # time.sleep(1)
+        # app.fatty.type_keys("+{RIGHT}")
+        # app2.fatty.type_keys("+{RIGHT}")
+
+
     elif config == 2:
         app.fatty.type_keys("tmux{VK_SPACE}new~")
         time.sleep(wait_t)
