@@ -64,12 +64,18 @@ if __name__ == '__main__':
 
         # time.sleep(1)
 
-        app3.fatty.type_keys("^b^r")
-
         # time.sleep(1)
         # app.fatty.type_keys("+{RIGHT}")
         # app2.fatty.type_keys("+{RIGHT}")
 
+        for _app in apps:
+            _app.fatty.type_keys("^+t")
+            _app.fatty.type_keys("sstg3~")
+            _app.fatty.type_keys("sstx~")
+            _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+            _app.fatty.type_keys("'''~")
+
+        app3.fatty.type_keys("^b^r")
 
     elif config == 2:
         app.fatty.type_keys("tmux{VK_SPACE}new~")
