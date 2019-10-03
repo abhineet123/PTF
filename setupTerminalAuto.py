@@ -15,6 +15,8 @@ if __name__ == '__main__':
     config = params['config']
     wait_t = params['wait_t']
 
+    auth_data = open('')
+
     if not exe_path:
         raise IOError('Terminal executable path must be provided')
 
@@ -27,8 +29,6 @@ if __name__ == '__main__':
         app2.window().maximize()
 
         apps.append(app2)
-
-        # tmux_names = (('grs', 'grs2'), ('orca', 'orca2'))
 
         for _app in apps:
             _app.fatty.type_keys("t~")
@@ -74,6 +74,9 @@ if __name__ == '__main__':
             _app.fatty.type_keys("sstx~")
             _app.fatty.type_keys("sudo{VK_SPACE}-s~")
             _app.fatty.type_keys("'''~")
+
+        app.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}x99~")
+        app2.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}x992~")
 
         app3.fatty.type_keys("^b^r")
 
