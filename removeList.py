@@ -7,11 +7,13 @@ if __name__ == '__main__':
         'list_file': '',
         'file_name': '',
         'root_dir': '.',
+        'ext': '',
     }
     processArguments(sys.argv[1:], params)
     list_file = params['list_file']
     root_dir = params['root_dir']
     file_name = params['file_name']
+    ext = params['ext']
 
     if list_file:
         if os.path.isdir(list_file):
@@ -24,6 +26,9 @@ if __name__ == '__main__':
                 rm_paths = [os.path.join(root_dir, name) for name in rm_paths]
     else:
         rm_paths = [file_name]
+
+    if ext:
+        rm_paths = ['{}.{}'.format(name, ext) for name in rm_paths]
 
     for zip_path in rm_paths:
         print('removing: {}'.format(zip_path))
