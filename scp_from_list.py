@@ -23,6 +23,7 @@ if __name__ == '__main__':
         else:
             scp_paths = [x.strip() for x in open(list_file).readlines() if x.strip()]
             if root_dir:
+                root_dir = os.path.abspath(root_dir)
                 scp_paths = [os.path.join(root_dir, name) for name in scp_paths]
     else:
         scp_paths = [file_name]
