@@ -1,4 +1,4 @@
 @echo on
 
-python2 "%~dp0\..\utfToASCII.py"
+python3 "%~dp0\..\utfToASCII.py"
  
