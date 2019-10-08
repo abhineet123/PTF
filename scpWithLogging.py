@@ -1,5 +1,7 @@
 from pywinauto import application
-import os, sys
+import os
+import sys
+import time
 # from dragonfly import Window
 
 import ctypes
@@ -81,11 +83,18 @@ if __name__ == '__main__':
         k = input('Enter {}\n'.format(data_type))
 
         if mode == 2:
+            enable_highlight = k.strip()
             Form1.type_keys("^t~")
-            Form1.type_keys("^b")
             Form1.type_keys("^v")
-            Form1.type_keys("^b")
-            Form1.type_keys("{VK_SPACE}~")
+            if enable_highlight:
+                Form1.type_keys("^+%a")
+                # time.sleep(1)
+                Form1.type_keys("^+z")
+                Form1.type_keys("{RIGHT}{VK_SPACE}~")
+            else:
+                Form1.type_keys("{VK_SPACE}~")
+
+            Form1.type_keys("^s")
             continue
 
         dst_full_path = '{}/{}'.format(dst_path, k)
@@ -102,8 +111,9 @@ if __name__ == '__main__':
         Form1.type_keys("^v")
         Form1.type_keys("^b")
         if mode == 1:
-            Form1.type_keys("{VK_SPACE}to{VK_SPACE}%s" % scp_name)
+            Form1.type_keys("{RIGHT}{VK_SPACE}to{VK_SPACE}%s" % scp_name)
             rm_cmd = 'rm {}'.format(dst_full_path)
             # print('Running {}'.format(rm_cmd))
             os.system(rm_cmd)
         Form1.type_keys("~")
+        Form1.type_keys("^s")
