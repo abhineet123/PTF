@@ -74,18 +74,23 @@ if __name__ == '__main__':
 
     while True:
         k = input('Enter filename\n')
+
+        dst_full_path = '{}/{}'.format(dst_path, k)
         if mode == 0:
-            scp_cmd = "pscp -pw {} {}:{}/{} {}/{}".format(pwd0, scp_dst, scp_path, k, dst_path, k)
+            scp_cmd = "pscp -pw {} {}:{}/{} {}".format(pwd0, scp_dst, scp_path, k, dst_full_path)
         else:
-            scp_cmd = "pscp -pw {} {}/{} {}:{}/".format(pwd0, dst_path, k, scp_dst, scp_path)
+            scp_cmd = "pscp -pw {} {} {}:{}/".format(pwd0, dst_full_path, scp_dst, scp_path)
 
         print('Running {}'.format(scp_cmd))
         os.system(scp_cmd)
 
         Form1.type_keys("^t~")
         Form1.type_keys("^b")
-        Form1.type_keys("^v~")
+        Form1.type_keys("^v")
         Form1.type_keys("^b")
         if mode == 1:
-            Form1.type_keys("to {}".format(scp_name))
-
+            Form1.type_keys("{VK_SPACE}to{VK_SPACE}%s" % scp_name)
+            rm_cmd = 'rm {}'.format(dst_full_path)
+            print('Running {}'.format(rm_cmd))
+            os.system(rm_cmd)
+        Form1.type_keys("~")
