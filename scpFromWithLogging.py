@@ -10,18 +10,26 @@ from Misc import processArguments
 if __name__ == '__main__':
     params = {
         'win_title': 'The Journal 8',
-        'config': 0,
+        'mode': 0,
         'wait_t': 10,
         'scp_dst': '',
+        'auth_path': '',
+        'dst_path': '.',
+        'scp_path': '.',
+        'scp_name': 'grs',
     }
     processArguments(sys.argv[1:], params)
     win_title = params['win_title']
-    config = params['config']
+    mode = params['mode']
     wait_t = params['wait_t']
     scp_dst = params['scp_dst']
+    auth_path = params['auth_path']
+    dst_path = params['dst_path']
+    scp_path = params['scp_path']
+    scp_name = params['scp_name']
 
     # Window.get_all_windows()
-    auth_data = open('pwd.txt', 'r').readlines()
+    auth_data = open(auth_path, 'r').readlines()
     auth_data = [k.strip() for k in auth_data]
 
     name00, name01, pwd0 = auth_data[0].split(' ')
@@ -61,14 +69,23 @@ if __name__ == '__main__':
     # print('target_title: {}'.format(target_title))
 
     app = application.Application().connect(title=target_title)
-    Form1 = app.Window_(title=target_title)
+    Form1 = app.window(title=target_title)
     # Form1.SetFocus()
 
     while True:
         k = input('Enter filename\n')
-        scp_cmd = "pscp -pw {} {}:/home/abhineet/{} ./{}".format(pwd0, scp_dst, k, k)
+        if mode == 0:
+            scp_cmd = "pscp -pw {} {}:{}/{} {}/{}".format(pwd0, scp_dst, scp_path, k, dst_path, k)
+        else:
+            scp_cmd = "pscp -pw {} {}/{} {}:{}/".format(pwd0, dst_path, k, scp_dst, scp_path)
+
         print('Running {}'.format(scp_cmd))
         os.system(scp_cmd)
 
         Form1.type_keys("^t~")
+        Form1.type_keys("^b")
         Form1.type_keys("^v~")
+        Form1.type_keys("^b")
+        if mode == 1:
+            Form1.type_keys("to {}".format(scp_name))
+
