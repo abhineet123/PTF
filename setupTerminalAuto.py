@@ -42,10 +42,10 @@ if __name__ == '__main__':
         apps.append(app2)
 
         for _app in apps:
-            _app.fatty.type_keys("t~")
-            _app.fatty.type_keys("^+t")
-            _app.fatty.type_keys("f~")
-            _app.fatty.type_keys("^+t")
+            # _app.fatty.type_keys("t~")
+            # _app.fatty.type_keys("^+t")
+            # _app.fatty.type_keys("f~")
+            # _app.fatty.type_keys("^+t")
             _app.fatty.type_keys("sstg{VK_SPACE}tb~")
             _app.fatty.type_keys("sudo{VK_SPACE}-s~")
             _app.fatty.type_keys("%s~" % pwd0)

@@ -72,13 +72,26 @@ if __name__ == '__main__':
     Form1 = app.window(title=target_title)
     # Form1.SetFocus()
 
+    if mode == 2:
+        data_type = 'log'
+    else:
+        data_type = 'filename'
+
     while True:
-        k = input('Enter filename\n')
+        k = input('Enter {}\n'.format(data_type))
+
+        if mode == 2:
+            Form1.type_keys("^t~")
+            Form1.type_keys("^b")
+            Form1.type_keys("^v")
+            Form1.type_keys("^b")
+            Form1.type_keys("{VK_SPACE}~")
+            continue
 
         dst_full_path = '{}/{}'.format(dst_path, k)
         if mode == 0:
             scp_cmd = "pscp -pw {} {}:{}/{} {}".format(pwd0, scp_dst, scp_path, k, dst_full_path)
-        else:
+        elif mode == 1:
             scp_cmd = "pscp -pw {} {} {}:{}/".format(pwd0, dst_full_path, scp_dst, scp_path)
 
         # print('Running {}'.format(scp_cmd))
