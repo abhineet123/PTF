@@ -7,15 +7,27 @@ from Misc import processArguments, sortKey
 if __name__ == '__main__':
     params = {
         'exe_path': '',
+        'auth_path': '',
         'config': 0,
         'wait_t': 10,
     }
     processArguments(sys.argv[1:], params)
     exe_path = params['exe_path']
+    auth_path = params['auth_path']
     config = params['config']
     wait_t = params['wait_t']
+    
+    # app_t = application.Application().start("cmd.exe")
+    # app_t = application.Application().start("C:\\Users\\Tommy\\Desktop\\startup_progs\\t.lnk")
+    # app_t = application.Application().start("H:\\UofA\\MSc\\Code\\TrackingFramework\\scripts\\t.cmd")    
+    # app_t = application.Application().start("C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe")
+    # app_t = application.Application().start("C:\\Essentials\\ConEmu\\ConEmu64.exe")
+    # app_t = application.Application().start("C:\\Program Files (x86)\\PowerCmd\\PowerCmd.exe")
+    # app_t.window().maximize()
 
-    auth_data = open('pwd.txt', 'r').readlines()
+    # sys.exit()
+
+    auth_data = open(auth_path, 'r').readlines()
     auth_data = [k.strip() for k in auth_data]
 
     name00, name01, pwd0 = auth_data[0].split(' ')
