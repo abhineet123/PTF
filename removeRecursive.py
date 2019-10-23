@@ -34,14 +34,16 @@ if __name__ == '__main__':
     rm_paths = ''
     for _dir in sub_dirs:
         current_path = os.path.join(_dir, file_pattern) if file_pattern else _dir
+        rm_cmd = 'cd {:s} && rm {:s} {:s}'.format(root_dir, switches, current_path)
+        print('\nrunning: {}\n'.format(rm_cmd))
+        os.system(rm_cmd)
+
         rm_paths = '{} {}'.format(rm_paths, current_path) if rm_paths else current_path
 
     # rm_paths.replace(root_dir, '')
     print('rm_paths: ', rm_paths)
 
-    rm_cmd = 'cd {:s} && rm {:s} {:s}'.format(root_dir, switches, rm_paths)
-
-    print('\nrunning: {}\n'.format(rm_cmd))
-    # subprocess.call(zip_cmd)
-    os.system(rm_cmd)
+    # rm_cmd = 'cd {:s} && rm {:s} {:s}'.format(root_dir, switches, rm_paths)
+    # print('\nrunning: {}\n'.format(rm_cmd))
+    # os.system(rm_cmd)
 
