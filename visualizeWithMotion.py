@@ -116,6 +116,7 @@ def hideBorder(_win_name):
 #     hotkeys_available = 0
 
 params = {
+    'src_root_dir': '.',
     'src_path': '.',
     'src_dirs': '',
     'width': 0,
@@ -162,6 +163,7 @@ params = {
     'duplicate_window': 0,
     'custom_grid_size': '',
     'reverse_video': 1,
+    'images_as_video': 0,
 }
 
 if __name__ == '__main__':
@@ -172,6 +174,7 @@ if __name__ == '__main__':
         os.nice(20)
 
     processArguments(sys.argv[1:], params)
+    src_root_dir = params['src_root_dir']
     src_path = params['src_path']
     src_dirs = params['src_dirs']
     _width = params['width']
@@ -218,6 +221,7 @@ if __name__ == '__main__':
     win_offset_y = params['win_offset_y']
     duplicate_window = params['duplicate_window']
     reverse_video = params['reverse_video']
+    images_as_video = params['images_as_video']
 
     if wallpaper_mode and not set_wallpaper:
         set_wallpaper = 1
@@ -408,6 +412,8 @@ if __name__ == '__main__':
             _src_files = [cv2.cvtColor(img, cv2.COLOR_RGB2BGR) if img.shape[2] == 3
                           else cv2.cvtColor(img, cv2.COLOR_RGBA2BGR)
                           for img in gif]
+        elif _ext in img_exts:
+            _src_files = [cv2.imread(src_path), ]
         else:
             cap = cv2.VideoCapture()
             if not cap.open(src_path):
@@ -467,14 +473,17 @@ if __name__ == '__main__':
         n_videos = len(video_files_list)
         if n_videos > 1:
             print('Found {} videos in {}'.format(n_videos, src_dir))
-        loadVideo(0)
-        transition_interval = 30
-        _total_frames = total_frames[0]
-    else:
+
+    if not video_mode or images_as_video:
         if src_dirs:
             src_dirs = src_dirs.split(',')
-            inc_src_dirs = [os.path.join(src_dir, k) for k in src_dirs if k[0] != '!']
-            exc_src_dirs = [os.path.join('!' + src_dir, k[1:]) for k in src_dirs if k[0] == '!']
+            inc_src_dirs = [k for k in src_dirs if k[0] != '!']
+            exc_src_dirs = [k for k in src_dirs if k[0] == '!']
+
+            if src_root_dir:
+                inc_src_dirs = [os.path.join(src_root_dir, k) for k in inc_src_dirs]
+                exc_src_dirs = [os.path.join('!' + src_root_dir, k[1:]) for k in exc_src_dirs]
+
             src_dirs = inc_src_dirs + exc_src_dirs
         else:
             src_dirs = [src_dir, ]
@@ -572,7 +581,7 @@ if __name__ == '__main__':
             img_id[_id] = 0
 
             if _total_frames <= 0:
-                raise SystemError('No input frames found')
+                raise IOError('No input frames found')
             # print('Found {} frames'.format(_total_frames))
 
         if not multi_mode and random_mode:
@@ -583,6 +592,18 @@ if __name__ == '__main__':
             img_fname = src_files[0][img_id[0]]
 
         img_id[0] = src_files[0].index(img_fname)
+
+        if video_mode:
+            video_files_list += src_files[0]
+            n_videos = len(video_files_list)
+
+    if video_mode:
+        loadVideo(0)
+        transition_interval = 30
+        total_frames = {
+            0: total_frames[0]
+        }
+        _total_frames = total_frames[0]
 
     if not multi_mode:
         img_id = {
@@ -773,6 +794,7 @@ if __name__ == '__main__':
                         loadVideo(_load_id)
                     _total_frames = total_frames[_load_id]
                     _img_id = img_id[_load_id]
+                    src_id = 0
                 else:
                     src_id = _load_id % n_src
                     _total_frames = total_frames[src_id]

@@ -30,6 +30,7 @@ params = {
     'show_img': 0,
     'n_frames': 0,
     'evenly_spaced': 0,
+    'crop': 0,
     'reverse': 0,
     'roi': [],
     'resize_factor': 1.0,
@@ -53,6 +54,7 @@ if __name__ == '__main__':
     dst_dir = params['dst_dir']
     start_id = params['start_id']
     out_fname_templ = params['out_fname_templ']
+    crop = params['crop']
     reverse = params['reverse']
     ext = params['ext']
 
@@ -110,7 +112,7 @@ if __name__ == '__main__':
 
         cap = cv2.VideoCapture()
         if not cap.open(src_path):
-            raise StandardError('The video file ' + src_path + ' could not be opened')
+            raise SystemError('The video file ' + src_path + ' could not be opened')
 
         if cv2.__version__.startswith('2'):
             cv_prop = cv2.cv.CAP_PROP_FRAME_COUNT
@@ -137,6 +139,15 @@ if __name__ == '__main__':
             if not ret:
                 print('\nFrame {:d} could not be read'.format(frame_id + 1))
                 break
+            if crop and frame_id == 0:
+                roi = cv2.selectROI('Select ROI', frame)
+                print('roi: {}'.format(roi))
+                cv2.destroyWindow('Select ROI')
+                x1, y1, w, h = roi
+                roi = x1, y1, x1 + w, y1 + h
+                print('Using roi: ', roi)
+                roi_enabled = True
+
             all_frame_id += 1
 
             if frame_gap > 1 and all_frame_id % frame_gap != 0:

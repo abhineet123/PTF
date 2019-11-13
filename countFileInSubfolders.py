@@ -5,7 +5,7 @@ from random import shuffle
 from Misc import processArguments, sortKey
 
 params = {
-    'file_ext': 'jpg',
+    'file_ext': '',
     'out_file': 'list.txt',
     'folder_name': '.',
     'prefix': '',
