@@ -165,7 +165,7 @@ params = {
     'custom_grid_size': '',
     'reverse_video': 1,
     'images_as_video': 0,
-    'frg_win_title': '',
+    'frg_win_titles': [],
     'only__maximized': 1,
 }
 
@@ -225,7 +225,7 @@ if __name__ == '__main__':
     duplicate_window = params['duplicate_window']
     reverse_video = params['reverse_video']
     images_as_video = params['images_as_video']
-    frg_win_title = params['frg_win_title']
+    frg_win_titles = params['frg_win_titles']
     only__maximized = params['only__maximized']
 
     if wallpaper_mode and not set_wallpaper:
@@ -286,7 +286,11 @@ if __name__ == '__main__':
         return monitor_id
 
 
-    if frg_win_title:
+    frg_target_titles = []
+    frg_target_positions = []
+    frg_target_win_handles = []
+
+    if frg_win_titles:
         titles = []
         win_pos = []
         win_handles = []
@@ -317,22 +321,29 @@ if __name__ == '__main__':
         # for i in range(len(titles)):
         #     print(titles[i])
 
-        target_id = [i for i, k in enumerate(titles) if k[1].startswith(frg_win_title)]
+        for frg_win_title in frg_win_titles:
+            target_id = [i for i, k in enumerate(titles) if k[1].startswith(frg_win_title)]
 
-        # target_title = [k[1] for k in titles if k[1].startswith(frg_win_title)]
-        # target_pos = [k[1] for k in win_pos if k[1].startswith(frg_win_title)]
+            # target_title = [k[1] for k in titles if k[1].startswith(frg_win_titles)]
+            # target_pos = [k[1] for k in win_pos if k[1].startswith(frg_win_titles)]
 
-        if not target_id:
-            raise IOError('Window with frg_win_title: {} not found'.format(frg_win_title))
+            if not target_id:
+                raise IOError('Window with frg_win_titles {} not found'.format(frg_win_title))
 
-        target_id = target_id[0]
+            target_id = target_id[0]
 
-        frg_target_title = titles[target_id][1]
-        frg_target_pos = win_pos[target_id]
-        frg_target_win_handle = win_handles[target_id]
-        print('Using window: {} at {} as foreground'.format(frg_target_title, frg_target_pos))
+            frg_target_titles.append(titles[target_id][1])
+            frg_target_positions.append(win_pos[target_id])
+            frg_target_win_handles.append(win_handles[target_id])
 
-        monitor_id = get_monitor_id(frg_target_pos[0], frg_target_pos[1])
+        frg_win_id = 0
+        frg_target_title = frg_target_titles[frg_win_id]
+        frg_target_position = frg_target_positions[frg_win_id]
+        frg_target_win_handle = frg_target_win_handles[frg_win_id]
+
+        print('Using window: {} at {} as foreground'.format(frg_target_title, frg_target_position))
+
+        monitor_id = get_monitor_id(frg_target_position[0], frg_target_position[1])
 
     sft_exceptions = ['PotPlayer', 'Free Alarm Clock', 'MPC-HC', 'DisplayFusion',
                       'GPU-Z', 'IrfanView', 'WinRAR', 'Jump List for ']
@@ -740,8 +751,8 @@ if __name__ == '__main__':
                     # winUtils.hideBorder(monitors[curr_monitor][0], monitors[curr_monitor][1],
                     #                     width, height, _win_name)
 
-            if frg_win_title:
-                cv2.moveWindow(_win_name, frg_target_pos[0], frg_target_pos[1])
+            if frg_win_titles:
+                cv2.moveWindow(_win_name, frg_target_positions[frg_win_id][0], frg_target_positions[frg_win_id][1])
             else:
                 cv2.moveWindow(_win_name, win_offset_x + monitors[monitor_id][0],
                                win_offset_y + monitors[monitor_id][1])
@@ -757,8 +768,8 @@ if __name__ == '__main__':
             if win_utils_available:
                 winUtils.hideBorder2(_win_name, on_top)
                 # winUtils.loseFocus(_win_name)
-            if frg_win_title:
-                cv2.moveWindow(_win_name, frg_target_pos[0], frg_target_pos[1])
+            if frg_win_titles:
+                cv2.moveWindow(_win_name, frg_target_positions[frg_win_id][0], frg_target_positions[frg_win_id][1])
             else:
                 if widescreen_mode:
                     cv2.moveWindow(_win_name, win_offset_x + widescreen_monitor[0],
@@ -1848,9 +1859,9 @@ if __name__ == '__main__':
     #     }
 
     def moveWindow(_monitor_id, _win_name, _reversed_pos):
-        global frg_target_pos
-        if frg_win_title:
-            cv2.moveWindow(_win_name, frg_target_pos[0], frg_target_pos[1])
+        global frg_target_positions
+        if frg_win_titles:
+            cv2.moveWindow(_win_name, frg_target_positions[frg_win_id][0], frg_target_positions[frg_win_id][1])
             return
 
         if mode == 0:
@@ -2002,7 +2013,7 @@ if __name__ == '__main__':
                                          args=(sft_active_monitor_id, sft_active_win_handle, sft_exit_program,
                                                second_from_top, monitors, win_name,
                                                dup_win_names, monitor_id, dup_monitor_ids,
-                                               duplicate_window, only__maximized, frg_target_win_handle))
+                                               duplicate_window, only__maximized, frg_target_win_handles))
 
         # second_from_top_thread = threading.Thread(target=second_from_top_fn)
         # second_from_top_thread = MyTask()
@@ -2082,9 +2093,9 @@ if __name__ == '__main__':
 
             dst_img = dst_img[win_start_row:win_end_row, win_start_col:win_end_col, :]
 
-            if frg_win_title and not first_img:
-                frg_target_pos = win32gui.GetWindowRect(frg_target_win_handle)
-                x1, y1, x2, y2 = frg_target_pos
+            if frg_win_titles and not first_img:
+                frg_target_positions[frg_win_id] = win32gui.GetWindowRect(frg_target_win_handles[frg_win_id])
+                x1, y1, x2, y2 = frg_target_positions[frg_win_id]
                 __w, __h = x2 - x1, y2 - y1
                 dst_img = resizeAR(dst_img, __w, __h, placement_type=reversed_pos)
                 # print('__w: ', __w)
@@ -2440,6 +2451,9 @@ if __name__ == '__main__':
                 _active_monitor_id = int(sft_active_monitor_id.value)
                 _active_win_handle = int(sft_active_win_handle.value)
 
+                if frg_win_titles:
+                    frg_win_id = frg_target_win_handles.index(_active_win_handle)
+
                 _active_win_name = win32gui.GetWindowText(_active_win_handle)
                 # _active_win_name = sft_active_win_name.value.decode("utf-8")
 
@@ -2492,6 +2506,9 @@ if __name__ == '__main__':
 
                 _active_monitor_id = int(sft_active_monitor_id.value)
                 _active_win_handle = int(sft_active_win_handle.value)
+
+                if frg_win_titles:
+                    frg_win_id = frg_target_win_handles.index(_active_win_handle)
 
                 _active_win_name = win32gui.GetWindowText(_active_win_handle)
 
@@ -2566,7 +2583,7 @@ if __name__ == '__main__':
                                                          sft_active_monitor_id, sft_active_win_handle, sft_exit_program,
                                                          second_from_top, monitors, win_name,
                                                          dup_win_names, monitor_id, dup_monitor_ids,
-                                                         duplicate_window))
+                                                         duplicate_window, only__maximized, frg_target_win_handles))
                     second_from_top_thread.start()
                     # mouse.on_click(second_from_top_callback, args=())
                     # mouse.unhook(second_from_top_callback)

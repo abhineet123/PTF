@@ -12,7 +12,7 @@ sft_exceptions_multi = [('XY:(', ') - RGB:(', ', HTML:('), ]
 def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
                        second_from_top, monitors, win_name, dup_win_names,
                        monitor_id, dup_monitor_ids, duplicate_window,
-                       only__maximized, frg_win_handle):
+                       only__maximized, frg_win_handles):
     # prev_active_win_name = None
     # active_monitor_id = None
     exit_program.value = 0
@@ -67,17 +67,10 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
                 # print("sft :: {} is normal".format(active_name))
                 continue
 
-        if frg_win_handle is not None and active_handle != frg_win_handle:
-            # print('active_name: {} with handle {} not same as frg_win_handle: {}'.format(
-            #     active_name, active_handle, frg_win_handle))
-            prev_active_handles[_monitor_id] = active_handle
-            continue
-
         # if active_name and (prev_active_handle is None or prev_active_handle != active_handle) and \
         #         active_name not in [win_name, ] + dup_win_names and \
         #         all([k not in active_name for k in sft_exceptions]) and \
         #         all([any([k1 not in active_name for k1 in k]) for k in sft_exceptions_multi]):
-
 
         rect = win32gui.GetWindowRect(active_handle)
         x = (rect[0] + rect[2]) / 2.0
@@ -86,12 +79,16 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
         dists = [(x - _centroid_x) ** 2 + (y - _centroid_y) ** 2 for (_centroid_x, _centroid_y) in centroids]
         _monitor_id = np.argmin(dists)
 
-        if frg_win_handle is None:
-
+        if frg_win_handles:
             if _monitor_id not in monitor_ids:
                 # print('_monitor_id: {}'.format(_monitor_id))
                 # print('monitor_ids: {}'.format(monitor_ids))
                 continue
+        elif active_handle not in frg_win_handles:
+            # print('active_name: {} with handle {} not same as frg_win_handle: {}'.format(
+            #     active_name, active_handle, frg_win_handle))
+            prev_active_handles[_monitor_id] = active_handle
+            continue
 
         if _monitor_id not in prev_active_handles:
             prev_active_handles[_monitor_id] = active_handle
@@ -113,7 +110,7 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
 
         # print('active_win_name: {} with pos: {} on monitor {}'.format(active_name, rect, _monitor_id))
 
-        if frg_win_handle is not None or _monitor_id == monitor_id:
+        if frg_win_handles or _monitor_id == monitor_id:
             # print('sft: here we are in monitor_id')
 
             _win_handle = win32gui.FindWindow(None, win_name)
