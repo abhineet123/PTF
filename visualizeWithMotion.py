@@ -13,6 +13,7 @@ import mouse
 import win32gui, win32con
 import win32api
 import ctypes
+from pywinauto import application
 
 from pprint import pformat
 from datetime import datetime
@@ -164,6 +165,7 @@ params = {
     'custom_grid_size': '',
     'reverse_video': 1,
     'images_as_video': 0,
+    'frg_win_title': '',
 }
 
 if __name__ == '__main__':
@@ -222,6 +224,7 @@ if __name__ == '__main__':
     duplicate_window = params['duplicate_window']
     reverse_video = params['reverse_video']
     images_as_video = params['images_as_video']
+    frg_win_title = params['frg_win_title']
 
     if wallpaper_mode and not set_wallpaper:
         set_wallpaper = 1
@@ -249,6 +252,58 @@ if __name__ == '__main__':
     except BaseException as e:
         print('Wallpaper functionality unavailable: {}'.format(e))
         set_wallpaper = 0
+
+    EnumWindows = ctypes.windll.user32.EnumWindows
+    EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int))
+    GetWindowText = ctypes.windll.user32.GetWindowTextW
+    GetWindowTextLength = ctypes.windll.user32.GetWindowTextLengthW
+    IsWindowVisible = ctypes.windll.user32.IsWindowVisible
+
+    if frg_win_title:
+        titles = []
+        win_pos = []
+        win_handles = []
+
+
+        def foreach_window(hwnd, lParam):
+            rect = win32gui.GetWindowRect(hwnd)
+            x = rect[0]
+            y = rect[1]
+            w = rect[2] - x
+            h = rect[3] - y
+            print("Window %s:" % win32gui.GetWindowText(hwnd))
+            print("\tLocation: (%d, %d)" % (x, y))
+            print("\t    Size: (%d, %d)" % (w, h))
+
+            if IsWindowVisible(hwnd):
+                length = GetWindowTextLength(hwnd)
+                buff = ctypes.create_unicode_buffer(length + 1)
+                GetWindowText(hwnd, buff, length + 1)
+                titles.append((hwnd, buff.value))
+                win_pos.append(rect)
+                win_handles.append(hwnd)
+            return True
+
+
+        win32gui.EnumWindows(foreach_window, None)
+
+        # for i in range(len(titles)):
+        #     print(titles[i])
+
+        target_id = [i for i, k in enumerate(titles) if k[1].startswith(frg_win_title)]
+
+        # target_title = [k[1] for k in titles if k[1].startswith(frg_win_title)]
+        # target_pos = [k[1] for k in win_pos if k[1].startswith(frg_win_title)]
+
+        if not target_id:
+            raise IOError('Window with frg_win_title: {} not found'.format(frg_win_title))
+
+        target_id = target_id[0]
+
+        frg_target_title = titles[target_id][1]
+        frg_target_pos = win_pos[target_id]
+        frg_target_win_handle = win_handles[target_id]
+        print('Using window: {} at {} as foreground'.format(frg_target_title, frg_target_pos))
 
     old_speed = speed
     speed = 0
@@ -674,7 +729,11 @@ if __name__ == '__main__':
                     # winUtils.hideBorder(monitors[curr_monitor][0], monitors[curr_monitor][1],
                     #                     width, height, _win_name)
 
-            cv2.moveWindow(_win_name, win_offset_x + monitors[monitor_id][0], win_offset_y + monitors[monitor_id][1])
+            if frg_win_title:
+                cv2.moveWindow(_win_name, frg_target_pos[0], frg_target_pos[1])
+            else:
+                cv2.moveWindow(_win_name, win_offset_x + monitors[monitor_id][0],
+                               win_offset_y + monitors[monitor_id][1])
         else:
             cv2.namedWindow(_win_name, cv_windowed_mode_flags)
 
@@ -687,13 +746,17 @@ if __name__ == '__main__':
             if win_utils_available:
                 winUtils.hideBorder2(_win_name, on_top)
                 # winUtils.loseFocus(_win_name)
-            if widescreen_mode:
-                cv2.moveWindow(_win_name, win_offset_x + widescreen_monitor[0], win_offset_y + widescreen_monitor[1])
+            if frg_win_title:
+                cv2.moveWindow(_win_name, frg_target_pos[0], frg_target_pos[1])
             else:
-                if move_to_right:
-                    cv2.moveWindow(_win_name, win_offset_x + monitors[4][0], win_offset_y + monitors[4][1])
+                if widescreen_mode:
+                    cv2.moveWindow(_win_name, win_offset_x + widescreen_monitor[0],
+                                   win_offset_y + widescreen_monitor[1])
                 else:
-                    cv2.moveWindow(_win_name, win_offset_x + monitors[2][0], win_offset_y + monitors[2][1])
+                    if move_to_right:
+                        cv2.moveWindow(_win_name, win_offset_x + monitors[4][0], win_offset_y + monitors[4][1])
+                    else:
+                        cv2.moveWindow(_win_name, win_offset_x + monitors[2][0], win_offset_y + monitors[2][1])
 
         cv2.setMouseCallback(_win_name, mouseHandler)
 
@@ -1774,6 +1837,12 @@ if __name__ == '__main__':
     #     }
 
     def moveWindow(_monitor_id, _win_name, _reversed_pos):
+
+        if frg_win_title:
+            frg_target_pos = win32gui.GetWindowRect(frg_target_win_handle)
+            cv2.moveWindow(_win_name, frg_target_pos[0], frg_target_pos[1])
+            return
+
         if mode == 0:
             _curr_monitor = _monitor_id
         elif mode == 1:
@@ -1784,8 +1853,8 @@ if __name__ == '__main__':
 
         _y_offset = win_offset_y + monitors[_curr_monitor][1]
 
-        if _reversed_pos == 0:
 
+        if _reversed_pos == 0:
             cv2.moveWindow(_win_name, win_offset_x + monitors[_curr_monitor][0],
                            _y_offset)
         elif _reversed_pos == 1:
