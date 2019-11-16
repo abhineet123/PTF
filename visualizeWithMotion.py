@@ -1848,9 +1848,8 @@ if __name__ == '__main__':
     #     }
 
     def moveWindow(_monitor_id, _win_name, _reversed_pos):
-
+        global frg_target_pos
         if frg_win_title:
-            frg_target_pos = win32gui.GetWindowRect(frg_target_win_handle)
             cv2.moveWindow(_win_name, frg_target_pos[0], frg_target_pos[1])
             return
 
@@ -2084,6 +2083,7 @@ if __name__ == '__main__':
             dst_img = dst_img[win_start_row:win_end_row, win_start_col:win_end_col, :]
 
             if frg_win_title and not first_img:
+                frg_target_pos = win32gui.GetWindowRect(frg_target_win_handle)
                 x1, y1, x2, y2 = frg_target_pos
                 __w, __h = x2 - x1, y2 - y1
                 dst_img = resizeAR(dst_img, __w, __h)
