@@ -2086,7 +2086,7 @@ if __name__ == '__main__':
                 frg_target_pos = win32gui.GetWindowRect(frg_target_win_handle)
                 x1, y1, x2, y2 = frg_target_pos
                 __w, __h = x2 - x1, y2 - y1
-                dst_img = resizeAR(dst_img, __w, __h)
+                dst_img = resizeAR(dst_img, __w, __h, placement_type=reversed_pos)
                 # print('__w: ', __w)
                 # print('__h: ', __h)
 
