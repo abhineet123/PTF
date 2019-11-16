@@ -64,13 +64,13 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
             continue
         elif tup[1] == win32con.SW_SHOWNORMAL:
             if only__maximized:
-                print("sft :: {} is normal".format(active_name))
+                # print("sft :: {} is normal".format(active_name))
                 continue
 
         if frg_win_handle is not None and active_handle != frg_win_handle:
-            print('active_name: {} with handle {} not same as frg_win_handle: {}'.format(
-                active_name, active_handle, frg_win_handle))
-            # prev_active_handles[_monitor_id] = active_handle
+            # print('active_name: {} with handle {} not same as frg_win_handle: {}'.format(
+            #     active_name, active_handle, frg_win_handle))
+            prev_active_handles[_monitor_id] = active_handle
             continue
 
         # if active_name and (prev_active_handle is None or prev_active_handle != active_handle) and \
@@ -93,10 +93,10 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
                 # print('monitor_ids: {}'.format(monitor_ids))
                 continue
 
-            prev_active_handle = prev_active_handles[_monitor_id]
-            if prev_active_handle is not None and prev_active_handle == active_handle:
-                # print('prev_active_handle')
-                continue
+        prev_active_handle = prev_active_handles[_monitor_id]
+        if prev_active_handle is not None and prev_active_handle == active_handle:
+            # print('prev_active_handle')
+            continue
 
         # _monitor_id = 0
         # min_dist = np.inf
@@ -124,9 +124,9 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
             active_win_handle.value = active_handle
             # active_win_name.value = active_name.encode('utf-8')
 
-            print('sft: active_monitor_id: {}'.format(active_monitor_id))
-            print('sft: active_win_handle: {}'.format(active_win_handle))
-            print('sft: active_win_name: {}'.format(active_name))
+            # print('sft: active_monitor_id: {}'.format(active_monitor_id))
+            # print('sft: active_win_handle: {}'.format(active_win_handle))
+            # print('sft: active_win_name: {}'.format(active_name))
 
             win32api.PostMessage(_win_handle, win32con.WM_CHAR, 0x42, 0)
 

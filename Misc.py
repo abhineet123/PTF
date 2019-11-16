@@ -291,6 +291,7 @@ def sortKeyOld(fname):
     # print('key: ', key)
     return key
 
+
 def trim(im):
     bg = Image.new(im.mode, im.size, im.getpixel((0, 0)))
     diff = ImageChops.difference(im, bg)
@@ -302,6 +303,7 @@ def trim(im):
     if bbox:
         return im.crop(bbox)
     return im
+
 
 def processArguments(args, params):
     # arguments specified as 'arg_name=argv_val'
@@ -365,7 +367,7 @@ def resizeAR(src_img, width=0, height=0, return_factors=False,
         width, height = int(src_width * resize_factor), int(src_height * resize_factor)
 
     if width <= 0 and height <= 0:
-        if resize_factor==0:
+        if resize_factor == 0:
             raise AssertionError(
                 'Both width and height cannot be 0 when resize_factor is 0 too')
     elif height <= 0:

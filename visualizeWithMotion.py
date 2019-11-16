@@ -285,6 +285,7 @@ if __name__ == '__main__':
                 monitor_id = curr_id
         return monitor_id
 
+
     if frg_win_title:
         titles = []
         win_pos = []
@@ -2019,6 +2020,8 @@ if __name__ == '__main__':
     if not show_window:
         hideWindow()
 
+    first_img = True
+
     while not exit_program:
         # print('show_window: {}'.format(show_window))
 
@@ -2080,7 +2083,17 @@ if __name__ == '__main__':
 
             dst_img = dst_img[win_start_row:win_end_row, win_start_col:win_end_col, :]
 
+            if frg_win_title and not first_img:
+                x1, y1, x2, y2 = frg_target_pos
+                __w, __h = x2 - x1, y2 - y1
+                dst_img = resizeAR(dst_img, __w, __h)
+                # print('__w: ', __w)
+                # print('__h: ', __h)
+
             # print(':: reversed_pos: ', reversed_pos)
+
+            if first_img:
+                first_img = False
 
             moveWindow(monitor_id, win_name, reversed_pos)
             # if mode == 0:
