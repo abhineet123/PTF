@@ -93,6 +93,9 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
                 # print('monitor_ids: {}'.format(monitor_ids))
                 continue
 
+        if _monitor_id not in prev_active_handles:
+            prev_active_handles[_monitor_id] = active_handle
+
         prev_active_handle = prev_active_handles[_monitor_id]
         if prev_active_handle is not None and prev_active_handle == active_handle:
             # print('prev_active_handle')
