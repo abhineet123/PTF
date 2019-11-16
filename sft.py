@@ -11,7 +11,8 @@ sft_exceptions_multi = [('XY:(', ') - RGB:(', ', HTML:('), ]
 
 def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
                        second_from_top, monitors, win_name, dup_win_names,
-                       monitor_id, dup_monitor_ids, duplicate_window):
+                       monitor_id, dup_monitor_ids, duplicate_window,
+                       only__maximized, frg_win_handle):
     # prev_active_win_name = None
     # active_monitor_id = None
     exit_program.value = 0
@@ -19,14 +20,12 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
     monitor_ids = [monitor_id, ] + dup_monitor_ids
     prev_active_handles = {i: None for i in monitor_ids}
 
-
     centroids = []
     for curr_id, monitor in enumerate(monitors):
         _centroid_x = (monitor[0] + monitor[0] + 1920) / 2.0
         _centroid_y = (monitor[1] + monitor[1] + 1080) / 2.0
 
         centroids.append((_centroid_x, _centroid_y))
-
 
     while True:
         _exit_program = int(exit_program.value)
@@ -64,13 +63,21 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
             # print("sft :: {} is minimized".format(active_name))
             continue
         elif tup[1] == win32con.SW_SHOWNORMAL:
-            # print("sft :: {} is normal".format(active_name))
+            if only__maximized:
+                print("sft :: {} is normal".format(active_name))
+                continue
+
+        if frg_win_handle is not None and active_handle != frg_win_handle:
+            print('active_name: {} with handle {} not same as frg_win_handle: {}'.format(
+                active_name, active_handle, frg_win_handle))
+            # prev_active_handles[_monitor_id] = active_handle
             continue
 
         # if active_name and (prev_active_handle is None or prev_active_handle != active_handle) and \
         #         active_name not in [win_name, ] + dup_win_names and \
         #         all([k not in active_name for k in sft_exceptions]) and \
         #         all([any([k1 not in active_name for k1 in k]) for k in sft_exceptions_multi]):
+
 
         rect = win32gui.GetWindowRect(active_handle)
         x = (rect[0] + rect[2]) / 2.0
@@ -79,15 +86,17 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
         dists = [(x - _centroid_x) ** 2 + (y - _centroid_y) ** 2 for (_centroid_x, _centroid_y) in centroids]
         _monitor_id = np.argmin(dists)
 
-        if _monitor_id not in monitor_ids:
-            # print('_monitor_id: {}'.format(_monitor_id))
-            # print('monitor_ids: {}'.format(monitor_ids))
-            continue
+        if frg_win_handle is None:
 
-        prev_active_handle = prev_active_handles[_monitor_id]
-        if prev_active_handle is not None and prev_active_handle == active_handle:
-            # print('prev_active_handle')
-            continue
+            if _monitor_id not in monitor_ids:
+                # print('_monitor_id: {}'.format(_monitor_id))
+                # print('monitor_ids: {}'.format(monitor_ids))
+                continue
+
+            prev_active_handle = prev_active_handles[_monitor_id]
+            if prev_active_handle is not None and prev_active_handle == active_handle:
+                # print('prev_active_handle')
+                continue
 
         # _monitor_id = 0
         # min_dist = np.inf
@@ -101,7 +110,7 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
 
         # print('active_win_name: {} with pos: {} on monitor {}'.format(active_name, rect, _monitor_id))
 
-        if _monitor_id == monitor_id:
+        if frg_win_handle is not None or _monitor_id == monitor_id:
             # print('sft: here we are in monitor_id')
 
             _win_handle = win32gui.FindWindow(None, win_name)
@@ -115,9 +124,9 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
             active_win_handle.value = active_handle
             # active_win_name.value = active_name.encode('utf-8')
 
-            # print('sft: active_monitor_id: {}'.format(active_monitor_id))
-            # print('sft: active_win_handle: {}'.format(active_win_handle))
-            # print('sft: active_win_name: {}'.format(active_win_name))
+            print('sft: active_monitor_id: {}'.format(active_monitor_id))
+            print('sft: active_win_handle: {}'.format(active_win_handle))
+            print('sft: active_win_name: {}'.format(active_name))
 
             win32api.PostMessage(_win_handle, win32con.WM_CHAR, 0x42, 0)
 

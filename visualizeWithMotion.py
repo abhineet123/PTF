@@ -166,6 +166,7 @@ params = {
     'reverse_video': 1,
     'images_as_video': 0,
     'frg_win_title': '',
+    'only__maximized': 1,
 }
 
 if __name__ == '__main__':
@@ -225,6 +226,7 @@ if __name__ == '__main__':
     reverse_video = params['reverse_video']
     images_as_video = params['images_as_video']
     frg_win_title = params['frg_win_title']
+    only__maximized = params['only__maximized']
 
     if wallpaper_mode and not set_wallpaper:
         set_wallpaper = 1
@@ -259,6 +261,30 @@ if __name__ == '__main__':
     GetWindowTextLength = ctypes.windll.user32.GetWindowTextLengthW
     IsWindowVisible = ctypes.windll.user32.IsWindowVisible
 
+    old_speed = speed
+    speed = 0
+    is_paused = 1
+    monitors = [
+        [0, 0],
+        [-1920, 0],
+        [0, -1080],
+        [1920, 0],
+        [1920, -1080],
+    ]
+
+
+    def get_monitor_id(x, y):
+        monitor_id = 0
+        min_dist = np.inf
+        for curr_id, monitor in enumerate(monitors):
+            centroid_x = (monitor[0] + monitor[0] + 1920) / 2.0
+            centroid_y = (monitor[1] + monitor[1] + 1080) / 2.0
+            dist = (x - centroid_x) ** 2 + (y - centroid_y) ** 2
+            if dist < min_dist:
+                min_dist = dist
+                monitor_id = curr_id
+        return monitor_id
+
     if frg_win_title:
         titles = []
         win_pos = []
@@ -267,13 +293,13 @@ if __name__ == '__main__':
 
         def foreach_window(hwnd, lParam):
             rect = win32gui.GetWindowRect(hwnd)
-            x = rect[0]
-            y = rect[1]
-            w = rect[2] - x
-            h = rect[3] - y
-            print("Window %s:" % win32gui.GetWindowText(hwnd))
-            print("\tLocation: (%d, %d)" % (x, y))
-            print("\t    Size: (%d, %d)" % (w, h))
+            # x = rect[0]
+            # y = rect[1]
+            # w = rect[2] - x
+            # h = rect[3] - y
+            # print("Window %s:" % win32gui.GetWindowText(hwnd))
+            # print("\tLocation: (%d, %d)" % (x, y))
+            # print("\t    Size: (%d, %d)" % (w, h))
 
             if IsWindowVisible(hwnd):
                 length = GetWindowTextLength(hwnd)
@@ -305,16 +331,8 @@ if __name__ == '__main__':
         frg_target_win_handle = win_handles[target_id]
         print('Using window: {} at {} as foreground'.format(frg_target_title, frg_target_pos))
 
-    old_speed = speed
-    speed = 0
-    is_paused = 1
-    monitors = [
-        [0, 0],
-        [-1920, 0],
-        [0, -1080],
-        [1920, 0],
-        [1920, -1080],
-    ]
+        monitor_id = get_monitor_id(frg_target_pos[0], frg_target_pos[1])
+
     sft_exceptions = ['PotPlayer', 'Free Alarm Clock', 'MPC-HC', 'DisplayFusion',
                       'GPU-Z', 'IrfanView', 'WinRAR', 'Jump List for ']
 
@@ -366,15 +384,7 @@ if __name__ == '__main__':
         cv_windowed_mode_flags = cv2.WINDOW_AUTOSIZE
 
     if monitor_id < 0 and mousePos is not None:
-        monitor_id = 0
-        min_dist = np.inf
-        for curr_id, monitor in enumerate(monitors):
-            centroid_x = (monitor[0] + monitor[0] + 1920) / 2.0
-            centroid_y = (monitor[1] + monitor[1] + 1080) / 2.0
-            dist = (mousePos.x - centroid_x) ** 2 + (mousePos.y - centroid_y) ** 2
-            if dist < min_dist:
-                min_dist = dist
-                monitor_id = curr_id
+        monitor_id = get_monitor_id(mousePos.x, mousePos.y)
     elif monitor_id >= len(monitors):
         raise IOError('Invalid monitor_id: {}'.format(monitor_id))
     print('monitor_id: ', monitor_id)
@@ -1853,7 +1863,6 @@ if __name__ == '__main__':
 
         _y_offset = win_offset_y + monitors[_curr_monitor][1]
 
-
         if _reversed_pos == 0:
             cv2.moveWindow(_win_name, win_offset_x + monitors[_curr_monitor][0],
                            _y_offset)
@@ -1993,7 +2002,7 @@ if __name__ == '__main__':
                                          args=(sft_active_monitor_id, sft_active_win_handle, sft_exit_program,
                                                second_from_top, monitors, win_name,
                                                dup_win_names, monitor_id, dup_monitor_ids,
-                                               duplicate_window))
+                                               duplicate_window, only__maximized, frg_target_win_handle))
 
         # second_from_top_thread = threading.Thread(target=second_from_top_fn)
         # second_from_top_thread = MyTask()
