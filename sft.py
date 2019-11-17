@@ -80,14 +80,14 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
         _monitor_id = np.argmin(dists)
 
         if frg_win_handles:
-            if _monitor_id not in monitor_ids:
-                # print('_monitor_id: {}'.format(_monitor_id))
-                # print('monitor_ids: {}'.format(monitor_ids))
+            if active_handle not in frg_win_handles:
+                # print('active_name: {} with handle {} not same as frg_win_handle: {}'.format(
+                #     active_name, active_handle, frg_win_handle))
+                prev_active_handles[_monitor_id] = active_handle
                 continue
-        elif active_handle not in frg_win_handles:
-            # print('active_name: {} with handle {} not same as frg_win_handle: {}'.format(
-            #     active_name, active_handle, frg_win_handle))
-            prev_active_handles[_monitor_id] = active_handle
+        elif _monitor_id not in monitor_ids:
+            # print('_monitor_id: {}'.format(_monitor_id))
+            # print('monitor_ids: {}'.format(monitor_ids))
             continue
 
         if _monitor_id not in prev_active_handles:

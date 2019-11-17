@@ -2452,7 +2452,10 @@ if __name__ == '__main__':
                 _active_win_handle = int(sft_active_win_handle.value)
 
                 if frg_win_titles:
-                    frg_win_id = frg_target_win_handles.index(_active_win_handle)
+                    try:
+                        frg_win_id = frg_target_win_handles.index(_active_win_handle)
+                    except ValueError:
+                        pass
 
                 _active_win_name = win32gui.GetWindowText(_active_win_handle)
                 # _active_win_name = sft_active_win_name.value.decode("utf-8")
@@ -2508,7 +2511,10 @@ if __name__ == '__main__':
                 _active_win_handle = int(sft_active_win_handle.value)
 
                 if frg_win_titles:
-                    frg_win_id = frg_target_win_handles.index(_active_win_handle)
+                    try:
+                        frg_win_id = frg_target_win_handles.index(_active_win_handle)
+                    except ValueError:
+                        pass
 
                 _active_win_name = win32gui.GetWindowText(_active_win_handle)
 
