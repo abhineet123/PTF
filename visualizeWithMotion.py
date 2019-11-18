@@ -288,12 +288,20 @@ if __name__ == '__main__':
 
     frg_target_titles = []
     frg_target_positions = []
+    frg_target_win_border = []
     frg_target_win_handles = []
+    DwmGetWindowAttribute = None
 
     if frg_win_titles:
         titles = []
         win_pos = []
+        win_border = []
         win_handles = []
+
+        try:
+            DwmGetWindowAttribute = ctypes.windll.dwmapi.DwmGetWindowAttribute
+        except WindowsError:
+            pass
 
 
         def foreach_window(hwnd, lParam):
@@ -311,8 +319,26 @@ if __name__ == '__main__':
                 buff = ctypes.create_unicode_buffer(length + 1)
                 GetWindowText(hwnd, buff, length + 1)
                 titles.append((hwnd, buff.value))
-                win_pos.append(rect)
                 win_handles.append(hwnd)
+
+                if DwmGetWindowAttribute:
+                    ext_rect = ctypes.wintypes.RECT()
+                    DWMWA_EXTENDED_FRAME_BOUNDS = 9
+                    DwmGetWindowAttribute(
+                        ctypes.wintypes.HWND(hwnd),
+                        ctypes.wintypes.DWORD(DWMWA_EXTENDED_FRAME_BOUNDS),
+                        ctypes.byref(ext_rect),
+                        ctypes.sizeof(ext_rect)
+                    )
+                    border = [ext_rect.left - rect[0], ext_rect.top - rect[1],
+                              rect[2] - ext_rect.right, rect[3] - ext_rect.bottom]
+                    rect = [rect[0] + border[0], rect[1] + border[1],
+                            rect[2] - border[2], rect[3] - border[3]]
+
+                    win_border.append(border)
+
+                win_pos.append(rect)
+
             return True
 
 
@@ -328,17 +354,22 @@ if __name__ == '__main__':
             # target_pos = [k[1] for k in win_pos if k[1].startswith(frg_win_titles)]
 
             if not target_id:
-                raise IOError('Window with frg_win_titles {} not found'.format(frg_win_title))
+                target_id = [i for i, k in enumerate(titles) if frg_win_title in k[1]]
+                if not target_id:
+                    raise IOError('Window with frg_win_titles {} not found'.format(frg_win_title))
 
             target_id = target_id[0]
 
             frg_target_titles.append(titles[target_id][1])
             frg_target_positions.append(win_pos[target_id])
+            frg_target_win_border.append(win_border[target_id])
             frg_target_win_handles.append(win_handles[target_id])
 
             print(f'Found window {frg_target_titles[-1]} with '
                   f'handle {frg_target_win_handles[-1]} and '
-                  f'position: {frg_target_positions[-1]}')
+                  f'position: {frg_target_positions[-1]} '
+                  f'border: {frg_target_win_border[-1]}'
+                  )
 
         frg_win_id = 0
         frg_target_title = frg_target_titles[frg_win_id]
@@ -2098,7 +2129,27 @@ if __name__ == '__main__':
             dst_img = dst_img[win_start_row:win_end_row, win_start_col:win_end_col, :]
 
             if frg_win_titles and not first_img:
-                frg_target_positions[frg_win_id] = win32gui.GetWindowRect(frg_target_win_handles[frg_win_id])
+                hwnd = frg_target_win_handles[frg_win_id]
+                rect = win32gui.GetWindowRect(hwnd)
+
+                if DwmGetWindowAttribute:
+                    ext_rect = ctypes.wintypes.RECT()
+                    DWMWA_EXTENDED_FRAME_BOUNDS = 9
+                    DwmGetWindowAttribute(
+                        ctypes.wintypes.HWND(hwnd),
+                        ctypes.wintypes.DWORD(DWMWA_EXTENDED_FRAME_BOUNDS),
+                        ctypes.byref(ext_rect),
+                        ctypes.sizeof(ext_rect)
+                    )
+                    border = [ext_rect.left - rect[0], ext_rect.top - rect[1],
+                              rect[2] - ext_rect.right, rect[3] - ext_rect.bottom]
+                    # rect = [rect[0] - border[0], rect[1] - border[1],
+                    #         rect[2] + border[0] + border[2], rect[3] + border[1] + border[3]]
+
+                    rect = [rect[0] + border[0], rect[1] + border[1],
+                            rect[2] - border[2], rect[3] - border[3]]
+
+                frg_target_positions[frg_win_id] = rect
                 x1, y1, x2, y2 = frg_target_positions[frg_win_id]
                 __w, __h = x2 - x1, y2 - y1
                 dst_img = resizeAR(dst_img, __w, __h, placement_type=reversed_pos)
