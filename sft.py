@@ -20,6 +20,8 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
     monitor_ids = [monitor_id, ] + dup_monitor_ids
     prev_active_handles = {i: None for i in monitor_ids}
 
+    prev_monitor_id = None
+
     centroids = []
     for curr_id, monitor in enumerate(monitors):
         _centroid_x = (monitor[0] + monitor[0] + 1920) / 2.0
@@ -85,18 +87,26 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
                 #     active_name, active_handle, frg_win_handle))
                 prev_active_handles[_monitor_id] = active_handle
                 continue
-        elif _monitor_id not in monitor_ids:
-            # print('_monitor_id: {}'.format(_monitor_id))
-            # print('monitor_ids: {}'.format(monitor_ids))
-            continue
+        else:
+            if _monitor_id not in monitor_ids:
+                # print('_monitor_id: {}'.format(_monitor_id))
+                # print('monitor_ids: {}'.format(monitor_ids))
+                continue
 
-        if _monitor_id not in prev_active_handles:
+        try:
+            prev_active_handle = prev_active_handles[_monitor_id]
+        except KeyError:
+            pass
+        else:
+            if prev_active_handle is not None and prev_active_handle == active_handle:
+                if not frg_win_handles or prev_monitor_id == _monitor_id:
+                    # print('prev_active_handle')
+                    continue
+
+        if frg_win_handles and _monitor_id not in prev_active_handles:
             prev_active_handles[_monitor_id] = active_handle
 
-        prev_active_handle = prev_active_handles[_monitor_id]
-        if prev_active_handle is not None and prev_active_handle == active_handle:
-            # print('prev_active_handle')
-            continue
+        prev_monitor_id = _monitor_id
 
         # _monitor_id = 0
         # min_dist = np.inf

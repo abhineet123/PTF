@@ -336,6 +336,10 @@ if __name__ == '__main__':
             frg_target_positions.append(win_pos[target_id])
             frg_target_win_handles.append(win_handles[target_id])
 
+            print(f'Found window {frg_target_titles[-1]} with '
+                  f'handle {frg_target_win_handles[-1]} and '
+                  f'position: {frg_target_positions[-1]}')
+
         frg_win_id = 0
         frg_target_title = frg_target_titles[frg_win_id]
         frg_target_position = frg_target_positions[frg_win_id]
