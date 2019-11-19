@@ -1,4 +1,5 @@
 import os
+import re
 import cv2
 import math
 import sys, time, random, glob, shutil
@@ -286,10 +287,11 @@ if __name__ == '__main__':
         return monitor_id
 
 
-    frg_target_titles = []
-    frg_target_positions = []
-    frg_target_win_border = []
-    frg_target_win_handles = []
+    frg_titles = []
+    frg_positions = []
+    frg_win_borders = []
+    frg_win_handles = []
+    frg_reversed_pos = []
     DwmGetWindowAttribute = None
 
     if frg_win_titles:
@@ -303,6 +305,9 @@ if __name__ == '__main__':
         except WindowsError:
             pass
 
+
+        def findWholeWord(w):
+            return re.compile(r'\b({0})\b'.format(w), flags=re.IGNORECASE).search
 
         def foreach_window(hwnd, lParam):
             rect = win32gui.GetWindowRect(hwnd)
@@ -348,33 +353,49 @@ if __name__ == '__main__':
         #     print(titles[i])
 
         for frg_win_title in frg_win_titles:
+            _reversed_pos = reversed_pos
+            if frg_win_title.startswith('!!!'):
+                frg_win_title = frg_win_title.lstrip('!')
+                _reversed_pos = 2
+            elif frg_win_title.startswith('!!'):
+                frg_win_title = frg_win_title.lstrip('!!')
+                _reversed_pos = 1
+            elif frg_win_title.startswith('!'):
+                frg_win_title = frg_win_title.lstrip('!')
+                _reversed_pos = 0
+            # target_id = [i for i, k in enumerate(titles) if frg_win_title in k[1]]
+            # target_id = [i for i, k in enumerate(titles) if
+            #              k[1].startswith(frg_win_title) or findWholeWord(frg_win_title)(k[1])]
+
             target_id = [i for i, k in enumerate(titles) if k[1].startswith(frg_win_title)]
 
             # target_title = [k[1] for k in titles if k[1].startswith(frg_win_titles)]
             # target_pos = [k[1] for k in win_pos if k[1].startswith(frg_win_titles)]
 
             if not target_id:
-                target_id = [i for i, k in enumerate(titles) if frg_win_title in k[1]]
-                if not target_id:
-                    raise IOError('Window with frg_win_titles {} not found'.format(frg_win_title))
+                target_id = [i for i, k in enumerate(titles) if f' {frg_win_title} ' in f' {k[1]} ']
 
-            target_id = target_id[0]
+            if not target_id:
+                raise IOError('Window with frg_win_titles {} not found'.format(frg_win_title))
 
-            frg_target_titles.append(titles[target_id][1])
-            frg_target_positions.append(win_pos[target_id])
-            frg_target_win_border.append(win_border[target_id])
-            frg_target_win_handles.append(win_handles[target_id])
+            for _target_id in target_id:
+                frg_titles.append(titles[_target_id][1])
+                frg_positions.append(win_pos[_target_id])
+                frg_win_borders.append(win_border[_target_id])
+                frg_win_handles.append(win_handles[_target_id])
+                frg_reversed_pos.append(_reversed_pos)
 
-            print(f'Found window {frg_target_titles[-1]} with '
-                  f'handle {frg_target_win_handles[-1]} and '
-                  f'position: {frg_target_positions[-1]} '
-                  f'border: {frg_target_win_border[-1]}'
-                  )
+                print(f'{frg_win_title} :: found window {frg_titles[-1]} with '
+                      f'handle {frg_win_handles[-1]} and '
+                      f'position: {frg_positions[-1]} '
+                      f'border: {frg_win_borders[-1]}'
+                      f'reversed_pos: {frg_reversed_pos[-1]}'
+                      )
 
         frg_win_id = 0
-        frg_target_title = frg_target_titles[frg_win_id]
-        frg_target_position = frg_target_positions[frg_win_id]
-        frg_target_win_handle = frg_target_win_handles[frg_win_id]
+        frg_target_title = frg_titles[frg_win_id]
+        frg_target_position = frg_positions[frg_win_id]
+        frg_target_win_handle = frg_win_handles[frg_win_id]
 
         print('Using window: {} at {} as foreground'.format(frg_target_title, frg_target_position))
 
@@ -787,7 +808,7 @@ if __name__ == '__main__':
                     #                     width, height, _win_name)
 
             if frg_win_titles:
-                cv2.moveWindow(_win_name, frg_target_positions[frg_win_id][0], frg_target_positions[frg_win_id][1])
+                cv2.moveWindow(_win_name, frg_positions[frg_win_id][0], frg_positions[frg_win_id][1])
             else:
                 cv2.moveWindow(_win_name, win_offset_x + monitors[monitor_id][0],
                                win_offset_y + monitors[monitor_id][1])
@@ -804,7 +825,7 @@ if __name__ == '__main__':
                 winUtils.hideBorder2(_win_name, on_top)
                 # winUtils.loseFocus(_win_name)
             if frg_win_titles:
-                cv2.moveWindow(_win_name, frg_target_positions[frg_win_id][0], frg_target_positions[frg_win_id][1])
+                cv2.moveWindow(_win_name, frg_positions[frg_win_id][0], frg_positions[frg_win_id][1])
             else:
                 if widescreen_mode:
                     cv2.moveWindow(_win_name, win_offset_x + widescreen_monitor[0],
@@ -1894,9 +1915,9 @@ if __name__ == '__main__':
     #     }
 
     def moveWindow(_monitor_id, _win_name, _reversed_pos):
-        global frg_target_positions
+        global frg_positions
         if frg_win_titles:
-            cv2.moveWindow(_win_name, frg_target_positions[frg_win_id][0], frg_target_positions[frg_win_id][1])
+            cv2.moveWindow(_win_name, frg_positions[frg_win_id][0], frg_positions[frg_win_id][1])
             return
 
         if mode == 0:
@@ -2048,7 +2069,7 @@ if __name__ == '__main__':
                                          args=(sft_active_monitor_id, sft_active_win_handle, sft_exit_program,
                                                second_from_top, monitors, win_name,
                                                dup_win_names, monitor_id, dup_monitor_ids,
-                                               duplicate_window, only__maximized, frg_target_win_handles))
+                                               duplicate_window, only__maximized, frg_win_handles))
 
         # second_from_top_thread = threading.Thread(target=second_from_top_fn)
         # second_from_top_thread = MyTask()
@@ -2129,28 +2150,32 @@ if __name__ == '__main__':
             dst_img = dst_img[win_start_row:win_end_row, win_start_col:win_end_col, :]
 
             if frg_win_titles and not first_img:
-                hwnd = frg_target_win_handles[frg_win_id]
-                rect = win32gui.GetWindowRect(hwnd)
+                hwnd = frg_win_handles[frg_win_id]
+                try:
+                    rect = win32gui.GetWindowRect(hwnd)
+                except:
+                    pass
+                else:
+                    if DwmGetWindowAttribute:
+                        ext_rect = ctypes.wintypes.RECT()
+                        DWMWA_EXTENDED_FRAME_BOUNDS = 9
+                        DwmGetWindowAttribute(
+                            ctypes.wintypes.HWND(hwnd),
+                            ctypes.wintypes.DWORD(DWMWA_EXTENDED_FRAME_BOUNDS),
+                            ctypes.byref(ext_rect),
+                            ctypes.sizeof(ext_rect)
+                        )
+                        border = [ext_rect.left - rect[0], ext_rect.top - rect[1],
+                                  rect[2] - ext_rect.right, rect[3] - ext_rect.bottom]
+                        # rect = [rect[0] - border[0], rect[1] - border[1],
+                        #         rect[2] + border[0] + border[2], rect[3] + border[1] + border[3]]
 
-                if DwmGetWindowAttribute:
-                    ext_rect = ctypes.wintypes.RECT()
-                    DWMWA_EXTENDED_FRAME_BOUNDS = 9
-                    DwmGetWindowAttribute(
-                        ctypes.wintypes.HWND(hwnd),
-                        ctypes.wintypes.DWORD(DWMWA_EXTENDED_FRAME_BOUNDS),
-                        ctypes.byref(ext_rect),
-                        ctypes.sizeof(ext_rect)
-                    )
-                    border = [ext_rect.left - rect[0], ext_rect.top - rect[1],
-                              rect[2] - ext_rect.right, rect[3] - ext_rect.bottom]
-                    # rect = [rect[0] - border[0], rect[1] - border[1],
-                    #         rect[2] + border[0] + border[2], rect[3] + border[1] + border[3]]
+                        rect = [rect[0] + border[0], rect[1] + border[1],
+                                rect[2] - border[2], rect[3] - border[3]]
 
-                    rect = [rect[0] + border[0], rect[1] + border[1],
-                            rect[2] - border[2], rect[3] - border[3]]
-
-                frg_target_positions[frg_win_id] = rect
-                x1, y1, x2, y2 = frg_target_positions[frg_win_id]
+                    frg_positions[frg_win_id] = rect
+                x1, y1, x2, y2 = frg_positions[frg_win_id]
+                reversed_pos = frg_reversed_pos[frg_win_id]
                 __w, __h = x2 - x1, y2 - y1
                 dst_img = resizeAR(dst_img, __w, __h, placement_type=reversed_pos)
                 # print('__w: ', __w)
@@ -2508,7 +2533,7 @@ if __name__ == '__main__':
 
                 if frg_win_titles:
                     try:
-                        frg_win_id = frg_target_win_handles.index(_active_win_handle)
+                        frg_win_id = frg_win_handles.index(_active_win_handle)
                     except ValueError:
                         pass
 
@@ -2567,7 +2592,7 @@ if __name__ == '__main__':
 
                 if frg_win_titles:
                     try:
-                        frg_win_id = frg_target_win_handles.index(_active_win_handle)
+                        frg_win_id = frg_win_handles.index(_active_win_handle)
                     except ValueError:
                         pass
 
@@ -2644,7 +2669,7 @@ if __name__ == '__main__':
                                                          sft_active_monitor_id, sft_active_win_handle, sft_exit_program,
                                                          second_from_top, monitors, win_name,
                                                          dup_win_names, monitor_id, dup_monitor_ids,
-                                                         duplicate_window, only__maximized, frg_target_win_handles))
+                                                         duplicate_window, only__maximized, frg_win_handles))
                     second_from_top_thread.start()
                     # mouse.on_click(second_from_top_callback, args=())
                     # mouse.unhook(second_from_top_callback)
