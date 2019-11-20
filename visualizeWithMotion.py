@@ -309,6 +309,7 @@ if __name__ == '__main__':
         def findWholeWord(w):
             return re.compile(r'\b({0})\b'.format(w), flags=re.IGNORECASE).search
 
+
         def foreach_window(hwnd, lParam):
             rect = win32gui.GetWindowRect(hwnd)
             # x = rect[0]
@@ -627,18 +628,39 @@ if __name__ == '__main__':
                              if os.path.isdir(os.path.join(root_dir, k)) and k != src_dir_name]
 
         # Process optional counts
+        _numerators = []
+        _denominators = []
         _src_dirs = []
+        _samples = []
         for _id, src_dir in enumerate(src_dirs):
-            _count = 1
+            _numerator = _denominator = _sample = 1
+            if '**' in src_dir:
+                _src_dir, _sample = src_dir.split('**')
+                src_dir = _src_dir
+                _sample =  int(_sample)
+
             if '*' in src_dir:
                 _src_dir, _count = src_dir.split('*')
-                _count = int(_count)
                 src_dir = _src_dir
+                _numerator =  int(_count)
+            elif '//' in src_dir:
+                _src_dir, _count = src_dir.split('//')
+                _denominator = int(_count)
+                src_dir = _src_dir
+            # if _count > 1:
+            #     _src_dirs += [src_dir, ] * _count
+            # else:
+            _numerators.append(_numerator)
+            _denominators.append(_denominator)
+            _samples.append(_sample)
 
-            if _count > 1:
-                _src_dirs += [src_dir, ] * _count
-            else:
-                _src_dirs.append(src_dir)
+            print(f'{src_dir} : {_numerator} / {_denominator}, {_sample}')
+
+            _src_dirs.append(src_dir)
+
+        lcm = np.lcm.reduce(_denominators)
+        _counts = [int(_numerator * lcm / _denominator) for _numerator, _denominator in
+                   zip(_numerators, _denominators)]
         src_dirs = _src_dirs
 
         if multi_mode or video_mode:
@@ -655,6 +677,8 @@ if __name__ == '__main__':
             else:
                 excluded = 0
 
+            # print(f'{src_dir} : count: { _counts[_id]}')
+
             if recursive:
                 src_file_gen = [[os.path.join(dirpath, f) for f in filenames if
                                  os.path.splitext(f.lower())[1] in img_exts]
@@ -670,12 +694,18 @@ if __name__ == '__main__':
                               os.path.splitext(k.lower())[1] in img_exts]
 
             _src_files = [os.path.abspath(k) for k in _src_files]
+
             _n_src_files = len(_src_files)
             if excluded:
-                print('Excluding {} images from: {}'.format(_n_src_files, src_dir))
+                print(f'Excluding {_n_src_files} images from: {src_dir}')
                 excluded_src_files += _src_files
             else:
-                print('Adding {} images from: {}'.format(_n_src_files, src_dir))
+                if excluded_src_files:
+                    _src_files = [k for k in _src_files if k not in excluded_src_files]
+                    _n_src_files = len(_src_files)
+                print(f'Adding {_n_src_files} images from: {src_dir} '
+                      f'with sample: {_samples[_id]} and multiplicity {_counts[_id]} '
+                      f'for total: {int(_n_src_files*_counts[_id]/_samples[_id])}')
                 src_files[_id] = _src_files
 
             # src_file_list = [list(x) for x in src_file_list]
@@ -690,8 +720,11 @@ if __name__ == '__main__':
             #     print('dirnames', dirnames)
             #     print()
         for _id in src_files:
-            if excluded_src_files:
-                src_files[_id] = [k for k in src_files[_id] if k not in excluded_src_files]
+            # if excluded_src_files:
+            #     src_files[_id] = [k for k in src_files[_id] if k not in excluded_src_files]
+
+            if _samples[_id] > 1:
+                src_files[_id] = src_files[_id][::_samples[_id]]
 
             total_frames[_id] = len(src_files[_id])
             try:
@@ -701,8 +734,8 @@ if __name__ == '__main__':
                 src_files[_id].sort()
 
             if not multi_mode and _id > 0:
-                total_frames[0] += total_frames[_id]
-                src_files[0] += src_files[_id]
+                total_frames[0] += total_frames[_id] * _counts[_id]
+                src_files[0] += src_files[_id] * _counts[_id]
 
             if random_mode:
                 src_files_rand[_id] = list(np.random.permutation(src_files[_id]))
@@ -729,6 +762,9 @@ if __name__ == '__main__':
         if video_mode:
             video_files_list += src_files[0]
             n_videos = len(video_files_list)
+
+    if not multi_mode:
+        print(f'total_frames: {total_frames[0]}')
 
     if video_mode:
         loadVideo(0)
