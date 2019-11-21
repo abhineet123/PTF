@@ -1,7 +1,10 @@
 import cv2
 import sys
-import os, shutil
+import functools
+import os
+import shutil
 from skimage import measure
+from skimage import feature
 
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -75,7 +78,7 @@ def main():
         'src_path': '.',
         'save_path': '',
         'img_ext': 'jpg',
-        'show_img': 0,
+        'show_img': 1,
         'del_src': 0,
         'start_id': 0,
         'n_frames': 0,
@@ -90,8 +93,8 @@ def main():
         'labels_col': 'red',
         'reverse': 0,
         'sub_seq_start_id': 4,
-        'metric': 2,
-        'thresh': 0.5,
+        'metric': 4,
+        'thresh': -1,
     }
 
     processArguments(sys.argv[1:], params)
@@ -127,6 +130,9 @@ def main():
     elif metric == 3:
         sim_func = measure.compare_psnr
         metric_type = 'PSNR'
+    elif metric == 4:
+        sim_func = functools.partial(cv2.matchTemplate, method=cv2.TM_CCORR_NORMED)
+        metric_type = 'NCC'
 
     metric_type_ratio = f'{metric_type} Ratio'
 
@@ -187,9 +193,10 @@ def main():
         sim_ratio_list = []
         prev_sim = None
         sub_seq_id = sub_seq_start_id
-        dst_path = os.path.join(src_path, f'{sub_seq_id}')
-        if not os.path.isdir(dst_path):
-            os.makedirs(dst_path)
+        if thresh >= 0:
+            dst_path = os.path.join(src_path, f'{sub_seq_id}')
+            if not os.path.isdir(dst_path):
+                os.makedirs(dst_path)
 
         while True:
             filename = src_files[frame_id]
@@ -205,13 +212,6 @@ def main():
                 s_ratio = (sim + 1) / (prev_sim + 1)
             else:
                 s_ratio = 1
-
-            if sim > thresh:
-                sub_seq_id += 1
-                print(f'sub_seq_id: {sub_seq_id} with sim: {sim}')
-                dst_path = os.path.join(src_path, f'{sub_seq_id}')
-                if not os.path.isdir(dst_path):
-                    os.makedirs(dst_path)
 
             sim_list.append(sim)
             sim_ratio_list.append(s_ratio)
@@ -237,8 +237,15 @@ def main():
                 elif k == 32:
                     pause_after_frame = 1 - pause_after_frame
 
-            dst_file_path = os.path.join(dst_path, filename)
-            shutil.move(file_path, dst_file_path)
+            if thresh >= 0:
+                if sim > thresh:
+                    sub_seq_id += 1
+                    print(f'sub_seq_id: {sub_seq_id} with sim: {sim}')
+                    dst_path = os.path.join(src_path, f'{sub_seq_id}')
+                    if not os.path.isdir(dst_path):
+                        os.makedirs(dst_path)
+                dst_file_path = os.path.join(dst_path, filename)
+                shutil.move(file_path, dst_file_path)
 
             frame_id += 1
             sys.stdout.write('\rDone {:d} frames '.format(frame_id - start_id))
