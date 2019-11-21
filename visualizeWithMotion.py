@@ -377,7 +377,7 @@ if __name__ == '__main__':
                 target_id = [i for i, k in enumerate(titles) if f' {frg_win_title} ' in f' {k[1]} ']
 
             if not target_id:
-                raise IOError('Window with frg_win_titles {} not found'.format(frg_win_title))
+                print(f'\nWindow with frg_win_title {frg_win_title} not found\n')
 
             for _target_id in target_id:
                 frg_titles.append(titles[_target_id][1])
