@@ -11,7 +11,6 @@ import numpy as np
 from Misc import processArguments, sortKey, resizeAR, col_rgb
 
 
-
 def getPlotImage(data_x, data_y, cols, title, line_labels, x_label, y_label, ylim=None, legend=1):
     cols = [(col[0] / 255.0, col[1] / 255.0, col[2] / 255.0) for col in cols]
 
@@ -70,12 +69,13 @@ def getPlotImage(data_x, data_y, cols, title, line_labels, x_label, y_label, yli
 
     return plot_img
 
+
 def main():
     params = {
         'src_path': '.',
         'save_path': '',
         'img_ext': 'jpg',
-        'show_img': 1,
+        'show_img': 0,
         'del_src': 0,
         'start_id': 0,
         'n_frames': 0,
@@ -89,6 +89,9 @@ def main():
         'out_postfix': '',
         'labels_col': 'red',
         'reverse': 0,
+        'sub_seq_start_id': 4,
+        'metric': 2,
+        'thresh': 0.5,
     }
 
     processArguments(sys.argv[1:], params)
@@ -107,9 +110,25 @@ def main():
     out_postfix = params['out_postfix']
     reverse = params['reverse']
     labels_col = params['labels_col']
+    metric = params['metric']
+    thresh = params['thresh']
+    sub_seq_start_id = params['sub_seq_start_id']
     img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
 
+    if metric == 0:
+        sim_func = measure.compare_mse
+        metric_type = 'MSE'
+    elif metric == 1:
+        sim_func = measure.compare_ssim
+        metric_type = 'SSIM'
+    elif metric == 2:
+        sim_func = measure.compare_nrmse
+        metric_type = 'NRMSE'
+    elif metric == 3:
+        sim_func = measure.compare_psnr
+        metric_type = 'PSNR'
 
+    metric_type_ratio = f'{metric_type} Ratio'
 
     if os.path.isdir(_src_path):
         src_files = [k for k in os.listdir(_src_path) for _ext in img_exts if k.endswith(_ext)]
@@ -155,30 +174,6 @@ def main():
             src_files += src_files[::-1]
             n_src_files *= 2
 
-        width, height = _width, _height
-
-        if not save_path:
-            save_fname = '{}_{}'.format(os.path.basename(src_path), fps)
-
-            if height > 0 and width > 0:
-                save_fname = '{}_{}x{}'.format(save_fname, width, height)
-
-            if out_postfix:
-                save_fname = '{}_{}'.format(save_fname, out_postfix)
-
-            if reverse:
-                save_fname = '{}_r{}'.format(save_fname, reverse)
-
-            save_path = os.path.join(os.path.dirname(src_path), '{}.{}'.format(save_fname, ext))
-
-        save_dir = os.path.dirname(save_path)
-        if save_dir and not os.path.isdir(save_dir):
-            os.makedirs(save_dir)
-
-        if height <= 0 or width <= 0:
-            temp_img = cv2.imread(os.path.join(src_path, src_files[0]))
-            height, width, _ = temp_img.shape
-
         filename = src_files[start_id]
         file_path = os.path.join(src_path, filename)
         assert os.path.exists(file_path), f'Image file {file_path} does not exist'
@@ -189,6 +184,13 @@ def main():
         pause_after_frame = 0
 
         sim_list = []
+        sim_ratio_list = []
+        prev_sim = None
+        sub_seq_id = sub_seq_start_id
+        dst_path = os.path.join(src_path, f'{sub_seq_id}')
+        if not os.path.isdir(dst_path):
+            os.makedirs(dst_path)
+
         while True:
             filename = src_files[frame_id]
             file_path = os.path.join(src_path, filename)
@@ -197,17 +199,37 @@ def main():
             image = cv2.imread(file_path)
             image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-            s = measure.compare_ssim(image, prev_image)
-            sim_list.append(s)
+            sim = sim_func(image, prev_image)
+
+            if prev_sim is not None:
+                s_ratio = (sim + 1) / (prev_sim + 1)
+            else:
+                s_ratio = 1
+
+            if sim > thresh:
+                sub_seq_id += 1
+                print(f'sub_seq_id: {sub_seq_id} with sim: {sim}')
+                dst_path = os.path.join(src_path, f'{sub_seq_id}')
+                if not os.path.isdir(dst_path):
+                    os.makedirs(dst_path)
+
+            sim_list.append(sim)
+            sim_ratio_list.append(s_ratio)
 
             prev_image = image
+            prev_sim = sim
 
             # image = resizeAR(image, width, height)
 
             if show_img:
-                sim_plot = getPlotImage([list(range(start_id, frame_id)),], [sim_list, ], plot_cols, 'SSIM', 'SSIM',
-                                       'frame', 'SSIM')
+                sim_plot = getPlotImage([list(range(start_id, frame_id)), ], [sim_list, ], plot_cols,
+                                        metric_type, metric_type, 'frame', metric_type)
+
+                sim_ratio_plot = getPlotImage([list(range(start_id, frame_id)), ], [sim_ratio_list, ], plot_cols,
+                                              metric_type_ratio, metric_type_ratio, 'frame', metric_type_ratio)
+
                 cv2.imshow('sim_plot', sim_plot)
+                cv2.imshow('sim_ratio_plot', sim_ratio_plot)
                 cv2.imshow(seq_name, image)
                 k = cv2.waitKey(1 - pause_after_frame) & 0xFF
                 if k == ord('q') or k == 27:
@@ -215,6 +237,8 @@ def main():
                 elif k == 32:
                     pause_after_frame = 1 - pause_after_frame
 
+            dst_file_path = os.path.join(dst_path, filename)
+            shutil.move(file_path, dst_file_path)
 
             frame_id += 1
             sys.stdout.write('\rDone {:d} frames '.format(frame_id - start_id))
@@ -237,6 +261,7 @@ def main():
             shutil.rmtree(src_path)
 
         save_path = ''
+
 
 if __name__ == '__main__':
     main()
