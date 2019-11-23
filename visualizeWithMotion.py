@@ -167,7 +167,9 @@ params = {
     'reverse_video': 1,
     'images_as_video': 0,
     'frg_win_titles': [],
-    'only__maximized': 1,
+    'only_maximized': 1,
+    'video_mode': 0,
+    'fps': 30,
 }
 
 if __name__ == '__main__':
@@ -195,6 +197,7 @@ if __name__ == '__main__':
     auto_progress_video = params['auto_progress_video']
     max_switches = params['max_switches']
     transition_interval = params['transition_interval']
+    fps = params['fps']
     random_mode = params['random_mode']
     recursive = params['recursive']
     fullscreen = params['fullscreen']
@@ -227,7 +230,8 @@ if __name__ == '__main__':
     reverse_video = params['reverse_video']
     images_as_video = params['images_as_video']
     frg_win_titles = params['frg_win_titles']
-    only__maximized = params['only__maximized']
+    only_maximized = params['only_maximized']
+    video_mode = params['video_mode']
 
     if wallpaper_mode and not set_wallpaper:
         set_wallpaper = 1
@@ -503,7 +507,7 @@ if __name__ == '__main__':
 
     video_files_list = []
     n_videos = vid_id = 0
-    video_mode = 0
+    # video_mode = 0
     rotate_images = 0
     src_path = os.path.abspath(src_path)
 
@@ -534,32 +538,38 @@ if __name__ == '__main__':
     def loadVideo(_load_id):
         global src_files, total_frames, img_id
 
-        print('Reading frames from video file {}'.format(src_path))
-        _ext = os.path.splitext(src_path)[1]
-
-        _src_files = []
-
-        if _ext == '.gif':
-            gif = imageio.mimread(src_path)
-            meta_data = [img.meta for img in gif]
-            print('gif meta_data: {}'.format(pformat(meta_data)))
-            _src_files = [cv2.cvtColor(img, cv2.COLOR_RGB2BGR) if img.shape[2] == 3
-                          else cv2.cvtColor(img, cv2.COLOR_RGBA2BGR)
-                          for img in gif]
-        elif _ext in img_exts:
-            _src_files = [cv2.imread(src_path), ]
+        if os.path.isdir(src_path):
+            print('Loading frames from video image sequence {}'.format(src_path))
+            _src_files = [os.path.join(src_path, k) for k in os.listdir(src_path) if
+                          os.path.splitext(k.lower())[1] in img_exts]
         else:
-            cap = cv2.VideoCapture()
-            if not cap.open(src_path):
-                raise IOError('The video file ' + src_path + ' could not be opened')
-            while True:
-                ret, src_img = cap.read()
-                if not ret:
-                    break
-                _src_files.append(src_img)
-                # total_frames += 1
+            print('Reading frames from video file {}'.format(src_path))
+            _ext = os.path.splitext(src_path)[1]
+
+            _src_files = []
+
+            if _ext == '.gif':
+                gif = imageio.mimread(src_path)
+                meta_data = [img.meta for img in gif]
+                print('gif meta_data: {}'.format(pformat(meta_data)))
+                _src_files = [cv2.cvtColor(img, cv2.COLOR_RGB2BGR) if img.shape[2] == 3
+                              else cv2.cvtColor(img, cv2.COLOR_RGBA2BGR)
+                              for img in gif]
+            elif _ext in img_exts:
+                _src_files = [cv2.imread(src_path), ]
+            else:
+                cap = cv2.VideoCapture()
+                if not cap.open(src_path):
+                    raise IOError('The video file ' + src_path + ' could not be opened')
+                while True:
+                    ret, src_img = cap.read()
+                    if not ret:
+                        break
+                    _src_files.append(src_img)
+                    # total_frames += 1
 
         total_frames[_load_id] = len(_src_files)
+        print('Found {} frames'.format(total_frames[_load_id]))
         src_files[_load_id] = _src_files
         img_id[_load_id] = 0
 
@@ -589,44 +599,58 @@ if __name__ == '__main__':
 
     img_sortKey = functools.partial(sortKey, only_basename=0)
 
+    if src_dirs:
+        src_dirs = src_dirs.split(',')
+        inc_src_dirs = [k for k in src_dirs if k[0] != '!']
+        exc_src_dirs = [k for k in src_dirs if k[0] == '!']
+
+        if src_root_dir:
+            inc_src_dirs = [os.path.join(src_root_dir, k) for k in inc_src_dirs]
+            exc_src_dirs = [os.path.join('!' + src_root_dir, k[1:]) for k in exc_src_dirs]
+
+        src_dirs = inc_src_dirs + exc_src_dirs
+    else:
+        src_dirs = [src_dir, ]
+        if multi_mode:
+            root_dir = os.path.dirname(src_dir)
+            src_dir_name = os.path.basename(src_dir)
+            src_dirs += [os.path.join(root_dir, k) for k in os.listdir(root_dir)
+                         if os.path.isdir(os.path.join(root_dir, k)) and k != src_dir_name]
+
     if video_mode:
-        if recursive:
-            video_file_gen = [[os.path.join(dirpath, f) for f in filenames if
-                               os.path.splitext(f.lower())[1] in vid_exts]
-                              for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
-            video_files_list = [item for sublist in video_file_gen for item in sublist]
-        else:
-            video_files_list = [os.path.join(src_dir, k) for k in os.listdir(src_dir) if
-                                os.path.splitext(k.lower())[1] in vid_exts]
+        video_files_list = []
+        for _id, src_dir in enumerate(src_dirs):
+            if video_mode == 2:
+                video_file_gen = [[os.path.join(dirpath, d) for d in dirnames if
+                                   any([os.path.splitext(f.lower())[1] in img_exts
+                                        for f in os.listdir(os.path.join(dirpath, d))])]
+                                  for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
+                video_files_list += [item for sublist in video_file_gen for item in sublist]
+            else:
+                if recursive:
+                    video_file_gen = [[os.path.join(dirpath, f) for f in filenames if
+                                       os.path.splitext(f.lower())[1] in vid_exts]
+                                      for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
+                    video_files_list += [item for sublist in video_file_gen for item in sublist]
+                else:
+                    video_files_list += [os.path.join(src_dir, k) for k in os.listdir(src_dir) if
+                                         os.path.splitext(k.lower())[1] in vid_exts]
         try:
             video_files_list.sort(key=sortKey)
         except:
             video_files_list.sort()
 
-        vid_id = video_files_list.index(src_path)
+        try:
+            vid_id = video_files_list.index(src_path)
+        except ValueError:
+            vid_id = 0
+            src_path = video_files_list[0]
+
         n_videos = len(video_files_list)
         if n_videos > 1:
             print('Found {} videos in {}'.format(n_videos, src_dir))
 
     if not video_mode or images_as_video:
-        if src_dirs:
-            src_dirs = src_dirs.split(',')
-            inc_src_dirs = [k for k in src_dirs if k[0] != '!']
-            exc_src_dirs = [k for k in src_dirs if k[0] == '!']
-
-            if src_root_dir:
-                inc_src_dirs = [os.path.join(src_root_dir, k) for k in inc_src_dirs]
-                exc_src_dirs = [os.path.join('!' + src_root_dir, k[1:]) for k in exc_src_dirs]
-
-            src_dirs = inc_src_dirs + exc_src_dirs
-        else:
-            src_dirs = [src_dir, ]
-            if multi_mode:
-                root_dir = os.path.dirname(src_dir)
-                src_dir_name = os.path.basename(src_dir)
-                src_dirs += [os.path.join(root_dir, k) for k in os.listdir(root_dir)
-                             if os.path.isdir(os.path.join(root_dir, k)) and k != src_dir_name]
-
         # Process optional counts
         _numerators = []
         _denominators = []
@@ -637,12 +661,12 @@ if __name__ == '__main__':
             if '**' in src_dir:
                 _src_dir, _sample = src_dir.split('**')
                 src_dir = _src_dir
-                _sample =  int(_sample)
+                _sample = int(_sample)
 
             if '*' in src_dir:
                 _src_dir, _count = src_dir.split('*')
                 src_dir = _src_dir
-                _numerator =  int(_count)
+                _numerator = int(_count)
             elif '//' in src_dir:
                 _src_dir, _count = src_dir.split('//')
                 _denominator = int(_count)
@@ -705,7 +729,7 @@ if __name__ == '__main__':
                     _n_src_files = len(_src_files)
                 print(f'Adding {_n_src_files} images from: {src_dir} '
                       f'with sample: {_samples[_id]} and multiplicity {_counts[_id]} '
-                      f'for total: {int(_n_src_files*_counts[_id]/_samples[_id])}')
+                      f'for total: {int(_n_src_files * _counts[_id] / _samples[_id])}')
                 src_files[_id] = _src_files
 
             # src_file_list = [list(x) for x in src_file_list]
@@ -768,7 +792,7 @@ if __name__ == '__main__':
 
     if video_mode:
         loadVideo(0)
-        transition_interval = 30
+        transition_interval = int(1000.0 / fps)
         total_frames = {
             0: total_frames[0]
         }
@@ -999,7 +1023,7 @@ if __name__ == '__main__':
                         if video_mode and reverse_video:
                             src_files[_load_id] = list(reversed(src_files[_load_id]))
                         _img_id -= _total_frames
-                        if auto_progress and random_mode:
+                        if not video_mode and auto_progress and random_mode:
                             print('Resetting randomisation')
                             src_files_rand[src_id] = list(np.random.permutation(src_files[src_id]))
                 elif _img_id < 0:
@@ -1007,6 +1031,8 @@ if __name__ == '__main__':
 
                 if video_mode:
                     img_fname = src_files[_load_id][_img_id]
+                    if isinstance(img_fname, str):
+                        img_fname = cv2.imread(img_fname)
                     if rotate_images:
                         src_img = np.rot90(img_fname, rotate_images)
                     else:
@@ -2105,7 +2131,7 @@ if __name__ == '__main__':
                                          args=(sft_active_monitor_id, sft_active_win_handle, sft_exit_program,
                                                second_from_top, monitors, win_name,
                                                dup_win_names, monitor_id, dup_monitor_ids,
-                                               duplicate_window, only__maximized, frg_win_handles))
+                                               duplicate_window, only_maximized, frg_win_handles))
 
         # second_from_top_thread = threading.Thread(target=second_from_top_fn)
         # second_from_top_thread = MyTask()
@@ -2705,7 +2731,7 @@ if __name__ == '__main__':
                                                          sft_active_monitor_id, sft_active_win_handle, sft_exit_program,
                                                          second_from_top, monitors, win_name,
                                                          dup_win_names, monitor_id, dup_monitor_ids,
-                                                         duplicate_window, only__maximized, frg_win_handles))
+                                                         duplicate_window, only_maximized, frg_win_handles))
                     second_from_top_thread.start()
                     # mouse.on_click(second_from_top_callback, args=())
                     # mouse.unhook(second_from_top_callback)

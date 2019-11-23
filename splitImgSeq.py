@@ -356,6 +356,10 @@ def main():
             cv2.createTrackbar('threshold', 'scatter_plot', thresh, 1000, update_thresh)
 
         k = cv2.waitKey(0) & 0xFF
+
+        if show_img:
+            cv2.destroyAllWindows()
+
         if k == 27:
             break
 
@@ -380,8 +384,7 @@ def main():
 
             start_id = end_id
 
-        if show_img:
-            cv2.destroyAllWindows()
+
 
 
 if __name__ == '__main__':
