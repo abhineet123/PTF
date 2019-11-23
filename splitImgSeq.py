@@ -10,11 +10,13 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.signal import argrelextrema
 
 from Misc import processArguments, sortKey, resizeAR, col_rgb
 
 
-def getPlotImage(data_x, data_y, cols, title, line_labels, x_label, y_label, ylim=None, legend=1):
+def getPlotImage(data_x, data_y, cols, title, line_labels, x_label, y_label,
+                 scatter=None, ylim=None, legend=0):
     cols = [(col[0] / 255.0, col[1] / 255.0, col[2] / 255.0) for col in cols]
 
     fig = Figure(
@@ -47,6 +49,10 @@ def getPlotImage(data_x, data_y, cols, title, line_labels, x_label, y_label, yli
         datum_y = np.asarray(datum_y).squeeze()
 
         ax.plot(data_x, datum_y, **args)
+
+    if scatter is not None:
+        ax.scatter(scatter, datum_y[scatter], s=20, c='r')
+
     plt.rcParams['axes.titlesize'] = 10
     # fontdict = {'fontsize': plt.rcParams['axes.titlesize'],
     #             'fontweight': plt.rcParams['axes.titleweight'],
@@ -73,6 +79,28 @@ def getPlotImage(data_x, data_y, cols, title, line_labels, x_label, y_label, yli
     return plot_img
 
 
+def optical_flow_lk_fb(prev_gray, gray):
+    feature_params = dict(maxCorners=300, qualityLevel=0.2, minDistance=2, blockSize=7)
+
+    lk_params = dict(winSize=(15, 15), maxLevel=2, criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
+
+    prev = cv2.goodFeaturesToTrack(prev_gray, mask=None, **feature_params)
+    next, status, error = cv2.calcOpticalFlowPyrLK(prev_gray, gray, prev, None, **lk_params)
+    prev_fb, status, error = cv2.calcOpticalFlowPyrLK(gray, prev_gray, next, None, **lk_params)
+
+    fb_error = np.linalg.norm((next - prev_fb).flatten())
+
+    return fb_error
+
+
+def optical_flow_farneback_fb(prev_gray, gray):
+    flow_fw = cv2.calcOpticalFlowFarneback(prev_gray, gray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+    flow_bw = cv2.calcOpticalFlowFarneback(gray, prev_gray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+
+    fb_error = np.linalg.norm((flow_fw + flow_bw).flatten())
+    return fb_error
+
+
 def main():
     params = {
         'src_path': '.',
@@ -93,8 +121,9 @@ def main():
         'labels_col': 'red',
         'reverse': 0,
         'sub_seq_start_id': 4,
-        'metric': 4,
+        'metric': 5,
         'thresh': -1,
+        'order': 5,
     }
 
     processArguments(sys.argv[1:], params)
@@ -115,24 +144,42 @@ def main():
     labels_col = params['labels_col']
     metric = params['metric']
     thresh = params['thresh']
+    order = params['order']
     sub_seq_start_id = params['sub_seq_start_id']
-    img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
 
+    img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
+    min_thresh = 0
     if metric == 0:
         sim_func = measure.compare_mse
         metric_type = 'MSE'
+        cmp_type = np.greater
+        max_thresh = 10000
     elif metric == 1:
         sim_func = measure.compare_ssim
         metric_type = 'SSIM'
+        cmp_type = np.less
+        max_thresh = 1
     elif metric == 2:
         sim_func = measure.compare_nrmse
         metric_type = 'NRMSE'
+        cmp_type = np.greater
     elif metric == 3:
         sim_func = measure.compare_psnr
         metric_type = 'PSNR'
+        cmp_type = np.less
     elif metric == 4:
         sim_func = functools.partial(cv2.matchTemplate, method=cv2.TM_CCORR_NORMED)
         metric_type = 'NCC'
+        cmp_type = np.less
+        max_thresh = 1
+    elif metric == 5:
+        sim_func = optical_flow_lk_fb
+        metric_type = 'LK'
+        cmp_type = np.greater
+    elif metric == 6:
+        sim_func = optical_flow_farneback_fb
+        metric_type = 'Farneback'
+        cmp_type = np.greater
 
     metric_type_ratio = f'{metric_type} Ratio'
 
@@ -192,11 +239,11 @@ def main():
         sim_list = []
         sim_ratio_list = []
         prev_sim = None
-        sub_seq_id = sub_seq_start_id
-        if thresh >= 0:
-            dst_path = os.path.join(src_path, f'{sub_seq_id}')
-            if not os.path.isdir(dst_path):
-                os.makedirs(dst_path)
+        # sub_seq_id = sub_seq_start_id
+        # if thresh >= 0:
+        #     dst_path = os.path.join(src_path, f'{sub_seq_id}')
+        #     if not os.path.isdir(dst_path):
+        #         os.makedirs(dst_path)
 
         while True:
             filename = src_files[frame_id]
@@ -223,10 +270,10 @@ def main():
 
             if show_img:
                 sim_plot = getPlotImage([list(range(start_id, frame_id)), ], [sim_list, ], plot_cols,
-                                        metric_type, metric_type, 'frame', metric_type)
+                                        metric_type, [metric_type, ], 'frame', metric_type)
 
                 sim_ratio_plot = getPlotImage([list(range(start_id, frame_id)), ], [sim_ratio_list, ], plot_cols,
-                                              metric_type_ratio, metric_type_ratio, 'frame', metric_type_ratio)
+                                              metric_type_ratio, [metric_type_ratio, ], 'frame', metric_type_ratio)
 
                 cv2.imshow('sim_plot', sim_plot)
                 cv2.imshow('sim_ratio_plot', sim_ratio_plot)
@@ -237,15 +284,15 @@ def main():
                 elif k == 32:
                     pause_after_frame = 1 - pause_after_frame
 
-            if thresh >= 0:
-                if sim > thresh:
-                    sub_seq_id += 1
-                    print(f'sub_seq_id: {sub_seq_id} with sim: {sim}')
-                    dst_path = os.path.join(src_path, f'{sub_seq_id}')
-                    if not os.path.isdir(dst_path):
-                        os.makedirs(dst_path)
-                dst_file_path = os.path.join(dst_path, filename)
-                shutil.move(file_path, dst_file_path)
+            # if thresh >= 0:
+            #     if cmp_type(sim, thresh):
+            #         sub_seq_id += 1
+            #         print(f'sub_seq_id: {sub_seq_id} with sim: {sim}')
+            #         dst_path = os.path.join(src_path, f'{sub_seq_id}')
+            #         if not os.path.isdir(dst_path):
+            #             os.makedirs(dst_path)
+            #     dst_file_path = os.path.join(dst_path, filename)
+            #     shutil.move(file_path, dst_file_path)
 
             frame_id += 1
             sys.stdout.write('\rDone {:d} frames '.format(frame_id - start_id))
@@ -260,14 +307,81 @@ def main():
         sys.stdout.write('\n\n')
         sys.stdout.flush()
 
+        sim_list = np.asarray(sim_list).squeeze()
+        sim_ratio_list = np.asarray(sim_ratio_list).squeeze()
+
+        split_indices = []
+
+        if thresh < 0:
+            if thresh == -1:
+                _data = sim_list
+                # c_max_index = argrelextrema(sim_list, cmp_type, order=order)
+                # plt.plot(sim_list)
+                # plt.scatter(c_max_index[0], sim_list[c_max_index[0]], linewidth=0.3, s=50, c='r')
+                # plt.show()
+            elif thresh == -2:
+                _data = sim_ratio_list
+                # plt.plot(sim_ratio_list)
+                # plt.scatter(c_max_index[0], sim_ratio_list[c_max_index[0]], linewidth=0.3, s=50, c='r')
+                # plt.show()
+
+            def update_order(_order):
+                nonlocal order, split_indices
+                order = _order
+                split_indices = argrelextrema(_data, cmp_type, order=order)[0]
+                scatter_plot = getPlotImage([list(range(len(_data))), ], [_data, ], plot_cols,
+                                            metric_type, [metric_type, ], 'frame', metric_type,
+                                            scatter=split_indices)
+                cv2.imshow('scatter_plot', scatter_plot)
+
+            update_order(order)
+            cv2.createTrackbar('order', 'scatter_plot', order, 100, update_order)
+        else:
+            if thresh == 0:
+                _data = sim_list
+            else:
+                _data = sim_ratio_list
+            max_thresh = np.max(_data)
+
+            def update_thresh(x):
+                nonlocal thresh, split_indices
+                thresh = min_thresh + float(max_thresh) / float(x)
+                split_indices = np.nonzero(cmp_type(sim_list, thresh))
+                scatter_plot = getPlotImage([list(range(len(_data))), ], [_data, ], plot_cols,
+                                            metric_type, [metric_type, ], 'frame', metric_type,
+                                            scatter=split_indices)
+                cv2.imshow('scatter_plot', scatter_plot)
+
+            update_order(order)
+            cv2.createTrackbar('threshold', 'scatter_plot', thresh, 1000, update_thresh)
+
+        k = cv2.waitKey(0) & 0xFF
+        if k == 27:
+            break
+
+        print(f'order: {order}')
+        print(f'thresh: {thresh}')
+
+        split_indices = list(split_indices)
+        n_splits = len(split_indices)
+        print(f'Splitting into {n_splits} sub sequences:\n{split_indices}')
+        start_id = 0
+        for sub_seq_id, end_id in enumerate(split_indices):
+            print(f'sub_seq_id: {sub_seq_id} with sim: {sim_list[end_id]}')
+            dst_path = os.path.join(src_path, f'{sub_seq_id}')
+            if not os.path.isdir(dst_path):
+                os.makedirs(dst_path)
+
+            for i in range(start_id, end_id):
+                filename = src_files[i]
+                src_file_path = os.path.join(src_path, filename)
+                dst_file_path = os.path.join(dst_path, filename)
+                shutil.move(src_file_path, dst_file_path)
+
+            start_id = end_id
+
         if show_img:
-            cv2.destroyWindow(seq_name)
-
-        if del_src:
-            print('Removing source folder {}'.format(src_path))
-            shutil.rmtree(src_path)
-
-        save_path = ''
+            cv2.destroyAllWindows()
 
 
 if __name__ == '__main__':

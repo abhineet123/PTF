@@ -97,6 +97,15 @@ if __name__ == '__main__':
             Form1.type_keys("^s")
             continue
 
+        Form1.type_keys("^t~")
+        Form1.type_keys("^b")
+        Form1.type_keys("^v")
+        Form1.type_keys("^b")
+        if mode == 1:
+            Form1.type_keys("{RIGHT}{VK_SPACE}to{VK_SPACE}%s" % scp_name)
+        Form1.type_keys("~")
+        Form1.type_keys("^s")
+
         dst_full_path = '{}/{}'.format(dst_path, k)
         if mode == 0:
             scp_cmd = "pscp -pw {} {}:{}/{} {}".format(pwd0, scp_dst, scp_path, k, dst_full_path)
@@ -106,14 +115,9 @@ if __name__ == '__main__':
         # print('Running {}'.format(scp_cmd))
         os.system(scp_cmd)
 
-        Form1.type_keys("^t~")
-        Form1.type_keys("^b")
-        Form1.type_keys("^v")
-        Form1.type_keys("^b")
         if mode == 1:
-            Form1.type_keys("{RIGHT}{VK_SPACE}to{VK_SPACE}%s" % scp_name)
             rm_cmd = 'rm {}'.format(dst_full_path)
             # print('Running {}'.format(rm_cmd))
             os.system(rm_cmd)
-        Form1.type_keys("~")
-        Form1.type_keys("^s")
+
+
