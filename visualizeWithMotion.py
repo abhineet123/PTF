@@ -635,10 +635,15 @@ if __name__ == '__main__':
                 else:
                     video_files_list += [os.path.join(src_dir, k) for k in os.listdir(src_dir) if
                                          os.path.splitext(k.lower())[1] in vid_exts]
+
+
         try:
             video_files_list.sort(key=sortKey)
         except:
             video_files_list.sort()
+
+        if random_mode:
+            video_files_list = list(np.random.permutation(video_files_list))
 
         try:
             vid_id = video_files_list.index(src_path)
@@ -954,7 +959,7 @@ if __name__ == '__main__':
 
     def loadImage(_type=0, set_grid_size=0, decrement_id=0):
         global src_img_ar, start_row, end_row, start_col, end_col, dst_height, dst_width, n_switches, img_id, direction
-        global target_height, target_width, min_height, start_col, end_col, height_ratio, img_fname, start_time
+        global target_height, target_width, min_height, start_col, end_col, height_ratio, img_fname, start_time, video_files_list
         global src_start_row, src_start_col, src_end_row, src_end_col, aspect_ratio, src_path, vid_id, \
             src_images, img_fnames, stack_idx, stack_locations, src_img, wp_id, src_files_rand, top_border, bottom_border
 
@@ -990,7 +995,11 @@ if __name__ == '__main__':
 
                 if video_mode:
                     if _load_id not in total_frames:
-                        vid_id = (vid_id + 1) % n_videos
+                        vid_id = vid_id + 1
+                        if vid_id >= n_videos:
+                            print('Resetting randomisation')
+                            video_files_list = list(np.random.permutation(video_files_list))
+                            vid_id = 0
                         src_path = video_files_list[vid_id]
                         loadVideo(_load_id)
                     _total_frames = total_frames[_load_id]
