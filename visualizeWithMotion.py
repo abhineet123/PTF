@@ -542,6 +542,11 @@ if __name__ == '__main__':
             print('Loading frames from video image sequence {}'.format(src_path))
             _src_files = [os.path.join(src_path, k) for k in os.listdir(src_path) if
                           os.path.splitext(k.lower())[1] in img_exts]
+            try:
+                # nums = int(os.path.splitext(img_fname)[0].split('_')[-1])
+                _src_files.sort(key=img_sortKey)
+            except:
+                _src_files.sort()
         else:
             print('Reading frames from video file {}'.format(src_path))
             _ext = os.path.splitext(src_path)[1]
@@ -625,17 +630,22 @@ if __name__ == '__main__':
                                    any([os.path.splitext(f.lower())[1] in img_exts
                                         for f in os.listdir(os.path.join(dirpath, d))])]
                                   for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
-                video_files_list += [item for sublist in video_file_gen for item in sublist]
+                _video_files_list = [item for sublist in video_file_gen for item in sublist]
             else:
                 if recursive:
                     video_file_gen = [[os.path.join(dirpath, f) for f in filenames if
                                        os.path.splitext(f.lower())[1] in vid_exts]
                                       for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
-                    video_files_list += [item for sublist in video_file_gen for item in sublist]
+                    _video_files_list = [item for sublist in video_file_gen for item in sublist]
                 else:
-                    video_files_list += [os.path.join(src_dir, k) for k in os.listdir(src_dir) if
+                    _video_files_list = [os.path.join(src_dir, k) for k in os.listdir(src_dir) if
                                          os.path.splitext(k.lower())[1] in vid_exts]
-
+            n_videos = len(_video_files_list)
+            if n_videos > 1:
+                print(f'Found {n_videos} videos in {src_dir}')
+                video_files_list += _video_files_list
+            else:
+                print(f'Found no videos in {src_dir}')
 
         try:
             video_files_list.sort(key=sortKey)
@@ -653,7 +663,9 @@ if __name__ == '__main__':
 
         n_videos = len(video_files_list)
         if n_videos > 1:
-            print('Found {} videos in {}'.format(n_videos, src_dir))
+            print(f'Found a total of {n_videos} videos')
+        else:
+            print(f'Found no videos')
 
     if not video_mode or images_as_video:
         # Process optional counts

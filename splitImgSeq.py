@@ -152,34 +152,34 @@ def main():
     if metric == 0:
         sim_func = measure.compare_mse
         metric_type = 'MSE'
-        cmp_type = np.greater
+        cmp_func = np.greater
         max_thresh = 10000
     elif metric == 1:
         sim_func = measure.compare_ssim
         metric_type = 'SSIM'
-        cmp_type = np.less
+        cmp_func = np.less
         max_thresh = 1
     elif metric == 2:
         sim_func = measure.compare_nrmse
         metric_type = 'NRMSE'
-        cmp_type = np.greater
+        cmp_func = np.greater
     elif metric == 3:
         sim_func = measure.compare_psnr
         metric_type = 'PSNR'
-        cmp_type = np.less
+        cmp_func = np.less
     elif metric == 4:
         sim_func = functools.partial(cv2.matchTemplate, method=cv2.TM_CCORR_NORMED)
         metric_type = 'NCC'
-        cmp_type = np.less
+        cmp_func = np.less
         max_thresh = 1
     elif metric == 5:
         sim_func = optical_flow_lk_fb
         metric_type = 'LK'
-        cmp_type = np.greater
+        cmp_func = np.greater
     elif metric == 6:
         sim_func = optical_flow_farneback_fb
         metric_type = 'Farneback'
-        cmp_type = np.greater
+        cmp_func = np.greater
 
     metric_type_ratio = f'{metric_type} Ratio'
 
@@ -285,7 +285,7 @@ def main():
                     pause_after_frame = 1 - pause_after_frame
 
             # if thresh >= 0:
-            #     if cmp_type(sim, thresh):
+            #     if cmp_func(sim, thresh):
             #         sub_seq_id += 1
             #         print(f'sub_seq_id: {sub_seq_id} with sim: {sim}')
             #         dst_path = os.path.join(src_path, f'{sub_seq_id}')
@@ -315,7 +315,7 @@ def main():
         if thresh < 0:
             if thresh == -1:
                 _data = sim_list
-                # c_max_index = argrelextrema(sim_list, cmp_type, order=order)
+                # c_max_index = argrelextrema(sim_list, cmp_func, order=order)
                 # plt.plot(sim_list)
                 # plt.scatter(c_max_index[0], sim_list[c_max_index[0]], linewidth=0.3, s=50, c='r')
                 # plt.show()
@@ -328,7 +328,18 @@ def main():
             def update_order(_order):
                 nonlocal order, split_indices
                 order = _order
-                split_indices = argrelextrema(_data, cmp_type, order=order)[0]
+                split_indices = argrelextrema(_data, cmp_func, order=order)[0]
+                split_indices = [k for k in split_indices if _data[k] > thresh]
+                scatter_plot = getPlotImage([list(range(len(_data))), ], [_data, ], plot_cols,
+                                            metric_type, [metric_type, ], 'frame', metric_type,
+                                            scatter=split_indices)
+                cv2.imshow('scatter_plot', scatter_plot)
+
+            def update_thresh(x):
+                nonlocal thresh, split_indices
+                thresh = min_thresh + float(max_thresh - min_thresh) / float(1000)*x
+                split_indices = argrelextrema(_data, cmp_func, order=order)[0]
+                split_indices = [k for k in split_indices if cmp_func(_data[k], thresh)]
                 scatter_plot = getPlotImage([list(range(len(_data))), ], [_data, ], plot_cols,
                                             metric_type, [metric_type, ], 'frame', metric_type,
                                             scatter=split_indices)
@@ -336,6 +347,8 @@ def main():
 
             update_order(order)
             cv2.createTrackbar('order', 'scatter_plot', order, 100, update_order)
+            cv2.createTrackbar('threshold', 'scatter_plot', int(thresh*max_thresh), 1000, update_thresh)
+
         else:
             if thresh == 0:
                 _data = sim_list
@@ -346,7 +359,7 @@ def main():
             def update_thresh(x):
                 nonlocal thresh, split_indices
                 thresh = min_thresh + float(max_thresh) / float(x)
-                split_indices = np.nonzero(cmp_type(sim_list, thresh))
+                split_indices = np.nonzero(cmp_func(_data, thresh))
                 scatter_plot = getPlotImage([list(range(len(_data))), ], [_data, ], plot_cols,
                                             metric_type, [metric_type, ], 'frame', metric_type,
                                             scatter=split_indices)
@@ -377,14 +390,12 @@ def main():
                 os.makedirs(dst_path)
 
             for i in range(start_id, end_id):
-                filename = src_files[i]
+                filename = src_files[i + 1]
                 src_file_path = os.path.join(src_path, filename)
                 dst_file_path = os.path.join(dst_path, filename)
                 shutil.move(src_file_path, dst_file_path)
 
             start_id = end_id
-
-
 
 
 if __name__ == '__main__':

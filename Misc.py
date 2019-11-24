@@ -386,11 +386,13 @@ def resizeAR(src_img, width=0, height=0, return_factors=False,
         dst_height = int(src_width / aspect_ratio)
         start_row = int((dst_height - src_height) / 2.0)
         if placement_type == 0:
-            start_row = int(dst_height - src_height)
+            start_row = 0
+            # start_row = int(dst_height - src_height)
         elif placement_type == 1:
             start_row = int((dst_height - src_height) / 2.0)
         elif placement_type == 2:
-            start_row = 0
+            # start_row = 0
+            start_row = int(dst_height - src_height)
         start_col = 0
     else:
         dst_height = src_height
