@@ -141,6 +141,7 @@ params = {
     'double_click_interval': 0.1,
     'n_images': 1,
     'borderless': 1,
+    'preserve_order': 0,
     'set_wallpaper': 0,
     'n_wallpapers': 1000,
     'wallpaper_dir': '',
@@ -206,6 +207,7 @@ if __name__ == '__main__':
     double_click_interval = params['double_click_interval']
     n_images = params['n_images']
     borderless = params['borderless']
+    preserve_order = params['preserve_order']
     set_wallpaper = params['set_wallpaper']
     wallpaper_dir = params['wallpaper_dir']
     wallpaper_mode = params['wallpaper_mode']
@@ -1094,7 +1096,7 @@ if __name__ == '__main__':
                 src_img = addBorder(src_img, bottom_border, 'bottom')
         else:
             src_img, stack_idx, stack_locations = stackImages(src_images, grid_size, borderless=borderless,
-                                                              return_idx=1)
+                                                              return_idx=1, preserve_order=preserve_order)
             # print('stack_locations: {}'.format(stack_locations))
 
         if alpha < 1:
