@@ -329,11 +329,13 @@ def main():
                 nonlocal order, split_indices
                 order = _order
                 split_indices = argrelextrema(_data, cmp_func, order=order)[0]
-                split_indices = [k for k in split_indices if _data[k] > thresh]
+                split_indices = [k for k in split_indices if cmp_func(_data[k], thresh)]
                 scatter_plot = getPlotImage([list(range(len(_data))), ], [_data, ], plot_cols,
                                             metric_type, [metric_type, ], 'frame', metric_type,
                                             scatter=split_indices)
+                print(f'order: {order}')
                 cv2.imshow('scatter_plot', scatter_plot)
+
 
             def update_thresh(x):
                 nonlocal thresh, split_indices
@@ -343,11 +345,12 @@ def main():
                 scatter_plot = getPlotImage([list(range(len(_data))), ], [_data, ], plot_cols,
                                             metric_type, [metric_type, ], 'frame', metric_type,
                                             scatter=split_indices)
+                print(f'thresh: {thresh}')
                 cv2.imshow('scatter_plot', scatter_plot)
 
             update_order(order)
             cv2.createTrackbar('order', 'scatter_plot', order, 100, update_order)
-            cv2.createTrackbar('threshold', 'scatter_plot', int(thresh*max_thresh), 1000, update_thresh)
+            cv2.createTrackbar('threshold', 'scatter_plot', 0, 1000, update_thresh)
 
         else:
             if thresh == 0:
@@ -366,7 +369,7 @@ def main():
                 cv2.imshow('scatter_plot', scatter_plot)
 
             update_order(order)
-            cv2.createTrackbar('threshold', 'scatter_plot', thresh, 1000, update_thresh)
+            cv2.createTrackbar('threshold', 'scatter_plot', 0, 1000, update_thresh)
 
         k = cv2.waitKey(0) & 0xFF
 

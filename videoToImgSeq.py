@@ -1,6 +1,8 @@
 import os
 import cv2
 import sys
+import imageio
+from pprint import pformat
 
 from Misc import sortKey, processArguments
 
@@ -58,7 +60,7 @@ if __name__ == '__main__':
     reverse = params['reverse']
     ext = params['ext']
 
-    vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv']
+    vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv', '.gif']
 
     roi_enabled = False
     if roi and isinstance(roi, (list, tuple)) and len(roi) == 4:
@@ -109,17 +111,29 @@ if __name__ == '__main__':
         if dst_dir and not os.path.isdir(dst_dir):
             os.makedirs(dst_dir)
         print('Writing image sequence to: {:s}/{:s}.{}'.format(dst_dir, out_fname_templ, ext))
+        _src_files = []
 
-        cap = cv2.VideoCapture()
-        if not cap.open(src_path):
-            raise SystemError('The video file ' + src_path + ' could not be opened')
-
-        if cv2.__version__.startswith('2'):
-            cv_prop = cv2.cv.CAP_PROP_FRAME_COUNT
+        _ext = os.path.splitext(src_path)[1]
+        if _ext == '.gif':
+            gif = imageio.mimread(src_path)
+            meta_data = [img.meta for img in gif]
+            print('gif meta_data: {}'.format(pformat(meta_data)))
+            _src_files = [cv2.cvtColor(img, cv2.COLOR_RGB2BGR) if img.shape[2] == 3
+                          else cv2.cvtColor(img, cv2.COLOR_RGBA2BGR)
+                          for img in gif]
+            total_frames = len(_src_files)
         else:
-            cv_prop = cv2.CAP_PROP_FRAME_COUNT
 
-        total_frames = int(cap.get(cv_prop))
+            cap = cv2.VideoCapture()
+            if not cap.open(src_path):
+                raise SystemError('The video file ' + src_path + ' could not be opened')
+
+            if cv2.__version__.startswith('2'):
+                cv_prop = cv2.cv.CAP_PROP_FRAME_COUNT
+            else:
+                cv_prop = cv2.CAP_PROP_FRAME_COUNT
+
+            total_frames = int(cap.get(cv_prop))
         frame_gap = 1
 
         if n_frames <= 0:
@@ -135,10 +149,13 @@ if __name__ == '__main__':
 
         frame_id = all_frame_id = 0
         while True:
-            ret, frame = cap.read()
-            if not ret:
-                print('\nFrame {:d} could not be read'.format(frame_id + 1))
-                break
+            if _src_files:
+                frame = _src_files[frame_id]
+            else:
+                ret, frame = cap.read()
+                if not ret:
+                    print('\nFrame {:d} could not be read'.format(frame_id + 1))
+                    break
             if crop and frame_id == 0:
                 roi = cv2.selectROI('Select ROI', frame)
                 print('roi: {}'.format(roi))
