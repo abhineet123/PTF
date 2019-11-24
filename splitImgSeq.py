@@ -386,7 +386,8 @@ def main():
         n_splits = len(split_indices)
         print(f'Splitting into {n_splits} sub sequences:\n{split_indices}')
         start_id = 0
-        for sub_seq_id, end_id in enumerate(split_indices):
+        sub_seq_id = sub_seq_start_id
+        for end_id in split_indices:
             print(f'sub_seq_id: {sub_seq_id} with sim: {sim_list[end_id]}')
             dst_path = os.path.join(src_path, f'{sub_seq_id}')
             if not os.path.isdir(dst_path):
@@ -399,6 +400,7 @@ def main():
                 shutil.move(src_file_path, dst_file_path)
 
             start_id = end_id
+            sub_seq_id += 1
 
 
 if __name__ == '__main__':

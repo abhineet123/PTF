@@ -1,12 +1,12 @@
 import os
 import sys, shutil
-from pprint import pprint
+from pprint import pformat
 
 from Misc import processArguments, sortKey
 
 params = {
     'dst_path': '.',
-    'file_ext': 'jpg',
+    'file_ext': '',
     'out_file': 'mfsf_log.txt',
     'folder_name': '.',
     'prefix': '',
@@ -24,6 +24,11 @@ exceptions = params['exceptions']
 
 dst_path = os.path.abspath(dst_path)
 
+img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff')
+
+if file_ext:
+    img_exts = [file_ext, ]
+
 if os.path.isfile(folder_name):
     root_dir = os.path.abspath(os.getcwd())
     subfolders = [x.strip() for x in open(folder_name).readlines()]
@@ -32,7 +37,7 @@ if os.path.isfile(folder_name):
     folder_name = root_dir
 else:
     folder_name = os.path.abspath(folder_name)
-    print('Looking for files with extension {:s} in sub folders of {:s}'.format(file_ext, folder_name))
+    print('Looking for files with extensions in {} in sub folders of {:s}'.format(img_exts, folder_name))
     subfolders = [name for name in os.listdir(folder_name) if os.path.isdir(os.path.join(folder_name, name))]
 if prefix:
     print('Limiting search to only sub folders starting with {}'.format(prefix))
@@ -58,13 +63,11 @@ files = []
 empty_folders = []
 for subfolder in subfolders:
     subfolders_path = os.path.join(folder_name, subfolder)
-    src_files = []
-    if include_folders != 2:
-        src_files += [f for f in os.listdir(subfolders_path) if os.path.isfile(os.path.join(subfolders_path, f))]
-        if file_ext:
-            src_files = [f for f in src_files if f.endswith(file_ext)]
-    if include_folders:
-        src_files += [f for f in os.listdir(subfolders_path) if os.path.isdir(os.path.join(subfolders_path, f))]
+
+    src_file_gen = [[os.path.join(dirpath, f) for f in filenames if
+                     os.path.splitext(f.lower())[1] in img_exts]
+                    for (dirpath, dirnames, filenames) in os.walk(subfolders_path, followlinks=True)]
+    src_files = [item for sublist in src_file_gen for item in sublist]
 
     if exceptions:
         src_files = [f for f in src_files if not any([k in f for k in exceptions])]
@@ -75,25 +78,34 @@ for subfolder in subfolders:
     dst_files = ['{}_{}'.format(subfolder, f) for f in src_files]
 
     for i in range(n_files):
-        src_path = os.path.join(subfolders_path, src_files[i])
-        _dst_path = os.path.join(dst_path, dst_files[i])
+        src_path = src_files[i]
+        src_filename = os.path.basename(src_path)
+        _dst_path = os.path.join(subfolders_path, src_filename)
 
-        print('{} -> {}'.format(src_path, _dst_path))
-        try:
-            shutil.move(src_path, _dst_path)
-            out_fid.write('{}\t{}\n'.format(src_path, _dst_path))
-        except shutil.Error as e:
-            print('shutil.Error Failure: {}'.format(e))
-            continue
-        except OSError as e:
-            print('OSError Failure: {}'.format(e))
-            continue
-        except BaseException as e:
-            print('BaseException Failure: {}'.format(e))
-            continue
+        if src_path != _dst_path:
+            src_dir = os.path.dirname(src_path)
+            empty_folders.append(src_dir)
+            print('{} -> {}'.format(src_path, _dst_path))
+            try:
+                shutil.move(src_path, _dst_path)
+                out_fid.write('{}\t{}\n'.format(src_path, _dst_path))
+            except shutil.Error as e:
+                print('shutil.Error Failure: {}'.format(e))
+                continue
+            except OSError as e:
+                print('OSError Failure: {}'.format(e))
+                continue
+            except BaseException as e:
+                print('BaseException Failure: {}'.format(e))
+                continue
         total_files += 1
 
-print('subfolders:')
-pprint(subfolders)
+empty_folders = list(set(empty_folders))
+if empty_folders:
+    print('Removing empty_folders:\n{}'.format(pformat(empty_folders)))
+    for _folder in empty_folders:
+        shutil.rmtree(_folder)
+# print('subfolders:')
+# pprint(subfolders)
 print('total_files: {}'.format(total_files))
 out_fid.close()
