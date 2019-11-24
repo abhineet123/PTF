@@ -307,6 +307,12 @@ def main():
         sys.stdout.write('\n\n')
         sys.stdout.flush()
 
+        """
+        compensate for the 1-frame differential
+        """
+        sim_list.insert(0, sim[0])
+        sim_ratio_list.insert(0, sim_ratio_list[0])
+
         sim_list = np.asarray(sim_list).squeeze()
         sim_ratio_list = np.asarray(sim_ratio_list).squeeze()
 
@@ -382,6 +388,9 @@ def main():
         print(f'order: {order}')
         print(f'thresh: {thresh}')
 
+        if n_frames not in split_indices:
+            split_indices.append(n_frames)
+
         split_indices = list(split_indices)
         n_splits = len(split_indices)
         print(f'Splitting into {n_splits} sub sequences:\n{split_indices}')
@@ -394,7 +403,7 @@ def main():
                 os.makedirs(dst_path)
 
             for i in range(start_id, end_id):
-                filename = src_files[i + 1]
+                filename = src_files[i]
                 src_file_path = os.path.join(src_path, filename)
                 dst_file_path = os.path.join(dst_path, filename)
                 shutil.move(src_file_path, dst_file_path)

@@ -374,7 +374,7 @@ if __name__ == '__main__':
             # target_id = [i for i, k in enumerate(titles) if
             #              k[1].startswith(frg_win_title) or findWholeWord(frg_win_title)(k[1])]
 
-            target_id = [i for i, k in enumerate(titles) if k[1].startswith(frg_win_title)]
+            target_id = [i for i, k in enumerate(titles) if f' {k[1]} '.startswith(f'{frg_win_title}')]
 
             # target_title = [k[1] for k in titles if k[1].startswith(frg_win_titles)]
             # target_pos = [k[1] for k in win_pos if k[1].startswith(frg_win_titles)]
