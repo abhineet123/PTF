@@ -7,14 +7,18 @@ import inspect
 import ctypes
 import os
 
+
 def is_hidden(filepath):
     name = os.path.basename(os.path.abspath(filepath))
     return name.startswith('.') or has_hidden_attribute(filepath)
 
+
 import os, stat
+
 
 def has_hidden_attribute2(filepath):
     return bool(os.stat(filepath).st_file_attributes & stat.FILE_ATTRIBUTE_HIDDEN)
+
 
 def has_hidden_attribute(filepath):
     try:
@@ -25,9 +29,10 @@ def has_hidden_attribute(filepath):
         result = False
     return result
 
+
 def main():
     params = {
-        'seq_prefix': 'Seq',
+        'seq_prefix': ['Seq', ],
         'seq_root_dir': '.',
         'seq_start_id': -1,
         'shuffle_files': 0,
@@ -77,6 +82,16 @@ def main():
     #     target_ext = sys.argv[arg_id]
     #     arg_id += 1
 
+    seq_prefix_ext = ''
+    seq_prefix_filter = ''
+
+    if len(seq_prefix) == 1:
+        seq_prefix = seq_prefix[0]
+    elif len(seq_prefix) == 2:
+        seq_prefix, seq_prefix_filter = seq_prefix
+    elif len(seq_prefix) == 3:
+        seq_prefix, seq_prefix_filter, seq_prefix_ext = seq_prefix
+
     script_filename = inspect.getframeinfo(inspect.currentframe()).filename
     script_path = os.path.dirname(os.path.abspath(script_filename))
 
@@ -89,16 +104,26 @@ def main():
                 print('Searching recursively')
                 src_file_gen = [[f for f in filenames if f != 'Thumbs.db']
                                 for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)
-                                if dirpath !=os.getcwd()]
+                                if dirpath != os.getcwd()]
                 src_file_names = [item for sublist in src_file_gen for item in sublist]
             else:
                 src_file_names = [f for f in os.listdir(src_dir) if
                                   os.path.isfile(os.path.join(src_dir, f)) and f != 'Thumbs.db']
+
+            if seq_prefix_filter:
+                print(('Restricting search to files containing:{}'.format(seq_prefix_filter)))
+                src_file_names = [k for k in src_file_names if seq_prefix_filter in k]
+
+            if seq_prefix_ext:
+                print(('Restricting search to files with extension:{}'.format(seq_prefix_ext)))
+                src_file_names = [k for k in src_file_names if k.endswith(seq_prefix_ext)]
+
             src_file_names.sort(key=sortKey)
             # print 'src_file_names: {}'.format(src_file_names)
 
             seq_prefix = os.path.splitext(src_file_names[-1])[0]
             print(('Found sequence prefix {}'.format(seq_prefix)))
+
         split_str = seq_prefix.split('_')
         try:
             seq_start_id = int(split_str[-1]) + 1
@@ -193,6 +218,7 @@ def main():
             file_count += 1
         if write_log:
             log_fid.close()
+
 
 if __name__ == '__main__':
     main()

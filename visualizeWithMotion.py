@@ -30,6 +30,9 @@ from PIL import Image
 from Misc import processArguments, sortKey, stackImages, resizeAR, addBorder, trim
 import sft
 
+# from Misc import VideoCaptureGPU
+VideoCaptureGPU = cv2.VideoCapture
+
 
 # from wand.image import Image as wandImage
 
@@ -170,6 +173,7 @@ params = {
     'frg_win_titles': [],
     'only_maximized': 1,
     'video_mode': 0,
+    'lazy_video_load': 1,
     'fps': 30,
 }
 
@@ -234,6 +238,7 @@ if __name__ == '__main__':
     frg_win_titles = params['frg_win_titles']
     only_maximized = params['only_maximized']
     video_mode = params['video_mode']
+    lazy_video_load = params['lazy_video_load']
 
     if wallpaper_mode and not set_wallpaper:
         set_wallpaper = 1
@@ -551,8 +556,8 @@ if __name__ == '__main__':
                 _src_files.sort()
         else:
             print('Reading frames from video file {}'.format(src_path))
-            _ext = os.path.splitext(src_path)[1]
 
+            _ext = os.path.splitext(src_path)[1]
             _src_files = []
 
             if _ext == '.gif':
@@ -565,17 +570,29 @@ if __name__ == '__main__':
             elif _ext in img_exts:
                 _src_files = [cv2.imread(src_path), ]
             else:
-                cap = cv2.VideoCapture()
+                # cap = cv2.VideoCapture()
+                cap = VideoCaptureGPU()
                 if not cap.open(src_path):
                     raise IOError('The video file ' + src_path + ' could not be opened')
-                while True:
-                    ret, src_img = cap.read()
-                    if not ret:
-                        break
-                    _src_files.append(src_img)
-                    # total_frames += 1
+                if lazy_video_load:
+                    _src_files = cap
+                else:
+                    while True:
+                        ret, src_img = cap.read()
+                        if not ret:
+                            break
+                        _src_files.append(src_img)
+                        # total_frames += 1
 
-        total_frames[_load_id] = len(_src_files)
+        if isinstance(_src_files, list):
+            total_frames[_load_id] = len(_src_files)
+        elif isinstance(_src_files, VideoCaptureGPU):
+            if cv2.__version__.startswith('2'):
+                cv_prop = cv2.cv.CAP_PROP_FRAME_COUNT
+            else:
+                cv_prop = cv2.CAP_PROP_FRAME_COUNT
+            total_frames[_load_id] = int(cap.get(cv_prop))
+
         print('Found {} frames'.format(total_frames[_load_id]))
         src_files[_load_id] = _src_files
         img_id[_load_id] = 0
@@ -806,8 +823,6 @@ if __name__ == '__main__':
             video_files_list += src_files[0]
             n_videos = len(video_files_list)
 
-    if not multi_mode:
-        print(f'total_frames: {total_frames[0]}')
 
     if video_mode:
         loadVideo(0)
@@ -816,6 +831,9 @@ if __name__ == '__main__':
             0: total_frames[0]
         }
         _total_frames = total_frames[0]
+
+    if not multi_mode:
+        print(f'total_frames: {total_frames[0]}')
 
     if not multi_mode:
         img_id = {
@@ -1006,13 +1024,13 @@ if __name__ == '__main__':
             src_images = []
             img_fnames = {}
             for _load_id in range(n_images):
-
                 if video_mode:
                     if _load_id not in total_frames:
                         vid_id = vid_id + 1
                         if vid_id >= n_videos:
-                            print('Resetting randomisation')
-                            video_files_list = list(np.random.permutation(video_files_list))
+                            if random_mode:
+                                print('Resetting randomisation')
+                                video_files_list = list(np.random.permutation(video_files_list))
                             vid_id = 0
                         src_path = video_files_list[vid_id]
                         loadVideo(_load_id)
@@ -1043,7 +1061,7 @@ if __name__ == '__main__':
                         loadVideo(_load_id)
                         _img_id = 0
                     else:
-                        if video_mode and reverse_video:
+                        if video_mode and reverse_video and not lazy_video_load:
                             src_files[_load_id] = list(reversed(src_files[_load_id]))
                         _img_id -= _total_frames
                         if not video_mode and auto_progress and random_mode:
@@ -1053,9 +1071,23 @@ if __name__ == '__main__':
                     _img_id += _total_frames
 
                 if video_mode:
-                    img_fname = src_files[_load_id][_img_id]
-                    if isinstance(img_fname, str):
-                        img_fname = cv2.imread(img_fname)
+                    if isinstance(src_files[_load_id], VideoCaptureGPU):
+                        # start_t = time.time()
+                        ret, img_fname = src_files[_load_id].read()
+                        # end_t = time.time()
+                        # print(f'fps: {1.0 / (end_t - start_t)}')
+                        if not ret:
+                            src_files[_load_id].release()
+                            if auto_progress_video:
+                                vid_id = (vid_id + 1) % n_videos
+                            src_path = video_files_list[vid_id]
+                            loadVideo(_load_id)
+                            _img_id = 0
+                            ret, img_fname = src_files[_load_id].read()
+                    else:
+                        img_fname = src_files[_load_id][_img_id]
+                        if isinstance(img_fname, str):
+                            img_fname = cv2.imread(img_fname)
                     if rotate_images:
                         src_img = np.rot90(img_fname, rotate_images)
                     else:

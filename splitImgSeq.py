@@ -120,7 +120,7 @@ def main():
         'out_postfix': '',
         'labels_col': 'red',
         'reverse': 0,
-        'sub_seq_start_id': 4,
+        'sub_seq_start_id': 0,
         'metric': 5,
         'thresh': -1,
         'order': 5,
