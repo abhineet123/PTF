@@ -30,8 +30,8 @@ from PIL import Image
 from Misc import processArguments, sortKey, stackImages, resizeAR, addBorder, trim
 import sft
 
-# from Misc import VideoCaptureGPU
-VideoCaptureGPU = cv2.VideoCapture
+from Misc import VideoCaptureGPU as VideoCapture
+# VideoCapture = cv2.VideoCapture
 
 
 # from wand.image import Image as wandImage
@@ -175,6 +175,7 @@ params = {
     'video_mode': 0,
     'lazy_video_load': 1,
     'fps': 30,
+    'win_name': '',
 }
 
 if __name__ == '__main__':
@@ -239,6 +240,7 @@ if __name__ == '__main__':
     only_maximized = params['only_maximized']
     video_mode = params['video_mode']
     lazy_video_load = params['lazy_video_load']
+    win_name = params['win_name']
 
     if wallpaper_mode and not set_wallpaper:
         set_wallpaper = 1
@@ -571,7 +573,7 @@ if __name__ == '__main__':
                 _src_files = [cv2.imread(src_path), ]
             else:
                 # cap = cv2.VideoCapture()
-                cap = VideoCaptureGPU()
+                cap = VideoCapture()
                 if not cap.open(src_path):
                     raise IOError('The video file ' + src_path + ' could not be opened')
                 if lazy_video_load:
@@ -586,7 +588,7 @@ if __name__ == '__main__':
 
         if isinstance(_src_files, list):
             total_frames[_load_id] = len(_src_files)
-        elif isinstance(_src_files, VideoCaptureGPU):
+        elif isinstance(_src_files, VideoCapture):
             if cv2.__version__.startswith('2'):
                 cv_prop = cv2.cv.CAP_PROP_FRAME_COUNT
             else:
@@ -1071,7 +1073,7 @@ if __name__ == '__main__':
                     _img_id += _total_frames
 
                 if video_mode:
-                    if isinstance(src_files[_load_id], VideoCaptureGPU):
+                    if isinstance(src_files[_load_id], VideoCapture):
                         # start_t = time.time()
                         ret, img_fname = src_files[_load_id].read()
                         # end_t = time.time()
@@ -1780,9 +1782,10 @@ if __name__ == '__main__':
             pass
 
 
-    time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
-    win_name = 'VWM_{}_{}'.format(os.path.basename(os.path.abspath(src_path)),
-                                  time_stamp)
+    if not win_name:
+        time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+        win_name = 'VWM_{}_{}'.format(os.path.basename(os.path.abspath(src_path)),
+                                      time_stamp)
     dup_win_names = []
     for _i, _ in enumerate(dup_monitor_ids):
         dup_win_names.append('{} {}'.format(win_name, _i))

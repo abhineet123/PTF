@@ -104,7 +104,8 @@ empty_folders = list(set(empty_folders))
 if empty_folders:
     print('Removing empty_folders:\n{}'.format(pformat(empty_folders)))
     for _folder in empty_folders:
-        shutil.rmtree(_folder)
+        if os.path.isdir(_folder):
+            shutil.rmtree(_folder)
 # print('subfolders:')
 # pprint(subfolders)
 print('total_files: {}'.format(total_files))
