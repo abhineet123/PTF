@@ -1,1 +1,1 @@
-pip2 install --upgrade %1
+python2 -m pip install --upgrade %1

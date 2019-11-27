@@ -23,7 +23,7 @@ from threading import Event
 from subprocess import Popen, PIPE
 from multiprocessing import Process
 import multiprocessing
-import threading
+# import threading
 import imageio
 from PIL import Image
 
@@ -120,6 +120,7 @@ def hideBorder(_win_name):
 #     print('Hotkeys cannot be registered: {}'.format(e))
 #     hotkeys_available = 0
 
+
 params = {
     'src_root_dir': '.',
     'src_path': '.',
@@ -178,14 +179,22 @@ params = {
     'win_name': '',
 }
 
-if __name__ == '__main__':
+
+def main(args=''):
     p = psutil.Process(os.getpid())
     try:
         p.nice(psutil.BELOW_NORMAL_PRIORITY_CLASS)
     except AttributeError:
         os.nice(20)
 
-    processArguments(sys.argv[1:], params)
+    args = [k.strip() for k in args.split(' ') if k.strip()]
+    print('args:\n{}'.format(pformat(args)))
+
+    all_args = sys.argv[1:]
+    all_args += args
+    print('all_args:\n{}'.format(pformat(all_args)))
+
+    processArguments(all_args, params)
     src_root_dir = params['src_root_dir']
     src_path = params['src_path']
     src_dirs = params['src_dirs']
@@ -286,7 +295,6 @@ if __name__ == '__main__':
         [1920, -1080],
     ]
 
-
     def get_monitor_id(x, y):
         monitor_id = 0
         min_dist = np.inf
@@ -298,7 +306,6 @@ if __name__ == '__main__':
                 min_dist = dist
                 monitor_id = curr_id
         return monitor_id
-
 
     frg_titles = []
     frg_positions = []
@@ -318,10 +325,8 @@ if __name__ == '__main__':
         except WindowsError:
             pass
 
-
         def findWholeWord(w):
             return re.compile(r'\b({0})\b'.format(w), flags=re.IGNORECASE).search
-
 
         def foreach_window(hwnd, lParam):
             rect = win32gui.GetWindowRect(hwnd)
@@ -359,7 +364,6 @@ if __name__ == '__main__':
                 win_pos.append(rect)
 
             return True
-
 
         win32gui.EnumWindows(foreach_window, None)
 
@@ -534,7 +538,6 @@ if __name__ == '__main__':
     else:
         raise IOError('Invalid source path: {}'.format(src_path))
 
-
     # def readVideoFrames(cap):
     #     global total_frames, src_file_list
     #     while True:
@@ -545,7 +548,7 @@ if __name__ == '__main__':
     #     total_frames = len(src_file_list)
 
     def loadVideo(_load_id):
-        global src_files, total_frames, img_id
+        nonlocal src_files, total_frames, img_id
 
         if os.path.isdir(src_path):
             print('Loading frames from video image sequence {}'.format(src_path))
@@ -611,7 +614,6 @@ if __name__ == '__main__':
         # thread.start()
         # time.sleep(0.1)
 
-
     if random_mode:
         print('Random mode enabled')
 
@@ -646,6 +648,7 @@ if __name__ == '__main__':
     if video_mode:
         video_files_list = []
         for _id, src_dir in enumerate(src_dirs):
+            src_dir = os.path.abspath(src_dir)
             if video_mode == 2:
                 video_file_gen = [[os.path.join(dirpath, d) for d in dirnames if
                                    any([os.path.splitext(f.lower())[1] in img_exts
@@ -825,7 +828,6 @@ if __name__ == '__main__':
             video_files_list += src_files[0]
             n_videos = len(video_files_list)
 
-
     if video_mode:
         loadVideo(0)
         transition_interval = int(1000.0 / fps)
@@ -877,9 +879,8 @@ if __name__ == '__main__':
                 sys.stdout.write('\r Set {}: Done {}/{}'.format(
                     _set_id + 1, _img_id + 1, _n_images))
 
-
     def createWindow(_win_name):
-        global mode, move_to_right
+        nonlocal mode, move_to_right
 
         try:
             cv2.destroyWindow(_win_name)
@@ -947,9 +948,8 @@ if __name__ == '__main__':
         #         if not user32.RegisterHotKey(None, _id, modifiers, vk):
         #             print("Unable to register id", _id)
 
-
     def changeMode():
-        global mode, height, width, aspect_ratio, widescreen_mode
+        nonlocal mode, height, width, aspect_ratio, widescreen_mode
         if widescreen_mode:
             width = 5760
             height = 2160
@@ -972,9 +972,8 @@ if __name__ == '__main__':
 
         loadImage()
 
-
     def setGridSize():
-        global grid_size, n_images, predef_grid_sizes
+        nonlocal grid_size, n_images, predef_grid_sizes
         try:
             n_rows, n_cols = predef_grid_sizes[n_images]
         except KeyError:
@@ -990,11 +989,10 @@ if __name__ == '__main__':
                 # n_cols = n_rows = int(np.ceil(np.sqrt(n_images)))
         grid_size = (n_rows, n_cols)
 
-
     def loadImage(_type=0, set_grid_size=0, decrement_id=0):
-        global src_img_ar, start_row, end_row, start_col, end_col, dst_height, dst_width, n_switches, img_id, direction
-        global target_height, target_width, min_height, start_col, end_col, height_ratio, img_fname, start_time, video_files_list
-        global src_start_row, src_start_col, src_end_row, src_end_col, aspect_ratio, src_path, vid_id, \
+        nonlocal src_img_ar, start_row, end_row, start_col, end_col, dst_height, dst_width, n_switches, img_id, direction
+        nonlocal target_height, target_width, min_height, start_col, end_col, height_ratio, img_fname, start_time, video_files_list
+        nonlocal src_start_row, src_start_col, src_end_row, src_end_col, aspect_ratio, src_path, vid_id, \
             src_images, img_fnames, stack_idx, stack_locations, src_img, wp_id, src_files_rand, top_border, bottom_border
 
         if decrement_id:
@@ -1268,7 +1266,6 @@ if __name__ == '__main__':
         # print('dst_height: ', dst_height)
         # print('dst_width: ', dst_width)
 
-
     # def motionStep(_direction):
     #     global target_height, direction, end_row, start_col, end_col
     #
@@ -1298,21 +1295,19 @@ if __name__ == '__main__':
     #     return _direction
 
     def increaseSpeed():
-        global speed
+        nonlocal speed
         speed += 0.05
         print('speed: ', speed)
 
-
     def decreaseSpeed():
-        global speed
+        nonlocal speed
         speed -= 0.05
         if speed < 0:
             speed = 0
         print('speed: ', speed)
 
-
     def setOffsetDiff(dx, dy):
-        global row_offset, col_offset
+        nonlocal row_offset, col_offset
 
         curr_width = end_col - start_col + 1
         col_offset += dx * float(curr_width) / float(width)
@@ -1329,9 +1324,8 @@ if __name__ == '__main__':
         elif row_offset + start_row < 0:
             row_offset = -start_row
 
-
     def setOffset(x, y):
-        global row_offset, col_offset
+        nonlocal row_offset, col_offset
 
         curr_width = end_col - start_col + 1
         col_offset = col_offset + (x * float(curr_width) / float(width))
@@ -1360,9 +1354,8 @@ if __name__ == '__main__':
         # print('dst_height: {}'.format(dst_height))
         # print('start_offset: {}'.format(start_offset))
 
-
     def updateZoom(_speed=None, _direction=None):
-        global target_height, direction, start_col, start_row, end_row, end_col, n_switches
+        nonlocal target_height, direction, start_col, start_row, end_row, end_col, n_switches
 
         if _speed is None:
             _speed = speed if mode == 0 else 2 * speed
@@ -1397,7 +1390,6 @@ if __name__ == '__main__':
         start_col = col_diff
         end_col = dst_width - col_diff
 
-
     def minimizeWindow():
         try:
             win_handle = ctypes.windll.user32.FindWindowW(None, win_name)
@@ -1405,14 +1397,12 @@ if __name__ == '__main__':
         except:
             print('Window minimization unavailable')
 
-
     def maximizeWindow():
         try:
             win_handle = ctypes.windll.user32.FindWindowW(None, win_name)
             ctypes.windll.user32.ShowWindow(win_handle, 1)
         except:
             print('Window minimization unavailable')
-
 
     def getClickedImage(x, y, get_idx=0):
         if video_mode:
@@ -1443,7 +1433,6 @@ if __name__ == '__main__':
         return None
         # return None if not get_idx else None, None
 
-
     def sortImage(_img_name, sort_type):
         if _img_name is None:
             return
@@ -1462,11 +1451,10 @@ if __name__ == '__main__':
         if n_images == 1:
             loadImage(1)
 
-
     def mouseHandler(event, x, y, flags=None, param=None):
-        global img_id, row_offset, col_offset, lc_start_t, rc_start_t, end_exec, fullscreen, \
+        nonlocal img_id, row_offset, col_offset, lc_start_t, rc_start_t, end_exec, fullscreen, \
             direction, target_height, prev_pos, prev_win_pos, speed, old_speed, min_height, min_height_ratio, n_images, src_images
-        global win_offset_x, win_offset_y, width, height, top_border, bottom_border, images_to_sort, \
+        nonlocal win_offset_x, win_offset_y, width, height, top_border, bottom_border, images_to_sort, \
             images_to_sort_inv, auto_progress, src_files, rotate_images, src_path, vid_id, auto_progress_video
         reset_prev_pos = reset_prev_win_pos = True
 
@@ -1781,7 +1769,6 @@ if __name__ == '__main__':
             print('AttributeError: {}'.format(e))
             pass
 
-
     if not win_name:
         time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
         win_name = 'VWM_{}_{}'.format(os.path.basename(os.path.abspath(src_path)),
@@ -1808,7 +1795,6 @@ if __name__ == '__main__':
 
     old_transition_interval = transition_interval
 
-
     def showWindow():
         print('Showing window')
         # win_handle = ctypes.windll.user32.FindWindowW(u'{}'.format(win_name), None)
@@ -1824,7 +1810,6 @@ if __name__ == '__main__':
         # else:
         #     createWindow()
 
-
     def hideWindow():
         print('Hiding window')
         win_handle = win32gui.FindWindow(None, win_name)
@@ -1839,10 +1824,9 @@ if __name__ == '__main__':
         # else:
         #     cv2.destroyWindow(win_name)
 
-
     def kb_callback(event):
-        global set_wallpaper, n_images, wallpaper_mode, exit_program, borderless, img_id
-        global old_transition_interval, transition_interval, reversed_pos, alpha, show_window
+        nonlocal set_wallpaper, n_images, wallpaper_mode, exit_program, borderless, img_id
+        nonlocal old_transition_interval, transition_interval, reversed_pos, alpha, show_window
 
         # print('_params: {}'.format(_params))
 
@@ -1979,7 +1963,6 @@ if __name__ == '__main__':
                         print('"' + os.path.abspath(img_fnames[_idx]) + '"')
                 print()
 
-
     hotkeys = [
         'ctrl+alt+esc',
         'ctrl+alt+right',
@@ -2004,17 +1987,14 @@ if __name__ == '__main__':
         # -176,
     ]
 
-
     def add_hotkeys():
         # keyboard.on_press(kb_callback)
         for key in hotkeys:
             keyboard.add_hotkey(key, kb_callback, args=(key,))
 
-
     def remove_hotkeys():
         for key in hotkeys:
             keyboard.remove_hotkey(key)
-
 
     # if hotkeys_available:
     #     def handle_win_f3():
@@ -2035,7 +2015,7 @@ if __name__ == '__main__':
     #     }
 
     def moveWindow(_monitor_id, _win_name, _reversed_pos):
-        global frg_positions
+        nonlocal frg_positions
         if frg_win_titles:
             cv2.moveWindow(_win_name, frg_positions[frg_win_id][0], frg_positions[frg_win_id][1])
             return
@@ -2061,7 +2041,6 @@ if __name__ == '__main__':
             cv2.moveWindow(_win_name, win_offset_x + int(monitors[_curr_monitor][0] + width - dst_img.shape[1]),
                            _y_offset)
 
-
     img_id[0] += n_images - 1
     loadImage(set_grid_size=set_grid_size)
     exit_program = 0
@@ -2079,14 +2058,13 @@ if __name__ == '__main__':
         print('Hotkeys are enabled')
         add_hotkeys()
 
-
     # elif not on_top and second_from_top:
     #     keyboard.add_hotkey('ctrl+alt+shift+a', mouse_click_callback, args=(key,))
 
     def second_from_top_callback(
             # x, y, button, pressed
     ):
-        global prev_active_handle, prev_active_win_name, active_monitor_id
+        nonlocal prev_active_handle, prev_active_win_name, active_monitor_id
 
         # print('button: {}'.format(button))
         # print('pressed: {}'.format(pressed))
@@ -2144,12 +2122,10 @@ if __name__ == '__main__':
                     # win32gui.ShowWindow(win_handle, 5)
                     # win32gui.SetForegroundWindow(win_handle)
 
-
     def second_from_top_fn():
         while second_from_top and not exit_program:
             time.sleep(1)
             second_from_top_callback()
-
 
     # class StoppableThread(threading.Thread):
     #     """Thread class with a stop() method. The thread itself has to check
@@ -3043,3 +3019,7 @@ if __name__ == '__main__':
 
     if set_wallpaper:
         win_wallpaper_func(SPI_SETDESKWALLPAPER, 0, orig_wp_fname, 0)
+
+
+if __name__ == '__main__':
+    main()
