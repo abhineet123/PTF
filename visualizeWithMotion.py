@@ -30,8 +30,8 @@ from PIL import Image
 from Misc import processArguments, sortKey, stackImages, resizeAR, addBorder, trim
 import sft
 
-from Misc import VideoCaptureGPU as VideoCapture
-# VideoCapture = cv2.VideoCapture
+# from Misc import VideoCaptureGPU as VideoCapture
+VideoCapture = cv2.VideoCapture
 
 
 # from wand.image import Image as wandImage

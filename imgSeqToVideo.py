@@ -2,6 +2,7 @@ import cv2
 import sys
 import os, shutil
 
+from pprint import pformat
 from Misc import processArguments, sortKey, resizeAR
 
 params = {
@@ -44,16 +45,22 @@ img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
 if os.path.isdir(_src_path):
     src_files = [k for k in os.listdir(_src_path) for _ext in img_exts if k.endswith(_ext)]
     if not src_files:
-        src_paths = [os.path.join(_src_path, k) for k in os.listdir(_src_path) if
-                     os.path.isdir(os.path.join(_src_path, k))]
+        # src_paths = [os.path.join(_src_path, k) for k in os.listdir(_src_path) if
+        #              os.path.isdir(os.path.join(_src_path, k))]
+        video_file_gen = [[os.path.join(dirpath, d) for d in dirnames if
+                           any([os.path.splitext(f.lower())[1] in img_exts
+                                for f in os.listdir(os.path.join(dirpath, d))])]
+                          for (dirpath, dirnames, filenames) in os.walk(_src_path, followlinks=True)]
+        src_paths = [item for sublist in video_file_gen for item in sublist]
     else:
         src_paths = [_src_path]
+    print('Found {} image sequence(s):\n{}'.format(len(src_paths), pformat(src_paths)))
 elif os.path.isfile(_src_path):
     print('Reading source image sequences from: {}'.format(_src_path))
     src_paths = [x.strip() for x in open(_src_path).readlines() if x.strip()]
     n_seq = len(src_paths)
     if n_seq <= 0:
-        raise SystemError('No input sequences found')
+        raise SystemError('No input sequences found in {}'.format(_src_path))
     print('n_seq: {}'.format(n_seq))
 else:
     raise IOError('Invalid src_path: {}'.format(_src_path))
