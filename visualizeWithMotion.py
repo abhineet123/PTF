@@ -131,6 +131,7 @@ params = {
     'lazy_video_load': 1,
     'fps': 30,
     'win_name': '',
+    'nazio_win_name': '',
 }
 
 
@@ -241,6 +242,7 @@ def main(args):
     video_mode = params['video_mode']
     lazy_video_load = params['lazy_video_load']
     win_name = params['win_name']
+    nazio_win_name = params['nazio_win_name']
 
     if wallpaper_mode and not set_wallpaper:
         set_wallpaper = 1
@@ -1809,11 +1811,47 @@ def main(args):
     old_transition_interval = transition_interval
 
     def showWindow():
-        print('Showing window')
+        print('{} :: Showing window'.format(win_name))
+
         # win_handle = ctypes.windll.user32.FindWindowW(u'{}'.format(win_name), None)
         # print('win_handle: {}'.format(win_handle))
         # ctypes.windll.user32.ShowWindow(win_handle, 5)
         win_handle = win32gui.FindWindow(None, win_name)
+
+        if nazio_win_name:
+            # return
+            #
+            # _active_win_handle = int(sft_active_win_handle.value)
+            # _active_win_name = win32gui.GetWindowText(_active_win_handle)
+            #
+            # print('_active_win_handle: {}'.format(_active_win_handle))
+            # print('_active_win_name: {}'.format(_active_win_name))
+            # print('win_name: {}'.format(win_name))
+            #
+            # win_handle = win32gui.FindWindow(None, win_name)
+            #
+            # if win_handle == _active_win_handle:
+            #     return
+            # try:
+            #     win32gui.SetWindowPos(win_handle, _active_win_handle, 0, 0, 0, 0,
+            #                           win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+            # except BaseException as e:
+            #     print('Failed {} --> {} : {}'.format(
+            #         win_name, _active_win_name, e))
+            #     # continue
+            # else:
+            #     print('showWindow :: {} --> {}'.format(
+            #         win_name, _active_win_name))
+
+            # win32gui.SetWindowPos(win_handle, win32con.HWND_BOTTOM, 0, 0, 0, 0,
+            #                       win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+            # win32gui.ShowWindow(win_handle, win32con.SW_SHOWNOACTIVATE)
+
+            # win32gui.ShowWindow(win_handle, win32con.SW_RESTORE)
+            loadImage(1)
+            win32api.PostMessage(win_handle, win32con.WM_CHAR, 0x42, 0)
+            return
+
         # print('win_handle: {}'.format(win_handle))
         win32gui.ShowWindow(win_handle, win32con.SW_RESTORE)
         keyboard.send('right')
@@ -1824,9 +1862,34 @@ def main(args):
         #     createWindow()
 
     def hideWindow():
-        print('Hiding window')
+        print('{} :: Hiding window'.format(win_name))
         win_handle = win32gui.FindWindow(None, win_name)
         # print('win_handle: {}'.format(win_handle))
+
+        if nazio_win_name:
+            # return
+            # if nazio_win_name:
+            #     win_handle = win32gui.FindWindow(None, win_name)
+            #     _nazio_win_handle = win32gui.FindWindow(None, nazio_win_name)
+            #
+            #     print('win_handle: {}'.format(win_handle))
+            #     print('_nazio_win_handle: {}'.format(_nazio_win_handle))
+            #
+            #     try:
+            #         win32gui.SetWindowPos(win_handle, _nazio_win_handle, 0, 0, 0, 0,
+            #                               win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+            #     except BaseException as e:
+            #         print('Failed {} --> {} : {}'.format(
+            #             win_name, _active_win_name, e))
+            #         # continue
+            #     else:
+            #         print('hideWindow :: {} --> {}'.format(
+            #             win_name, _active_win_name))
+
+            # win32gui.ShowWindow(win_handle, win32con.SW_MINIMIZE)
+
+            return
+
         win32gui.ShowWindow(win_handle, win32con.SW_MINIMIZE)
 
         # win_handle = ctypes.windll.user32.FindWindow(u'{}'.format(win_name), None)
@@ -2637,6 +2700,9 @@ def main(args):
 
                 # active_monitor_id, active_win_name, active_win_handle = active_win_info
 
+                if not show_window:
+                    continue
+
                 _active_monitor_id = int(sft_active_monitor_id.value)
                 _active_win_handle = int(sft_active_win_handle.value)
 
@@ -2687,6 +2753,9 @@ def main(args):
                 # hideBorder(win_name)
 
             elif k == ord('D'):
+
+                if not show_window:
+                    continue
                 # winUtils.setBehindTopMost(dup_win_names, prev_active_win_name)
 
                 # cv2.destroyWindow(dup_win_names)
