@@ -43,53 +43,7 @@ def checkImage(fn):
     return exitcode, out, err
 
 
-interrupt_wait = Event()
-
-win_utils_available = 1
-try:
-    import winUtils
-
-    print('winUtils is available')
-except ImportError as e:
-    win_utils_available = 0
-    print('Failed to import winUtils: {}'.format(e))
-try:
-    from ctypes import windll, Structure, c_long, byref
-
-    # Get active window id
-    # https://msdn.microsoft.com/en-us/library/ms633505
-    # winID = windll.user32.GetForegroundWindow()
-    # print("current window ID: {}".format(winID))
-
-    active_winID = win32gui.GetForegroundWindow()
-    print("active_winID: {}".format(active_winID))
-
-    active_win_name = win32gui.GetWindowText(active_winID)
-    print("active_win_name: {}".format(active_win_name))
-
-    user32 = windll.user32
-
-
-    # screensize = user32.GetSystemMetrics(78), user32.GetSystemMetrics(79)
-    # print("screensize: {}".format(screensize))
-
-    class POINT(Structure):
-        _fields_ = [("x", c_long), ("y", c_long)]
-
-
-    def queryMousePosition():
-        pt = POINT()
-        windll.user32.GetCursorPos(byref(pt))
-        return pt
-
-
-    mousePos = queryMousePosition()
-    print("mouse position x: {} y: {}".format(mousePos.x, mousePos.y))
-except ImportError as e:
-    mousePos = None
-
-
-def hideBorder(_win_name):
+def hideBorder(_win_name, on_top):
     win_handle = win32gui.FindWindow(None, _win_name)
     style = win32gui.GetWindowLong(win_handle, win32con.GWL_STYLE)
     style = style & ~win32con.WS_OVERLAPPEDWINDOW
@@ -180,21 +134,58 @@ params = {
 }
 
 
-def main(args=''):
+def main(args):
+    interrupt_wait = Event()
+
+    win_utils_available = 1
+    try:
+        import winUtils
+
+        print('winUtils is available')
+    except ImportError as e:
+        win_utils_available = 0
+        print('Failed to import winUtils: {}'.format(e))
+    try:
+        from ctypes import windll, Structure, c_long, byref
+
+        # Get active window id
+        # https://msdn.microsoft.com/en-us/library/ms633505
+        # winID = windll.user32.GetForegroundWindow()
+        # print("current window ID: {}".format(winID))
+
+        active_winID = win32gui.GetForegroundWindow()
+        print("active_winID: {}".format(active_winID))
+
+        active_win_name = win32gui.GetWindowText(active_winID)
+        print("active_win_name: {}".format(active_win_name))
+
+        user32 = windll.user32
+
+        # screensize = user32.GetSystemMetrics(78), user32.GetSystemMetrics(79)
+        # print("screensize: {}".format(screensize))
+
+        class POINT(Structure):
+            _fields_ = [("x", c_long), ("y", c_long)]
+
+        def queryMousePosition():
+            pt = POINT()
+            windll.user32.GetCursorPos(byref(pt))
+            return pt
+
+        mousePos = queryMousePosition()
+        print("mouse position x: {} y: {}".format(mousePos.x, mousePos.y))
+    except ImportError as e:
+        mousePos = None
+
     p = psutil.Process(os.getpid())
     try:
         p.nice(psutil.BELOW_NORMAL_PRIORITY_CLASS)
     except AttributeError:
         os.nice(20)
 
-    args = [k.strip() for k in args.split(' ') if k.strip()]
     print('args:\n{}'.format(pformat(args)))
 
-    all_args = sys.argv[1:]
-    all_args += args
-    print('all_args:\n{}'.format(pformat(all_args)))
-
-    processArguments(all_args, params)
+    processArguments(args, params)
     src_root_dir = params['src_root_dir']
     src_path = params['src_path']
     src_dirs = params['src_dirs']
@@ -278,146 +269,147 @@ def main(args=''):
         print('Wallpaper functionality unavailable: {}'.format(e))
         set_wallpaper = 0
 
-    EnumWindows = ctypes.windll.user32.EnumWindows
-    EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int))
-    GetWindowText = ctypes.windll.user32.GetWindowTextW
-    GetWindowTextLength = ctypes.windll.user32.GetWindowTextLengthW
-    IsWindowVisible = ctypes.windll.user32.IsWindowVisible
+    else:
+        EnumWindows = ctypes.windll.user32.EnumWindows
+        EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int))
+        GetWindowText = ctypes.windll.user32.GetWindowTextW
+        GetWindowTextLength = ctypes.windll.user32.GetWindowTextLengthW
+        IsWindowVisible = ctypes.windll.user32.IsWindowVisible
 
-    old_speed = speed
-    speed = 0
-    is_paused = 1
-    monitors = [
-        [0, 0],
-        [-1920, 0],
-        [0, -1080],
-        [1920, 0],
-        [1920, -1080],
-    ]
+        old_speed = speed
+        speed = 0
+        is_paused = 1
+        monitors = [
+            [0, 0],
+            [-1920, 0],
+            [0, -1080],
+            [1920, 0],
+            [1920, -1080],
+        ]
 
-    def get_monitor_id(x, y):
-        monitor_id = 0
-        min_dist = np.inf
-        for curr_id, monitor in enumerate(monitors):
-            centroid_x = (monitor[0] + monitor[0] + 1920) / 2.0
-            centroid_y = (monitor[1] + monitor[1] + 1080) / 2.0
-            dist = (x - centroid_x) ** 2 + (y - centroid_y) ** 2
-            if dist < min_dist:
-                min_dist = dist
-                monitor_id = curr_id
-        return monitor_id
+        def get_monitor_id(x, y):
+            monitor_id = 0
+            min_dist = np.inf
+            for curr_id, monitor in enumerate(monitors):
+                centroid_x = (monitor[0] + monitor[0] + 1920) / 2.0
+                centroid_y = (monitor[1] + monitor[1] + 1080) / 2.0
+                dist = (x - centroid_x) ** 2 + (y - centroid_y) ** 2
+                if dist < min_dist:
+                    min_dist = dist
+                    monitor_id = curr_id
+            return monitor_id
 
-    frg_titles = []
-    frg_positions = []
-    frg_win_borders = []
-    frg_win_handles = []
-    frg_reversed_pos = []
-    DwmGetWindowAttribute = None
+        frg_titles = []
+        frg_positions = []
+        frg_win_borders = []
+        frg_win_handles = []
+        frg_reversed_pos = []
+        DwmGetWindowAttribute = None
 
-    if frg_win_titles:
-        titles = []
-        win_pos = []
-        win_border = []
-        win_handles = []
+        if frg_win_titles:
+            titles = []
+            win_pos = []
+            win_border = []
+            win_handles = []
 
-        try:
-            DwmGetWindowAttribute = ctypes.windll.dwmapi.DwmGetWindowAttribute
-        except WindowsError:
-            pass
+            try:
+                DwmGetWindowAttribute = ctypes.windll.dwmapi.DwmGetWindowAttribute
+            except WindowsError:
+                pass
 
-        def findWholeWord(w):
-            return re.compile(r'\b({0})\b'.format(w), flags=re.IGNORECASE).search
+            def findWholeWord(w):
+                return re.compile(r'\b({0})\b'.format(w), flags=re.IGNORECASE).search
 
-        def foreach_window(hwnd, lParam):
-            rect = win32gui.GetWindowRect(hwnd)
-            # x = rect[0]
-            # y = rect[1]
-            # w = rect[2] - x
-            # h = rect[3] - y
-            # print("Window %s:" % win32gui.GetWindowText(hwnd))
-            # print("\tLocation: (%d, %d)" % (x, y))
-            # print("\t    Size: (%d, %d)" % (w, h))
+            def foreach_window(hwnd, lParam):
+                rect = win32gui.GetWindowRect(hwnd)
+                # x = rect[0]
+                # y = rect[1]
+                # w = rect[2] - x
+                # h = rect[3] - y
+                # print("Window %s:" % win32gui.GetWindowText(hwnd))
+                # print("\tLocation: (%d, %d)" % (x, y))
+                # print("\t    Size: (%d, %d)" % (w, h))
 
-            if IsWindowVisible(hwnd):
-                length = GetWindowTextLength(hwnd)
-                buff = ctypes.create_unicode_buffer(length + 1)
-                GetWindowText(hwnd, buff, length + 1)
-                titles.append((hwnd, buff.value))
-                win_handles.append(hwnd)
+                if IsWindowVisible(hwnd):
+                    length = GetWindowTextLength(hwnd)
+                    buff = ctypes.create_unicode_buffer(length + 1)
+                    GetWindowText(hwnd, buff, length + 1)
+                    titles.append((hwnd, buff.value))
+                    win_handles.append(hwnd)
 
-                if DwmGetWindowAttribute:
-                    ext_rect = ctypes.wintypes.RECT()
-                    DWMWA_EXTENDED_FRAME_BOUNDS = 9
-                    DwmGetWindowAttribute(
-                        ctypes.wintypes.HWND(hwnd),
-                        ctypes.wintypes.DWORD(DWMWA_EXTENDED_FRAME_BOUNDS),
-                        ctypes.byref(ext_rect),
-                        ctypes.sizeof(ext_rect)
-                    )
-                    border = [ext_rect.left - rect[0], ext_rect.top - rect[1],
-                              rect[2] - ext_rect.right, rect[3] - ext_rect.bottom]
-                    rect = [rect[0] + border[0], rect[1] + border[1],
-                            rect[2] - border[2], rect[3] - border[3]]
+                    if DwmGetWindowAttribute:
+                        ext_rect = ctypes.wintypes.RECT()
+                        DWMWA_EXTENDED_FRAME_BOUNDS = 9
+                        DwmGetWindowAttribute(
+                            ctypes.wintypes.HWND(hwnd),
+                            ctypes.wintypes.DWORD(DWMWA_EXTENDED_FRAME_BOUNDS),
+                            ctypes.byref(ext_rect),
+                            ctypes.sizeof(ext_rect)
+                        )
+                        border = [ext_rect.left - rect[0], ext_rect.top - rect[1],
+                                  rect[2] - ext_rect.right, rect[3] - ext_rect.bottom]
+                        rect = [rect[0] + border[0], rect[1] + border[1],
+                                rect[2] - border[2], rect[3] - border[3]]
 
-                    win_border.append(border)
+                        win_border.append(border)
 
-                win_pos.append(rect)
+                    win_pos.append(rect)
 
-            return True
+                return True
 
-        win32gui.EnumWindows(foreach_window, None)
+            win32gui.EnumWindows(foreach_window, None)
 
-        # for i in range(len(titles)):
-        #     print(titles[i])
+            # for i in range(len(titles)):
+            #     print(titles[i])
 
-        for frg_win_title in frg_win_titles:
-            _reversed_pos = reversed_pos
-            if frg_win_title.startswith('!!!'):
-                frg_win_title = frg_win_title.lstrip('!')
-                _reversed_pos = 2
-            elif frg_win_title.startswith('!!'):
-                frg_win_title = frg_win_title.lstrip('!!')
-                _reversed_pos = 1
-            elif frg_win_title.startswith('!'):
-                frg_win_title = frg_win_title.lstrip('!')
-                _reversed_pos = 0
-            # target_id = [i for i, k in enumerate(titles) if frg_win_title in k[1]]
-            # target_id = [i for i, k in enumerate(titles) if
-            #              k[1].startswith(frg_win_title) or findWholeWord(frg_win_title)(k[1])]
+            for frg_win_title in frg_win_titles:
+                _reversed_pos = reversed_pos
+                if frg_win_title.startswith('!!!'):
+                    frg_win_title = frg_win_title.lstrip('!')
+                    _reversed_pos = 2
+                elif frg_win_title.startswith('!!'):
+                    frg_win_title = frg_win_title.lstrip('!!')
+                    _reversed_pos = 1
+                elif frg_win_title.startswith('!'):
+                    frg_win_title = frg_win_title.lstrip('!')
+                    _reversed_pos = 0
+                # target_id = [i for i, k in enumerate(titles) if frg_win_title in k[1]]
+                # target_id = [i for i, k in enumerate(titles) if
+                #              k[1].startswith(frg_win_title) or findWholeWord(frg_win_title)(k[1])]
 
-            target_id = [i for i, k in enumerate(titles) if f' {k[1]} '.startswith(f'{frg_win_title}')]
+                target_id = [i for i, k in enumerate(titles) if f' {k[1]} '.startswith(f'{frg_win_title}')]
 
-            # target_title = [k[1] for k in titles if k[1].startswith(frg_win_titles)]
-            # target_pos = [k[1] for k in win_pos if k[1].startswith(frg_win_titles)]
+                # target_title = [k[1] for k in titles if k[1].startswith(frg_win_titles)]
+                # target_pos = [k[1] for k in win_pos if k[1].startswith(frg_win_titles)]
 
-            if not target_id:
-                target_id = [i for i, k in enumerate(titles) if f' {frg_win_title} ' in f' {k[1]} ']
+                if not target_id:
+                    target_id = [i for i, k in enumerate(titles) if f' {frg_win_title} ' in f' {k[1]} ']
 
-            if not target_id:
-                print(f'\nWindow with frg_win_title {frg_win_title} not found\n')
+                if not target_id:
+                    print(f'\nWindow with frg_win_title {frg_win_title} not found\n')
 
-            for _target_id in target_id:
-                frg_titles.append(titles[_target_id][1])
-                frg_positions.append(win_pos[_target_id])
-                frg_win_borders.append(win_border[_target_id])
-                frg_win_handles.append(win_handles[_target_id])
-                frg_reversed_pos.append(_reversed_pos)
+                for _target_id in target_id:
+                    frg_titles.append(titles[_target_id][1])
+                    frg_positions.append(win_pos[_target_id])
+                    frg_win_borders.append(win_border[_target_id])
+                    frg_win_handles.append(win_handles[_target_id])
+                    frg_reversed_pos.append(_reversed_pos)
 
-                print(f'{frg_win_title} :: found window {frg_titles[-1]} with '
-                      f'handle {frg_win_handles[-1]} and '
-                      f'position: {frg_positions[-1]} '
-                      f'border: {frg_win_borders[-1]}'
-                      f'reversed_pos: {frg_reversed_pos[-1]}'
-                      )
+                    print(f'{frg_win_title} :: found window {frg_titles[-1]} with '
+                          f'handle {frg_win_handles[-1]} and '
+                          f'position: {frg_positions[-1]} '
+                          f'border: {frg_win_borders[-1]}'
+                          f'reversed_pos: {frg_reversed_pos[-1]}'
+                          )
 
-        frg_win_id = 0
-        frg_target_title = frg_titles[frg_win_id]
-        frg_target_position = frg_positions[frg_win_id]
-        frg_target_win_handle = frg_win_handles[frg_win_id]
+            frg_win_id = 0
+            frg_target_title = frg_titles[frg_win_id]
+            frg_target_position = frg_positions[frg_win_id]
+            frg_target_win_handle = frg_win_handles[frg_win_id]
 
-        print('Using window: {} at {} as foreground'.format(frg_target_title, frg_target_position))
+            print('Using window: {} at {} as foreground'.format(frg_target_title, frg_target_position))
 
-        monitor_id = get_monitor_id(frg_target_position[0], frg_target_position[1])
+            monitor_id = get_monitor_id(frg_target_position[0], frg_target_position[1])
 
     sft_exceptions = ['PotPlayer', 'Free Alarm Clock', 'MPC-HC', 'DisplayFusion',
                       'GPU-Z', 'IrfanView', 'WinRAR', 'Jump List for ']
@@ -717,20 +709,19 @@ def main(args=''):
             if excluded:
                 print(f'Excluding {n_videos} videos from: {src_dir}')
                 excluded_video_files += _video_files_list
-                continue
-
-            if excluded_video_files:
-                _video_files_list = [k for k in _video_files_list if k not in excluded_video_files]
-                n_videos = len(_video_files_list)
-
-            if n_videos > 1:
-                print(f'Found {n_videos} videos in {src_dir}')
-                print(f'Adding {n_videos} videos from: {src_dir} '
-                      f'with multiplicity {_counts[_id]} '
-                      f'for total: {int(n_videos * _counts[_id])}')
-                video_files_list += _video_files_list * _counts[_id]
             else:
-                print(f'Found no videos in {src_dir}')
+                if excluded_video_files:
+                    _video_files_list = [k for k in _video_files_list if k not in excluded_video_files]
+                    n_videos = len(_video_files_list)
+
+                if n_videos > 1:
+                    print(f'Found {n_videos} videos in {src_dir}')
+                    print(f'Adding {n_videos} videos from: {src_dir} '
+                          f'with multiplicity {_counts[_id]} '
+                          f'for total: {int(n_videos * _counts[_id])}')
+                    video_files_list += _video_files_list * _counts[_id]
+                else:
+                    print(f'Found no videos in {src_dir}')
         try:
             video_files_list.sort(key=sortKey)
         except:
@@ -2791,10 +2782,10 @@ def main(args=''):
                     # mouse.unhook(second_from_top_callback)
             elif k == ord('v'):
                 on_top = 1 - on_top
-                hideBorder(win_name)
+                hideBorder(win_name, on_top)
                 if duplicate_window:
                     for _win_name2 in dup_win_names:
-                        hideBorder(_win_name2)
+                        hideBorder(_win_name2, on_top)
             elif k == ord('t'):
                 transition_interval -= transition_interval_diff
                 if transition_interval < 1:
@@ -3042,4 +3033,4 @@ def main(args=''):
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])

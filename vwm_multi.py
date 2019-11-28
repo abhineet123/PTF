@@ -15,8 +15,8 @@ if __name__ == '__main__':
             '20/1/1_8*8,20/1/1_9*20,20/1/1_3*4,20/1/1_5*15,20/1/1_2*15,20/1/1_4*20 ' \
             'only_maximized=0 reversed_pos=2'
 
-    # args1 = args1.split(' ')
-    # args2 = args2.split(' ')
+    args1 = [k.strip() for k in args1.split(' ') if k.strip()]
+    args2 = [k.strip() for k in args2.split(' ') if k.strip()]
 
     vwm1_thread = Process(target=vwm.main, args=(args1, ))
     vwm1_thread.start()
