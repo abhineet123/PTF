@@ -645,9 +645,57 @@ def main(args=''):
             src_dirs += [os.path.join(root_dir, k) for k in os.listdir(root_dir)
                          if os.path.isdir(os.path.join(root_dir, k)) and k != src_dir_name]
 
+    # Process optional counts
+    _numerators = []
+    _denominators = []
+    _src_dirs = []
+    _samples = []
+    for _id, src_dir in enumerate(src_dirs):
+        _numerator = _denominator = _sample = 1
+        if '**' in src_dir:
+            _src_dir, _sample = src_dir.split('**')
+            src_dir = _src_dir
+            _sample = int(_sample)
+
+        if '*' in src_dir:
+            _src_dir, _count = src_dir.split('*')
+            src_dir = _src_dir
+            _numerator = int(_count)
+        elif '//' in src_dir:
+            _src_dir, _count = src_dir.split('//')
+            _denominator = int(_count)
+            src_dir = _src_dir
+        # if _count > 1:
+        #     _src_dirs += [src_dir, ] * _count
+        # else:
+        _numerators.append(_numerator)
+        _denominators.append(_denominator)
+        _samples.append(_sample)
+
+        print(f'{src_dir} : {_numerator} / {_denominator}, {_sample}')
+
+        _src_dirs.append(src_dir)
+
+    lcm = np.lcm.reduce(_denominators)
+    _counts = [int(_numerator * lcm / _denominator) for _numerator, _denominator in
+               zip(_numerators, _denominators)]
+    src_dirs = _src_dirs
+
+    if multi_mode or video_mode:
+        n_src = len(src_dirs)
+    else:
+        n_src = 1
+
     if video_mode:
         video_files_list = []
+        excluded_video_files = []
         for _id, src_dir in enumerate(src_dirs):
+            if src_dir[0] == '!':
+                src_dir = src_dir[1:]
+                excluded = 1
+            else:
+                excluded = 0
+
             src_dir = os.path.abspath(src_dir)
             if video_mode == 2:
                 video_file_gen = [[os.path.join(dirpath, d) for d in dirnames if
@@ -665,12 +713,24 @@ def main(args=''):
                     _video_files_list = [os.path.join(src_dir, k) for k in os.listdir(src_dir) if
                                          os.path.splitext(k.lower())[1] in vid_exts]
             n_videos = len(_video_files_list)
+
+            if excluded:
+                print(f'Excluding {n_videos} videos from: {src_dir}')
+                excluded_video_files += _video_files_list
+                continue
+
+            if excluded_video_files:
+                _video_files_list = [k for k in _video_files_list if k not in excluded_video_files]
+                n_videos = len(_video_files_list)
+
             if n_videos > 1:
                 print(f'Found {n_videos} videos in {src_dir}')
-                video_files_list += _video_files_list
+                print(f'Adding {n_videos} videos from: {src_dir} '
+                      f'with multiplicity {_counts[_id]} '
+                      f'for total: {int(n_videos * _counts[_id])}')
+                video_files_list += _video_files_list * _counts[_id]
             else:
                 print(f'Found no videos in {src_dir}')
-
         try:
             video_files_list.sort(key=sortKey)
         except:
@@ -692,46 +752,6 @@ def main(args=''):
             print(f'Found no videos')
 
     if not video_mode or images_as_video:
-        # Process optional counts
-        _numerators = []
-        _denominators = []
-        _src_dirs = []
-        _samples = []
-        for _id, src_dir in enumerate(src_dirs):
-            _numerator = _denominator = _sample = 1
-            if '**' in src_dir:
-                _src_dir, _sample = src_dir.split('**')
-                src_dir = _src_dir
-                _sample = int(_sample)
-
-            if '*' in src_dir:
-                _src_dir, _count = src_dir.split('*')
-                src_dir = _src_dir
-                _numerator = int(_count)
-            elif '//' in src_dir:
-                _src_dir, _count = src_dir.split('//')
-                _denominator = int(_count)
-                src_dir = _src_dir
-            # if _count > 1:
-            #     _src_dirs += [src_dir, ] * _count
-            # else:
-            _numerators.append(_numerator)
-            _denominators.append(_denominator)
-            _samples.append(_sample)
-
-            print(f'{src_dir} : {_numerator} / {_denominator}, {_sample}')
-
-            _src_dirs.append(src_dir)
-
-        lcm = np.lcm.reduce(_denominators)
-        _counts = [int(_numerator * lcm / _denominator) for _numerator, _denominator in
-                   zip(_numerators, _denominators)]
-        src_dirs = _src_dirs
-
-        if multi_mode or video_mode:
-            n_src = len(src_dirs)
-        else:
-            n_src = 1
 
         excluded_src_files = []
         for _id, src_dir in enumerate(src_dirs):
