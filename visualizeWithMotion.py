@@ -621,14 +621,16 @@ def main(args):
 
     if src_dirs:
         src_dirs = src_dirs.split(',')
-        inc_src_dirs = [k for k in src_dirs if k[0] != '!']
-        exc_src_dirs = [k for k in src_dirs if k[0] == '!']
+        # inc_src_dirs = [k for k in src_dirs if k[0] != '!']
+        # exc_src_dirs = [k for k in src_dirs if k[0] == '!']
 
-        if src_root_dir:
-            inc_src_dirs = [os.path.join(src_root_dir, k) for k in inc_src_dirs]
-            exc_src_dirs = [os.path.join('!' + src_root_dir, k[1:]) for k in exc_src_dirs]
+        src_dirs = [os.path.join(src_root_dir, k) if k[0] != '!' else os.path.join('!' + src_root_dir, k[1:])
+                    for k in src_dirs]
 
-        src_dirs = inc_src_dirs + exc_src_dirs
+        # if src_root_dir:
+        #     exc_src_dirs = [os.path.join('!' + src_root_dir, k[1:]) for k in exc_src_dirs]
+
+        # src_dirs = inc_src_dirs + exc_src_dirs
     else:
         src_dirs = [src_dir, ]
         if multi_mode:
@@ -715,7 +717,7 @@ def main(args):
                     n_videos = len(_video_files_list)
 
                 if n_videos > 1:
-                    print(f'Found {n_videos} videos in {src_dir}')
+                    # print(f'Found {n_videos} videos in {src_dir}')
                     print(f'Adding {n_videos} videos from: {src_dir} '
                           f'with multiplicity {_counts[_id]} '
                           f'for total: {int(n_videos * _counts[_id])}')
