@@ -131,7 +131,7 @@ params = {
     'lazy_video_load': 1,
     'fps': 30,
     'win_name': '',
-    'nazio_win_name': '',
+    'other_win_name': '',
 }
 
 
@@ -242,7 +242,7 @@ def main(args):
     video_mode = params['video_mode']
     lazy_video_load = params['lazy_video_load']
     win_name = params['win_name']
-    nazio_win_name = params['nazio_win_name']
+    other_win_name = params['other_win_name']
 
     if wallpaper_mode and not set_wallpaper:
         set_wallpaper = 1
@@ -1818,7 +1818,7 @@ def main(args):
         # ctypes.windll.user32.ShowWindow(win_handle, 5)
         win_handle = win32gui.FindWindow(None, win_name)
 
-        if nazio_win_name:
+        if other_win_name:
             # return
             #
             # _active_win_handle = int(sft_active_win_handle.value)
@@ -1866,11 +1866,11 @@ def main(args):
         win_handle = win32gui.FindWindow(None, win_name)
         # print('win_handle: {}'.format(win_handle))
 
-        if nazio_win_name:
+        if other_win_name:
             # return
-            # if nazio_win_name:
+            # if other_win_name:
             #     win_handle = win32gui.FindWindow(None, win_name)
-            #     _nazio_win_handle = win32gui.FindWindow(None, nazio_win_name)
+            #     _nazio_win_handle = win32gui.FindWindow(None, other_win_name)
             #
             #     print('win_handle: {}'.format(win_handle))
             #     print('_nazio_win_handle: {}'.format(_nazio_win_handle))

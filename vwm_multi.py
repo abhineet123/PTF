@@ -58,14 +58,14 @@ if __name__ == '__main__':
     args1 = [k for k in args1[2:] if '%' not in k]
     args1.append('win_name={}'.format(win_name1))
     # args1.append('frg_win_titles={}'.format(frg_win_titles))
-    args1.append('nazio_win_name={}'.format(win_name2))
+    args1.append('other_win_name={}'.format(win_name2))
 
     # args2 = [k.strip() for k in args2.split(' ') if k.strip()]
     args2 = shlex.split(args2)
     args2 = [k for k in args2[2:] if '%' not in k]
     args2.append('win_name={}'.format(win_name2))
     # args2.append('frg_win_titles={}'.format(frg_win_titles))
-    args2.append('nazio_win_name={}'.format(win_name1))
+    args2.append('other_win_name={}'.format(win_name1))
 
     vwm1_thread = Process(target=vwm.main, args=(args1,))
     vwm1_thread.start()
