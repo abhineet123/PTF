@@ -12,6 +12,7 @@ import visualizeWithMotion as vwm
 if __name__ == '__main__':
 
     prob = 0.5
+    init_sleep = 10
     sleep = 60
     script_root = 'scripts'
     script_1 = 'vw32ntjv.cmd'
@@ -66,13 +67,13 @@ if __name__ == '__main__':
     # args2.append('frg_win_titles={}'.format(frg_win_titles))
     args2.append('nazio_win_name={}'.format(win_name1))
 
-    vwm1_thread = Process(target=vwm.main, args=(args1[2:],))
+    vwm1_thread = Process(target=vwm.main, args=(args1,))
     vwm1_thread.start()
 
-    vwm2_thread = Process(target=vwm.main, args=(args2[2:],))
+    vwm2_thread = Process(target=vwm.main, args=(args2,))
     vwm2_thread.start()
 
-    time.sleep(5)
+    time.sleep(init_sleep)
 
     _win_handle_1 = win32gui.FindWindow(None, win_name1)
     _win_handle_2 = win32gui.FindWindow(None, win_name2)
