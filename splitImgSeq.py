@@ -121,7 +121,7 @@ def main():
         'labels_col': 'red',
         'reverse': 0,
         'sub_seq_start_id': 0,
-        'metric': 5,
+        'metric': 4,
         'thresh': -1,
         'order': 5,
     }
@@ -310,7 +310,7 @@ def main():
         """
         compensate for the 1-frame differential
         """
-        sim_list.insert(0, sim[0])
+        sim_list.insert(0, sim_list[0])
         sim_ratio_list.insert(0, sim_ratio_list[0])
 
         sim_list = np.asarray(sim_list).squeeze()

@@ -739,6 +739,8 @@ def main(args):
         except:
             video_files_list.sort()
 
+        # print(f'video_files_list:\n {pformat(video_files_list)}')
+
         if random_mode:
             video_files_list = list(np.random.permutation(video_files_list))
 

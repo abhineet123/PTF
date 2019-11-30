@@ -1,5 +1,6 @@
 from datetime import datetime
 from multiprocessing import Process
+import sys
 import os
 import time
 import random
@@ -8,15 +9,26 @@ import win32api
 import win32gui, win32con
 
 import visualizeWithMotion as vwm
+from Misc import processArguments
 
 if __name__ == '__main__':
 
-    prob = 0.5
-    init_sleep = 10
-    sleep = 60
-    script_root = 'scripts'
-    script_1 = 'vw32ntjv.cmd'
-    script_2 = 'vw32ntj.cmd'
+    params = {
+        'script_root': 'scripts',
+        'script_1': 'vw32ntjv.cmd',
+        'script_2': 'vw32ntj.cmd',
+        'prob':  0.5,
+        'init_sleep': 10,
+        'sleep': 60,
+    }
+
+    processArguments(sys.argv[1:], params)
+    prob = params['prob']
+    init_sleep = params['init_sleep']
+    sleep = params['sleep']
+    script_root = params['script_root']
+    script_1 = params['script_1']
+    script_2 = params['script_2']
 
     curr_path = os.path.dirname(os.path.abspath(__file__))
 
