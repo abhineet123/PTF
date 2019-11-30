@@ -647,7 +647,8 @@ def main(args):
     _src_dirs = []
     _samples = []
     for _id, src_dir in enumerate(src_dirs):
-        _numerator = _denominator = _sample = 1
+        _numerator = _denominator = 1
+        _sample = -1
         if '**' in src_dir:
             _src_dir, _sample = src_dir.split('**')
             src_dir = _src_dir
@@ -693,7 +694,14 @@ def main(args):
                 excluded = 0
 
             src_dir = os.path.abspath(src_dir)
-            if video_mode == 2:
+
+            _sample = _samples[_id]
+            if _sample <= 0:
+                _video_mode = video_mode
+            else:
+                _video_mode = _sample
+
+            if _video_mode == 2:
                 video_file_gen = [[os.path.join(dirpath, d) for d in dirnames if
                                    any([os.path.splitext(f.lower())[1] in img_exts
                                         for f in os.listdir(os.path.join(dirpath, d))])]
@@ -750,6 +758,9 @@ def main(args):
 
         excluded_src_files = []
         for _id, src_dir in enumerate(src_dirs):
+
+            if _samples[_id] < 0:
+                _samples[_id] = 1
 
             if src_dir[0] == '!':
                 src_dir = src_dir[1:]

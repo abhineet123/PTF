@@ -16,7 +16,12 @@ for line in lines:
         continue
     if line.startswith('Timing Description: Start Time: '):
         _line = line.replace('Timing Description: Start Time: ', '').strip()
-        start_t = datetime.strptime(_line, '%b %d, %Y %I:%M:%S %p')
+        _line = _line.replace(' a.m.', ' AM')
+        _line = _line.replace(' p.m.', ' PM')
+        try:
+            start_t = datetime.strptime(_line, '%b %d, %Y %I:%M:%S %p')
+        except ValueError:
+            start_t = datetime.strptime(_line, '%b. %d, %Y %I:%M:%S %p')
         out_txt += start_t.strftime('%d/%m/%Y\t%H:%M:%S') + '\n'
         # print('start_t: {}'.format(start_t))
     if line.startswith('Lap Description: '):
