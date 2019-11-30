@@ -132,59 +132,14 @@ params = {
     'fps': 30,
     'win_name': '',
     'other_win_name': '',
+    'log_color': '',
 }
-
-
 def main(args):
-    interrupt_wait = Event()
-
-    win_utils_available = 1
-    try:
-        import winUtils
-
-        print('winUtils is available')
-    except ImportError as e:
-        win_utils_available = 0
-        print('Failed to import winUtils: {}'.format(e))
-    try:
-        from ctypes import windll, Structure, c_long, byref
-
-        # Get active window id
-        # https://msdn.microsoft.com/en-us/library/ms633505
-        # winID = windll.user32.GetForegroundWindow()
-        # print("current window ID: {}".format(winID))
-
-        active_winID = win32gui.GetForegroundWindow()
-        print("active_winID: {}".format(active_winID))
-
-        active_win_name = win32gui.GetWindowText(active_winID)
-        print("active_win_name: {}".format(active_win_name))
-
-        user32 = windll.user32
-
-        # screensize = user32.GetSystemMetrics(78), user32.GetSystemMetrics(79)
-        # print("screensize: {}".format(screensize))
-
-        class POINT(Structure):
-            _fields_ = [("x", c_long), ("y", c_long)]
-
-        def queryMousePosition():
-            pt = POINT()
-            windll.user32.GetCursorPos(byref(pt))
-            return pt
-
-        mousePos = queryMousePosition()
-        print("mouse position x: {} y: {}".format(mousePos.x, mousePos.y))
-    except ImportError as e:
-        mousePos = None
-
     p = psutil.Process(os.getpid())
     try:
         p.nice(psutil.BELOW_NORMAL_PRIORITY_CLASS)
     except AttributeError:
         os.nice(20)
-
-    print('args:\n{}'.format(pformat(args)))
 
     processArguments(args, params)
     src_root_dir = params['src_root_dir']
@@ -243,6 +198,83 @@ def main(args):
     lazy_video_load = params['lazy_video_load']
     win_name = params['win_name']
     other_win_name = params['other_win_name']
+    log_color = params['log_color']
+
+    if log_color:
+        from colorlog import ColoredFormatter
+        import logging
+        logging_fmt = ColoredFormatter(
+            '%(log_color)s%(message)s',
+            datefmt=None,
+            reset=True,
+            log_colors={
+                'DEBUG': 'cyan',
+                'INFO': log_color,
+                'WARNING': 'yellow',
+                'ERROR': 'red',
+                'CRITICAL': 'red,bg_white',
+            },
+            secondary_log_colors={},
+            style='%'
+        )
+        logging_level = logging.INFO
+        logging.basicConfig(level=logging_level, format=logging_fmt)
+        _logger = logging.getLogger()
+        _logger.setLevel(logging_level)
+        _logger.handlers[0].setFormatter(logging_fmt)
+
+        def print(*args):
+            our_str = args[0]
+            if len(args) >  1:
+                for arg in args:
+                    our_str += '{}'.format(arg)
+            _logger.info(our_str)
+
+        # print = _logger.info
+
+    print('args:\n{}'.format(pformat(args)))
+
+    interrupt_wait = Event()
+
+    win_utils_available = 1
+    try:
+        import winUtils
+
+        print('winUtils is available')
+    except ImportError as e:
+        win_utils_available = 0
+        print('Failed to import winUtils: {}'.format(e))
+    try:
+        from ctypes import windll, Structure, c_long, byref
+
+        # Get active window id
+        # https://msdn.microsoft.com/en-us/library/ms633505
+        # winID = windll.user32.GetForegroundWindow()
+        # print("current window ID: {}".format(winID))
+
+        active_winID = win32gui.GetForegroundWindow()
+        print("active_winID: {}".format(active_winID))
+
+        active_win_name = win32gui.GetWindowText(active_winID)
+        print("active_win_name: {}".format(active_win_name))
+
+        user32 = windll.user32
+
+        # screensize = user32.GetSystemMetrics(78), user32.GetSystemMetrics(79)
+        # print("screensize: {}".format(screensize))
+
+        class POINT(Structure):
+            _fields_ = [("x", c_long), ("y", c_long)]
+
+        def queryMousePosition():
+            pt = POINT()
+            windll.user32.GetCursorPos(byref(pt))
+            return pt
+
+        mousePos = queryMousePosition()
+        print("mouse position x: {} y: {}".format(mousePos.x, mousePos.y))
+    except ImportError as e:
+        mousePos = None
 
     if wallpaper_mode and not set_wallpaper:
         set_wallpaper = 1
@@ -467,8 +499,8 @@ def main(args):
         monitor_id = get_monitor_id(mousePos.x, mousePos.y)
     elif monitor_id >= len(monitors):
         raise IOError('Invalid monitor_id: {}'.format(monitor_id))
-    print('monitor_id: ', monitor_id)
-    print('transition_interval: ', transition_interval)
+    print('monitor_id: {}'.format(monitor_id))
+    print('transition_interval: {}'.format(transition_interval))
 
     if not dup_monitor_ids:
         dup_monitor_ids = [monitor_id, ]
