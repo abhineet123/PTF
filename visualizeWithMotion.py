@@ -2524,6 +2524,12 @@ def main(args):
                 exit_program = 1
                 if second_from_top:
                     sft_exit_program.value = 1
+                if other_win_name:
+                    try:
+                        _win_handle_2 = win32gui.FindWindow(None, other_win_name)
+                        win32api.PostMessage(_win_handle_2, win32con.WM_CHAR, 0x1B, 0)
+                    except:
+                        pass
                 break
             elif k == 13:
                 changeMode()
