@@ -96,7 +96,7 @@ if __name__ == '__main__':
 
     hidden_win_handle = _win_handle_1
     win32api.PostMessage(hidden_win_handle, win32con.WM_CHAR, 0x68, 0)
-    sleep = sleep_1
+    sleep = sleep_2
 
     while True:
         time.sleep(sleep)
@@ -111,12 +111,12 @@ if __name__ == '__main__':
                     win32api.PostMessage(_win_handle_2, win32con.WM_CHAR, 0x68, 0)
                     win32api.PostMessage(_win_handle_1, win32con.WM_CHAR, 0x68, 0)
                     hidden_win_handle = _win_handle_2
-                    sleep = sleep_2
+                    sleep = sleep_1
             else:
                 if hidden_win_handle == _win_handle_2:
                     win32api.PostMessage(_win_handle_2, win32con.WM_CHAR, 0x68, 0)
                     win32api.PostMessage(_win_handle_1, win32con.WM_CHAR, 0x68, 0)
                     hidden_win_handle = _win_handle_1
-                    sleep = sleep_1
+                    sleep = sleep_2
         except:
             break
