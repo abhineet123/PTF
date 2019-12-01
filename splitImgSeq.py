@@ -73,7 +73,7 @@ def getPlotImage(data_x, data_y, cols, title, line_labels, x_label, y_label,
 
     canvas.draw()
     width, height = fig.get_size_inches() * fig.get_dpi()
-    plot_img = np.fromstring(canvas.tostring_rgb(), dtype='uint8').reshape(
+    plot_img = np.frombuffer(canvas.tostring_rgb(), dtype='uint8').reshape(
         int(height), int(width), 3)
 
     return plot_img
@@ -218,6 +218,9 @@ def main():
         n_src_files = len(src_files)
         if n_src_files <= 0:
             raise SystemError('No input frames found')
+
+        # print('src_files: {}'.format(src_files))
+
         src_files.sort(key=sortKey)
         print('n_src_files: {}'.format(n_src_files))
 
@@ -378,6 +381,8 @@ def main():
             cv2.createTrackbar('threshold', 'scatter_plot', 0, 1000, update_thresh)
 
         k = cv2.waitKey(0) & 0xFF
+
+        cv2.destroyWindow('scatter_plot')
 
         if show_img:
             cv2.destroyAllWindows()

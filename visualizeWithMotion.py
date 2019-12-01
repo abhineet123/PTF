@@ -223,16 +223,16 @@ def main(args):
         _logger.setLevel(logging_level)
         _logger.handlers[0].setFormatter(logging_fmt)
 
-        def print(*args):
+        def _print(*args):
             our_str = args[0]
             if len(args) >  1:
                 for arg in args:
                     our_str += '{}'.format(arg)
             _logger.info(our_str)
+    else:
+        _print = print
 
-        # print = _logger.info
-
-    print('args:\n{}'.format(pformat(args)))
+    _print('args:\n{}'.format(pformat(args)))
 
     interrupt_wait = Event()
 
@@ -240,10 +240,10 @@ def main(args):
     try:
         import winUtils
 
-        print('winUtils is available')
+        _print('winUtils is available')
     except ImportError as e:
         win_utils_available = 0
-        print('Failed to import winUtils: {}'.format(e))
+        _print('Failed to import winUtils: {}'.format(e))
     try:
         from ctypes import windll, Structure, c_long, byref
 
@@ -253,10 +253,10 @@ def main(args):
         # print("current window ID: {}".format(winID))
 
         active_winID = win32gui.GetForegroundWindow()
-        print("active_winID: {}".format(active_winID))
+        _print("active_winID: {}".format(active_winID))
 
         active_win_name = win32gui.GetWindowText(active_winID)
-        print("active_win_name: {}".format(active_win_name))
+        _print("active_win_name: {}".format(active_win_name))
 
         user32 = windll.user32
 
@@ -272,7 +272,7 @@ def main(args):
             return pt
 
         mousePos = queryMousePosition()
-        print("mouse position x: {} y: {}".format(mousePos.x, mousePos.y))
+        _print("mouse position x: {} y: {}".format(mousePos.x, mousePos.y))
     except ImportError as e:
         mousePos = None
 
@@ -291,7 +291,7 @@ def main(args):
         orig_wp_fname_res = win_wallpaper_func(SPI_GETDESKWALLPAPER, 500, orig_wp_fname, 0)
         # print("orig_wp_fname_res: {}".format(orig_wp_fname_res))
         # print("orig_wp_fname raw: {}".format(orig_wp_fname.raw))
-        print("orig_wp_fname value: {}".format(orig_wp_fname.value))
+        _print("orig_wp_fname value: {}".format(orig_wp_fname.value))
         # print("orig_wp_fname: {}".format(orig_wp_fname))
 
         orig_wp_fname = orig_wp_fname.value.decode("utf-8")
@@ -300,7 +300,7 @@ def main(args):
         win_wallpaper_func = ctypes.windll.user32.SystemParametersInfoW
 
     except BaseException as e:
-        print('Wallpaper functionality unavailable: {}'.format(e))
+        _print('Wallpaper functionality unavailable: {}'.format(e))
         set_wallpaper = 0
 
     else:
@@ -420,7 +420,7 @@ def main(args):
                     target_id = [i for i, k in enumerate(titles) if f' {frg_win_title} ' in f' {k[1]} ']
 
                 if not target_id:
-                    print(f'\nWindow with frg_win_title {frg_win_title} not found\n')
+                    _print(f'\nWindow with frg_win_title {frg_win_title} not found\n')
 
                 for _target_id in target_id:
                     frg_titles.append(titles[_target_id][1])
@@ -429,7 +429,7 @@ def main(args):
                     frg_win_handles.append(win_handles[_target_id])
                     frg_reversed_pos.append(_reversed_pos)
 
-                    print(f'{frg_win_title} :: found window {frg_titles[-1]} with '
+                    _print(f'{frg_win_title} :: found window {frg_titles[-1]} with '
                           f'handle {frg_win_handles[-1]} and '
                           f'position: {frg_positions[-1]} '
                           f'border: {frg_win_borders[-1]}'
@@ -441,7 +441,7 @@ def main(args):
             frg_target_position = frg_positions[frg_win_id]
             frg_target_win_handle = frg_win_handles[frg_win_id]
 
-            print('Using window: {} at {} as foreground'.format(frg_target_title, frg_target_position))
+            _print('Using window: {} at {} as foreground'.format(frg_target_title, frg_target_position))
 
             monitor_id = get_monitor_id(frg_target_position[0], frg_target_position[1])
 
@@ -499,13 +499,13 @@ def main(args):
         monitor_id = get_monitor_id(mousePos.x, mousePos.y)
     elif monitor_id >= len(monitors):
         raise IOError('Invalid monitor_id: {}'.format(monitor_id))
-    print('monitor_id: {}'.format(monitor_id))
-    print('transition_interval: {}'.format(transition_interval))
+    _print('monitor_id: {}'.format(monitor_id))
+    _print('transition_interval: {}'.format(transition_interval))
 
     if not dup_monitor_ids:
         dup_monitor_ids = [monitor_id, ]
     if duplicate_window:
-        print('dup_monitor_ids: {}'.format(dup_monitor_ids))
+        _print('dup_monitor_ids: {}'.format(dup_monitor_ids))
 
     if not dup_reversed_pos:
         dup_reversed_pos = []
@@ -577,7 +577,7 @@ def main(args):
         nonlocal src_files, total_frames, img_id
 
         if os.path.isdir(src_path):
-            print('Loading frames from video image sequence {}'.format(src_path))
+            _print('Loading frames from video image sequence {}'.format(src_path))
             _src_files = [os.path.join(src_path, k) for k in os.listdir(src_path) if
                           os.path.splitext(k.lower())[1] in img_exts]
             try:
@@ -586,7 +586,7 @@ def main(args):
             except:
                 _src_files.sort()
         else:
-            print('Reading frames from video file {}'.format(src_path))
+            _print('Reading frames from video file {}'.format(src_path))
 
             _ext = os.path.splitext(src_path)[1]
             _src_files = []
@@ -594,7 +594,7 @@ def main(args):
             if _ext == '.gif':
                 gif = imageio.mimread(src_path)
                 meta_data = [img.meta for img in gif]
-                print('gif meta_data: {}'.format(pformat(meta_data)))
+                _print('gif meta_data: {}'.format(pformat(meta_data)))
                 _src_files = [cv2.cvtColor(img, cv2.COLOR_RGB2BGR) if img.shape[2] == 3
                               else cv2.cvtColor(img, cv2.COLOR_RGBA2BGR)
                               for img in gif]
@@ -624,7 +624,7 @@ def main(args):
                 cv_prop = cv2.CAP_PROP_FRAME_COUNT
             total_frames[_load_id] = int(cap.get(cv_prop))
 
-        print('Found {} frames'.format(total_frames[_load_id]))
+        _print('Found {} frames'.format(total_frames[_load_id]))
         src_files[_load_id] = _src_files
         img_id[_load_id] = 0
 
@@ -641,10 +641,10 @@ def main(args):
         # time.sleep(0.1)
 
     if random_mode:
-        print('Random mode enabled')
+        _print('Random mode enabled')
 
     if auto_progress:
-        print('Auto progression enabled')
+        _print('Auto progression enabled')
 
     src_files = {}
     src_files_rand = {}
@@ -701,7 +701,7 @@ def main(args):
         _denominators.append(_denominator)
         _samples.append(_sample)
 
-        print(f'{src_dir} : {_numerator} / {_denominator}, {_sample}')
+        _print(f'{src_dir} : {_numerator} / {_denominator}, {_sample}')
 
         _src_dirs.append(src_dir)
 
@@ -751,7 +751,7 @@ def main(args):
             n_videos = len(_video_files_list)
 
             if excluded:
-                print(f'Excluding {n_videos} videos from: {src_dir}')
+                _print(f'Excluding {n_videos} videos from: {src_dir}')
                 excluded_video_files += _video_files_list
             else:
                 if excluded_video_files:
@@ -760,12 +760,12 @@ def main(args):
 
                 if n_videos > 1:
                     # print(f'Found {n_videos} videos in {src_dir}')
-                    print(f'Adding {n_videos} videos from: {src_dir} '
+                    _print(f'Adding {n_videos} videos from: {src_dir} '
                           f'with multiplicity {_counts[_id]} '
                           f'for total: {int(n_videos * _counts[_id])}')
                     video_files_list += _video_files_list * _counts[_id]
                 else:
-                    print(f'Found no videos in {src_dir}')
+                    _print(f'Found no videos in {src_dir}')
         try:
             video_files_list.sort(key=sortKey)
         except:
@@ -784,9 +784,9 @@ def main(args):
 
         n_videos = len(video_files_list)
         if n_videos > 1:
-            print(f'Found a total of {n_videos} videos')
+            _print(f'Found a total of {n_videos} videos')
         else:
-            print(f'Found no videos')
+            _print(f'Found no videos')
 
     if not video_mode or images_as_video:
 
@@ -822,13 +822,13 @@ def main(args):
 
             _n_src_files = len(_src_files)
             if excluded:
-                print(f'Excluding {_n_src_files} images from: {src_dir}')
+                _print(f'Excluding {_n_src_files} images from: {src_dir}')
                 excluded_src_files += _src_files
             else:
                 if excluded_src_files:
                     _src_files = [k for k in _src_files if k not in excluded_src_files]
                     _n_src_files = len(_src_files)
-                print(f'Adding {_n_src_files} images from: {src_dir} '
+                _print(f'Adding {_n_src_files} images from: {src_dir} '
                       f'with sample: {_samples[_id]} and multiplicity {_counts[_id]} '
                       f'for total: {int(_n_src_files * _counts[_id] / _samples[_id])}')
                 src_files[_id] = _src_files
@@ -877,7 +877,7 @@ def main(args):
 
         if not multi_mode and random_mode:
             src_files_rand[0] = list(np.random.permutation(src_files[0]))
-            print('total_frames: {}'.format(total_frames[0]))
+            _print('total_frames: {}'.format(total_frames[0]))
 
         if img_fname is None:
             img_fname = src_files[0][img_id[0]]
@@ -897,7 +897,7 @@ def main(args):
         _total_frames = total_frames[0]
 
     if not multi_mode:
-        print(f'total_frames: {total_frames[0]}')
+        _print(f'total_frames: {total_frames[0]}')
 
     if not multi_mode:
         img_id = {
@@ -918,24 +918,24 @@ def main(args):
     if not os.path.isdir(log_dir):
         os.makedirs(log_dir)
     log_file = os.path.join(log_dir, 'vwm_log.txt')
-    print('Saving log to {}'.format(log_file))
+    _print('Saving log to {}'.format(log_file))
 
     if not wallpaper_dir:
         wallpaper_dir = os.path.join(log_dir, 'vwm')
     if not os.path.isdir(wallpaper_dir):
         os.makedirs(wallpaper_dir)
-    print('Saving wallpapers to {}'.format(wallpaper_dir))
+    _print('Saving wallpapers to {}'.format(wallpaper_dir))
 
     auto_progress_type = 0
 
     if not video_mode and check_images:
-        print('Checking images...')
+        _print('Checking images...')
         for _set_id in src_files:
             _n_images = len(src_files[_set_id])
             for _img_id, img_path in enumerate(src_files[_set_id]):
                 code, output, error = checkImage(img_path)
                 if str(code) != "0" or str(error, "utf-8") != "":
-                    print("\n{} :: ERROR: {}\n".format(img_path, error))
+                    _print("\n{} :: ERROR: {}\n".format(img_path, error))
                 sys.stdout.write('\r Set {}: Done {}/{}'.format(
                     _set_id + 1, _img_id + 1, _n_images))
 
@@ -1021,8 +1021,8 @@ def main(args):
             else:
                 height = 2160
 
-        print('changeMode :: height: ', height)
-        print('changeMode :: width: ', width)
+        _print('changeMode :: height: ', height)
+        _print('changeMode :: width: ', width)
 
         aspect_ratio = float(width) / float(height)
         createWindow(win_name)
@@ -1089,7 +1089,7 @@ def main(args):
                         vid_id = vid_id + 1
                         if vid_id >= n_videos:
                             if random_mode:
-                                print('Resetting randomisation')
+                                _print('Resetting randomisation')
                                 video_files_list = list(np.random.permutation(video_files_list))
                             vid_id = 0
                         src_path = video_files_list[vid_id]
@@ -1125,7 +1125,7 @@ def main(args):
                             src_files[_load_id] = list(reversed(src_files[_load_id]))
                         _img_id -= _total_frames
                         if not video_mode and auto_progress and random_mode:
-                            print('Resetting randomisation')
+                            _print('Resetting randomisation')
                             src_files_rand[src_id] = list(np.random.permutation(src_files[src_id]))
                 elif _img_id < 0:
                     _img_id += _total_frames
@@ -1357,14 +1357,14 @@ def main(args):
     def increaseSpeed():
         nonlocal speed
         speed += 0.05
-        print('speed: ', speed)
+        _print('speed: ', speed)
 
     def decreaseSpeed():
         nonlocal speed
         speed -= 0.05
         if speed < 0:
             speed = 0
-        print('speed: ', speed)
+        _print('speed: ', speed)
 
     def setOffsetDiff(dx, dy):
         nonlocal row_offset, col_offset
@@ -1455,14 +1455,14 @@ def main(args):
             win_handle = ctypes.windll.user32.FindWindowW(None, win_name)
             ctypes.windll.user32.ShowWindow(win_handle, 6)
         except:
-            print('Window minimization unavailable')
+            _print('Window minimization unavailable')
 
     def maximizeWindow():
         try:
             win_handle = ctypes.windll.user32.FindWindowW(None, win_name)
             ctypes.windll.user32.ShowWindow(win_handle, 1)
         except:
-            print('Window minimization unavailable')
+            _print('Window minimization unavailable')
 
     def getClickedImage(x, y, get_idx=0):
         if video_mode:
@@ -1480,13 +1480,13 @@ def main(args):
             if x_scaled >= _start_col and x_scaled < _end_col and y_scaled >= _start_row and y_scaled < _end_row:
                 __idx = stack_idx[i]
                 fname = os.path.abspath(img_fnames[__idx])
-                print('Clicked on image {} with id {}:\n {}'.format(i + 1, __idx, fname))
+                _print('Clicked on image {} with id {}:\n {}'.format(i + 1, __idx, fname))
                 if get_idx:
                     return fname, __idx
                 return fname
                 # return fname if not get_idx else fname, __idx
 
-        print('Image for the clicked point {}, {} not found'.format(x, y))
+        _print('Image for the clicked point {}, {} not found'.format(x, y))
 
         if get_idx:
             return None, None
@@ -1499,10 +1499,10 @@ def main(args):
         if _img_name in images_to_sort_inv:
             prev_key = images_to_sort_inv[_img_name]
             if prev_key != sort_type:
-                print('Removing previous sorting of {} into {}'.format(_img_name, prev_key))
+                _print('Removing previous sorting of {} into {}'.format(_img_name, prev_key))
                 images_to_sort[prev_key].remove(_img_name)
                 del images_to_sort_inv[_img_name]
-        print('Sorting {} into category {}'.format(_img_name, sort_type))
+        _print('Sorting {} into category {}'.format(_img_name, sort_type))
         try:
             images_to_sort[sort_type].append(_img_name)
         except KeyError:
@@ -1557,7 +1557,7 @@ def main(args):
                         loadVideo(0)
                         loadImage()
                     else:
-                        print('next image')
+                        _print('next image')
                         loadImage(1)
                 elif flags == 10 or flags == 11:
                     direction = -direction
@@ -1582,7 +1582,7 @@ def main(args):
                 elif flags_str == '10100':
                     # shift
                     if video_mode:
-                        print('Reversing video')
+                        _print('Reversing video')
                         for _id in img_id:
                             img_id[_id] = total_frames[_id] - img_id[_id] - 1
                             src_files[_id] = list(reversed(src_files[_id]))
@@ -1591,16 +1591,16 @@ def main(args):
                     rotate_images += 1
                     if rotate_images > 3:
                         rotate_images = 0
-                    print('Rotating images by {} degrees'.format(rotate_images * 90))
+                    _print('Rotating images by {} degrees'.format(rotate_images * 90))
                     src_images = []
                     loadImage()
                 elif flags_str == '11100':
                     # ctrl + shift
                     auto_progress_video = 1 - auto_progress_video
                     if auto_progress_video:
-                        print('Video auto progression enabled')
+                        _print('Video auto progression enabled')
                     else:
-                        print('Video auto progression disabled')
+                        _print('Video auto progression disabled')
 
 
             elif event == cv2.EVENT_MOUSEMOVE:
@@ -1811,12 +1811,12 @@ def main(args):
                                 #             loadImage(0)
                                 #         break
                                 # if not click_found:
-                                print('x: {}'.format(x))
-                                print('y: {}'.format(y))
-                                print('resize_ratio: {}'.format(resize_ratio))
-                                print('x_scaled: {}'.format(x_scaled))
-                                print('y_scaled: {}'.format(y_scaled))
-                                print('stack_locations:\n {}\n'.format(stack_locations))
+                                _print('x: {}'.format(x))
+                                _print('y: {}'.format(y))
+                                _print('resize_ratio: {}'.format(resize_ratio))
+                                _print('x_scaled: {}'.format(x_scaled))
+                                _print('y_scaled: {}'.format(y_scaled))
+                                _print('stack_locations:\n {}\n'.format(stack_locations))
                     # elif flags == 9:
                     #     row_offset = col_offset = 0
                     # setOffset(x, y)
@@ -1826,7 +1826,7 @@ def main(args):
                     pass
 
         except AttributeError as e:
-            print('AttributeError: {}'.format(e))
+            _print('AttributeError: {}'.format(e))
             pass
 
     if not win_name:
@@ -1856,7 +1856,7 @@ def main(args):
     old_transition_interval = transition_interval
 
     def showWindow():
-        print('{} :: Showing window'.format(win_name))
+        _print('{} :: Showing window'.format(win_name))
 
         # win_handle = ctypes.windll.user32.FindWindowW(u'{}'.format(win_name), None)
         # print('win_handle: {}'.format(win_handle))
@@ -1907,7 +1907,7 @@ def main(args):
         #     createWindow()
 
     def hideWindow():
-        print('{} :: Hiding window'.format(win_name))
+        _print('{} :: Hiding window'.format(win_name))
         win_handle = win32gui.FindWindow(None, win_name)
         # print('win_handle: {}'.format(win_handle))
 
@@ -1956,10 +1956,10 @@ def main(args):
         # print('scan_code: {}'.format(scan_code))
 
         _type = event
-        print('hotkey: {}'.format(_type))
+        _print('hotkey: {}'.format(_type))
 
         if _type == 'ctrl+alt+esc':
-            print('exiting...')
+            _print('exiting...')
             exit_program = 1
             interrupt_wait.set()
         elif _type == 'ctrl+alt+right':
@@ -1974,11 +1974,11 @@ def main(args):
             wallpaper_mode = 1 - wallpaper_mode
             if wallpaper_mode:
                 set_wallpaper = 1
-                print('wallpaper mode enabled')
+                _print('wallpaper mode enabled')
                 cv2.destroyWindow(win_name)
                 # minimizeWindow()
             else:
-                print('wallpaper mode disabled')
+                _print('wallpaper mode disabled')
                 createWindow()
                 # maximizeWindow()
             interrupt_wait.set()
@@ -1986,10 +1986,10 @@ def main(args):
             wallpaper_mode = 1 - wallpaper_mode
             if wallpaper_mode:
                 set_wallpaper = 2
-                print('wallpaper mode enabled')
+                _print('wallpaper mode enabled')
                 cv2.destroyWindow(win_name)
             else:
-                print('wallpaper mode disabled')
+                _print('wallpaper mode disabled')
                 createWindow()
             interrupt_wait.set()
         elif _type == 'ctrl+alt+=':
@@ -2003,9 +2003,9 @@ def main(args):
         elif _type == 'ctrl+alt+b':
             borderless = 1 - borderless
             if borderless:
-                print('Borderless stitching enabled')
+                _print('Borderless stitching enabled')
             else:
-                print('Borderless stitching disabled')
+                _print('Borderless stitching disabled')
         elif _type == 'ctrl+alt+$':
             n_images = 4
             loadImage(1, 1)
@@ -2026,7 +2026,7 @@ def main(args):
             # else:
             #     old_transition_interval = transition_interval
             #     transition_interval = MAX_TRANSITION_INTERVAL
-            print('Setting transition interval to: {}'.format(transition_interval))
+            _print('Setting transition interval to: {}'.format(transition_interval))
             if not video_mode:
                 img_id[0] -= n_images
             interrupt_wait.set()
@@ -2039,7 +2039,7 @@ def main(args):
             # else:
             #     old_transition_interval = transition_interval
             #     transition_interval = MIN_TRANSITION_INTERVAL
-            print('Setting transition interval to: {}'.format(transition_interval))
+            _print('Setting transition interval to: {}'.format(transition_interval))
             if not video_mode:
                 img_id[0] -= n_images
             interrupt_wait.set()
@@ -2076,13 +2076,13 @@ def main(args):
         #     keyboard.send('shift+right')
         elif _type == 'ctrl+alt+0' or _type == 'ctrl+alt+)':
             if n_images == 1:
-                print('"' + os.path.abspath(img_fname) + '"')
+                _print('"' + os.path.abspath(img_fname) + '"')
             else:
-                print()
+                _print()
                 for _idx in stack_idx:
                     if not video_mode:
-                        print('"' + os.path.abspath(img_fnames[_idx]) + '"')
-                print()
+                        _print('"' + os.path.abspath(img_fnames[_idx]) + '"')
+                _print()
 
     hotkeys = [
         'ctrl+alt+esc',
@@ -2176,7 +2176,7 @@ def main(args):
     images_to_sort_inv = {}
 
     if enable_hotkeys:
-        print('Hotkeys are enabled')
+        _print('Hotkeys are enabled')
         add_hotkeys()
 
     # elif not on_top and second_from_top:
@@ -2343,15 +2343,15 @@ def main(args):
         try:
             dst_img = cv2.resize(temp, (width, height))
         except cv2.error as e:
-            print('Resizing error: {}'.format(e))
+            _print('Resizing error: {}'.format(e))
             temp_height, temp_width, _ = temp.shape
-            print('temp_height: ', temp_height)
-            print('temp_width: ', temp_width)
+            _print('temp_height: ', temp_height)
+            _print('temp_width: ', temp_width)
             if temp_height:
                 temp_aspect_ratio = float(temp_width) / float(temp_height)
-                print('temp_aspect_ratio: ', temp_aspect_ratio)
-            print('_col_offset: ', _col_offset)
-            print('_row_offset: ', _row_offset)
+                _print('temp_aspect_ratio: ', temp_aspect_ratio)
+            _print('_col_offset: ', _col_offset)
+            _print('_row_offset: ', _row_offset)
 
         # if mode == 0 and not fullscreen:
         if not fullscreen:
@@ -2559,20 +2559,20 @@ def main(args):
                     hideWindow()
             elif k == ord('r'):
                 if video_mode:
-                    print('Reversing video')
+                    _print('Reversing video')
                     for _id in img_id:
                         img_id[_id] = total_frames[_id] - img_id[_id] - 1
                         src_files[_id] = list(reversed(src_files[_id]))
                 else:
                     random_mode = 1 - random_mode
                     if random_mode:
-                        print('Random mode enabled')
+                        _print('Random mode enabled')
                         for _id in img_id:
                             src_files_rand[_id] = list(np.random.permutation(src_files[_id]))
                             # img_id[_id] = src_files_rand[_id].index(img_fname)
                             img_id[_id] = 0
                     else:
-                        print('Random mode disabled')
+                        _print('Random mode disabled')
                         if not video_mode:
                             for _load_id in range(n_images):
                                 src_id = _load_id % n_src
@@ -2581,21 +2581,21 @@ def main(args):
             elif k == ord('c'):
                 auto_progress = 1 - auto_progress
                 if auto_progress:
-                    print('Auto progression enabled')
+                    _print('Auto progression enabled')
                 else:
-                    print('Auto progression disabled')
+                    _print('Auto progression disabled')
             elif k == ord('Q'):
                 auto_progress_video = 1 - auto_progress_video
                 if auto_progress_video:
-                    print('Video auto progression enabled')
+                    _print('Video auto progression enabled')
                 else:
-                    print('Video auto progression disabled')
+                    _print('Video auto progression disabled')
             elif k == ord('q'):
                 # if video_mode:
                 rotate_images += 1
                 if rotate_images > 3:
                     rotate_images = 0
-                print('Rotating video by {} degrees'.format(rotate_images * 90))
+                _print('Rotating video by {} degrees'.format(rotate_images * 90))
                 src_images = []
                 loadImage()
                 # else:
@@ -2613,9 +2613,9 @@ def main(args):
             elif k == ord('b'):
                 borderless = 1 - borderless
                 if borderless:
-                    print('Borderless stitching enabled')
+                    _print('Borderless stitching enabled')
                 else:
-                    print('Borderless stitching disabled')
+                    _print('Borderless stitching disabled')
                 loadImage()
             elif k == ord('n'):
                 max_switches -= 1
@@ -2626,11 +2626,11 @@ def main(args):
                 if duplicate_window:
                     for _i, _win_name2 in enumerate(dup_win_names):
                         createWindow(_win_name2)
-                    print('{} duplicate windows enabled'.format(len(_win_name2)))
+                    _print('{} duplicate windows enabled'.format(len(_win_name2)))
                 else:
                     for _i, _win_name2 in enumerate(dup_win_names):
                         cv2.destroyWindow(_win_name2)
-                    print('duplicate window disabled')
+                    _print('duplicate window disabled')
             elif k == ord('N'):
                 max_switches += 1
             elif ord('1') <= k <= ord('5'):
@@ -2656,7 +2656,7 @@ def main(args):
                 elif active_win_name in dup_win_names:
                     _i = dup_win_names.index(active_win_name)
                     dup_monitor_ids[_i] = _monitor_id
-                print('moving window {}'.format(active_win_name))
+                _print('moving window {}'.format(active_win_name))
                 cv2.moveWindow(active_win_name, win_offset_x + monitors[_monitor_id][0],
                                win_offset_y + monitors[_monitor_id][1])
                 # createWindow()
@@ -2782,13 +2782,13 @@ def main(args):
                     win32gui.SetWindowPos(win_handle, _active_win_handle, 0, 0, 0, 0,
                                           win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
                 except BaseException as e:
-                    print('Failed {} --> {} : {}'.format(
+                    _print('Failed {} --> {} : {}'.format(
                         win_name, prev_active_win_name, e))
                     # continue
                 else:
                     prev_active_win_name = _active_win_name
 
-                    print('{} --> {}'.format(
+                    _print('{} --> {}'.format(
                         win_name, prev_active_win_name))
 
                 # try:
@@ -2836,7 +2836,7 @@ def main(args):
                 try:
                     _i = dup_monitor_ids.index(_active_monitor_id)
                 except ValueError as e:
-                    print('Window switching failed: {}'.format(e))
+                    _print('Window switching failed: {}'.format(e))
                 else:
 
                     win_handle = win32gui.FindWindow(None, dup_win_names[_i])
@@ -2861,11 +2861,11 @@ def main(args):
                         # win32gui.SetWindowPos(win_handle, win32con.HWND_NOTOPMOST, 0, 0, 0, 0,
                         #                       win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
                     except BaseException as e:
-                        print('Failed {} --> {} : {}'.format(
+                        _print('Failed {} --> {} : {}'.format(
                             dup_win_names[_i], prev_active_win_name, e))
                         # continue
                     else:
-                        print('{} --> {}'.format(
+                        _print('{} --> {}'.format(
                             dup_win_names[_i], prev_active_win_name))
 
                     # try:
@@ -2884,14 +2884,14 @@ def main(args):
             elif k == ord('V'):
                 if second_from_top:
                     second_from_top = 0
-                    print('second_from_top disabled')
+                    _print('second_from_top disabled')
                     sys.stdout.write('waiting for second_from_top_thread to exit...')
                     sft_exit_program.value = 1
                     # second_from_top_thread.terminate()
                     sys.stdout.write('done\n')
                 else:
                     second_from_top = 1
-                    print('second_from_top enabled')
+                    _print('second_from_top enabled')
                     sft_exit_program.value = 0
                     second_from_top_thread = Process(target=sft.second_from_top_fn,
                                                      args=(
@@ -2912,10 +2912,10 @@ def main(args):
                 transition_interval -= transition_interval_diff
                 if transition_interval < 1:
                     transition_interval = 1
-                print('Setting transition interval to: {}'.format(transition_interval))
+                _print('Setting transition interval to: {}'.format(transition_interval))
             elif k == ord('T'):
                 transition_interval += transition_interval_diff
-                print('Setting transition interval to: {}'.format(transition_interval))
+                _print('Setting transition interval to: {}'.format(transition_interval))
             elif k == ord('m') or k == ord('M'):
                 minimizeWindow()
             elif k == ord('W'):
@@ -2932,11 +2932,11 @@ def main(args):
                 wallpaper_mode = 1 - wallpaper_mode
                 if wallpaper_mode:
                     set_wallpaper = 2 if k == ord('E') else 1
-                    print('wallpaper mode enabled')
+                    _print('wallpaper mode enabled')
                     cv2.destroyWindow(win_name)
                     add_hotkeys()
                 else:
-                    print('wallpaper mode disabled')
+                    _print('wallpaper mode disabled')
                     createWindow(win_name)
                     if duplicate_window:
                         for _win_name2 in dup_win_names:
@@ -3071,13 +3071,13 @@ def main(args):
                         loadImage(-1)
             elif k == ord('F') or k == ord('0'):
                 if n_images == 1:
-                    print('"' + os.path.abspath(img_fname) + '"')
+                    _print('"' + os.path.abspath(img_fname) + '"')
                 else:
-                    print()
+                    _print()
                     for _idx in stack_idx:
                         if not video_mode:
-                            print('"' + os.path.abspath(img_fnames[_idx]) + '"')
-                    print()
+                            _print('"' + os.path.abspath(img_fnames[_idx]) + '"')
+                    _print()
             elif k == ord('f') or k == ord('/') or k == ord('?'):
                 fullscreen = 1 - fullscreen
                 createWindow(win_name)
@@ -3085,14 +3085,14 @@ def main(args):
                     for _win_name2 in dup_win_names:
                         createWindow(_win_name2)
                 if fullscreen:
-                    print('fullscreen mode enabled')
+                    _print('fullscreen mode enabled')
                 else:
-                    print('fullscreen mode disabled')
+                    _print('fullscreen mode disabled')
             else:
                 try:
                     numpad_key = numpad_to_ascii[k]
                 except KeyError as e:
-                    print('Unknown key: {} :: {}'.format(k, e))
+                    _print('Unknown key: {} :: {}'.format(k, e))
                 else:
                     sortImage(img_fname, numpad_key)
 
@@ -3137,17 +3137,17 @@ def main(args):
 
     if images_to_sort:
         for k in images_to_sort.keys():
-            print('k: ', k)
+            _print('k: ', k)
             for orig_file_path in images_to_sort[k]:
                 if not os.path.isfile(orig_file_path):
                     continue
-                print('orig_file_path: ', orig_file_path)
+                _print('orig_file_path: ', orig_file_path)
                 orig_file_path = os.path.abspath(orig_file_path)
                 sort_dir = os.path.join(os.path.dirname(orig_file_path), k)
                 if not os.path.isdir(sort_dir):
                     os.makedirs(sort_dir)
                 sort_file_path = os.path.join(sort_dir, os.path.basename(orig_file_path))
-                print('Moving {} to {}'.format(orig_file_path, sort_file_path))
+                _print('Moving {} to {}'.format(orig_file_path, sort_file_path))
                 shutil.move(orig_file_path, sort_file_path)
 
     if set_wallpaper:
