@@ -189,4 +189,4 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
         #     print('monitor_ids: {}'.format(monitor_ids))
         #     print('duplicate_window: {}'.format(duplicate_window))
 
-    print('Exiting sft')
+    print('{} :: Exiting sft'.format(win_name))

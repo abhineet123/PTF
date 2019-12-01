@@ -19,13 +19,15 @@ if __name__ == '__main__':
         'script_2': 'vw32ntj.cmd',
         'prob':  0.5,
         'init_sleep': 10,
-        'sleep': 60,
+        'sleep_1': 60,
+        'sleep_2': 60,
     }
 
     processArguments(sys.argv[1:], params)
     prob = params['prob']
     init_sleep = params['init_sleep']
-    sleep = params['sleep']
+    sleep_1 = params['sleep_1']
+    sleep_2 = params['sleep_2']
     script_root = params['script_root']
     script_1 = params['script_1']
     script_2 = params['script_2']
@@ -94,6 +96,7 @@ if __name__ == '__main__':
 
     hidden_win_handle = _win_handle_1
     win32api.PostMessage(hidden_win_handle, win32con.WM_CHAR, 0x68, 0)
+    sleep = sleep_1
 
     while True:
         time.sleep(sleep)
@@ -108,10 +111,12 @@ if __name__ == '__main__':
                     win32api.PostMessage(_win_handle_2, win32con.WM_CHAR, 0x68, 0)
                     win32api.PostMessage(_win_handle_1, win32con.WM_CHAR, 0x68, 0)
                     hidden_win_handle = _win_handle_2
+                    sleep = sleep_2
             else:
                 if hidden_win_handle == _win_handle_2:
                     win32api.PostMessage(_win_handle_2, win32con.WM_CHAR, 0x68, 0)
                     win32api.PostMessage(_win_handle_1, win32con.WM_CHAR, 0x68, 0)
                     hidden_win_handle = _win_handle_1
+                    sleep = sleep_1
         except:
             break

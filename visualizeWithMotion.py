@@ -2243,10 +2243,10 @@ def main(args):
                     # win32gui.ShowWindow(win_handle, 5)
                     # win32gui.SetForegroundWindow(win_handle)
 
-    def second_from_top_fn():
-        while second_from_top and not exit_program:
-            time.sleep(1)
-            second_from_top_callback()
+    # def second_from_top_fn():
+    #     while second_from_top and not exit_program:
+    #         time.sleep(1)
+    #         second_from_top_callback()
 
     # class StoppableThread(threading.Thread):
     #     """Thread class with a stop() method. The thread itself has to check
