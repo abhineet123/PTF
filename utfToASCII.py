@@ -1,7 +1,7 @@
 import sys
 from pprint import pformat
 
-filePath = 'The Stuff of Thought_ Language - Steven Pinker.txt'
+filePath = 'The Descent of Man (Illustrated - Charles Darwin.txt'
 
 # fichier = open(filePath, "rb")
 # contentOfFile = fichier.read()
@@ -16,7 +16,7 @@ filePath = 'The Stuff of Thought_ Language - Steven Pinker.txt'
 # fichierTemp.write(asciidata)
 # fichierTemp.close()
 
-rep_path = 'epub_txt_symbols_to_fix.txt'
+rep_path = 'D:/Users/Tommy/Documents/Backup/epub_txt_symbols_to_fix.txt'
 reps_lines = open(rep_path, "rb").read().decode("utf-8").split('\n')
 reps = [k.strip().split(' ') for k in reps_lines if k.strip()]
 
