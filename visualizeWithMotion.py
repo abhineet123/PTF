@@ -1133,7 +1133,7 @@ def main(args):
                 if video_mode:
                     if isinstance(src_files[_load_id], VideoCapture):
                         # start_t = time.time()
-                        ret, img_fname = src_files[_load_id].read()
+                        ret, src_img = src_files[_load_id].read()
                         # end_t = time.time()
                         # print(f'fps: {1.0 / (end_t - start_t)}')
                         if not ret:
@@ -1143,15 +1143,17 @@ def main(args):
                             src_path = video_files_list[vid_id]
                             loadVideo(_load_id)
                             _img_id = 0
-                            ret, img_fname = src_files[_load_id].read()
+                            ret, src_img = src_files[_load_id].read()
                     else:
                         img_fname = src_files[_load_id][_img_id]
                         if isinstance(img_fname, str):
-                            img_fname = cv2.imread(img_fname)
+                            src_img = cv2.imread(img_fname)
+                        else:
+                            src_img = np.copy(img_fname)
+                    if trim_images:
+                        src_img = np.asarray(trim(Image.fromarray(src_img)))
                     if rotate_images:
-                        src_img = np.rot90(img_fname, rotate_images)
-                    else:
-                        src_img = np.copy(img_fname)
+                        src_img = np.rot90(src_img, rotate_images)
                 else:
                     if random_mode:
                         img_fname = src_files_rand[src_id][_img_id]
@@ -1961,6 +1963,8 @@ def main(args):
         if _type == 'ctrl+alt+esc':
             _print('exiting...')
             exit_program = 1
+            if second_from_top:
+                sft_exit_program.value = 1
             interrupt_wait.set()
         elif _type == 'ctrl+alt+right':
             # loadImage(1)
@@ -2928,20 +2932,20 @@ def main(args):
                 if set_wallpaper:
                     minimizeWindow()
                     loadImage()
-            elif k == ord('e') or k == ord('E'):
-                wallpaper_mode = 1 - wallpaper_mode
-                if wallpaper_mode:
-                    set_wallpaper = 2 if k == ord('E') else 1
-                    _print('wallpaper mode enabled')
-                    cv2.destroyWindow(win_name)
-                    add_hotkeys()
-                else:
-                    _print('wallpaper mode disabled')
-                    createWindow(win_name)
-                    if duplicate_window:
-                        for _win_name2 in dup_win_names:
-                            createWindow(_win_name2)
-                    remove_hotkeys()
+            # elif k == ord('e') or k == ord('E'):
+            #     wallpaper_mode = 1 - wallpaper_mode
+            #     if wallpaper_mode:
+            #         set_wallpaper = 2 if k == ord('E') else 1
+            #         _print('wallpaper mode enabled')
+            #         cv2.destroyWindow(win_name)
+            #         add_hotkeys()
+            #     else:
+            #         _print('wallpaper mode disabled')
+            #         createWindow(win_name)
+            #         if duplicate_window:
+            #             for _win_name2 in dup_win_names:
+            #                 createWindow(_win_name2)
+            #         remove_hotkeys()
             elif k == ord(','):
                 height -= 5
                 if height < 10:

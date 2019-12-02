@@ -73,7 +73,7 @@ if __name__ == '__main__':
     args1.append('win_name={}'.format(win_name1))
     # args1.append('frg_win_titles={}'.format(frg_win_titles))
     args1.append('other_win_name={}'.format(win_name2))
-    args1.append('log_color={}'.format('red'))
+    args1.append('log_color={}'.format('cyan'))
 
     # args2 = [k.strip() for k in args2.split(' ') if k.strip()]
     args2 = shlex.split(args2)

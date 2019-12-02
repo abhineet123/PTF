@@ -70,10 +70,14 @@ if reverse == 1:
 elif reverse == 2:
     print('Appending the reverse sequence')
 
-for src_path in src_paths:
+exit_prog = 0
+
+n_src_paths = len(src_paths)
+
+for src_id, src_path in enumerate(src_paths):
     seq_name = os.path.basename(src_path)
 
-    print('Reading source images from: {}'.format(src_path))
+    print('{}/{} Reading source images from: {}'.format(src_id + 1, n_src_paths, src_path))
 
     src_path = os.path.abspath(src_path)
     src_files = [k for k in os.listdir(src_path) for _ext in img_exts if k.endswith(_ext)]
@@ -104,6 +108,9 @@ for src_path in src_paths:
             save_fname = '{}_r{}'.format(save_fname, reverse)
 
         save_path = os.path.join(os.path.dirname(src_path), '{}.{}'.format(save_fname, ext))
+
+    if os.path.exists(save_path):
+        print('Output video file already exists so skipping it: {}'.format(save_path))
 
     save_dir = os.path.dirname(save_path)
     if save_dir and not os.path.isdir(save_dir):
@@ -136,7 +143,10 @@ for src_path in src_paths:
         if show_img:
             cv2.imshow(seq_name, image)
             k = cv2.waitKey(1 - pause_after_frame) & 0xFF
-            if k == ord('q') or k == 27:
+            if k == 27:
+                exit_prog = 1
+                break
+            elif k == ord('q'):
                 break
             elif k == 32:
                 pause_after_frame = 1 - pause_after_frame
@@ -166,3 +176,6 @@ for src_path in src_paths:
         shutil.rmtree(src_path)
 
     save_path = ''
+
+    if exit_prog:
+        break
