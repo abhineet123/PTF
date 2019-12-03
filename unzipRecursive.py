@@ -3,6 +3,7 @@ import cv2
 import sys
 import imageio
 from pprint import pformat
+import platform
 
 from Misc import sortKey, processArguments
 
@@ -66,6 +67,11 @@ if __name__ == '__main__':
 
     _seq_name = os.path.abspath(_seq_name)
 
+    if platform.system() == 'Windows':
+        base_cmd = 'tar -xf'
+    elif platform.system() == 'Linux':
+        base_cmd = 'unzip'
+
     if os.path.isdir(_seq_name):
         print('Reading source archives from: {}'.format(_seq_name))
         video_file_gen = [[os.path.join(dirpath, f) for f in filenames if
@@ -94,6 +100,9 @@ if __name__ == '__main__':
         if not os.path.isfile(src_path):
             raise IOError('Invalid archive file: {}'.format(src_path))
 
-        cmd = 'tar -xf "{}" -C "{}"'.format(src_path, src_dir)
+        if platform.system() == 'Windows':
+            cmd = 'tar -xf "{}" -C "{}"'.format(src_path, src_dir)
+        elif platform.system() == 'Linux':
+            cmd = 'unzip "{}" "{}"'.format(src_path, src_dir)
         print('Running {}'.format(cmd))
         os.system(cmd)

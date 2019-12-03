@@ -1150,8 +1150,8 @@ def main(args):
                             src_img = cv2.imread(img_fname)
                         else:
                             src_img = np.copy(img_fname)
-                    if trim_images:
-                        src_img = np.asarray(trim(Image.fromarray(src_img)))
+                    # if trim_images:
+                    #     src_img = np.asarray(trim(Image.fromarray(src_img)))
                     if rotate_images:
                         src_img = np.rot90(src_img, rotate_images)
                 else:

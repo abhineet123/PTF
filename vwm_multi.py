@@ -94,9 +94,9 @@ if __name__ == '__main__':
     _win_handle_1 = win32gui.FindWindow(None, win_name1)
     _win_handle_2 = win32gui.FindWindow(None, win_name2)
 
-    hidden_win_handle = _win_handle_1
+    hidden_win_handle = _win_handle_2
     win32api.PostMessage(hidden_win_handle, win32con.WM_CHAR, 0x68, 0)
-    sleep = sleep_2
+    sleep = sleep_1
 
     while True:
         time.sleep(sleep)
