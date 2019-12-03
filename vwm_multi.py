@@ -21,6 +21,7 @@ if __name__ == '__main__':
         'init_sleep': 10,
         'sleep_1': 60,
         'sleep_2': 60,
+        'start_sleep': 60,
     }
 
     processArguments(sys.argv[1:], params)
@@ -28,6 +29,7 @@ if __name__ == '__main__':
     init_sleep = params['init_sleep']
     sleep_1 = params['sleep_1']
     sleep_2 = params['sleep_2']
+    start_sleep = params['start_sleep']
     script_root = params['script_root']
     script_1 = params['script_1']
     script_2 = params['script_2']
@@ -96,7 +98,7 @@ if __name__ == '__main__':
 
     hidden_win_handle = _win_handle_2
     win32api.PostMessage(hidden_win_handle, win32con.WM_CHAR, 0x68, 0)
-    sleep = sleep_1
+    sleep = start_sleep
 
     while True:
         time.sleep(sleep)
