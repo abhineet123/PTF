@@ -12,11 +12,12 @@ params = {
     'dst_path': '',
     'show_img': 0,
     'quality': 3,
+    'recursive': 1,
     'border_type': 2,
     'resize': 0,
     'out_size': '',
+    'out_ext': 'jpg',
 }
-
 
 if __name__ == '__main__':
     processArguments(sys.argv[1:], params)
@@ -29,6 +30,8 @@ if __name__ == '__main__':
     # 0: LHS, 1:RHS, 2: both
     resize = params['resize']
     out_size = params['out_size']
+    out_ext = params['out_ext']
+    recursive = params['recursive']
 
     if out_size:
         resize = 1
@@ -37,7 +40,16 @@ if __name__ == '__main__':
 
     print('Reading source images from: {}'.format(src_path))
     img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff', '.gif')
-    src_files = [k for k in os.listdir(src_path) if os.path.splitext(k.lower())[1] in img_exts]
+    # src_files = [k for k in os.listdir(src_path) if os.path.splitext(k.lower())[1] in img_exts]
+
+    if recursive:
+        src_file_gen = [[os.path.join(dirpath, f) for f in filenames if
+                         os.path.splitext(f.lower())[1] in img_exts]
+                        for (dirpath, dirnames, filenames) in os.walk(src_path, followlinks=True)]
+        src_files = [item for sublist in src_file_gen for item in sublist]
+    else:
+        src_files = [os.path.join(src_path, k) for k in os.listdir(src_path) if
+                      os.path.splitext(k.lower())[1] in img_exts]
 
     total_frames = len(src_files)
     if total_frames <= 0:
@@ -70,21 +82,18 @@ if __name__ == '__main__':
             out_height, out_width = src_img.shape[:2]
         print('Resizing output images to : {}x{}'.format(out_width, out_height))
 
-    if not dst_path:
-        dst_path = '{:s}_no_borders'.format(src_path)
-        if resize:
-            dst_path = '{:s}_{}x{}'.format(dst_path, out_width, out_height)
+    # print('Writing output images to: {}'.format(dst_path))
 
-    print('Writing output images to: {}'.format(dst_path))
-    if not os.path.isdir(dst_path):
-        os.makedirs(dst_path)
+    if out_ext == 'jpg':
+        img_quality_params = [int(cv2.IMWRITE_JPEG_QUALITY), 100]
+    elif out_ext == 'png':
+        img_quality_params = [int(cv2.IMWRITE_PNG_COMPRESSION), quality]
+    else:
+        raise AssertionError('Invalid out_ext: {}'.format(out_ext))
 
-    for img_fname in src_files:
+    for src_img_fname in src_files:
 
-        src_img_fname = os.path.join(src_path, img_fname)
         src_img = cv2.imread(src_img_fname)
-        img_fname_no_ext = os.path.splitext(img_fname)[0]
-
         if src_img is None:
             raise SystemError('Source image could not be read from: {}'.format(src_img_fname))
 
@@ -121,8 +130,19 @@ if __name__ == '__main__':
         if resize:
             dst_img = cv2.resize(dst_img, (out_width, out_height))
 
-        dst_img_fname = os.path.join(dst_path, '{}.png'.format(img_fname_no_ext))
-        cv2.imwrite(dst_img_fname, dst_img, [int(cv2.IMWRITE_PNG_COMPRESSION), quality])
+        src_img_dir = os.path.dirname(src_img_fname)
+        img_fname = os.path.basename(src_img_fname)
+        img_fname_no_ext = os.path.splitext(img_fname)[0]
+
+        dst_path = '{:s}_no_borders'.format(src_img_dir)
+        if resize:
+            dst_path = '{:s}_{}x{}'.format(dst_path, out_width, out_height)
+
+        if not os.path.isdir(dst_path):
+            os.makedirs(dst_path)
+
+        dst_img_fname = os.path.join(dst_path, '{}.{}'.format(img_fname_no_ext, out_ext))
+        cv2.imwrite(dst_img_fname, dst_img, img_quality_params)
 
         img_id += 1
         sys.stdout.write('\rDone {:d}/{:d} images'.format(img_id, total_frames))
