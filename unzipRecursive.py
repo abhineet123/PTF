@@ -103,6 +103,6 @@ if __name__ == '__main__':
         if platform.system() == 'Windows':
             cmd = 'tar -xf "{}" -C "{}"'.format(src_path, src_dir)
         elif platform.system() == 'Linux':
-            cmd = 'unzip "{}" "{}"'.format(src_path, src_dir)
+            cmd = 'cd "{}" && unzip "{}"'.format(src_path, src_dir)
         print('Running {}'.format(cmd))
         os.system(cmd)
