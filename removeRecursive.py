@@ -34,7 +34,7 @@ if __name__ == '__main__':
     rm_paths = ''
     for _dir in sub_dirs:
         current_path = os.path.join(_dir, file_pattern) if file_pattern else _dir
-        rm_cmd = 'cd "{:s}" && rm {:s} "{:s}"'.format(root_dir, switches, current_path)
+        rm_cmd = 'cd {:s} && rm {:s} {:s}'.format(root_dir, switches, current_path)
         print('running: {}\n'.format(rm_cmd))
         os.system(rm_cmd)
 
