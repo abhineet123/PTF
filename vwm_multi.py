@@ -18,7 +18,7 @@ if __name__ == '__main__':
         'script_1': 'vw32ntjv.cmd',
         'script_2': 'vw32ntj.cmd',
         'prob':  0.5,
-        'init_sleep': 10,
+        'init_sleep': 5,
         'sleep_1': 60,
         'sleep_2': 60,
         'start_sleep': 60,

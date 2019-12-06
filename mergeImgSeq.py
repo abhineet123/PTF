@@ -7,7 +7,7 @@ from Misc import processArguments, sortKey
 params = {
     'dst_path': '.',
     'file_ext': '',
-    'out_file': 'mfsf_log.txt',
+    'out_file': 'mis_log.txt',
     'folder_name': '.',
     'prefix': '',
     'include_folders': 0,
