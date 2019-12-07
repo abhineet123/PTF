@@ -38,7 +38,9 @@ params = {
     'resize_factor': 1.0,
     'start_id': 0,
     'out_fname_templ': 'image%06d',
-    'ext': 'jpg'
+    'ext': 'jpg',
+    'mode': 0,
+    'recursive': 1,
 }
 
 if __name__ == '__main__':
@@ -59,8 +61,11 @@ if __name__ == '__main__':
     crop = params['crop']
     reverse = params['reverse']
     ext = params['ext']
+    mode = params['mode']
+    recursive = params['recursive']
 
     vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv', '.gif']
+    img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
 
     roi_enabled = False
     if roi and isinstance(roi, (list, tuple)) and len(roi) == 4:
@@ -72,11 +77,37 @@ if __name__ == '__main__':
     # _seq_name = os.path.abspath(_seq_name)
 
     if os.path.isdir(_seq_name):
-        print('Reading source videos from: {}'.format(_seq_name))
-        seq_names = [k for k in os.listdir(_seq_name) for _ext in vid_exts if k.endswith(_ext)]
+        if mode == 0:
+            print('Looking for source videos in: {}'.format(_seq_name))
+            if recursive:
+                print('searching recursively')
+                video_file_gen = [[os.path.join(dirpath, f) for f in filenames if
+                                   os.path.splitext(f.lower())[1] in vid_exts]
+                                  for (dirpath, dirnames, filenames) in os.walk(_seq_name, followlinks=True)]
+                seq_names = [item for sublist in video_file_gen for item in sublist]
+            else:
+                seq_names = [os.path.join(_seq_name, k) for k in os.listdir(_seq_name) for _ext in vid_exts if k.endswith(_ext)]
+        else:
+            print('Looking for source image sequences in: {}'.format(_seq_name))
+            if recursive:
+                print('searching recursively')
+                video_file_gen = [[os.path.join(dirpath, d) for d in dirnames if
+                                   any([os.path.splitext(f.lower())[1] in img_exts
+                                        for f in os.listdir(os.path.join(dirpath, d))])]
+                                  for (dirpath, dirnames, filenames) in os.walk(_seq_name, followlinks=True)]
+                seq_names = [item for sublist in video_file_gen for item in sublist]
+            else:
+                seq_names = [os.path.join(_seq_name, k) for k in os.listdir(_seq_name) if
+                             any([os.path.splitext(f.lower())[1] in img_exts
+                                  for f in os.listdir(os.path.join(_seq_name, k))
+                                 ])]
+            if not seq_names:
+                seq_names = [_seq_name]
+
         n_videos = len(seq_names)
         if n_videos <= 0:
             raise SystemError('No input videos found')
+
         print('n_videos: {}'.format(n_videos))
         seq_names.sort(key=sortKey)
     else:
@@ -96,7 +127,7 @@ if __name__ == '__main__':
             print('db_root_dir: ', db_root_dir)
             src_path = os.path.join(db_root_dir, src_path)
 
-        if not os.path.isfile(src_path):
+        if mode == 0 and not os.path.isfile(src_path):
             raise IOError('Invalid video file: {}'.format(src_path))
 
         print('seq_name: ', seq_name)
@@ -107,33 +138,48 @@ if __name__ == '__main__':
             out_seq_name = os.path.splitext(os.path.basename(src_path))[0]
             if roi_enabled:
                 out_seq_name = '{}_roi_{}_{}_{}_{}'.format(out_seq_name, xmin, ymin, xmax, ymax)
+            elif crop:
+                out_seq_name = '{}_crop'.format(out_seq_name)
+
             dst_dir = os.path.join(os.path.dirname(src_path), out_seq_name)
+
+        if dst_dir == src_path:
+            raise IOError('Source and destination paths are identical')
+
         if dst_dir and not os.path.isdir(dst_dir):
             os.makedirs(dst_dir)
         print('Writing image sequence to: {:s}/{:s}.{}'.format(dst_dir, out_fname_templ, ext))
         _src_files = []
 
         _ext = os.path.splitext(src_path)[1]
-        if _ext == '.gif':
-            gif = imageio.mimread(src_path)
-            meta_data = [img.meta for img in gif]
-            print('gif meta_data: {}'.format(pformat(meta_data)))
-            _src_files = [cv2.cvtColor(img, cv2.COLOR_RGB2BGR) if img.shape[2] == 3
-                          else cv2.cvtColor(img, cv2.COLOR_RGBA2BGR)
-                          for img in gif]
-            total_frames = len(_src_files)
-        else:
-
-            cap = cv2.VideoCapture()
-            if not cap.open(src_path):
-                raise SystemError('The video file ' + src_path + ' could not be opened')
-
-            if cv2.__version__.startswith('2'):
-                cv_prop = cv2.cv.CAP_PROP_FRAME_COUNT
+        if mode == 0:
+            if _ext == '.gif':
+                gif = imageio.mimread(src_path)
+                meta_data = [img.meta for img in gif]
+                print('gif meta_data: {}'.format(pformat(meta_data)))
+                _src_files = [cv2.cvtColor(img, cv2.COLOR_RGB2BGR) if img.shape[2] == 3
+                              else cv2.cvtColor(img, cv2.COLOR_RGBA2BGR)
+                              for img in gif]
+                total_frames = len(_src_files)
             else:
-                cv_prop = cv2.CAP_PROP_FRAME_COUNT
+                cap = cv2.VideoCapture()
+                if not cap.open(src_path):
+                    raise SystemError('The video file ' + src_path + ' could not be opened')
 
-            total_frames = int(cap.get(cv_prop))
+                if cv2.__version__.startswith('2'):
+                    cv_prop = cv2.cv.CAP_PROP_FRAME_COUNT
+                else:
+                    cv_prop = cv2.CAP_PROP_FRAME_COUNT
+
+                total_frames = int(cap.get(cv_prop))
+        else:
+            _src_files = [os.path.join(src_path, k) for k in os.listdir(src_path) for _ext in img_exts if k.endswith(_ext)]
+            total_frames = len(_src_files)
+            if total_frames <= 0:
+                raise SystemError('No input frames found')
+            _src_files.sort(key=sortKey)
+            print('total_frames: {}'.format(total_frames))
+
         frame_gap = 1
 
         if n_frames <= 0:
@@ -151,6 +197,8 @@ if __name__ == '__main__':
         while True:
             if _src_files:
                 frame = _src_files[frame_id]
+                if isinstance(frame, str):
+                    frame = cv2.imread(frame)
             else:
                 ret, frame = cap.read()
                 if not ret:
