@@ -58,7 +58,7 @@ if os.path.isdir(_src_path):
                                 for f in os.listdir(os.path.join(dirpath, d))])]
                          for (dirpath, dirnames, filenames) in os.walk(_src_path, followlinks=True)]
         src_paths = [item for sublist in src_paths_gen for item in sublist]
-        src_root_dir = _src_path
+        src_root_dir = os.path.abspath(_src_path)
     else:
         src_paths = [_src_path]
     print('Found {} image sequence(s):\n{}'.format(len(src_paths), pformat(src_paths)))
@@ -118,6 +118,11 @@ for src_id, src_path in enumerate(src_paths):
 
         if src_root_dir and save_root_dir:
             save_path = save_path.replace(src_root_dir, save_root_dir)
+            print('save_path: {}'.format(save_path))
+            print('src_root_dir: {}'.format(src_root_dir))
+            print('save_root_dir: {}'.format(save_root_dir))
+            print('save_path: {}'.format(save_path))
+            # sys.exit()
 
     if os.path.exists(save_path):
         dst_mtime = os.path.getmtime(save_path)
