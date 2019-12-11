@@ -86,7 +86,8 @@ if __name__ == '__main__':
                                   for (dirpath, dirnames, filenames) in os.walk(_seq_name, followlinks=True)]
                 seq_names = [item for sublist in video_file_gen for item in sublist]
             else:
-                seq_names = [os.path.join(_seq_name, k) for k in os.listdir(_seq_name) for _ext in vid_exts if k.endswith(_ext)]
+                seq_names = [os.path.join(_seq_name, k) for k in os.listdir(_seq_name) for _ext in vid_exts if
+                             k.endswith(_ext)]
         else:
             print('Looking for source image sequences in: {}'.format(_seq_name))
             if recursive:
@@ -100,7 +101,7 @@ if __name__ == '__main__':
                 seq_names = [os.path.join(_seq_name, k) for k in os.listdir(_seq_name) if
                              any([os.path.splitext(f.lower())[1] in img_exts
                                   for f in os.listdir(os.path.join(_seq_name, k))
-                                 ])]
+                                  ])]
             if not seq_names:
                 seq_names = [_seq_name]
 
@@ -173,7 +174,8 @@ if __name__ == '__main__':
 
                 total_frames = int(cap.get(cv_prop))
         else:
-            _src_files = [os.path.join(src_path, k) for k in os.listdir(src_path) for _ext in img_exts if k.endswith(_ext)]
+            _src_files = [os.path.join(src_path, k) for k in os.listdir(src_path) for _ext in img_exts if
+                          k.endswith(_ext)]
             total_frames = len(_src_files)
             if total_frames <= 0:
                 raise SystemError('No input frames found')
@@ -209,6 +211,10 @@ if __name__ == '__main__':
                 print('roi: {}'.format(roi))
                 cv2.destroyWindow('Select ROI')
                 x1, y1, w, h = roi
+                if crop == 2:
+                    y1 = 0
+                    h = frame.shape[1]
+
                 roi = x1, y1, x1 + w, y1 + h
                 print('Using roi: ', roi)
                 roi_enabled = True

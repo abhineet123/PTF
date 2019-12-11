@@ -12,8 +12,7 @@ try:
 except ImportError as e:
     print('OpenCV import failed: {}'.format(e))
 
-import numpy as np
-import math
+
 
 try:
     import matplotlib
@@ -1526,95 +1525,6 @@ def getPointPlot(root_dir=None, filenames=None, plot_fname=None,
 
     if show_plot:
         plt.show()
-#
-#
-# import subprocess
-#
-# class VideoCaptureGPU:
-#     def __init__(self, path=None):
-#         if path is not None:
-#             self.open(path)
-#
-#     def open(self, path):
-#         self._path = path
-#         cmd = f'ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "{self._path}"'
-#         p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-#         _data = p.stdout.read().decode("utf-8")
-#         print(f'_data: {_data}')
-#
-#         self.width, self.height = [int(x) for x in _data.split('x')]
-#         print(f'width: {self.width} height: {self.height}')
-#         self._size = int(self.height * self.width * 3)
-#
-#         cmd = f'ffprobe -v error -select_streams v:0 -show_entries stream=nb_frames -of csv=s=x:p=0 "{self._path}"'
-#         p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-#         _data = p.stdout.read().decode("utf-8")
-#         try:
-#             self._n_frames = int(_data)
-#         except:
-#             # cmd = f'ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames ' \
-#             #     f'-of default=nokey=1:noprint_wrappers=1 {self._path}'
-#             # p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-#             # _data = p.stdout.read().decode("utf-8")
-#             # try:
-#             #     self._n_frames = int(_data)
-#             # except:
-#             #     self._n_frames = 100000
-#             self._n_frames = 100000
-#
-#         print(f'self._n_frames: {self._n_frames}')
-#
-#         cmd = ['ffmpeg',
-#                '-hide_banner',
-#                '-loglevel', 'panic',
-#                '-vsync', '0',
-#                '-hwaccel', 'nvdec',
-#                # '-hwaccel', 'cuvid',
-#                # '-c:v', 'h264_cuvid',
-#                '-i', f'{self._path}',
-#                '-f', 'image2pipe',
-#                '-an',
-#                '-vcodec', 'rawvideo',
-#                # '-pix_fmt', 'yuv420p ',
-#                # '-pix_fmt', 'rgb24',
-#                '-pix_fmt', 'bgr24',
-#                '-']
-#         self._pipe = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-#
-#         self._frame_id = 0
-#         return 1
-#
-#     def get(self, prop):
-#         if prop == cv2.CAP_PROP_FRAME_COUNT:
-#             return self._n_frames
-#
-#     def release(self):
-#         self._pipe.stdout.close()
-#         # self._pipe.wait()
-#
-#     def read(self):
-#         self._frame_id += 1
-#         if self._frame_id > self._n_frames:
-#             return 0, None
-#
-#         _data = self._pipe.stdout.read(self._size)
-#         if len(_data) == 0:
-#             return 0, None
-#
-#         # print(f'_data: {_data}')
-#
-#         # print(f'Reading frame {self._frame_id}')
-#         # print(f'Done')
-#
-#         img = np.frombuffer(_data, dtype=np.uint8).reshape((self.height, self.width, 3))
-#
-#         # cv2.imshow('img', img)
-#         # k = cv2.waitKey(0)
-#         # if k == 27:
-#         #     sys.exit()
-#
-#         return 1, img
-
 
 class InteractivePlot:
     def __init__(self, root_dir=None, filenames=None, plot_fname=None,

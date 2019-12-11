@@ -4,6 +4,7 @@ import os, shutil
 
 from pprint import pformat
 from Misc import processArguments, sortKey, resizeAR
+from video_io import VideoWriterGPU
 
 params = {
     'src_path': '.',
@@ -110,7 +111,20 @@ for src_id, src_path in enumerate(src_paths):
         save_path = os.path.join(os.path.dirname(src_path), '{}.{}'.format(save_fname, ext))
 
     if os.path.exists(save_path):
-        print('Output video file already exists so skipping it: {}'.format(save_path))
+        dst_mtime = os.path.getmtime(save_path)
+        src_mtime = os.path.getmtime(src_path)
+
+        print('Output video file already exists: {}'.format(save_path))
+
+        if dst_mtime > src_mtime:
+            print('Last modified time: {} is newer than the source: {} so skipping it'.format(
+                dst_mtime, src_mtime
+            ))
+            continue
+        else:
+            print('Last modified time: {} is older than the source so overwriting it'.format(
+                dst_mtime, src_mtime
+            ))
 
     save_dir = os.path.dirname(save_path)
     if save_dir and not os.path.isdir(save_dir):
@@ -120,8 +134,11 @@ for src_id, src_path in enumerate(src_paths):
         temp_img = cv2.imread(os.path.join(src_path, src_files[0]))
         height, width, _ = temp_img.shape
 
-    fourcc = cv2.VideoWriter_fourcc(*codec)
-    video_out = cv2.VideoWriter(save_path, fourcc, fps, (width, height))
+    if codec == 'H265':
+        video_out = VideoWriterGPU(save_path, fps, (width, height))
+    else:
+        fourcc = cv2.VideoWriter_fourcc(*codec)
+        video_out = cv2.VideoWriter(save_path, fourcc, fps, (width, height))
 
     if video_out is None:
         raise IOError('Output video file could not be opened: {}'.format(save_path))
