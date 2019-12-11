@@ -1,8 +1,9 @@
 import cv2
 import sys
 import os, shutil
-
+from datetime import datetime
 from pprint import pformat
+
 from Misc import processArguments, sortKey, resizeAR
 from video_io import VideoWriterGPU
 
@@ -122,17 +123,20 @@ for src_id, src_path in enumerate(src_paths):
         dst_mtime = os.path.getmtime(save_path)
         src_mtime = os.path.getmtime(src_path)
 
+        dst_mtime_fmt = datetime.fromtimestamp(dst_mtime).strftime('%Y-%m-%d %H:%M:%S')
+        src_mtime_fmt = datetime.fromtimestamp(src_mtime).strftime('%Y-%m-%d %H:%M:%S')
+
         print('Output video file already exists: {}'.format(save_path))
 
         if dst_mtime >= src_mtime:
             print('Last modified time: {} is not older than the source: {} so skipping it'.format(
-                dst_mtime, src_mtime
+                dst_mtime_fmt, src_mtime_fmt
             ))
             save_path = ''
             continue
         else:
             print('Last modified time: {} is older than the source: {} so overwriting it'.format(
-                dst_mtime, src_mtime
+                dst_mtime_fmt, src_mtime_fmt
             ))
 
     save_dir = os.path.dirname(save_path)
