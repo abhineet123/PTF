@@ -9,6 +9,7 @@ from video_io import VideoWriterGPU
 params = {
     'src_path': '.',
     'save_path': '',
+    'save_root_dir': '',
     'img_ext': 'jpg',
     'show_img': 1,
     'del_src': 0,
@@ -40,19 +41,23 @@ codec = params['codec']
 ext = params['ext']
 out_postfix = params['out_postfix']
 reverse = params['reverse']
+save_root_dir = params['save_root_dir']
 
 img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
+
+src_root_dir = ''
 
 if os.path.isdir(_src_path):
     src_files = [k for k in os.listdir(_src_path) for _ext in img_exts if k.endswith(_ext)]
     if not src_files:
         # src_paths = [os.path.join(_src_path, k) for k in os.listdir(_src_path) if
         #              os.path.isdir(os.path.join(_src_path, k))]
-        video_file_gen = [[os.path.join(dirpath, d) for d in dirnames if
-                           any([os.path.splitext(f.lower())[1] in img_exts
+        src_paths_gen = [[os.path.join(dirpath, d) for d in dirnames if
+                          any([os.path.splitext(f.lower())[1] in img_exts
                                 for f in os.listdir(os.path.join(dirpath, d))])]
-                          for (dirpath, dirnames, filenames) in os.walk(_src_path, followlinks=True)]
-        src_paths = [item for sublist in video_file_gen for item in sublist]
+                         for (dirpath, dirnames, filenames) in os.walk(_src_path, followlinks=True)]
+        src_paths = [item for sublist in src_paths_gen for item in sublist]
+        src_root_dir = _src_path
     else:
         src_paths = [_src_path]
     print('Found {} image sequence(s):\n{}'.format(len(src_paths), pformat(src_paths)))
@@ -110,19 +115,23 @@ for src_id, src_path in enumerate(src_paths):
 
         save_path = os.path.join(os.path.dirname(src_path), '{}.{}'.format(save_fname, ext))
 
+        if src_root_dir and save_root_dir:
+            save_path = save_path.replace(src_root_dir, save_root_dir)
+
     if os.path.exists(save_path):
         dst_mtime = os.path.getmtime(save_path)
         src_mtime = os.path.getmtime(src_path)
 
         print('Output video file already exists: {}'.format(save_path))
 
-        if dst_mtime > src_mtime:
-            print('Last modified time: {} is newer than the source: {} so skipping it'.format(
+        if dst_mtime >= src_mtime:
+            print('Last modified time: {} is not older than the source: {} so skipping it'.format(
                 dst_mtime, src_mtime
             ))
+            save_path = ''
             continue
         else:
-            print('Last modified time: {} is older than the source so overwriting it'.format(
+            print('Last modified time: {} is older than the source: {} so overwriting it'.format(
                 dst_mtime, src_mtime
             ))
 
