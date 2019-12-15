@@ -85,6 +85,10 @@ for subfolder in subfolders:
         if src_path != _dst_path:
             src_dir = os.path.dirname(src_path)
             empty_folders.append(src_dir)
+
+            src_dir_name = os.path.basename(src_dir)
+            _dst_path = os.path.join(subfolders_path, '{}_{}'.format(src_dir_name, src_filename))
+
             print('{} -> {}'.format(src_path, _dst_path))
             try:
                 shutil.move(src_path, _dst_path)
