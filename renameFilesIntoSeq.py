@@ -1,19 +1,14 @@
 import sys
-import os
+import os, stat
 import random
 from Misc import sortKey, processArguments
 import inspect
 
 import ctypes
-import os
-
 
 def is_hidden(filepath):
     name = os.path.basename(os.path.abspath(filepath))
     return name.startswith('.') or has_hidden_attribute(filepath)
-
-
-import os, stat
 
 
 def has_hidden_attribute2(filepath):
@@ -21,10 +16,13 @@ def has_hidden_attribute2(filepath):
 
 
 def has_hidden_attribute(filepath):
+    print('filepath: {}'.format(filepath))
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(unicode(filepath))
         assert attrs != -1
         result = bool(attrs & 2)
+    except (UnicodeDecodeError, ):
+        result = False
     except (AttributeError, AssertionError):
         result = False
     return result
@@ -33,6 +31,8 @@ def has_hidden_attribute(filepath):
 def main():
     params = {
         'seq_prefix': ['Seq', ],
+        'seq_prefix_filter': '',
+        'seq_prefix_ext': '',
         'seq_root_dir': '.',
         'seq_start_id': -1,
         'shuffle_files': 0,
@@ -43,6 +43,8 @@ def main():
     }
     processArguments(sys.argv[1:], params)
     seq_prefix = params['seq_prefix']
+    seq_prefix_filter = params['seq_prefix_filter']
+    seq_prefix_ext = params['seq_prefix_ext']
     _seq_root_dir = params['seq_root_dir']
     seq_start_id = params['seq_start_id']
     shuffle_files = params['shuffle_files']
@@ -82,8 +84,7 @@ def main():
     #     target_ext = sys.argv[arg_id]
     #     arg_id += 1
 
-    seq_prefix_ext = ''
-    seq_prefix_filter = ''
+    print('seq_prefix: {}'.format(seq_prefix))
 
     if len(seq_prefix) == 1:
         seq_prefix = seq_prefix[0]
@@ -91,6 +92,10 @@ def main():
         seq_prefix, seq_prefix_filter = seq_prefix
     elif len(seq_prefix) == 3:
         seq_prefix, seq_prefix_filter, seq_prefix_ext = seq_prefix
+
+    print('seq_prefix: {}'.format(seq_prefix))
+    print('seq_prefix_filter: {}'.format(seq_prefix_filter))
+    print('seq_prefix_ext: {}'.format(seq_prefix_ext))
 
     script_filename = inspect.getframeinfo(inspect.currentframe()).filename
     script_path = os.path.dirname(os.path.abspath(script_filename))

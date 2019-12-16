@@ -109,7 +109,6 @@ def main():
         'show_img': 1,
         'del_src': 0,
         'start_id': 0,
-        'n_frames': 0,
         'width': 0,
         'height': 0,
         'fps': 30,
@@ -133,7 +132,6 @@ def main():
     show_img = params['show_img']
     del_src = params['del_src']
     start_id = params['start_id']
-    n_frames = params['n_frames']
     _width = params['width']
     _height = params['height']
     fps = params['fps']
@@ -301,9 +299,6 @@ def main():
             sys.stdout.write('\rDone {:d} frames '.format(frame_id - start_id))
             sys.stdout.flush()
 
-            if n_frames > 0 and (frame_id - start_id) >= n_frames:
-                break
-
             if frame_id >= n_src_files:
                 break
 
@@ -392,9 +387,11 @@ def main():
 
         print(f'order: {order}')
         print(f'thresh: {thresh}')
+        print(f'n_src_files: {n_src_files}')
 
-        if n_frames not in split_indices:
-            split_indices.append(n_frames)
+
+        if n_src_files not in split_indices:
+            split_indices.append(n_src_files)
 
         split_indices = list(split_indices)
         n_splits = len(split_indices)
@@ -402,7 +399,7 @@ def main():
         start_id = 0
         sub_seq_id = sub_seq_start_id
         for end_id in split_indices:
-            print(f'sub_seq_id: {sub_seq_id} with sim: {sim_list[end_id]}')
+            print(f'sub_seq_id: {sub_seq_id} with sim: {sim_list[end_id]}, start_id: {start_id}, end_id: {end_id}')
             dst_path = os.path.join(src_path, f'{sub_seq_id}')
             if not os.path.isdir(dst_path):
                 os.makedirs(dst_path)
