@@ -145,7 +145,9 @@ def main():
     order = params['order']
     sub_seq_start_id = params['sub_seq_start_id']
 
+    vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv', '.gif']
     img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
+
     min_thresh = 0
     if metric == 0:
         sim_func = measure.compare_mse
@@ -180,6 +182,12 @@ def main():
         cmp_func = np.greater
 
     metric_type_ratio = f'{metric_type} Ratio'
+
+    if any(_src_path.endswith(_ext) for _ext in vid_exts):
+        print('Converting video to image sequences: {}'.format(_src_path))
+        os.system('v2i {}'.format(_src_path))
+
+        _src_path = os.path.join(os.path.dirname(_src_path),  os.path.splitext(os.path.basename(_src_path))[0])
 
     if os.path.isdir(_src_path):
         src_files = [k for k in os.listdir(_src_path) for _ext in img_exts if k.endswith(_ext)]
