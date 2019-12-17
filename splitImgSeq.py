@@ -399,7 +399,7 @@ def main():
         start_id = 0
         sub_seq_id = sub_seq_start_id
         for end_id in split_indices:
-            print(f'sub_seq_id: {sub_seq_id} with sim: {sim_list[end_id]}, start_id: {start_id}, end_id: {end_id}')
+            print(f'sub_seq_id: {sub_seq_id} with sim: {sim_list[end_id - 1]}, start_id: {start_id}, end_id: {end_id}')
             dst_path = os.path.join(src_path, f'{sub_seq_id}')
             if not os.path.isdir(dst_path):
                 os.makedirs(dst_path)

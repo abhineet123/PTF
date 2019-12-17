@@ -585,7 +585,7 @@ def main(args):
                 _src_files.sort(key=img_sortKey)
             except:
                 _src_files.sort()
-        else:
+        elif os.path.isfile(src_path):
             _print('Reading frames from video file {}'.format(src_path))
 
             _ext = os.path.splitext(src_path)[1]
@@ -614,6 +614,9 @@ def main(args):
                             break
                         _src_files.append(src_img)
                         # total_frames += 1
+        else:
+            _print('Ignoring non existent src_path {}'.format(src_path))
+            return
 
         if isinstance(_src_files, list):
             total_frames[_load_id] = len(_src_files)
