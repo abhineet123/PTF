@@ -2633,6 +2633,12 @@ def main(args):
                     _print('Video auto progression enabled')
                 else:
                     _print('Video auto progression disabled')
+            elif k == ord('e'):
+                reverse_video = 1 - reverse_video
+                if reverse_video:
+                    _print('Video reversal enabled')
+                else:
+                    _print('Video reversal disabled')
             elif k == ord('q'):
                 # if video_mode:
                 rotate_images += 1
