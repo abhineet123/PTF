@@ -134,6 +134,8 @@ params = {
     'other_win_name': '',
     'log_color': '',
 }
+
+
 def main(args):
     p = psutil.Process(os.getpid())
     try:
@@ -225,7 +227,7 @@ def main(args):
 
         def _print(*args):
             our_str = args[0]
-            if len(args) >  1:
+            if len(args) > 1:
                 for arg in args:
                     our_str += '{}'.format(arg)
             _logger.info(our_str)
@@ -430,11 +432,11 @@ def main(args):
                     frg_reversed_pos.append(_reversed_pos)
 
                     _print(f'{frg_win_title} :: found window {frg_titles[-1]} with '
-                          f'handle {frg_win_handles[-1]} and '
-                          f'position: {frg_positions[-1]} '
-                          f'border: {frg_win_borders[-1]}'
-                          f'reversed_pos: {frg_reversed_pos[-1]}'
-                          )
+                           f'handle {frg_win_handles[-1]} and '
+                           f'position: {frg_positions[-1]} '
+                           f'border: {frg_win_borders[-1]}'
+                           f'reversed_pos: {frg_reversed_pos[-1]}'
+                           )
 
             frg_win_id = 0
             frg_target_title = frg_titles[frg_win_id]
@@ -729,6 +731,7 @@ def main(args):
                 excluded = 0
 
             src_dir = os.path.abspath(src_dir)
+            # src_dir = src_dir.replace(os.sep, '/')
 
             _sample = _samples[_id]
             if _sample <= 0:
@@ -737,13 +740,21 @@ def main(args):
                 _video_mode = _sample
 
             if _video_mode == 2:
+                # _print(f'Looking for image sequences in {src_dir}')
                 video_file_gen = [[os.path.join(dirpath, d) for d in dirnames if
                                    any([os.path.splitext(f.lower())[1] in img_exts
                                         for f in os.listdir(os.path.join(dirpath, d))])]
                                   for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
                 _video_files_list = [item for sublist in video_file_gen for item in sublist]
+
+                if any([os.path.splitext(f.lower())[1] in img_exts
+                                        for f in os.listdir(src_dir)]):
+                    _video_files_list.append(src_dir)
             else:
+                # _print(f'Looking for videos in {src_dir}')
+                # recursive = 0
                 if recursive:
+                    # _print(f'Searching recursively')
                     video_file_gen = [[os.path.join(dirpath, f) for f in filenames if
                                        os.path.splitext(f.lower())[1] in vid_exts]
                                       for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
@@ -751,6 +762,14 @@ def main(args):
                 else:
                     _video_files_list = [os.path.join(src_dir, k) for k in os.listdir(src_dir) if
                                          os.path.splitext(k.lower())[1] in vid_exts]
+                    _all_files_list = [os.path.join(src_dir, k) for k in os.listdir(src_dir)]
+
+                    _all_files_ext = [os.path.splitext(k.lower())[1] for k in _all_files_list]
+                    _all_files_ext_status = [k in vid_exts for k in _all_files_ext]
+
+                    _video_files_list = [os.path.join(src_dir, k) for k in _all_files_list if
+                                         os.path.splitext(k.lower())[1] in vid_exts]
+
             n_videos = len(_video_files_list)
 
             if excluded:
@@ -761,14 +780,31 @@ def main(args):
                     _video_files_list = [k for k in _video_files_list if k not in excluded_video_files]
                     n_videos = len(_video_files_list)
 
-                if n_videos > 1:
+                if n_videos:
                     # print(f'Found {n_videos} videos in {src_dir}')
                     _print(f'Adding {n_videos} videos from: {src_dir} '
-                          f'with multiplicity {_counts[_id]} '
-                          f'for total: {int(n_videos * _counts[_id])}')
+                           f'with multiplicity {_counts[_id]} '
+                           f'for total: {int(n_videos * _counts[_id])}')
                     video_files_list += _video_files_list * _counts[_id]
                 else:
                     _print(f'Found no videos in {src_dir}')
+                    # _print(''
+                    #        '_video_files_list:\n{}\n'
+                    #        'all_files_list:\n{}\n'
+                    #        'all_files_ext:\n{}\n'
+                    #        '_all_files_ext_status:\n{}\n'
+                    #        'vid_exts:\n{}\n'.format(
+                    #     pformat(_video_files_list),
+                    #     pformat(_all_files_list),
+                    #     pformat(_all_files_ext),
+                    #     pformat(_all_files_ext_status),
+                    #     vid_exts,
+                    # )
+                    # )
+
+        if not video_files_list:
+            raise IOError('No videos found in any source folder')
+
         try:
             video_files_list.sort(key=sortKey)
         except:
@@ -832,8 +868,8 @@ def main(args):
                     _src_files = [k for k in _src_files if k not in excluded_src_files]
                     _n_src_files = len(_src_files)
                 _print(f'Adding {_n_src_files} images from: {src_dir} '
-                      f'with sample: {_samples[_id]} and multiplicity {_counts[_id]} '
-                      f'for total: {int(_n_src_files * _counts[_id] / _samples[_id])}')
+                       f'with sample: {_samples[_id]} and multiplicity {_counts[_id]} '
+                       f'for total: {int(_n_src_files * _counts[_id] / _samples[_id])}')
                 src_files[_id] = _src_files
 
             # src_file_list = [list(x) for x in src_file_list]
@@ -1124,7 +1160,7 @@ def main(args):
                         loadVideo(_load_id)
                         _img_id = 0
                     else:
-                        if video_mode and reverse_video and not lazy_video_load:
+                        if video_mode and reverse_video and (video_mode==2 or not lazy_video_load):
                             src_files[_load_id] = list(reversed(src_files[_load_id]))
                         _img_id -= _total_frames
                         if not video_mode and auto_progress and random_mode:
