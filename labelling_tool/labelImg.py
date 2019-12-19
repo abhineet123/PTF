@@ -20,7 +20,7 @@ import threading
 import socket
 from libs.netio import send_msg_to_connection, recv_from_connection
 from tracking.Visualizer import Visualizer, VisualizerParams
-from tracking.Utilities import processArguments
+from tracking.Server import Server, ServerParams
 
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -146,6 +146,7 @@ class LabelingParams:
         self.verbose = 0
         self.max_boxes = 0
         self.mask = MaskParams()
+        self.server = ServerParams()
         self.visualizer = VisualizerParams()
 
         self.help = {
@@ -627,12 +628,12 @@ class MainWindow(QMainWindow, WindowMixin):
                                   openVideo, opendir, save, saveAs, close, quit),
                               beginner=(), advanced=(),
                               editMenu=(
-                                  edit, create_mask, copy, delete, delete_target, delete_all_in_curr_image,
+                                  set_roi, edit, create_mask, copy, delete, delete_target, delete_all_in_curr_image,
                                   delete_all_annotations,
-                                  track, set_roi),
-                              beginnerContext=(create, create_mask, edit, copy, delete, delete_target, track, set_roi),
-                              advancedContext=(createMode, create_mask, editMode, edit, copy,
-                                               delete, delete_target, track, set_roi),
+                                  track),
+                              beginnerContext=(set_roi, create, create_mask, edit, copy, delete, delete_target, track),
+                              advancedContext=(set_roi, createMode, create_mask, editMode, edit, copy,
+                                               delete, delete_target, track),
                               onLoadActive=(
                                   close, create, createMode, editMode),
                               onShapesPresent=(saveAs, hideAll, showAll),
@@ -773,9 +774,10 @@ class MainWindow(QMainWindow, WindowMixin):
         self.tools = self.toolbar('Tools')
         self.run_tools = self.run_toolbar('Run Tools', position=Qt.TopToolBarArea)
         self.actions.beginner = (
+            set_roi,
             openVideo, opendir, openNextImg, openPrevImg, save, None, create, create_mask,
             copy, delete, delete_target, delete_all_in_curr_image,
-            None, zoomIn, zoom, zoomOut, fitWindow, fitWidth, track, set_roi)
+            None, zoomIn, zoom, zoomOut, fitWindow, fitWidth, track)
 
         self.actions.advanced = (
             openVideo, opendir, openNextImg, openPrevImg, save, None,
@@ -939,9 +941,11 @@ class MainWindow(QMainWindow, WindowMixin):
                 print('Previous directory does not exit: {}'.format(prev_dir))
         elif filePath:
             if os.path.isdir(filePath):
+                print('Loading folder: {}'.format(filePath))
                 self.queueEvent(partial(self.openDir, filePath))
 
             elif os.path.isfile(filePath):
+                print('Loading file: {}'.format(filePath))
                 self.queueEvent(partial(self.openVideoFile, filePath))
 
             # self.queueEvent(partial(self.loadFile, self.filePath or ""))
@@ -2829,8 +2833,31 @@ class MainWindow(QMainWindow, WindowMixin):
         # if not self.other_windows.tracking_server_log.isVisible():
         #     self.view_tracking_server_log()
 
-        self.send_patch_tracking_request(
-            curr_index, bbox, curr_shape.label, self.track_id, 'ground_truth')
+        sertver = Server(self.params.server, self.logger)
+
+        TRACKING_PORT = 3002
+        # self.other_windows.tracking_server_log.start_server()
+        # cmd_args = self.other_windows.tracking_server_log.getCommandLineArgs()
+        num_frames = self.frames_reader.num_frames
+        request = dict(
+            request_type="patch_tracking",
+            cmd_args='',
+            path=self.frames_reader.get_path(),
+            frame_number=curr_index,
+            port=3000,
+            trigger_tracking_request=False,
+            bbox=bbox,
+            label=curr_shape.label,
+            id_number=self.track_id,
+            roi=self.roi,
+            bbox_source='ground_truth',
+            num_frames=num_frames,
+        )
+
+        sertver.patchTracking(request)
+
+        # self.send_patch_tracking_request(
+        #     curr_index, bbox, curr_shape.label, self.track_id,)
 
     def connectToPort(self, sock, port, name):
         print_msg = True
