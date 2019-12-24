@@ -80,28 +80,31 @@ for subfolder in subfolders:
     for i in range(n_files):
         src_path = src_files[i]
         src_filename = os.path.basename(src_path)
-        _dst_path = os.path.join(subfolders_path, src_filename)
 
+        if src_filename[0].isdigit():
+            continue
+
+        _dst_path = os.path.join(subfolders_path, src_filename)
+        src_dir = os.path.dirname(src_path)
         if src_path != _dst_path:
-            src_dir = os.path.dirname(src_path)
             empty_folders.append(src_dir)
 
-            src_dir_name = os.path.basename(src_dir)
-            _dst_path = os.path.join(subfolders_path, '{}_{}'.format(src_dir_name, src_filename))
+        src_dir_name = os.path.basename(src_dir)
+        _dst_path = os.path.join(subfolders_path, '{}_{}'.format(src_dir_name, src_filename))
 
-            print('{} -> {}'.format(src_path, _dst_path))
-            try:
-                shutil.move(src_path, _dst_path)
-                out_fid.write('{}\t{}\n'.format(src_path, _dst_path))
-            except shutil.Error as e:
-                print('shutil.Error Failure: {}'.format(e))
-                continue
-            except OSError as e:
-                print('OSError Failure: {}'.format(e))
-                continue
-            except BaseException as e:
-                print('BaseException Failure: {}'.format(e))
-                continue
+        print('{} -> {}'.format(src_path, _dst_path))
+        try:
+            shutil.move(src_path, _dst_path)
+            out_fid.write('{}\t{}\n'.format(src_path, _dst_path))
+        except shutil.Error as e:
+            print('shutil.Error Failure: {}'.format(e))
+            continue
+        except OSError as e:
+            print('OSError Failure: {}'.format(e))
+            continue
+        except BaseException as e:
+            print('BaseException Failure: {}'.format(e))
+            continue
         total_files += 1
 
 empty_folders = list(set(empty_folders))

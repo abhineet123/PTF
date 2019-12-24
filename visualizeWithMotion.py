@@ -748,7 +748,7 @@ def main(args):
                 _video_files_list = [item for sublist in video_file_gen for item in sublist]
 
                 if any([os.path.splitext(f.lower())[1] in img_exts
-                                        for f in os.listdir(src_dir)]):
+                        for f in os.listdir(src_dir)]):
                     _video_files_list.append(src_dir)
             else:
                 # _print(f'Looking for videos in {src_dir}')
@@ -1160,7 +1160,7 @@ def main(args):
                         loadVideo(_load_id)
                         _img_id = 0
                     else:
-                        if video_mode and reverse_video and (video_mode==2 or not lazy_video_load):
+                        if video_mode and reverse_video and (video_mode == 2 or not lazy_video_load):
                             src_files[_load_id] = list(reversed(src_files[_load_id]))
                         _img_id -= _total_frames
                         if not video_mode and auto_progress and random_mode:
@@ -1176,11 +1176,12 @@ def main(args):
                         # end_t = time.time()
                         # print(f'fps: {1.0 / (end_t - start_t)}')
                         if not ret:
-                            src_files[_load_id].release()
-                            if auto_progress_video:
-                                vid_id = (vid_id + 1) % n_videos
-                            src_path = video_files_list[vid_id]
-                            loadVideo(_load_id)
+                            src_files[_load_id].set(cv2.CAP_PROP_POS_FRAMES, 0)
+                            # src_files[_load_id].release()
+                            # if auto_progress_video:
+                            #     vid_id = (vid_id + 1) % n_videos
+                            # src_path = video_files_list[vid_id]
+                            # loadVideo(_load_id)
                             _img_id = 0
                             ret, src_img = src_files[_load_id].read()
                     else:
