@@ -262,7 +262,10 @@ def main():
             image = cv2.imread(file_path)
             image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-            sim = sim_func(image, prev_image)
+            if image.shape != prev_image.shape:
+                sim = min_thresh
+            else:
+                sim = sim_func(image, prev_image)
 
             if prev_sim is not None:
                 s_ratio = (sim + 1) / (prev_sim + 1)

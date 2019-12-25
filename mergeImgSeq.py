@@ -81,8 +81,8 @@ for subfolder in subfolders:
         src_path = src_files[i]
         src_filename = os.path.basename(src_path)
 
-        if src_filename[0].isdigit():
-            continue
+        # if src_filename[0].isdigit():
+        #     continue
 
         _dst_path = os.path.join(subfolders_path, src_filename)
         src_dir = os.path.dirname(src_path)
