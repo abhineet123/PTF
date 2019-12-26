@@ -1,6 +1,7 @@
-from pywinauto import application
+from pywinauto import application, mouse
 import time
 import os, sys
+import win32api
 
 from Misc import processArguments, sortKey
 
@@ -16,7 +17,7 @@ if __name__ == '__main__':
     auth_path = params['auth_path']
     config = params['config']
     wait_t = params['wait_t']
-    
+
     # app_t = application.Application().start("cmd.exe")
     # app_t = application.Application().start("C:\\Users\\Tommy\\Desktop\\startup_progs\\t.lnk")
     # app_t = application.Application().start("H:\\UofA\\MSc\\Code\\TrackingFramework\\scripts\\t.cmd")    
@@ -47,6 +48,8 @@ if __name__ == '__main__':
     app.window().maximize()
     if config == -1:
 
+        mouse_x, mouse_y = win32api.GetCursorPos()
+
         apps = [app, ]
         app2 = application.Application().start(exe_path)
         app2.window().maximize()
@@ -61,7 +64,6 @@ if __name__ == '__main__':
             _app.fatty.type_keys("sstg{VK_SPACE}tb~")
             _app.fatty.type_keys("sudo{VK_SPACE}-s~")
             _app.fatty.type_keys("%s~" % pwd0)
-
 
             # time.sleep(1)
 
@@ -106,6 +108,8 @@ if __name__ == '__main__':
 
         app3.fatty.type_keys("^b^r")
 
+        mouse.move(coords=(mouse_x, mouse_y))
+
     elif config == 2:
         app.fatty.type_keys("tmux{VK_SPACE}new~")
         time.sleep(wait_t)
@@ -138,10 +142,10 @@ if __name__ == '__main__':
         else:
             app.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}orca2~")
 
-
-
     while True:
         k = input('Enter any key to restore ssh connections')
+
+        mouse_x, mouse_y = win32api.GetCursorPos()
 
         for _app in apps:
             _app.fatty.type_keys("^+w")
@@ -180,9 +184,9 @@ if __name__ == '__main__':
             _app.fatty.type_keys("sudo{VK_SPACE}-s~")
             _app.fatty.type_keys("%s~" % pwd2)
 
-        time.sleep(5)
+        time.sleep(3)
 
         app.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}%s~" % name20)
         app2.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}%s~" % name21)
 
-
+        mouse.move(coords=(mouse_x, mouse_y))

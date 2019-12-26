@@ -1,4 +1,4 @@
-from pywinauto import application
+from pywinauto import application, mouse
 import os
 import sys
 import time
@@ -6,6 +6,7 @@ import time
 
 import ctypes
 import win32gui
+import win32api
 
 from Misc import processArguments
 
@@ -71,7 +72,7 @@ if __name__ == '__main__':
     # print('target_title: {}'.format(target_title))
 
     app = application.Application().connect(title=target_title)
-    Form1 = app.window(title=target_title)
+    app_win = app.window(title=target_title)
     # Form1.SetFocus()
 
     if mode == 2:
@@ -82,29 +83,33 @@ if __name__ == '__main__':
     while True:
         k = input('Enter {}\n'.format(data_type))
 
+        x, y = win32api.GetCursorPos()
+
         if mode == 2:
             enable_highlight = k.strip()
-            Form1.type_keys("^t~")
-            Form1.type_keys("^v")
+            app_win.type_keys("^t~")
+            app_win.type_keys("^v")
             if enable_highlight:
-                Form1.type_keys("^+%a")
+                app_win.type_keys("^+%a")
                 # time.sleep(1)
-                Form1.type_keys("^+z")
-                Form1.type_keys("{RIGHT}{VK_SPACE}~")
+                app_win.type_keys("^+z")
+                app_win.type_keys("{RIGHT}{VK_SPACE}~")
             else:
-                Form1.type_keys("{VK_SPACE}~")
+                app_win.type_keys("{VK_SPACE}~")
 
-            Form1.type_keys("^s")
+            app_win.type_keys("^s")
             continue
 
-        Form1.type_keys("^t~")
-        Form1.type_keys("^b")
-        Form1.type_keys("^v")
-        Form1.type_keys("^b")
+        app_win.type_keys("^t~")
+        app_win.type_keys("^b")
+        app_win.type_keys("^v")
+        app_win.type_keys("^b")
         if mode == 1:
-            Form1.type_keys("{RIGHT}{VK_SPACE}to{VK_SPACE}%s" % scp_name)
-        Form1.type_keys("~")
-        Form1.type_keys("^s")
+            app_win.type_keys("{RIGHT}{VK_SPACE}to{VK_SPACE}%s" % scp_name)
+        app_win.type_keys("~")
+        app_win.type_keys("^s")
+
+        mouse.move(coords=(x, y))
 
         dst_full_path = '{}/{}'.format(dst_path, k)
         if mode == 0:
