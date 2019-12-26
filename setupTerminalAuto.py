@@ -137,3 +137,52 @@ if __name__ == '__main__':
             app.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}orca~")
         else:
             app.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}orca2~")
+
+
+
+    while True:
+        k = input('Enter any key to restore ssh connections')
+
+        for _app in apps:
+            _app.fatty.type_keys("^+w")
+            _app.fatty.type_keys("^+w")
+            _app.fatty.type_keys("sstg{VK_SPACE}tb~")
+            _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+            _app.fatty.type_keys("%s~" % pwd0)
+
+        time.sleep(3)
+
+        app.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}%s~" % name00)
+        app2.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}%s~" % name01)
+
+        for _app in apps:
+            _app.fatty.type_keys("^+t")
+            _app.fatty.type_keys("sstg2~")
+            _app.fatty.type_keys("sstz~")
+            _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+            _app.fatty.type_keys("%s~" % pwd1)
+
+        time.sleep(3)
+
+        app.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}%s~" % name10)
+        app2.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}%s~" % name11)
+
+        # time.sleep(1)
+
+        # time.sleep(1)
+        # app.fatty.type_keys("+{RIGHT}")
+        # app2.fatty.type_keys("+{RIGHT}")
+
+        for _app in apps:
+            _app.fatty.type_keys("^+t")
+            _app.fatty.type_keys("sstg3~")
+            _app.fatty.type_keys("sstx~")
+            _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+            _app.fatty.type_keys("%s~" % pwd2)
+
+        time.sleep(5)
+
+        app.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}%s~" % name20)
+        app2.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}%s~" % name21)
+
+
