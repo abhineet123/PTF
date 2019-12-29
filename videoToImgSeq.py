@@ -196,6 +196,7 @@ if __name__ == '__main__':
                 ))
 
         frame_id = all_frame_id = 0
+        print_diff = int(n_frames / 10)
         while True:
             if _src_files:
                 frame = _src_files[frame_id]
@@ -247,9 +248,13 @@ if __name__ == '__main__':
                     break
             if n_frames > 0 and (frame_id - start_id) >= n_frames:
                 break
-            sys.stdout.write('\rDone {:d}/{:d} frames'.format(
-                (frame_id - start_id), n_frames))
-            sys.stdout.flush()
+
+            if frame_id % print_diff == 0:
+                sys.stdout.write('\rDone {:d}/{:d} frames'.format(
+                    (frame_id - start_id), n_frames))
+                sys.stdout.flush()
+
+
         sys.stdout.write('\n\n')
         sys.stdout.flush()
         dst_dir = ''
