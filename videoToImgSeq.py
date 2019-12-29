@@ -196,7 +196,7 @@ if __name__ == '__main__':
                 ))
 
         frame_id = all_frame_id = 0
-        print_diff = int(n_frames / 10)
+        print_diff = int(n_frames / 100)
         while True:
             if _src_files:
                 frame = _src_files[frame_id]

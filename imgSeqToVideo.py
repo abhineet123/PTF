@@ -165,6 +165,7 @@ for src_id, src_path in enumerate(src_paths):
 
     frame_id = start_id
     pause_after_frame = 0
+    print_diff = int(n_frames / 100)
     while True:
         filename = src_files[frame_id]
         file_path = os.path.join(src_path, filename)
@@ -189,8 +190,10 @@ for src_id, src_path in enumerate(src_paths):
         video_out.write(image)
 
         frame_id += 1
-        sys.stdout.write('\rDone {:d} frames '.format(frame_id - start_id))
-        sys.stdout.flush()
+
+        if frame_id % print_diff == 0:
+            sys.stdout.write('\rDone {:d} frames '.format(frame_id - start_id))
+            sys.stdout.flush()
 
         if n_frames > 0 and (frame_id - start_id) >= n_frames:
             break

@@ -253,7 +253,7 @@ def main():
         #     dst_path = os.path.join(src_path, f'{sub_seq_id}')
         #     if not os.path.isdir(dst_path):
         #         os.makedirs(dst_path)
-
+        print_diff = int(n_src_files / 100)
         while True:
             filename = src_files[frame_id]
             file_path = os.path.join(src_path, filename)
@@ -307,8 +307,10 @@ def main():
             #     shutil.move(file_path, dst_file_path)
 
             frame_id += 1
-            sys.stdout.write('\rDone {:d} frames '.format(frame_id - start_id))
-            sys.stdout.flush()
+
+            if frame_id % print_diff == 0:
+                sys.stdout.write('\rDone {:d}/{:d} frames '.format(frame_id - start_id, n_src_files - start_id))
+                sys.stdout.flush()
 
             if frame_id >= n_src_files:
                 break
