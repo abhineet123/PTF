@@ -2,6 +2,7 @@ import cv2
 import sys
 import functools
 import os
+import time
 import shutil
 from skimage import measure
 from skimage import feature
@@ -187,7 +188,7 @@ def main():
         print('Converting video to image sequences: {}'.format(_src_path))
         os.system('v2i {}'.format(_src_path))
 
-        _src_path = os.path.join(os.path.dirname(_src_path),  os.path.splitext(os.path.basename(_src_path))[0])
+        _src_path = os.path.join(os.path.dirname(_src_path), os.path.splitext(os.path.basename(_src_path))[0])
 
     if os.path.isdir(_src_path):
         src_files = [k for k in os.listdir(_src_path) for _ext in img_exts if k.endswith(_ext)]
@@ -254,6 +255,7 @@ def main():
         #     if not os.path.isdir(dst_path):
         #         os.makedirs(dst_path)
         print_diff = int(n_src_files / 100)
+        start_t = time.time()
         while True:
             filename = src_files[frame_id]
             file_path = os.path.join(src_path, filename)
@@ -309,8 +311,12 @@ def main():
             frame_id += 1
 
             if frame_id % print_diff == 0:
-                sys.stdout.write('\rDone {:d}/{:d} frames '.format(frame_id - start_id, n_src_files - start_id))
+                end_t = time.time()
+                fps = float(print_diff) / (end_t - start_t)
+                sys.stdout.write('\rDone {:d}/{:d} frames at {:.4f} fps'.format(
+                    frame_id - start_id, n_src_files - start_id, fps))
                 sys.stdout.flush()
+                start_t = end_t
 
             if frame_id >= n_src_files:
                 break
@@ -353,10 +359,9 @@ def main():
                 print(f'order: {order}')
                 cv2.imshow('scatter_plot', scatter_plot)
 
-
             def update_thresh(x):
                 nonlocal thresh, split_indices
-                thresh = min_thresh + float(max_thresh - min_thresh) / float(1000)*x
+                thresh = min_thresh + float(max_thresh - min_thresh) / float(1000) * x
                 split_indices = argrelextrema(_data, cmp_func, order=order)[0]
                 split_indices = [k for k in split_indices if cmp_func(_data[k], thresh)]
                 scatter_plot = getPlotImage([list(range(len(_data))), ], [_data, ], plot_cols,
@@ -401,7 +406,6 @@ def main():
         print(f'order: {order}')
         print(f'thresh: {thresh}')
         print(f'n_src_files: {n_src_files}')
-
 
         if n_src_files not in split_indices:
             split_indices.append(n_src_files)

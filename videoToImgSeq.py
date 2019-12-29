@@ -1,6 +1,7 @@
 import os
 import cv2
 import sys
+import time
 import imageio
 from pprint import pformat
 
@@ -197,6 +198,7 @@ if __name__ == '__main__':
 
         frame_id = all_frame_id = 0
         print_diff = int(n_frames / 100)
+        start_t = time.time()
         while True:
             if _src_files:
                 frame = _src_files[frame_id]
@@ -250,10 +252,12 @@ if __name__ == '__main__':
                 break
 
             if frame_id % print_diff == 0:
-                sys.stdout.write('\rDone {:d}/{:d} frames'.format(
-                    (frame_id - start_id), n_frames))
+                end_t = time.time()
+                fps = float(print_diff) / (end_t - start_t)
+                sys.stdout.write('\rDone {:d}/{:d} frames at {:.4f} fps'.format(
+                    (frame_id - start_id), n_frames, fps))
                 sys.stdout.flush()
-
+                start_t = end_t
 
         sys.stdout.write('\n\n')
         sys.stdout.flush()
