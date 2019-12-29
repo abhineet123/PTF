@@ -1,5 +1,6 @@
 import cv2
 import sys
+import time
 import os, shutil
 from datetime import datetime
 from pprint import pformat
@@ -166,6 +167,7 @@ for src_id, src_path in enumerate(src_paths):
     frame_id = start_id
     pause_after_frame = 0
     print_diff = int(n_frames / 100)
+    start_t = time.time()
     while True:
         filename = src_files[frame_id]
         file_path = os.path.join(src_path, filename)
@@ -192,8 +194,12 @@ for src_id, src_path in enumerate(src_paths):
         frame_id += 1
 
         if frame_id % print_diff == 0:
-            sys.stdout.write('\rDone {:d} frames '.format(frame_id - start_id))
+            end_t = time.time()
+            fps = float(print_diff) / (end_t - start_t)
+            sys.stdout.write('\rDone {:d}/{:d} frames at {:.4f} fps'.format(
+                frame_id - start_id, n_src_files - start_id, fps))
             sys.stdout.flush()
+            start_t = end_t
 
         if n_frames > 0 and (frame_id - start_id) >= n_frames:
             break
