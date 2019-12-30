@@ -723,6 +723,7 @@ def main(args):
     if video_mode:
         video_files_list = []
         excluded_video_files = []
+        n_unique_videos=0
         for _id, src_dir in enumerate(src_dirs):
             if src_dir[0] == '!':
                 src_dir = src_dir[1:]
@@ -780,6 +781,7 @@ def main(args):
                     _video_files_list = [k for k in _video_files_list if k not in excluded_video_files]
                     n_videos = len(_video_files_list)
 
+                n_unique_videos += n_videos
                 if n_videos:
                     # print(f'Found {n_videos} videos in {src_dir}')
                     _print(f'Adding {n_videos} videos from: {src_dir} '
@@ -823,7 +825,7 @@ def main(args):
 
         n_videos = len(video_files_list)
         if n_videos > 1:
-            _print(f'Found a total of {n_videos} videos')
+            _print(f'Found a total of {n_videos} videos (unique: {n_unique_videos})')
         else:
             _print(f'Found no videos')
 
