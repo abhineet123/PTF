@@ -197,7 +197,7 @@ if __name__ == '__main__':
                 ))
 
         frame_id = all_frame_id = 0
-        print_diff = int(n_frames / 100)
+        print_diff = max(1, int(n_frames / 100))
         start_t = time.time()
         while True:
             if _src_files:

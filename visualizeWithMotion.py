@@ -2829,8 +2829,26 @@ def main(args):
                 try:
                     # win32gui.SetForegroundWindow(win_handle)
                     # win32gui.SetFocus(win_handle)
+
                     win32gui.SetWindowPos(win_handle, _active_win_handle, 0, 0, 0, 0,
                                           win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+
+                    # while True:
+                    #     win32gui.SetWindowPos(win_handle, _active_win_handle, 0, 0, 0, 0,
+                    #                           win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+                    #     user32 = ctypes.windll.user32
+                    #     _next = user32.GetWindow(_active_win_handle, win32con.GW_HWNDNEXT)
+                    #     if _next != win_handle:
+                    #         _next_name = win32gui.GetWindowText(_next)
+                    #
+                    #         print('second from top window: {} ({}) does not match the desired one: {} ({})'.format(
+                    #             _next, _next_name, win_handle, win_name
+                    #         ))
+                    #     else:
+                    #         print('second from top window: {} ({}) matches the desired one: {} ({})'.format(
+                    #             _next, _next_name, win_handle, win_name
+                    #         ))
+                    #         break
                 except BaseException as e:
                     _print('Failed {} --> {} : {}'.format(
                         win_name, prev_active_win_name, e))

@@ -166,7 +166,7 @@ for src_id, src_path in enumerate(src_paths):
 
     frame_id = start_id
     pause_after_frame = 0
-    print_diff = int(n_frames / 100)
+    print_diff = max(1, int(n_src_files / 100))
     start_t = time.time()
     while True:
         filename = src_files[frame_id]

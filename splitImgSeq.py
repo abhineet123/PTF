@@ -254,7 +254,7 @@ def main():
         #     dst_path = os.path.join(src_path, f'{sub_seq_id}')
         #     if not os.path.isdir(dst_path):
         #         os.makedirs(dst_path)
-        print_diff = int(n_src_files / 100)
+        print_diff = max(1, int(n_src_files / 100))
         start_t = time.time()
         while True:
             filename = src_files[frame_id]
