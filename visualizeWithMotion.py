@@ -2834,7 +2834,9 @@ def main(args):
 
                     win32gui.SetWindowPos(win_handle, _active_win_handle, 0, 0, 0, 0,
                                           win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
-
+                    """calling once doesn't always work"""
+                    win32gui.SetWindowPos(win_handle, _active_win_handle, 0, 0, 0, 0,
+                                          win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
                     # while True:
                     #     win32gui.SetWindowPos(win_handle, _active_win_handle, 0, 0, 0, 0,
                     #                           win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
