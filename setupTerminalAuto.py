@@ -73,8 +73,8 @@ if __name__ == '__main__':
 
         time.sleep(5)
 
-        app.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}%s~" % name00)
-        app2.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}%s~" % name01)
+        app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name00)
+        app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name01)
 
         for _app in apps:
             _app.fatty.type_keys("^+t")
@@ -85,8 +85,8 @@ if __name__ == '__main__':
 
         time.sleep(5)
 
-        app.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}%s~" % name10)
-        app2.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}%s~" % name11)
+        app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name10)
+        app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name11)
 
         # time.sleep(1)
 
@@ -103,8 +103,8 @@ if __name__ == '__main__':
 
         time.sleep(5)
 
-        app.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}%s~" % name20)
-        app2.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}%s~" % name21)
+        app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name20)
+        app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name21)
 
         app3.fatty.type_keys("^b^r")
 
@@ -125,9 +125,9 @@ if __name__ == '__main__':
         time.sleep(2)
 
         if config == 0:
-            app.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}grs~")
+            app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}grs~")
         else:
-            app.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}grs2~")
+            app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}grs2~")
 
         app.fatty.type_keys("^+t")
         app.fatty.type_keys("sstg2~")
@@ -138,9 +138,9 @@ if __name__ == '__main__':
         time.sleep(wait_t)
 
         if config == 0:
-            app.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}orca~")
+            app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}orca~")
         else:
-            app.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}orca2~")
+            app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}orca2~")
 
     while True:
         k = input('Enter any key to restore ssh connections')
@@ -154,10 +154,10 @@ if __name__ == '__main__':
             _app.fatty.type_keys("sudo{VK_SPACE}-s~")
             _app.fatty.type_keys("%s~" % pwd0)
 
-        time.sleep(3)
+        time.sleep(2)
 
-        app.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}%s~" % name00)
-        app2.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}%s~" % name01)
+        app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name00)
+        app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name01)
 
         for _app in apps:
             _app.fatty.type_keys("^+t")
@@ -166,10 +166,10 @@ if __name__ == '__main__':
             _app.fatty.type_keys("sudo{VK_SPACE}-s~")
             _app.fatty.type_keys("%s~" % pwd1)
 
-        time.sleep(3)
+        time.sleep(2)
 
-        app.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}%s~" % name10)
-        app2.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}%s~" % name11)
+        app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name10)
+        app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name11)
 
         # time.sleep(1)
 
@@ -184,9 +184,9 @@ if __name__ == '__main__':
             _app.fatty.type_keys("sudo{VK_SPACE}-s~")
             _app.fatty.type_keys("%s~" % pwd2)
 
-        time.sleep(3)
+        time.sleep(2)
 
-        app.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}%s~" % name20)
-        app2.fatty.type_keys("tmux{VK_SPACE}a{VK_SPACE}-t{VK_SPACE}%s~" % name21)
+        app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name20)
+        app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name21)
 
         mouse.move(coords=(mouse_x, mouse_y))
