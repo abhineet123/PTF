@@ -723,7 +723,7 @@ def main(args):
     if video_mode:
         video_files_list = []
         excluded_video_files = []
-        n_unique_videos=0
+        n_unique_videos = 0
         for _id, src_dir in enumerate(src_dirs):
             if src_dir[0] == '!':
                 src_dir = src_dir[1:]
@@ -1646,7 +1646,6 @@ def main(args):
                     else:
                         _print('Video auto progression disabled')
 
-
             elif event == cv2.EVENT_MOUSEMOVE:
                 # print('EVENT_MOUSEMOVE flags: {}'.format(flags))
                 if flags == 33:
@@ -1817,50 +1816,65 @@ def main(args):
                     elif flags == 17 or flags == 25:
                         # shift
                         # print('n_images: {}'.format(n_images))
-                        if n_images > 1:
-                            # print('here we are')
-                            clicked_img_fname, __idx = getClickedImage(x, y, get_idx=1)
-                            if clicked_img_fname is not None:
-                                fname = '"' + clicked_img_fname + '"'
-                                time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
-                                open(log_file, 'a').write(time_stamp + "\n" + fname + '\n')
-                                if flags == 25:
-                                    # ctrl + shift
-                                    if not video_mode:
-                                        img_id[0] += __idx + 1 - n_images
-                                        # print('making img_id: {}'.format(img_id))
-                                        n_images = 1
-                                        src_images = []
-                                        loadImage(0)
+                        if not video_mode:
+                            if n_images > 1:
+                                # print('here we are')
+                                clicked_img_fname, __idx = getClickedImage(x, y, get_idx=1)
+                                if clicked_img_fname is not None:
+                                    fname = '"' + clicked_img_fname + '"'
+                                    time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+                                    open(log_file, 'a').write(time_stamp + "\n" + fname + '\n')
+                                    if flags == 25:
+                                        # ctrl + shift
+                                        if not video_mode:
+                                            img_id[0] += __idx + 1 - n_images
+                                            # print('making img_id: {}'.format(img_id))
+                                            n_images = 1
+                                            src_images = []
+                                            loadImage(0)
+                                else:
+                                    resize_ratio = float(dst_img.shape[0]) / float(src_img.shape[0])
+                                    x_scaled, y_scaled = x / resize_ratio, y / resize_ratio
+                                    # click_found = 0
+                                    # for i in range(n_images):
+                                    #     _start_row, _start_col, _end_row, _end_col = stack_locations[i]
+                                    #     if x_scaled >= _start_col and x_scaled < _end_col and y_scaled >= _start_row and y_scaled < _end_row:
+                                    #         __idx = stack_idx[i]
+                                    #         fname = '"' + os.path.abspath(img_fnames[__idx]) + '"'
+                                    #         print('Clicked on image {} with id {}:\n {}'.format(i + 1, __idx, fname))
+                                    #         time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+                                    #         open(log_file, 'a').write(time_stamp + "\n" + fname + '\n')
+                                    #         click_found = 1
+                                    #
+                                    #         if flags == 25:
+                                    #             # ctrl + shift
+                                    #             img_id += __idx + 1 - n_images
+                                    #             # print('making img_id: {}'.format(img_id))
+                                    #             n_images = 1
+                                    #             src_images = []
+                                    #             loadImage(0)
+                                    #         break
+                                    # if not click_found:
+                                    _print('x: {}'.format(x))
+                                    _print('y: {}'.format(y))
+                                    _print('resize_ratio: {}'.format(resize_ratio))
+                                    _print('x_scaled: {}'.format(x_scaled))
+                                    _print('y_scaled: {}'.format(y_scaled))
+                                    _print('stack_locations:\n {}\n'.format(stack_locations))
+                        elif n_images == 1:
+                            vid_name = video_files_list[vid_id]
+                            time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+                            open(log_file, 'a').write(time_stamp + "\n" + vid_name + '\n')
+                            try:
+                                import pyperclip
+
+                                pyperclip.copy(vid_name)
+                                _ = pyperclip.paste()
+                            except BaseException as err:
+                                _print('Copying to clipboard failed: {}'.format(err))
                             else:
-                                resize_ratio = float(dst_img.shape[0]) / float(src_img.shape[0])
-                                x_scaled, y_scaled = x / resize_ratio, y / resize_ratio
-                                # click_found = 0
-                                # for i in range(n_images):
-                                #     _start_row, _start_col, _end_row, _end_col = stack_locations[i]
-                                #     if x_scaled >= _start_col and x_scaled < _end_col and y_scaled >= _start_row and y_scaled < _end_row:
-                                #         __idx = stack_idx[i]
-                                #         fname = '"' + os.path.abspath(img_fnames[__idx]) + '"'
-                                #         print('Clicked on image {} with id {}:\n {}'.format(i + 1, __idx, fname))
-                                #         time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
-                                #         open(log_file, 'a').write(time_stamp + "\n" + fname + '\n')
-                                #         click_found = 1
-                                #
-                                #         if flags == 25:
-                                #             # ctrl + shift
-                                #             img_id += __idx + 1 - n_images
-                                #             # print('making img_id: {}'.format(img_id))
-                                #             n_images = 1
-                                #             src_images = []
-                                #             loadImage(0)
-                                #         break
-                                # if not click_found:
-                                _print('x: {}'.format(x))
-                                _print('y: {}'.format(y))
-                                _print('resize_ratio: {}'.format(resize_ratio))
-                                _print('x_scaled: {}'.format(x_scaled))
-                                _print('y_scaled: {}'.format(y_scaled))
-                                _print('stack_locations:\n {}\n'.format(stack_locations))
+                                _print('Copied to clipboard: {}'.format(vid_name))
+
                     # elif flags == 9:
                     #     row_offset = col_offset = 0
                     # setOffset(x, y)
