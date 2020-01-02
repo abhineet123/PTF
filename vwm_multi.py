@@ -66,8 +66,8 @@ if __name__ == '__main__':
 
     time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
 
-    win_name1 = 'VWM_multi_vid_{}'.format(os.path.basename(time_stamp))
-    win_name2 = 'VWM_multi_img_{}'.format(os.path.basename(time_stamp))
+    win_name1 = 'vid_{}'.format(os.path.basename(time_stamp))
+    win_name2 = 'img_{}'.format(os.path.basename(time_stamp))
 
     # args1 = [k.strip() for k in args1.split(' ') if k.strip()]
     args1 = shlex.split(args1)

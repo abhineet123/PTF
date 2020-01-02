@@ -54,25 +54,6 @@ if __name__ == '__main__':
             titles.append((hwnd, buff.value))
         return True
 
-
-    # EnumWindows(EnumWindowsProc(foreach_window), 0)
-
-    win32gui.EnumWindows(foreach_window, None)
-
-    # for i in range(len(titles)):
-    #     print(titles[i])
-
-    target_title = [k[1] for k in titles if k[1].startswith(win_title)]
-    # print('target_title: {}'.format(target_title))
-
-    if not target_title:
-        raise IOError('Window with win_title: {} not found'.format(win_title))
-
-    target_title = target_title[0]
-    # print('target_title: {}'.format(target_title))
-
-    app = application.Application().connect(title=target_title)
-    app_win = app.window(title=target_title)
     # Form1.SetFocus()
 
     if mode == 2:
@@ -85,6 +66,30 @@ if __name__ == '__main__':
 
         x, y = win32api.GetCursorPos()
 
+        # EnumWindows(EnumWindowsProc(foreach_window), 0)
+
+        win32gui.EnumWindows(foreach_window, None)
+
+        # for i in range(len(titles)):
+        #     print(titles[i])
+
+        target_title = [k[1] for k in titles if k[1].startswith(win_title)]
+        # print('target_title: {}'.format(target_title))
+
+        if not target_title:
+            print('Window with win_title: {} not found'.format(win_title))
+            continue
+
+        target_title = target_title[0]
+        # print('target_title: {}'.format(target_title))
+
+        try:
+            app = application.Application().connect(title=target_title)
+            app_win = app.window(title=target_title)
+        except BaseException as e:
+            print('Failed to create app for window {}: {} not found'.format(target_title, e))
+            continue
+            
         if mode == 2:
             enable_highlight = k.strip()
             app_win.type_keys("^t~")
