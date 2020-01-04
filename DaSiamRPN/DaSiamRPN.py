@@ -84,8 +84,8 @@ class DaSiamRPN:
         # avoid printing TF debugging information
 
         self._params = params
-        if self.params is None:
-            self.params = DaSiamRPNParams()
+        if self._params is None:
+            self._params = DaSiamRPNParams()
 
         self._logger = logger
 

@@ -789,7 +789,6 @@ def drawRegion(img, corners, color, thickness=1, annotate_corners=False,
             cv2.putText(img, '{:d}'.format(i + 1), p1, cv2.FONT_HERSHEY_COMPLEX_SMALL,
                         annotation_font_size, annotation_col)
 
-
 def getPixValsRGB(pts, img):
     try:
         n_channels = img.shape[2]
@@ -862,6 +861,23 @@ def drawGrid(img, pts, res_x, res_y, color, thickness=1):
             p1 = (int(pts[0, pt_id1]), int(pts[1, pt_id1]))
             p2 = (int(pts[0, pt_id2]), int(pts[1, pt_id2]))
             cv2.line(img, p1, p2, color, thickness)
+
+def drawBox(image, xmin, ymin, xmax, ymax, box_color=(0, 255, 0), label=None):
+    # if cv2.__version__.startswith('3'):
+    #     font_line_type = cv2.LINE_AA
+    # else:
+    #     font_line_type = cv2.CV_AA
+
+    cv2.rectangle(image, (int(xmin), int(ymin)), (int(xmax), int(ymax)), box_color)
+
+    _bb = [xmin, ymin, xmax, ymax]
+    if _bb[1] > 10:
+        y_loc = int(_bb[1] - 5)
+    else:
+        y_loc = int(_bb[3] + 5)
+    if label is not None:
+        cv2.putText(image, label, (int(_bb[0] - 1), y_loc), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.3, box_color, 1, cv2.LINE_AA)
 
 
 def writeCorners(file_id, corners, frame_id=-1, write_header=0):

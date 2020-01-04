@@ -3,7 +3,7 @@ import os
 from collections import namedtuple
 
 
-def parse_arguments(param_dir='siamfc/parameters', in_hp={}, in_evaluation={}, in_run={}):
+def parse_arguments(param_dir, in_hp={}, in_evaluation={}, in_run={}):
     # param_dir = 'parameters'
     with open(os.path.join(param_dir, 'hyperparams.json')) as json_file:
         hp = json.load(json_file)

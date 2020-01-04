@@ -3,9 +3,10 @@ import cv2
 import sys
 import time
 import imageio
+import numpy as np
 from pprint import pformat
 
-from Misc import sortKey, processArguments
+from Misc import sortKey, processArguments, drawBox
 
 # def processArguments(args, params):
 #     # arguments specified as 'arg_name=argv_val'
@@ -204,6 +205,7 @@ if __name__ == '__main__':
         print_diff = max(1, int(n_frames / 100))
         start_t = time.time()
         tracker = None
+        _pause = 1
         while True:
             if _src_files:
                 frame = _src_files[frame_id]
@@ -219,19 +221,29 @@ if __name__ == '__main__':
                 print('roi: {}'.format(roi))
                 cv2.destroyWindow('Select ROI')
                 x1, y1, w, h = roi
-                if crop == 2:
-                    y1 = 0
-                    h = frame.shape[1]
+
+                if w == 0 or h == 0:
+                    sys.exit(0)
 
                 roi = x1, y1, x1 + w, y1 + h
                 print('Using roi: ', roi)
                 roi_enabled = True
 
+                if crop == 2:
+                    y1 = 0
+                    h = frame.shape[1]
+
                 if tracker_type:
                     track_roi = cv2.selectROI('Select object to track', frame)
-                    print('track_roi: {}'.format(track_roi))
                     cv2.destroyWindow('Select object to track')
-                    xmin, ymin, tw, th = track_roi
+                    track_x, track_y, tw, th = track_roi
+
+                    if tw == 0 or th == 0:
+                        track_roi = [x1, y1, w, h]
+
+                    track_x, track_y, tw, th = track_roi
+
+                    print('track_roi: {}'.format(track_roi))
 
                     if tracker_type == 1:
                         from siamfc.SiamFC import SiamFC
@@ -245,35 +257,42 @@ if __name__ == '__main__':
                         tracker = DaSiamRPN()
                         print('Using DaSiamRPN tracker')
 
-                    cx = xmin + w / 2.0
-                    cy = ymin + h / 2.0
-                    bbox = [cx, cy, w, h]
+                    cx = track_x + tw / 2.0
+                    cy = track_y + th / 2.0
+                    bbox = [cx, cy, tw, th]
                     tracker.initialize(frame, bbox)
 
-                elif crop and tracker_type:
-                    bbox = tracker.update(frame)
-                    _xmin, _ymin, w, h = bbox
+            elif crop and tracker_type:
+                bbox = tracker.update(frame)
+                _track_x, _track_y, _track_w, _track_h = bbox
 
-                    tx, ty = _xmin - xmin, _ymin - ymin
-                    x1, y1, x2, y2 = roi
-                    x1 = x1 + tx
-                    x2 = x2 + tx
-                    if tx > 0 and x2 > frame.shape[1]:
-                        x1 -= frame.shape[1] - x2
-                        x2 = frame.shape[1]
-                    if tx < 0 and x1 < 0:
-                        x2 += x1
-                        x1 = 0
-                    y1 = y1 + ty
-                    y2 = y2 + ty
-                    if ty > 0 and y2 > frame.shape[0]:
-                        y1 -= frame.shape[0] - y2
-                        y2 = frame.shape[0]
-                    if ty < 0 and y1 < 0:
-                        y2 += y1
-                        y1 = 0
+                if show_img:
+                    frame_disp = np.copy(frame)
+                    drawBox(frame_disp, _track_x, _track_y, _track_x + _track_w, _track_y + _track_h)
+                    cv2.imshow('frame_disp', frame_disp)
 
-                    roi = [x1, y1, x2, y2]
+                tx, ty = _track_x - track_x, _track_y - track_y
+
+                x1, y1, x2, y2 = roi
+
+                x1 += tx
+                x2 += tx
+                if tx > 0 and x2 > frame.shape[1]:
+                    x1 -= (x2 - frame.shape[1])
+                    x2 = frame.shape[1]
+                if tx < 0 and x1 < 0:
+                    x2 += x1
+                    x1 = 0
+                y1 += ty
+                y2 += ty
+                if ty > 0 and y2 > frame.shape[0]:
+                    y1 -= (y2 - frame.shape[0])
+                    y2 = frame.shape[0]
+                if ty < 0 and y1 < 0:
+                    y2 += y1
+                    y1 = 0
+
+                roi = [int(x1), int(y1), int(x2), int(y2)]
 
             all_frame_id += 1
 
@@ -299,8 +318,11 @@ if __name__ == '__main__':
             curr_img = cv2.imwrite(out_path, frame)
             if show_img:
                 cv2.imshow('Frame', frame)
-                if cv2.waitKey(1) == 27:
+                _k = cv2.waitKey(1 - _pause)
+                if _k == 27:
                     break
+                elif _k == 32:
+                    _pause = 1 - _pause
             if n_frames > 0 and (frame_id - start_id) >= n_frames:
                 break
 
