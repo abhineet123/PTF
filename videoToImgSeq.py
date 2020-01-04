@@ -42,6 +42,7 @@ params = {
     'ext': 'jpg',
     'mode': 0,
     'recursive': 1,
+    'tracker_type': 0,
 }
 
 if __name__ == '__main__':
@@ -64,6 +65,7 @@ if __name__ == '__main__':
     ext = params['ext']
     mode = params['mode']
     recursive = params['recursive']
+    tracker_type = params['tracker_type']
 
     vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv', '.gif']
     img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
@@ -142,6 +144,8 @@ if __name__ == '__main__':
                 out_seq_name = '{}_roi_{}_{}_{}_{}'.format(out_seq_name, xmin, ymin, xmax, ymax)
             elif crop:
                 out_seq_name = '{}_crop'.format(out_seq_name)
+                if tracker_type:
+                    out_seq_name = '{}_track_{}'.format(out_seq_name, tracker_type)
 
             dst_dir = os.path.join(os.path.dirname(src_path), out_seq_name)
 
@@ -199,6 +203,7 @@ if __name__ == '__main__':
         frame_id = all_frame_id = 0
         print_diff = max(1, int(n_frames / 100))
         start_t = time.time()
+        tracker = None
         while True:
             if _src_files:
                 frame = _src_files[frame_id]
@@ -221,6 +226,54 @@ if __name__ == '__main__':
                 roi = x1, y1, x1 + w, y1 + h
                 print('Using roi: ', roi)
                 roi_enabled = True
+
+                if tracker_type:
+                    track_roi = cv2.selectROI('Select object to track', frame)
+                    print('track_roi: {}'.format(track_roi))
+                    cv2.destroyWindow('Select object to track')
+                    xmin, ymin, tw, th = track_roi
+
+                    if tracker_type == 1:
+                        from siamfc.SiamFC import SiamFC
+
+                        tracker = SiamFC()
+                        print('Using SiamFC tracker')
+
+                    elif tracker_type == 2:
+                        from DaSiamRPN.DaSiamRPN import DaSiamRPN
+
+                        tracker = DaSiamRPN()
+                        print('Using DaSiamRPN tracker')
+
+                    cx = xmin + w / 2.0
+                    cy = ymin + h / 2.0
+                    bbox = [cx, cy, w, h]
+                    tracker.initialize(frame, bbox)
+
+                elif crop and tracker_type:
+                    bbox = tracker.update(frame)
+                    _xmin, _ymin, w, h = bbox
+
+                    tx, ty = _xmin - xmin, _ymin - ymin
+                    x1, y1, x2, y2 = roi
+                    x1 = x1 + tx
+                    x2 = x2 + tx
+                    if tx > 0 and x2 > frame.shape[1]:
+                        x1 -= frame.shape[1] - x2
+                        x2 = frame.shape[1]
+                    if tx < 0 and x1 < 0:
+                        x2 += x1
+                        x1 = 0
+                    y1 = y1 + ty
+                    y2 = y2 + ty
+                    if ty > 0 and y2 > frame.shape[0]:
+                        y1 -= frame.shape[0] - y2
+                        y2 = frame.shape[0]
+                    if ty < 0 and y1 < 0:
+                        y2 += y1
+                        y1 = 0
+
+                    roi = [x1, y1, x2, y2]
 
             all_frame_id += 1
 

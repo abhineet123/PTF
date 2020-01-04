@@ -89,7 +89,7 @@ if __name__ == '__main__':
         except BaseException as e:
             print('Failed to create app for window {}: {} not found'.format(target_title, e))
             continue
-            
+
         if mode == 2:
             enable_highlight = k.strip()
             app_win.type_keys("^t~")
@@ -115,6 +115,8 @@ if __name__ == '__main__':
         app_win.type_keys("^s")
 
         mouse.move(coords=(x, y))
+
+
 
         dst_full_path = '{}/{}'.format(dst_path, k)
         if mode == 0:

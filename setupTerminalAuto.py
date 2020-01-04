@@ -143,9 +143,9 @@ if __name__ == '__main__':
             app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}orca2~")
 
     while True:
-        # k = input('Enter any key to restore ssh connections')
-        print('Enter any key to restore ssh connections')
-        os.system("pause")
+        k = input('Enter any key to restore ssh connections')
+        # print('Enter any key to restore ssh connections')
+        # os.system("pause")
 
         mouse_x, mouse_y = win32api.GetCursorPos()
 
