@@ -262,6 +262,11 @@ if __name__ == '__main__':
                     bbox = [cx, cy, tw, th]
                     tracker.initialize(frame, bbox)
 
+                    if show_img:
+                        frame_disp = np.copy(frame)
+                        drawBox(frame_disp, track_x, track_y, track_x + tw, track_y + th)
+                        cv2.imshow('frame_disp', frame_disp)
+
             elif crop and tracker_type:
                 bbox = tracker.update(frame)
                 _track_x, _track_y, _track_w, _track_h = bbox
@@ -293,6 +298,9 @@ if __name__ == '__main__':
                     y1 = 0
 
                 roi = [int(x1), int(y1), int(x2), int(y2)]
+
+                track_x = _track_x
+                track_y = _track_y
 
             all_frame_id += 1
 
