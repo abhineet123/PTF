@@ -141,12 +141,12 @@ if __name__ == '__main__':
 
         if not dst_dir:
             out_seq_name = os.path.splitext(os.path.basename(src_path))[0]
-            if roi_enabled:
-                out_seq_name = '{}_roi_{}_{}_{}_{}'.format(out_seq_name, xmin, ymin, xmax, ymax)
-            elif crop:
+            if crop:
                 out_seq_name = '{}_crop'.format(out_seq_name)
                 if tracker_type:
                     out_seq_name = '{}_track_{}'.format(out_seq_name, tracker_type)
+            elif roi_enabled:
+                out_seq_name = '{}_roi_{}_{}_{}_{}'.format(out_seq_name, xmin, ymin, xmax, ymax)
 
             dst_dir = os.path.join(os.path.dirname(src_path), out_seq_name)
 
@@ -205,7 +205,7 @@ if __name__ == '__main__':
         print_diff = max(1, int(n_frames / 100))
         start_t = time.time()
         tracker = None
-        _pause = 1
+        _pause = 0
         while True:
             if _src_files:
                 frame = _src_files[frame_id]

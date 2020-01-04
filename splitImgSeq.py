@@ -124,6 +124,7 @@ def main():
         'metric': 4,
         'thresh': -1,
         'order': 5,
+        'frames_per_seq': 0,
     }
 
     processArguments(sys.argv[1:], params)
@@ -145,6 +146,7 @@ def main():
     thresh = params['thresh']
     order = params['order']
     sub_seq_start_id = params['sub_seq_start_id']
+    frames_per_seq = params['frames_per_seq']
 
     vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv', '.gif']
     img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
@@ -246,166 +248,169 @@ def main():
         frame_id = start_id + 1
         pause_after_frame = 0
 
-        sim_list = []
-        sim_ratio_list = []
-        prev_sim = None
-        # sub_seq_id = sub_seq_start_id
-        # if thresh >= 0:
-        #     dst_path = os.path.join(src_path, f'{sub_seq_id}')
-        #     if not os.path.isdir(dst_path):
-        #         os.makedirs(dst_path)
-        print_diff = max(1, int(n_src_files / 100))
-        start_t = time.time()
-        while True:
-            filename = src_files[frame_id]
-            file_path = os.path.join(src_path, filename)
-            assert os.path.exists(file_path), f'Image file {file_path} does not exist'
+        if frames_per_seq > 0:
+            split_indices = list(range(frames_per_seq, n_src_files, frames_per_seq))
+        else:
+            sim_list = []
+            sim_ratio_list = []
+            prev_sim = None
+            # sub_seq_id = sub_seq_start_id
+            # if thresh >= 0:
+            #     dst_path = os.path.join(src_path, f'{sub_seq_id}')
+            #     if not os.path.isdir(dst_path):
+            #         os.makedirs(dst_path)
+            print_diff = max(1, int(n_src_files / 100))
+            start_t = time.time()
+            while True:
+                filename = src_files[frame_id]
+                file_path = os.path.join(src_path, filename)
+                assert os.path.exists(file_path), f'Image file {file_path} does not exist'
 
-            image = cv2.imread(file_path)
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                image = cv2.imread(file_path)
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-            if image.shape != prev_image.shape:
-                sim = min_thresh
+                if image.shape != prev_image.shape:
+                    sim = min_thresh
+                else:
+                    sim = sim_func(image, prev_image)
+
+                if prev_sim is not None:
+                    s_ratio = (sim + 1) / (prev_sim + 1)
+                else:
+                    s_ratio = 1
+
+                sim_list.append(sim)
+                sim_ratio_list.append(s_ratio)
+
+                prev_image = image
+                prev_sim = sim
+
+                # image = resizeAR(image, width, height)
+
+                if show_img:
+                    sim_plot = getPlotImage([list(range(start_id, frame_id)), ], [sim_list, ], plot_cols,
+                                            metric_type, [metric_type, ], 'frame', metric_type)
+
+                    sim_ratio_plot = getPlotImage([list(range(start_id, frame_id)), ], [sim_ratio_list, ], plot_cols,
+                                                  metric_type_ratio, [metric_type_ratio, ], 'frame', metric_type_ratio)
+
+                    cv2.imshow('sim_plot', sim_plot)
+                    cv2.imshow('sim_ratio_plot', sim_ratio_plot)
+                    cv2.imshow(seq_name, image)
+                    k = cv2.waitKey(1 - pause_after_frame) & 0xFF
+                    if k == ord('q') or k == 27:
+                        break
+                    elif k == 32:
+                        pause_after_frame = 1 - pause_after_frame
+
+                # if thresh >= 0:
+                #     if cmp_func(sim, thresh):
+                #         sub_seq_id += 1
+                #         print(f'sub_seq_id: {sub_seq_id} with sim: {sim}')
+                #         dst_path = os.path.join(src_path, f'{sub_seq_id}')
+                #         if not os.path.isdir(dst_path):
+                #             os.makedirs(dst_path)
+                #     dst_file_path = os.path.join(dst_path, filename)
+                #     shutil.move(file_path, dst_file_path)
+
+                frame_id += 1
+
+                if frame_id % print_diff == 0:
+                    end_t = time.time()
+                    fps = float(print_diff) / (end_t - start_t)
+                    sys.stdout.write('\rDone {:d}/{:d} frames at {:.4f} fps'.format(
+                        frame_id - start_id, n_src_files - start_id, fps))
+                    sys.stdout.flush()
+                    start_t = end_t
+
+                if frame_id >= n_src_files:
+                    break
+
+            sys.stdout.write('\n\n')
+            sys.stdout.flush()
+
+            """
+            compensate for the 1-frame differential
+            """
+            sim_list.insert(0, sim_list[0])
+            sim_ratio_list.insert(0, sim_ratio_list[0])
+
+            sim_list = np.asarray(sim_list).squeeze()
+            sim_ratio_list = np.asarray(sim_ratio_list).squeeze()
+
+            split_indices = []
+
+            if thresh < 0:
+                if thresh == -1:
+                    _data = sim_list
+                    # c_max_index = argrelextrema(sim_list, cmp_func, order=order)
+                    # plt.plot(sim_list)
+                    # plt.scatter(c_max_index[0], sim_list[c_max_index[0]], linewidth=0.3, s=50, c='r')
+                    # plt.show()
+                elif thresh == -2:
+                    _data = sim_ratio_list
+                    # plt.plot(sim_ratio_list)
+                    # plt.scatter(c_max_index[0], sim_ratio_list[c_max_index[0]], linewidth=0.3, s=50, c='r')
+                    # plt.show()
+
+                def update_order(_order):
+                    nonlocal order, split_indices
+                    order = _order
+                    split_indices = argrelextrema(_data, cmp_func, order=order)[0]
+                    split_indices = [k for k in split_indices if cmp_func(_data[k], thresh)]
+                    scatter_plot = getPlotImage([list(range(len(_data))), ], [_data, ], plot_cols,
+                                                metric_type, [metric_type, ], 'frame', metric_type,
+                                                scatter=split_indices)
+                    print(f'order: {order}')
+                    cv2.imshow('scatter_plot', scatter_plot)
+
+                def update_thresh(x):
+                    nonlocal thresh, split_indices
+                    thresh = min_thresh + float(max_thresh - min_thresh) / float(1000) * x
+                    split_indices = argrelextrema(_data, cmp_func, order=order)[0]
+                    split_indices = [k for k in split_indices if cmp_func(_data[k], thresh)]
+                    scatter_plot = getPlotImage([list(range(len(_data))), ], [_data, ], plot_cols,
+                                                metric_type, [metric_type, ], 'frame', metric_type,
+                                                scatter=split_indices)
+                    print(f'thresh: {thresh}')
+                    cv2.imshow('scatter_plot', scatter_plot)
+
+                update_order(order)
+                cv2.createTrackbar('order', 'scatter_plot', order, 100, update_order)
+                cv2.createTrackbar('threshold', 'scatter_plot', 0, 1000, update_thresh)
+
             else:
-                sim = sim_func(image, prev_image)
+                if thresh == 0:
+                    _data = sim_list
+                else:
+                    _data = sim_ratio_list
+                max_thresh = np.max(_data)
 
-            if prev_sim is not None:
-                s_ratio = (sim + 1) / (prev_sim + 1)
-            else:
-                s_ratio = 1
+                def update_thresh(x):
+                    nonlocal thresh, split_indices
+                    thresh = min_thresh + float(max_thresh) / float(x)
+                    split_indices = np.nonzero(cmp_func(_data, thresh))
+                    scatter_plot = getPlotImage([list(range(len(_data))), ], [_data, ], plot_cols,
+                                                metric_type, [metric_type, ], 'frame', metric_type,
+                                                scatter=split_indices)
+                    cv2.imshow('scatter_plot', scatter_plot)
 
-            sim_list.append(sim)
-            sim_ratio_list.append(s_ratio)
+                update_order(order)
+                cv2.createTrackbar('threshold', 'scatter_plot', 0, 1000, update_thresh)
 
-            prev_image = image
-            prev_sim = sim
+            k = cv2.waitKey(0) & 0xFF
 
-            # image = resizeAR(image, width, height)
+            cv2.destroyWindow('scatter_plot')
 
             if show_img:
-                sim_plot = getPlotImage([list(range(start_id, frame_id)), ], [sim_list, ], plot_cols,
-                                        metric_type, [metric_type, ], 'frame', metric_type)
+                cv2.destroyAllWindows()
 
-                sim_ratio_plot = getPlotImage([list(range(start_id, frame_id)), ], [sim_ratio_list, ], plot_cols,
-                                              metric_type_ratio, [metric_type_ratio, ], 'frame', metric_type_ratio)
-
-                cv2.imshow('sim_plot', sim_plot)
-                cv2.imshow('sim_ratio_plot', sim_ratio_plot)
-                cv2.imshow(seq_name, image)
-                k = cv2.waitKey(1 - pause_after_frame) & 0xFF
-                if k == ord('q') or k == 27:
-                    break
-                elif k == 32:
-                    pause_after_frame = 1 - pause_after_frame
-
-            # if thresh >= 0:
-            #     if cmp_func(sim, thresh):
-            #         sub_seq_id += 1
-            #         print(f'sub_seq_id: {sub_seq_id} with sim: {sim}')
-            #         dst_path = os.path.join(src_path, f'{sub_seq_id}')
-            #         if not os.path.isdir(dst_path):
-            #             os.makedirs(dst_path)
-            #     dst_file_path = os.path.join(dst_path, filename)
-            #     shutil.move(file_path, dst_file_path)
-
-            frame_id += 1
-
-            if frame_id % print_diff == 0:
-                end_t = time.time()
-                fps = float(print_diff) / (end_t - start_t)
-                sys.stdout.write('\rDone {:d}/{:d} frames at {:.4f} fps'.format(
-                    frame_id - start_id, n_src_files - start_id, fps))
-                sys.stdout.flush()
-                start_t = end_t
-
-            if frame_id >= n_src_files:
+            if k == 27:
                 break
 
-        sys.stdout.write('\n\n')
-        sys.stdout.flush()
-
-        """
-        compensate for the 1-frame differential
-        """
-        sim_list.insert(0, sim_list[0])
-        sim_ratio_list.insert(0, sim_ratio_list[0])
-
-        sim_list = np.asarray(sim_list).squeeze()
-        sim_ratio_list = np.asarray(sim_ratio_list).squeeze()
-
-        split_indices = []
-
-        if thresh < 0:
-            if thresh == -1:
-                _data = sim_list
-                # c_max_index = argrelextrema(sim_list, cmp_func, order=order)
-                # plt.plot(sim_list)
-                # plt.scatter(c_max_index[0], sim_list[c_max_index[0]], linewidth=0.3, s=50, c='r')
-                # plt.show()
-            elif thresh == -2:
-                _data = sim_ratio_list
-                # plt.plot(sim_ratio_list)
-                # plt.scatter(c_max_index[0], sim_ratio_list[c_max_index[0]], linewidth=0.3, s=50, c='r')
-                # plt.show()
-
-            def update_order(_order):
-                nonlocal order, split_indices
-                order = _order
-                split_indices = argrelextrema(_data, cmp_func, order=order)[0]
-                split_indices = [k for k in split_indices if cmp_func(_data[k], thresh)]
-                scatter_plot = getPlotImage([list(range(len(_data))), ], [_data, ], plot_cols,
-                                            metric_type, [metric_type, ], 'frame', metric_type,
-                                            scatter=split_indices)
-                print(f'order: {order}')
-                cv2.imshow('scatter_plot', scatter_plot)
-
-            def update_thresh(x):
-                nonlocal thresh, split_indices
-                thresh = min_thresh + float(max_thresh - min_thresh) / float(1000) * x
-                split_indices = argrelextrema(_data, cmp_func, order=order)[0]
-                split_indices = [k for k in split_indices if cmp_func(_data[k], thresh)]
-                scatter_plot = getPlotImage([list(range(len(_data))), ], [_data, ], plot_cols,
-                                            metric_type, [metric_type, ], 'frame', metric_type,
-                                            scatter=split_indices)
-                print(f'thresh: {thresh}')
-                cv2.imshow('scatter_plot', scatter_plot)
-
-            update_order(order)
-            cv2.createTrackbar('order', 'scatter_plot', order, 100, update_order)
-            cv2.createTrackbar('threshold', 'scatter_plot', 0, 1000, update_thresh)
-
-        else:
-            if thresh == 0:
-                _data = sim_list
-            else:
-                _data = sim_ratio_list
-            max_thresh = np.max(_data)
-
-            def update_thresh(x):
-                nonlocal thresh, split_indices
-                thresh = min_thresh + float(max_thresh) / float(x)
-                split_indices = np.nonzero(cmp_func(_data, thresh))
-                scatter_plot = getPlotImage([list(range(len(_data))), ], [_data, ], plot_cols,
-                                            metric_type, [metric_type, ], 'frame', metric_type,
-                                            scatter=split_indices)
-                cv2.imshow('scatter_plot', scatter_plot)
-
-            update_order(order)
-            cv2.createTrackbar('threshold', 'scatter_plot', 0, 1000, update_thresh)
-
-        k = cv2.waitKey(0) & 0xFF
-
-        cv2.destroyWindow('scatter_plot')
-
-        if show_img:
-            cv2.destroyAllWindows()
-
-        if k == 27:
-            break
-
-        print(f'order: {order}')
-        print(f'thresh: {thresh}')
-        print(f'n_src_files: {n_src_files}')
+            print(f'order: {order}')
+            print(f'thresh: {thresh}')
+            print(f'n_src_files: {n_src_files}')
 
         if n_src_files not in split_indices:
             split_indices.append(n_src_files)
@@ -416,7 +421,7 @@ def main():
         start_id = 0
         sub_seq_id = sub_seq_start_id
         for end_id in split_indices:
-            print(f'sub_seq_id: {sub_seq_id} with sim: {sim_list[end_id - 1]}, start_id: {start_id}, end_id: {end_id}')
+            print(f'sub_seq_id: {sub_seq_id} with start_id: {start_id}, end_id: {end_id}')
             dst_path = os.path.join(src_path, f'{sub_seq_id}')
             if not os.path.isdir(dst_path):
                 os.makedirs(dst_path)
