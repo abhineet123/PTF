@@ -1,5 +1,6 @@
 import sys
 import os
+import inspect
 
 sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 
@@ -116,6 +117,10 @@ class SiamFC:
         if self.params is None:
             self.params = SiamFCParams()
 
+        script_filename = inspect.getframeinfo(inspect.currentframe()).filename
+        script_path = os.path.dirname(os.path.abspath(script_filename))
+
+        param_dir = script_path
         self.target_id = target_id
         self.label = label
         self.confidence = confidence
@@ -125,7 +130,7 @@ class SiamFC:
         # avoid printing TF debugging information
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
         # TODO: allow parameters from command line or leave everything in json files?
-        hp, _, _, env, design = parse_arguments()
+        hp, _, _, env, design = parse_arguments(param_dir)
 
         design = self.params.design
         env = self.params.env

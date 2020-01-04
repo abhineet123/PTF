@@ -3,9 +3,7 @@ import os
 from collections import namedtuple
 
 
-def parse_arguments(in_hp={}, in_evaluation={}, in_run={}):
-
-    param_dir = 'siamfc/parameters'
+def parse_arguments(param_dir='siamfc/parameters', in_hp={}, in_evaluation={}, in_run={}):
     # param_dir = 'parameters'
     with open(os.path.join(param_dir, 'hyperparams.json')) as json_file:
         hp = json.load(json_file)
@@ -16,15 +14,15 @@ def parse_arguments(in_hp={}, in_evaluation={}, in_run={}):
     with open(os.path.join(param_dir, 'environment.json')) as json_file:
         env = json.load(json_file)
     with open(os.path.join(param_dir, 'design.json')) as json_file:
-        design = json.load(json_file)                
+        design = json.load(json_file)
 
-    for name,value in in_hp.items():
+    for name, value in in_hp.items():
         hp[name] = value
-    for name,value in in_evaluation.items():
+    for name, value in in_evaluation.items():
         evaluation[name] = value
-    for name,value in in_run.items():
+    for name, value in in_run.items():
         run[name] = value
-    
+
     hp = namedtuple('hp', hp.keys())(**hp)
     evaluation = namedtuple('evaluation', evaluation.keys())(**evaluation)
     run = namedtuple('run', run.keys())(**run)
