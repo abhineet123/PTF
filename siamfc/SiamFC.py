@@ -4,7 +4,11 @@ import inspect
 
 sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
+
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)  # or any {DEBUG, INFO, WARN, ERROR, FATAL}
+tf.autograph.set_verbosity(3)
 
 print('Using Tensorflow ' + tf.__version__)
 # import matplotlib.pyplot as plt

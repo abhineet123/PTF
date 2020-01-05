@@ -5,6 +5,7 @@ import time
 import imageio
 import numpy as np
 from pprint import pformat
+from pykalman import KalmanFilter
 
 from Misc import sortKey, processArguments, drawBox
 
@@ -44,6 +45,7 @@ params = {
     'mode': 0,
     'recursive': 1,
     'tracker_type': 0,
+    'kalman_filtering': 0,
 }
 
 if __name__ == '__main__':
@@ -67,6 +69,7 @@ if __name__ == '__main__':
     mode = params['mode']
     recursive = params['recursive']
     tracker_type = params['tracker_type']
+    kalman_filtering = params['kalman_filtering']
 
     vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv', '.gif']
     img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
@@ -204,8 +207,14 @@ if __name__ == '__main__':
         frame_id = all_frame_id = 0
         print_diff = max(1, int(n_frames / 100))
         start_t = time.time()
+        means = [[0, 0], ]
+        covariances = [[0, 0], ]
         tracker = None
-        _pause = 0
+        if tracker_type:
+            _pause = 1
+        else:
+            _pause = 0
+        measurements = []
         while True:
             if _src_files:
                 frame = _src_files[frame_id]
@@ -261,6 +270,8 @@ if __name__ == '__main__':
                     cy = track_y + th / 2.0
                     bbox = [cx, cy, tw, th]
                     tracker.initialize(frame, bbox)
+                    if kalman_filtering:
+                        kf = KalmanFilter(n_dim_obs=2, n_dim_state=2)
 
                     if show_img:
                         frame_disp = np.copy(frame)
@@ -277,6 +288,40 @@ if __name__ == '__main__':
                     cv2.imshow('frame_disp', frame_disp)
 
                 tx, ty = _track_x - track_x, _track_y - track_y
+                measurements.append([tx, ty])
+
+                if frame_id > 1:
+                    tx, ty = np.mean(measurements, axis=0)
+
+                if kalman_filtering:
+                    measurements.append([tx, ty])
+                    # measurements = [[tx, ty], ]
+                    # means, covariances = kf.filter_update(
+                    #     means[-1], covariances[-1], measurements)
+                    # print('\nmeasurements: {}'.format(measurements))
+                    # print('\nmeans: {}'.format(means))
+                    # # print('\ncovariances: {}'.format(covariances))
+
+                    if frame_id == 1:
+                        _measurements = np.asarray(measurements)
+                        print('\nmeasurements: {}'.format(_measurements))
+                        print('\nmeasurements.shape: {}'.format(_measurements.shape))
+
+                        means, covariances = kf.filter(_measurements)
+
+                        print('\nmeans:\n{}'.format(means))
+                    elif frame_id > 1:
+                        measurements = [[tx, ty], ]
+                        _measurements = np.asarray(measurements)
+
+                        means, covariances = kf.filter_update(
+                            means[-1], covariances[-1], _measurements)
+                        print('\nmeans:\n{}'.format(means))
+                        # print('\ncovariances: {}'.format(covariances))
+
+                        # print('\nnext_mean: {}'.format(next_mean))
+                        # print('\nnext_covariance: {}'.format(next_covariance))
+                        tx, ty = means[-1]
 
                 x1, y1, x2, y2 = roi
 

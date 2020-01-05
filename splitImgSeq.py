@@ -143,7 +143,7 @@ def main():
     reverse = params['reverse']
     labels_col = params['labels_col']
     metric = params['metric']
-    thresh = params['thresh']
+    _thresh = params['thresh']
     order = params['order']
     sub_seq_start_id = params['sub_seq_start_id']
     frames_per_seq = params['frames_per_seq']
@@ -218,6 +218,8 @@ def main():
     plot_cols = [labels_col_rgb, ]
 
     for src_path in src_paths:
+
+        thresh = _thresh
         seq_name = os.path.basename(src_path)
 
         print('Reading source images from: {}'.format(src_path))
@@ -388,6 +390,8 @@ def main():
 
                 def update_thresh(x):
                     nonlocal thresh, split_indices
+                    if x == 0:
+                        return
                     thresh = min_thresh + float(max_thresh) / float(x)
                     split_indices = np.nonzero(cmp_func(_data, thresh))
                     scatter_plot = getPlotImage([list(range(len(_data))), ], [_data, ], plot_cols,
