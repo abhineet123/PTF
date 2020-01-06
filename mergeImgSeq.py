@@ -10,6 +10,7 @@ params = {
     'out_file': 'mis_log.txt',
     'folder_name': '.',
     'prefix': '',
+    'rename': 1,
     'include_folders': 0,
     'exceptions': [],
 }
@@ -21,6 +22,7 @@ folder_name = params['folder_name']
 prefix = params['prefix']
 include_folders = params['include_folders']
 exceptions = params['exceptions']
+rename = params['rename']
 
 dst_path = os.path.abspath(dst_path)
 
@@ -90,7 +92,8 @@ for subfolder in subfolders:
             empty_folders.append(src_dir)
 
         src_dir_name = os.path.basename(src_dir)
-        _dst_path = os.path.join(subfolders_path, '{}_{}'.format(src_dir_name, src_filename))
+        if rename:
+            _dst_path = os.path.join(subfolders_path, '{}_{}'.format(src_dir_name, src_filename))
 
         print('{} -> {}'.format(src_path, _dst_path))
         try:

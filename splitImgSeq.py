@@ -129,17 +129,10 @@ def main():
 
     processArguments(sys.argv[1:], params)
     _src_path = params['src_path']
-    save_path = params['save_path']
-    img_ext = params['img_ext']
     show_img = params['show_img']
-    del_src = params['del_src']
-    start_id = params['start_id']
+    _start_id = params['start_id']
     _width = params['width']
     _height = params['height']
-    fps = params['fps']
-    codec = params['codec']
-    ext = params['ext']
-    out_postfix = params['out_postfix']
     reverse = params['reverse']
     labels_col = params['labels_col']
     metric = params['metric']
@@ -219,6 +212,7 @@ def main():
 
     for src_path in src_paths:
 
+        start_id = _start_id
         thresh = _thresh
         seq_name = os.path.basename(src_path)
 
