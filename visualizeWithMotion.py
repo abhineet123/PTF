@@ -136,7 +136,10 @@ params = {
 }
 
 
+
 def main(args):
+    # is_switching = 0
+
     p = psutil.Process(os.getpid())
     try:
         p.nice(psutil.BELOW_NORMAL_PRIORITY_CLASS)
@@ -2576,6 +2579,8 @@ def main(args):
         # k = cv2.waitKeyEx(0)
         # k = -1
 
+        # if is_switching:
+        #     print('Ignoring key input while switching')
         if k < 0:
             auto_progress_type = 1
         else:
@@ -2842,6 +2847,7 @@ def main(args):
                 # print('active_win_handle: {}'.format(active_win_handle))
 
                 # while True:
+                # is_switching = 1
                 try:
                     # win32gui.SetForegroundWindow(win_handle)
                     # win32gui.SetFocus(win_handle)
@@ -2876,6 +2882,8 @@ def main(args):
 
                     _print('{} --> {}'.format(
                         win_name, prev_active_win_name))
+                # time.sleep(1)
+                # is_switching = 0
 
                 # try:
                 #     win32gui.SetForegroundWindow(active_win_handle)
@@ -2924,7 +2932,6 @@ def main(args):
                 except ValueError as e:
                     _print('Window switching failed: {}'.format(e))
                 else:
-
                     win_handle = win32gui.FindWindow(None, dup_win_names[_i])
 
                     # active_win_handle = win32gui.GetForegroundWindow()
@@ -2939,6 +2946,9 @@ def main(args):
                     # print('active_win_handle: {}'.format(active_win_handle))
 
                     # while True:
+
+                    # is_switching = 1
+
                     try:
                         # win32gui.SetForegroundWindow(win_handle)
                         # win32gui.SetFocus(win_handle)
@@ -2953,6 +2963,9 @@ def main(args):
                     else:
                         _print('{} --> {}'.format(
                             dup_win_names[_i], prev_active_win_name))
+
+                    # time.sleep(1)
+                    # is_switching = 0
 
                     # try:
                     #     win32gui.SetForegroundWindow(active_win_handle)

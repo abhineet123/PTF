@@ -234,13 +234,14 @@ if __name__ == '__main__':
                 if w == 0 or h == 0:
                     sys.exit(0)
 
-                roi = x1, y1, x1 + w, y1 + h
                 print('Using roi: ', roi)
                 roi_enabled = True
 
                 if crop == 2:
                     y1 = 0
                     h = frame.shape[1]
+
+                roi = x1, y1, x1 + w, y1 + h
 
                 if tracker_type:
                     track_roi = cv2.selectROI('Select object to track', frame)
