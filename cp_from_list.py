@@ -2,6 +2,19 @@ import os, sys, glob, re
 
 from Misc import processArguments, sortKey
 
+
+def get_size(start_path='.'):
+    total_size = 0
+    for dirpath, dirnames, filenames in os.walk(start_path):
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            # skip if it is symbolic link
+            if not os.path.islink(fp):
+                total_size += os.path.getsize(fp)
+
+    return total_size
+
+
 if __name__ == '__main__':
     params = {
         'list_file': '',
@@ -34,6 +47,11 @@ if __name__ == '__main__':
         out_file_path = '{}.out'.format(file_name)
 
     n_src_paths = len(src_paths)
+    src_to_size = {}
+    total_size = 0
+
+    print("Calculating copied size...")
+
     for i, src_path in enumerate(src_paths):
         if src_path.startswith('#'):
             continue
@@ -41,10 +59,41 @@ if __name__ == '__main__':
             print('src_path does not exist: {}'.format(src_path))
             continue
         # cp_cmd = 'rsync -r -ah --progress "{}" "{}"'.format(src_path, dst_path)
+
+        if os.path.isdir(src_path):
+            size = get_size(src_path)
+        elif os.path.isfile(src_path):
+            size = os.path.getsize(src_path)
+        else:
+            raise IOError('Invalid src_path: {}'.format(src_path))
+
+        size_mb = size / 1e9
+        total_size += size_mb
+
+        print("{}\n{:.6f} / {:.6f} GB\n".format(src_path, size_mb, total_size))
+
+        src_to_size[src_path] = size_mb
+
+    done_size = 0
+    for i, src_path in enumerate(src_paths):
+        if src_path.startswith('#'):
+            continue
+        if not os.path.exists(src_path):
+            print('src_path does not exist: {}'.format(src_path))
+            continue
+
         cp_cmd = 'cp -r "{}" "{}"'.format(src_path, dst_path)
-        print('\n{}/{} :: running: {}\n'.format(i+1, n_src_paths, cp_cmd))
+        done_pc = (done_size / total_size) * 100
+
+        print('\ndone {:.6f} / {:.6f} GB ({:.3f}%%)'.format(done_size, total_size, done_pc))
+        print('{}/{} ({:.6f} GB) :: running: {} \n'.format(i + 1, n_src_paths, src_to_size[src_path], cp_cmd))
         os.system(cp_cmd)
+
+        if not os.path.exists(dst_path):
+            raise IOError('Copying seems to have failed as the dst_path does not exist: {}'.format(dst_path))
+
+        done_size += src_to_size[src_path]
+
         src_path_full = os.path.abspath(src_path)
         with open(out_file_path, "a") as fid:
             fid.write(src_path_full + "\n")
-
