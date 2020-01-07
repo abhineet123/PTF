@@ -1,4 +1,5 @@
 import os, sys, glob, re
+import time
 
 from Misc import processArguments, sortKey
 
@@ -75,6 +76,8 @@ if __name__ == '__main__':
         src_to_size[src_path] = size_mb
 
     done_size = 0
+    speed = 0
+    start_t = time.time()
     for i, src_path in enumerate(src_paths):
         if src_path.startswith('#'):
             continue
@@ -85,14 +88,18 @@ if __name__ == '__main__':
         cp_cmd = 'cp -r "{}" "{}"'.format(src_path, dst_path)
         done_pc = (done_size / total_size) * 100
 
-        print('\ndone {:.6f} / {:.6f} GB ({:.3f}%%)'.format(done_size, total_size, done_pc))
-        print('{}/{} ({:.6f} GB) :: running: {} \n'.format(i + 1, n_src_paths, src_to_size[src_path], cp_cmd))
+        print('\n{}/{} ({:.6f} GB) :: running: {}'.format(i + 1, n_src_paths, src_to_size[src_path], cp_cmd))
         os.system(cp_cmd)
 
         if not os.path.exists(dst_path):
             raise IOError('Copying seems to have failed as the dst_path does not exist: {}'.format(dst_path))
 
         done_size += src_to_size[src_path]
+        end_t = time.time()
+        time_taken = end_t - start_t
+        speed = done_size / time_taken * 1000
+        print('done {:.6f} / {:.6f} GB ({:.2f}%% in {:.2f} s @ {:.3f} MB/s)\n'.format(
+            done_size, total_size, done_pc, time_taken, speed))
 
         src_path_full = os.path.abspath(src_path)
         with open(out_file_path, "a") as fid:
