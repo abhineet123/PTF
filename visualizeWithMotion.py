@@ -229,11 +229,11 @@ def main(args):
         _logger.handlers[0].setFormatter(logging_fmt)
 
         def _print(*args):
-            our_str = args[0]
+            out_str = args[0]
             if len(args) > 1:
                 for arg in args:
-                    our_str += '{}'.format(arg)
-            _logger.info(our_str)
+                    out_str += '{}'.format(arg)
+            _logger.info(out_str)
     else:
         _print = print
 

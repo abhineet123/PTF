@@ -43,16 +43,7 @@ if __name__ == '__main__':
     GetWindowTextLength = ctypes.windll.user32.GetWindowTextLengthW
     IsWindowVisible = ctypes.windll.user32.IsWindowVisible
 
-    titles = []
 
-
-    def foreach_window(hwnd, lParam):
-        if IsWindowVisible(hwnd):
-            length = GetWindowTextLength(hwnd)
-            buff = ctypes.create_unicode_buffer(length + 1)
-            GetWindowText(hwnd, buff, length + 1)
-            titles.append((hwnd, buff.value))
-        return True
 
     # Form1.SetFocus()
 
@@ -67,6 +58,17 @@ if __name__ == '__main__':
         x, y = win32api.GetCursorPos()
 
         # EnumWindows(EnumWindowsProc(foreach_window), 0)
+
+        titles = []
+
+
+        def foreach_window(hwnd, lParam):
+            if IsWindowVisible(hwnd):
+                length = GetWindowTextLength(hwnd)
+                buff = ctypes.create_unicode_buffer(length + 1)
+                GetWindowText(hwnd, buff, length + 1)
+                titles.append((hwnd, buff.value))
+            return True
 
         win32gui.EnumWindows(foreach_window, None)
 

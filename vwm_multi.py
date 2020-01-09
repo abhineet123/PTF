@@ -130,16 +130,13 @@ if __name__ == '__main__':
                     hidden_win_handle = handle_2
                     prev_shown_time[win_1] = switch_t
                     visible_duration[win_2] += _visible_time
-                    visible_ratio[win_2] = visible_duration[win_2] / (
-                            visible_duration[win_1] + visible_duration[win_2])
                     sleep = sleep_1
-                    print('Hiding {} after being visible for {}'.format(win_2, _visible_time))
+                    print('\nHiding {} after being visible for {:.2f}\n'.format(win_2, _visible_time))
                 else:
                     """win_1 remains visible"""
                     _visible_time = switch_t - prev_shown_time[win_1]
+                    prev_shown_time[win_1] = switch_t
                     visible_duration[win_1] += _visible_time
-                    visible_ratio[win_1] = visible_duration[win_1] / (
-                            visible_duration[win_1] + visible_duration[win_2])
             else:
                 if hidden_win_handle == handle_2:
                     """hide win_1 / show win_2"""
@@ -149,17 +146,18 @@ if __name__ == '__main__':
                     hidden_win_handle = handle_1
                     prev_shown_time[win_2] = switch_t
                     visible_duration[win_1] += _visible_time
-                    visible_ratio[win_1] = visible_duration[win_1] / (
-                            visible_duration[win_1] + visible_duration[win_2])
                     sleep = sleep_2
-                    print('Hiding {} after being visible for {}'.format(win_1, _visible_time))
+                    print('\nHiding {} after being visible for {:.2f}\n'.format(win_1, _visible_time))
                 else:
                     """win_2 remains visible"""
                     _visible_time = switch_t - prev_shown_time[win_2]
+                    prev_shown_time[win_2] = switch_t
                     visible_duration[win_2] += _visible_time
-                    visible_ratio[win_2] = visible_duration[win_2] / (
-                            visible_duration[win_1] + visible_duration[win_2])
-            print('{} :: {:.3f} {:.3f}%%'.format(win_1, visible_duration[win_1], visible_ratio[win_1] * 100))
-            print('{} :: {:.3f} {:.3f}%%'.format(win_2, visible_duration[win_2], visible_ratio[win_2] * 100))
+
+            total_duration = visible_duration[win_1] + visible_duration[win_2]
+            visible_ratio[win_1] = visible_duration[win_1] / total_duration
+            visible_ratio[win_2] = visible_duration[win_2] / total_duration
+            print('\n'.join('{} : {:.2f} {:.2f}%%'.format(k, visible_duration[k], visible_ratio[k] * 100)
+                            for k in (win_1, win_2)) + '\n')
         except:
             break
