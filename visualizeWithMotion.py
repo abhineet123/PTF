@@ -1969,7 +1969,6 @@ def main(args):
 
     def hideWindow():
         _print('{} :: Hiding window'.format(win_name))
-        win_handle = win32gui.FindWindow(None, win_name)
         # print('win_handle: {}'.format(win_handle))
 
         if other_win_name:
@@ -1996,6 +1995,7 @@ def main(args):
 
             return
 
+        win_handle = win32gui.FindWindow(None, win_name)
         win32gui.ShowWindow(win_handle, win32con.SW_MINIMIZE)
 
         # win_handle = ctypes.windll.user32.FindWindow(u'{}'.format(win_name), None)

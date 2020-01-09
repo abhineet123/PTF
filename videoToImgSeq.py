@@ -45,7 +45,7 @@ params = {
     'mode': 0,
     'recursive': 1,
     'tracker_type': 0,
-    'kalman_filtering': 0,
+    'filtering': 0,
 }
 
 if __name__ == '__main__':
@@ -69,7 +69,7 @@ if __name__ == '__main__':
     mode = params['mode']
     recursive = params['recursive']
     tracker_type = params['tracker_type']
-    kalman_filtering = params['kalman_filtering']
+    filtering = params['filtering']
 
     vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv', '.gif']
     img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
@@ -271,7 +271,7 @@ if __name__ == '__main__':
                     cy = track_y + th / 2.0
                     bbox = [cx, cy, tw, th]
                     tracker.initialize(frame, bbox)
-                    if kalman_filtering:
+                    if filtering:
                         kf = KalmanFilter(n_dim_obs=2, n_dim_state=2)
 
                     if show_img:
@@ -291,10 +291,10 @@ if __name__ == '__main__':
                 tx, ty = _track_x - track_x, _track_y - track_y
                 measurements.append([tx, ty])
 
-                if frame_id > 1:
+                if filtering == 1 and frame_id > 1:
                     tx, ty = np.mean(measurements, axis=0)
 
-                if kalman_filtering:
+                if filtering == 2:
                     measurements.append([tx, ty])
                     # measurements = [[tx, ty], ]
                     # means, covariances = kf.filter_update(

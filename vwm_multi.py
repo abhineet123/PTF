@@ -17,7 +17,7 @@ if __name__ == '__main__':
         'script_root': 'scripts',
         'script_1': 'vw32ntjv.cmd',
         'script_2': 'vw32ntj.cmd',
-        'prob':  0.5,
+        'prob': 0.5,
         'init_sleep': 5,
         'sleep_1': 60,
         'sleep_2': 60,
@@ -49,7 +49,6 @@ if __name__ == '__main__':
     assert len(args2) == 1, "Invalid script: {} with contents: {}".format(script_2_path, args2_lines)
     args2 = args2[0]
 
-
     # frg_win_titles = 'The Journal 8,f,t,XYplorer 20.10'
 
     # args1 = 'on_top=0 top_border=0 keep_borders=1 n_images=1 random_mode=1 auto_progress=1 fps=15 monitor_id=0 ' \
@@ -66,59 +65,101 @@ if __name__ == '__main__':
 
     time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
 
-    win_name1 = 'vid_{}'.format(os.path.basename(time_stamp))
-    win_name2 = 'img_{}'.format(os.path.basename(time_stamp))
+    win_1 = 'vid_{}'.format(os.path.basename(time_stamp))
+    win_2 = 'img_{}'.format(os.path.basename(time_stamp))
 
     # args1 = [k.strip() for k in args1.split(' ') if k.strip()]
     args1 = shlex.split(args1)
     args1 = [k for k in args1[2:] if '%' not in k]
-    args1.append('win_name={}'.format(win_name1))
+    args1.append('win_name={}'.format(win_1))
     # args1.append('frg_win_titles={}'.format(frg_win_titles))
-    args1.append('other_win_name={}'.format(win_name2))
+    args1.append('other_win_name={}'.format(win_2))
     args1.append('log_color={}'.format('cyan'))
 
     # args2 = [k.strip() for k in args2.split(' ') if k.strip()]
     args2 = shlex.split(args2)
     args2 = [k for k in args2[2:] if '%' not in k]
-    args2.append('win_name={}'.format(win_name2))
+    args2.append('win_name={}'.format(win_2))
     # args2.append('frg_win_titles={}'.format(frg_win_titles))
-    args2.append('other_win_name={}'.format(win_name1))
+    args2.append('other_win_name={}'.format(win_1))
     args2.append('log_color={}'.format('green'))
 
-    vwm1_thread = Process(target=vwm.main, args=(args1,))
-    vwm1_thread.start()
+    thread_1 = Process(target=vwm.main, args=(args1,))
+    thread_1.start()
 
-    vwm2_thread = Process(target=vwm.main, args=(args2,))
-    vwm2_thread.start()
+    thread_2 = Process(target=vwm.main, args=(args2,))
+    thread_2.start()
 
     time.sleep(init_sleep)
 
-    _win_handle_1 = win32gui.FindWindow(None, win_name1)
-    _win_handle_2 = win32gui.FindWindow(None, win_name2)
+    handle_1 = win32gui.FindWindow(None, win_1)
+    handle_2 = win32gui.FindWindow(None, win_2)
 
-    hidden_win_handle = _win_handle_2
+    hidden_win_handle = handle_2
     win32api.PostMessage(hidden_win_handle, win32con.WM_CHAR, 0x68, 0)
     sleep = start_sleep
 
+    switch_t = time.time()
+
+    prev_shown_time = {
+        win_1: switch_t,
+        win_2: switch_t,
+    }
+    visible_duration = {
+        win_1: 0,
+        win_2: 0,
+    }
+    visible_ratio = {
+        win_1: 0,
+        win_2: 0,
+    }
     while True:
         time.sleep(sleep)
 
         num = random.random()
 
         # print('num: {}'.format(num))
-
+        switch_t = time.time()
         try:
             if num < prob:
-                if hidden_win_handle == _win_handle_1:
-                    win32api.PostMessage(_win_handle_2, win32con.WM_CHAR, 0x68, 0)
-                    win32api.PostMessage(_win_handle_1, win32con.WM_CHAR, 0x68, 0)
-                    hidden_win_handle = _win_handle_2
+                if hidden_win_handle == handle_1:
+                    """hide win_2 / show win_1"""
+                    _visible_time = switch_t - prev_shown_time[win_2]
+                    win32api.PostMessage(handle_2, win32con.WM_CHAR, 0x68, 0)
+                    win32api.PostMessage(handle_1, win32con.WM_CHAR, 0x68, 0)
+                    hidden_win_handle = handle_2
+                    prev_shown_time[win_1] = switch_t
+                    visible_duration[win_2] += _visible_time
+                    visible_ratio[win_2] = visible_duration[win_2] / (
+                            visible_duration[win_1] + visible_duration[win_2])
                     sleep = sleep_1
+                    print('Hiding {} after being visible for {}'.format(win_2, _visible_time))
+                else:
+                    """win_1 remains visible"""
+                    _visible_time = switch_t - prev_shown_time[win_1]
+                    visible_duration[win_1] += _visible_time
+                    visible_ratio[win_1] = visible_duration[win_1] / (
+                            visible_duration[win_1] + visible_duration[win_2])
             else:
-                if hidden_win_handle == _win_handle_2:
-                    win32api.PostMessage(_win_handle_2, win32con.WM_CHAR, 0x68, 0)
-                    win32api.PostMessage(_win_handle_1, win32con.WM_CHAR, 0x68, 0)
-                    hidden_win_handle = _win_handle_1
+                if hidden_win_handle == handle_2:
+                    """hide win_1 / show win_2"""
+                    _visible_time = switch_t - prev_shown_time[win_1]
+                    win32api.PostMessage(handle_2, win32con.WM_CHAR, 0x68, 0)
+                    win32api.PostMessage(handle_1, win32con.WM_CHAR, 0x68, 0)
+                    hidden_win_handle = handle_1
+                    prev_shown_time[win_2] = switch_t
+                    visible_duration[win_1] += _visible_time
+                    visible_ratio[win_1] = visible_duration[win_1] / (
+                            visible_duration[win_1] + visible_duration[win_2])
                     sleep = sleep_2
+                    print('Hiding {} after being visible for {}'.format(win_1, _visible_time))
+                else:
+                    """win_2 remains visible"""
+                    _visible_time = switch_t - prev_shown_time[win_2]
+                    visible_duration[win_2] += _visible_time
+                    visible_ratio[win_2] = visible_duration[win_2] / (
+                            visible_duration[win_1] + visible_duration[win_2])
+            print('{} :: {:.3f} {:.3f}%%'.format(win_1, visible_duration[win_1], visible_ratio[win_1] * 100))
+            print('{} :: {:.3f} {:.3f}%%'.format(win_2, visible_duration[win_2], visible_ratio[win_2] * 100))
         except:
             break
