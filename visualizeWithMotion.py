@@ -751,7 +751,15 @@ def main(args):
                                   for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
                 _video_files_list = [item for sublist in video_file_gen for item in sublist]
 
-                if any([os.path.splitext(f.lower())[1] in img_exts
+                if not _video_files_list:
+                    video_file_gen = [[os.path.join(dirpath, d) for d in dirnames if
+                                       any([os.path.splitext(f.lower())[1] in img_exts
+                                            for f in os.listdir(os.path.join(dirpath, d))])]
+                                      for (dirpath, dirnames, filenames) in os.walk(os.path.dirname(src_dir),
+                                                                                    followlinks=True)]
+                    _video_files_list = [item for sublist in video_file_gen for item in sublist]
+
+                elif any([os.path.splitext(f.lower())[1] in img_exts
                         for f in os.listdir(src_dir)]):
                     _video_files_list.append(src_dir)
             else:
@@ -1917,7 +1925,7 @@ def main(args):
     old_transition_interval = transition_interval
 
     def showWindow():
-        _print('{} :: Showing window'.format(win_name))
+        # _print('{} :: Showing window'.format(win_name))
 
         # win_handle = ctypes.windll.user32.FindWindowW(u'{}'.format(win_name), None)
         # print('win_handle: {}'.format(win_handle))
@@ -1968,7 +1976,7 @@ def main(args):
         #     createWindow()
 
     def hideWindow():
-        _print('{} :: Hiding window'.format(win_name))
+        # _print('{} :: Hiding window'.format(win_name))
         # print('win_handle: {}'.format(win_handle))
 
         if other_win_name:
