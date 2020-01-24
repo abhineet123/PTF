@@ -19,6 +19,7 @@ if __name__ == '__main__':
         'script_2': 'vw32ntj.cmd',
         'prob': 0.5,
         'init_sleep': 5,
+        'sleep': 0,
         'sleep_1': 60,
         'sleep_2': 60,
         'start_sleep': 60,
@@ -27,12 +28,21 @@ if __name__ == '__main__':
     processArguments(sys.argv[1:], params)
     prob = params['prob']
     init_sleep = params['init_sleep']
+    sleep = params['sleep']
     sleep_1 = params['sleep_1']
     sleep_2 = params['sleep_2']
     start_sleep = params['start_sleep']
     script_root = params['script_root']
     script_1 = params['script_1']
     script_2 = params['script_2']
+
+    if sleep > 0:
+        if sleep_1 <= 0:
+            sleep_1 = sleep
+        if sleep_2 <= 0:
+            sleep_2 = sleep
+        if start_sleep <= 0:
+            start_sleep = sleep
 
     curr_path = os.path.dirname(os.path.abspath(__file__))
 
@@ -91,17 +101,39 @@ if __name__ == '__main__':
     thread_2.start()
 
     time.sleep(init_sleep)
+    handle_2 = handle_1 = 0
 
-    handle_1 = win32gui.FindWindow(None, win_1)
-    handle_2 = win32gui.FindWindow(None, win_2)
+    while not handle_1:
+        handle_1 = win32gui.FindWindow(None, win_1)
+        if handle_1:
+            break
+        print('Waiting for {} handle'.format(win_1))
+        time.sleep(2)
+
+    while not handle_2:
+        handle_2 = win32gui.FindWindow(None, win_2)
+        if handle_2:
+            break
+        print('Waiting for {} handle'.format(win_2))
+        time.sleep(2)
+
+    print('handle_1: {}'.format(handle_1))
+    print('handle_2: {}'.format(handle_2))
+
+    if not handle_1 or not handle_2:
+        raise AssertionError('Invalid handle found')
 
     hidden_win_handle = handle_2
     win32api.PostMessage(hidden_win_handle, win32con.WM_CHAR, 0x68, 0)
-    sleep = start_sleep
+    _sleep = start_sleep
 
     switch_t = time.time()
 
     prev_shown_time = {
+        win_1: switch_t,
+        win_2: switch_t,
+    }
+    _prev_shown_time = {
         win_1: switch_t,
         win_2: switch_t,
     }
@@ -114,7 +146,7 @@ if __name__ == '__main__':
         win_2: 0,
     }
     while True:
-        time.sleep(sleep)
+        time.sleep(_sleep)
 
         num = random.random()
 
@@ -124,35 +156,35 @@ if __name__ == '__main__':
             if num < prob:
                 if hidden_win_handle == handle_1:
                     """hide win_2 / show win_1"""
-                    _visible_time = switch_t - prev_shown_time[win_2]
+                    _visible_time = switch_t - _prev_shown_time[win_2]
                     win32api.PostMessage(handle_2, win32con.WM_CHAR, 0x68, 0)
                     win32api.PostMessage(handle_1, win32con.WM_CHAR, 0x68, 0)
                     hidden_win_handle = handle_2
+                    visible_duration[win_2] += switch_t - prev_shown_time[win_2]
                     prev_shown_time[win_1] = switch_t
-                    visible_duration[win_2] += _visible_time
-                    sleep = sleep_1
-                    # print('\nHiding {} after being visible for {:.2f}\n'.format(win_2, _visible_time))
+                    _prev_shown_time[win_1] = switch_t
+                    _sleep = sleep_1
+                    print('\nHiding {} after being visible for {:.2f}\n'.format(win_2, _visible_time))
                 else:
                     """win_1 remains visible"""
-                    _visible_time = switch_t - prev_shown_time[win_1]
+                    visible_duration[win_1] += switch_t - prev_shown_time[win_1]
                     prev_shown_time[win_1] = switch_t
-                    visible_duration[win_1] += _visible_time
             else:
                 if hidden_win_handle == handle_2:
                     """hide win_1 / show win_2"""
-                    _visible_time = switch_t - prev_shown_time[win_1]
+                    _visible_time = switch_t - _prev_shown_time[win_1]
                     win32api.PostMessage(handle_2, win32con.WM_CHAR, 0x68, 0)
                     win32api.PostMessage(handle_1, win32con.WM_CHAR, 0x68, 0)
                     hidden_win_handle = handle_1
+                    visible_duration[win_1] += switch_t - prev_shown_time[win_1]
                     prev_shown_time[win_2] = switch_t
-                    visible_duration[win_1] += _visible_time
-                    sleep = sleep_2
-                    # print('\nHiding {} after being visible for {:.2f}\n'.format(win_1, _visible_time))
+                    _prev_shown_time[win_2] = switch_t
+                    _sleep = sleep_2
+                    print('\nHiding {} after being visible for {:.2f}\n'.format(win_1, _visible_time))
                 else:
                     """win_2 remains visible"""
-                    _visible_time = switch_t - prev_shown_time[win_2]
+                    visible_duration[win_2] += switch_t - prev_shown_time[win_2]
                     prev_shown_time[win_2] = switch_t
-                    visible_duration[win_2] += _visible_time
 
             total_duration = visible_duration[win_1] + visible_duration[win_2]
             visible_ratio[win_1] = visible_duration[win_1] / total_duration

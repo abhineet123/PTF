@@ -582,7 +582,7 @@ def main(args):
         nonlocal src_files, total_frames, img_id
 
         if os.path.isdir(src_path):
-            _print('Loading frames from video image sequence {}'.format(src_path))
+            # _print('Loading frames from video image sequence {}'.format(src_path))
             _src_files = [os.path.join(src_path, k) for k in os.listdir(src_path) if
                           os.path.splitext(k.lower())[1] in img_exts]
             try:
@@ -591,7 +591,7 @@ def main(args):
             except:
                 _src_files.sort()
         elif os.path.isfile(src_path):
-            _print('Reading frames from video file {}'.format(src_path))
+            # _print('Reading frames from video file {}'.format(src_path))
 
             _ext = os.path.splitext(src_path)[1]
             _src_files = []
@@ -599,7 +599,7 @@ def main(args):
             if _ext == '.gif':
                 gif = imageio.mimread(src_path)
                 meta_data = [img.meta for img in gif]
-                _print('gif meta_data: {}'.format(pformat(meta_data)))
+                # _print('gif meta_data: {}'.format(pformat(meta_data)))
                 _src_files = [cv2.cvtColor(img, cv2.COLOR_RGB2BGR) if img.shape[2] == 3
                               else cv2.cvtColor(img, cv2.COLOR_RGBA2BGR)
                               for img in gif]
@@ -638,7 +638,7 @@ def main(args):
                 cv_prop = cv2.CAP_PROP_FRAME_COUNT
             total_frames[_load_id] = int(cap.get(cv_prop))
 
-        _print('Found {} frames'.format(total_frames[_load_id]))
+        # _print('Found {} frames'.format(total_frames[_load_id]))
         src_files[_load_id] = _src_files
         img_id[_load_id] = 0
 
@@ -2391,7 +2391,8 @@ def main(args):
     first_img = True
 
     while not exit_program:
-        # print('show_window: {}'.format(show_window))
+        # if video_mode:
+        #     print('show_window: {}'.format(show_window))
 
         # if not show_window:
         #     interrupt_wait.wait(0.1)
@@ -2641,8 +2642,10 @@ def main(args):
             elif k == ord('h'):
                 show_window = 1 - show_window
                 if show_window:
+                    # _print('{} :: showing window\n'.format(win_name))
                     showWindow()
                 else:
+                    # _print('{} :: hiding window\n'.format(win_name))
                     hideWindow()
             elif k == ord('r'):
                 if video_mode:
