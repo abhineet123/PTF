@@ -43,14 +43,16 @@ if __name__ == '__main__':
     GetWindowTextLength = ctypes.windll.user32.GetWindowTextLengthW
     IsWindowVisible = ctypes.windll.user32.IsWindowVisible
 
-
-
     # Form1.SetFocus()
 
-    if mode == 2:
+    if mode == 0:
+        data_type = 'filename (from)'
+    elif mode == 1:
+        data_type = 'filename (to)'
+    elif mode == 2:
         data_type = 'log'
     else:
-        data_type = 'filename'
+        raise AssertionError('Invalid mode: {}'.format(mode))
 
     while True:
         k = input('Enter {}\n'.format(data_type))
@@ -70,6 +72,7 @@ if __name__ == '__main__':
                 titles.append((hwnd, buff.value))
             return True
 
+
         win32gui.EnumWindows(foreach_window, None)
 
         # for i in range(len(titles)):
@@ -86,10 +89,14 @@ if __name__ == '__main__':
         # print('target_title: {}'.format(target_title))
 
         try:
-            app = application.Application().connect(title=target_title)
+            app = application.Application().connect(title=target_title, found_index=0)
+        except BaseException as e:
+            print('Failed to connect to app for window {}: {}'.format(target_title, e))
+            continue
+        try:
             app_win = app.window(title=target_title)
         except BaseException as e:
-            print('Failed to create app for window {}: {} not found'.format(target_title, e))
+            print('Failed to access app window for {}: {}'.format(target_title, e))
             continue
 
         if mode == 2:
@@ -118,8 +125,6 @@ if __name__ == '__main__':
 
         mouse.move(coords=(x, y))
 
-
-
         dst_full_path = '{}/{}'.format(dst_path, k)
         if mode == 0:
             scp_cmd = "pscp -pw {} {}:{}/{} {}".format(pwd0, scp_dst, scp_path, k, dst_full_path)
@@ -133,5 +138,3 @@ if __name__ == '__main__':
             rm_cmd = 'rm {}'.format(dst_full_path)
             # print('Running {}'.format(rm_cmd))
             os.system(rm_cmd)
-
-

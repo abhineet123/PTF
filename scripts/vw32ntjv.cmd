@@ -4,3 +4,4 @@ python3 "%~dp0\..\visualizeWithMotion.py" on_top=0 top_border=0 keep_borders=1 n
 REM "x99","grs","orca","x992","grs2","orca2","f","t"
 REM !vids/20/2/14/#,vids/20/2/14,vids/20/2/13,
 REM vids/17/r2/mkv**1
+REM "The Journal 8","!!!XYplorer 20.10"

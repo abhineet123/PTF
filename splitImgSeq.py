@@ -420,7 +420,7 @@ def main():
         sub_seq_id = sub_seq_start_id
         for end_id in split_indices:
             print(f'sub_seq_id: {sub_seq_id} with start_id: {start_id}, end_id: {end_id}')
-            dst_path = os.path.join(src_path, f'{sub_seq_id}')
+            dst_path = os.path.join(src_path, f'{seq_name}_{sub_seq_id}')
             if not os.path.isdir(dst_path):
                 os.makedirs(dst_path)
 

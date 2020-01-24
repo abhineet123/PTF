@@ -227,21 +227,21 @@ if __name__ == '__main__':
                     break
             if crop and frame_id == 0:
                 roi = cv2.selectROI('Select ROI', frame)
-                print('roi: {}'.format(roi))
+                print('orig roi: {}'.format(roi))
                 cv2.destroyWindow('Select ROI')
                 x1, y1, w, h = roi
 
                 if w == 0 or h == 0:
                     sys.exit(0)
 
-                print('Using roi: ', roi)
                 roi_enabled = True
 
                 if crop == 2:
                     y1 = 0
-                    h = frame.shape[1]
+                    h = frame.shape[0]
 
                 roi = x1, y1, x1 + w, y1 + h
+                print('Using roi: ', roi)
 
                 if tracker_type:
                     track_roi = cv2.selectROI('Select object to track', frame)

@@ -131,7 +131,7 @@ if __name__ == '__main__':
                     prev_shown_time[win_1] = switch_t
                     visible_duration[win_2] += _visible_time
                     sleep = sleep_1
-                    print('\nHiding {} after being visible for {:.2f}\n'.format(win_2, _visible_time))
+                    # print('\nHiding {} after being visible for {:.2f}\n'.format(win_2, _visible_time))
                 else:
                     """win_1 remains visible"""
                     _visible_time = switch_t - prev_shown_time[win_1]
@@ -147,7 +147,7 @@ if __name__ == '__main__':
                     prev_shown_time[win_2] = switch_t
                     visible_duration[win_1] += _visible_time
                     sleep = sleep_2
-                    print('\nHiding {} after being visible for {:.2f}\n'.format(win_1, _visible_time))
+                    # print('\nHiding {} after being visible for {:.2f}\n'.format(win_1, _visible_time))
                 else:
                     """win_2 remains visible"""
                     _visible_time = switch_t - prev_shown_time[win_2]

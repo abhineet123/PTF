@@ -68,6 +68,7 @@ else:
 n_src_paths = len(src_paths)
 
 for src_id, src_path in enumerate(src_paths):
+    src_path = os.path.abspath(src_path)
     seq_name = os.path.basename(src_path)
 
     print('{}/{} Reading mp3 files from: {}'.format(src_id + 1, n_src_paths, src_path))
@@ -84,7 +85,12 @@ for src_id, src_path in enumerate(src_paths):
 
     src_files_str = '|'.join(src_files)
 
-    out_path = os.path.join(src_path, '{}.m4b'.format(seq_name))
+    dst_path = src_path.replace('-', '_').replace('-', '_')
+    if not os.path.isdir(dst_path):
+        os.makedirs(dst_path)
+    dst_seq_name = seq_name.replace('-', '_').replace('-', '_')
+
+    out_path = os.path.join(dst_path, '{}.m4b'.format(dst_seq_name))
 
     cmd = 'ffmpeg -i "concat:{}" -c:a aac -strict experimental -b:a 64k -f mp4 "{}"'.format(src_files_str, out_path)
     print('Running {}'.format(cmd))

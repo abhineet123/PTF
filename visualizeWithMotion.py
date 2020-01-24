@@ -604,11 +604,15 @@ def main(args):
                               else cv2.cvtColor(img, cv2.COLOR_RGBA2BGR)
                               for img in gif]
             elif _ext in img_exts:
+                # if not os.path.isfile(src_path):
+                #     raise IOError('Image does not exist: {}'.format(src_path))
                 _src_files = [cv2.imread(src_path), ]
             else:
                 # cap = cv2.VideoCapture()
                 cap = VideoCapture()
                 if not cap.open(src_path):
+                    if second_from_top:
+                        sft_exit_program.value = 1
                     raise IOError('The video file ' + src_path + ' could not be opened')
                 if lazy_video_load:
                     _src_files = cap
@@ -620,8 +624,10 @@ def main(args):
                         _src_files.append(src_img)
                         # total_frames += 1
         else:
-            _print('Ignoring non existent src_path {}'.format(src_path))
-            return
+            if second_from_top:
+                sft_exit_program.value = 1
+            raise IOError('Source does not exist: {}'.format(src_path))
+            # return
 
         if isinstance(_src_files, list):
             total_frames[_load_id] = len(_src_files)
@@ -1201,6 +1207,10 @@ def main(args):
                         img_fname = src_files[_load_id][_img_id]
                         if isinstance(img_fname, str):
                             src_img = cv2.imread(img_fname)
+                            if src_img is None:
+                                if second_from_top:
+                                    sft_exit_program.value = 1
+                                raise IOError('Image does not exist: {}'.format(img_fname))
                         else:
                             src_img = np.copy(img_fname)
                     # if trim_images:
@@ -1219,7 +1229,11 @@ def main(args):
                     src_img_fname = img_fname
                     if os.path.isfile(src_img_fname):
                         src_img = cv2.imread(src_img_fname)
+                    else:
+                        src_img = None
                     if src_img is None:
+                        if second_from_top:
+                            sft_exit_program.value = 1
                         raise SystemError('Source image could not be read from: {}'.format(src_img_fname))
                     if trim_images:
                         src_img = np.asarray(trim(Image.fromarray(src_img)))
