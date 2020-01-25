@@ -505,7 +505,6 @@ def main(args):
     elif monitor_id >= len(monitors):
         raise IOError('Invalid monitor_id: {}'.format(monitor_id))
     _print('monitor_id: {}'.format(monitor_id))
-    _print('transition_interval: {}'.format(transition_interval))
 
     if not dup_monitor_ids:
         dup_monitor_ids = [monitor_id, ]
@@ -953,6 +952,8 @@ def main(args):
             0: total_frames[0]
         }
         _total_frames = total_frames[0]
+
+    _print('transition_interval: {}'.format(transition_interval))
 
     if not multi_mode:
         _print(f'total_frames: {total_frames[0]}')
