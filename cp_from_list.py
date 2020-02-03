@@ -1,5 +1,6 @@
 import os, sys, glob, re
 import time
+from datetime import datetime
 
 from Misc import processArguments, sortKey
 
@@ -32,6 +33,8 @@ if __name__ == '__main__':
     if not dst_path or not os.path.isdir(dst_path):
         raise IOError('dst_path is invalid: {}'.format(dst_path))
 
+    time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+
     if list_file:
         if os.path.isdir(list_file):
             src_paths = [os.path.join(list_file, name) for name in os.listdir(list_file) if
@@ -42,10 +45,10 @@ if __name__ == '__main__':
             if root_dir:
                 root_dir = os.path.abspath(root_dir)
                 src_paths = [os.path.join(root_dir, name) for name in src_paths]
-        out_file_path = '{}.out'.format(list_file)
+        out_file_path = '{}_{}.out'.format(list_file, time_stamp)
     else:
         src_paths = [file_name]
-        out_file_path = '{}.out'.format(file_name)
+        out_file_path = '{}_{}.out'.format(file_name, time_stamp)
 
     n_src_paths = len(src_paths)
     src_to_size = {}

@@ -11,8 +11,11 @@ lines = [line for line in lines if line.strip()]
 start_t = None
 curr_t = None
 out_txt = ''
+started = 0
 for line in lines:
-    if line.startswith('Timing Data'):
+    if not started:
+        if line.startswith('Timing Data'):
+            started = 1
         continue
     if line.startswith('Timing Description: Start Time: '):
         _line = line.replace('Timing Description: Start Time: ', '').strip()
