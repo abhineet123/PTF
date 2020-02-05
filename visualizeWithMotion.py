@@ -929,7 +929,7 @@ def main(args):
             img_id[_id] = 0
 
             if _total_frames <= 0:
-                raise IOError('No input frames found')
+                raise IOError('No input frames found for _id: {}'.format(_id))
             # print('Found {} frames'.format(_total_frames))
 
         if not multi_mode and random_mode:
