@@ -629,6 +629,8 @@ def main(args):
             # return
 
         if isinstance(_src_files, list):
+            if auto_progress and reverse_video:
+                _src_files += list(reversed(_src_files))
             total_frames[_load_id] = len(_src_files)
         elif isinstance(_src_files, VideoCapture):
             if cv2.__version__.startswith('2'):
@@ -639,6 +641,7 @@ def main(args):
 
         # _print('Found {} frames'.format(total_frames[_load_id]))
         src_files[_load_id] = _src_files
+
         img_id[_load_id] = 0
 
         # if cv2.__version__.startswith('3'):
