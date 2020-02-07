@@ -36,6 +36,7 @@ VideoCapture = cv2.VideoCapture
 
 # from wand.image import Image as wandImage
 
+
 def checkImage(fn):
     proc = Popen(['identify', '-verbose', fn], stdout=PIPE, stderr=PIPE)
     out, err = proc.communicate()
@@ -345,6 +346,18 @@ def main(args):
         frg_reversed_pos = []
         DwmGetWindowAttribute = None
 
+        def _exit_neatly():
+            nonlocal other_win_name, second_from_top, sft_exit_program
+            if other_win_name:
+                try:
+                    _win_handle_2 = win32gui.FindWindow(None, other_win_name)
+                    win32api.PostMessage(_win_handle_2, win32con.WM_CHAR, 0x1B, 0)
+                except:
+                    pass
+
+            if second_from_top:
+                sft_exit_program.value = 1
+
         if frg_win_titles:
             titles = []
             win_pos = []
@@ -610,8 +623,7 @@ def main(args):
                 # cap = cv2.VideoCapture()
                 cap = VideoCapture()
                 if not cap.open(src_path):
-                    if second_from_top:
-                        sft_exit_program.value = 1
+                    _exit_neatly()
                     raise IOError('The video file ' + src_path + ' could not be opened')
                 if lazy_video_load:
                     _src_files = cap
@@ -623,8 +635,8 @@ def main(args):
                         _src_files.append(src_img)
                         # total_frames += 1
         else:
-            if second_from_top:
-                sft_exit_program.value = 1
+            if other_win_name:
+                _exit_neatly()
             raise IOError('Source does not exist: {}'.format(src_path))
             # return
 
@@ -1212,8 +1224,7 @@ def main(args):
                         if isinstance(img_fname, str):
                             src_img = cv2.imread(img_fname)
                             if src_img is None:
-                                if second_from_top:
-                                    sft_exit_program.value = 1
+                                _exit_neatly()
                                 raise IOError('Image does not exist: {}'.format(img_fname))
                         else:
                             src_img = np.copy(img_fname)
@@ -1236,8 +1247,7 @@ def main(args):
                     else:
                         src_img = None
                     if src_img is None:
-                        if second_from_top:
-                            sft_exit_program.value = 1
+                        _exit_neatly()
                         raise SystemError('Source image could not be read from: {}'.format(src_img_fname))
                     if trim_images:
                         src_img = np.asarray(trim(Image.fromarray(src_img)))
@@ -2614,14 +2624,7 @@ def main(args):
             # print('k: {}'.format(k))
             if k == 27 or end_exec:
                 exit_program = 1
-                if second_from_top:
-                    sft_exit_program.value = 1
-                if other_win_name:
-                    try:
-                        _win_handle_2 = win32gui.FindWindow(None, other_win_name)
-                        win32api.PostMessage(_win_handle_2, win32con.WM_CHAR, 0x1B, 0)
-                    except:
-                        pass
+                _exit_neatly()
                 break
             elif k == 13:
                 changeMode()

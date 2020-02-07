@@ -14,38 +14,42 @@ excel_app.Visible = False
 
 # sys.exit()
 
-# marks_file_path = 'A1/A1_Marks.xlsx'
-# print_file_path = 'A1/A1_Marks_print.xlsx'
-# out_dir = 'A1/auto_comments'
+# root_dir = ''
+root_dir = 'H:/UofA/206_W20'
 
-# marks_file_path = 'A4/A4_Marks.xlsx'
-# print_file_path = 'A4/A4_Marks_print.xlsx'
-# out_dir = 'A4/auto_comments'
+marks_file_path = 'A1/A1_Marks.xlsx'
+print_file_path = 'A1/A1_Marks_print.xlsx'
+out_dir = 'A1/auto_comments'
 
-# marks_file_path = 'A7/A7_Marks.xlsx'
-# print_file_path = 'A7/A7_Marks_print.xlsx'
-# out_dir = 'A7/auto_comments'
+'''
+folder containing all extracted submissions
+'''
+# participant_ids = ''
+submissions_dir = 'A1/submissions'
 
-# marks_file_path = 'A8/A8_Marks.xlsx'
-# print_file_path = 'A8/A8_Marks_print.xlsx'
-# out_dir = 'A8/auto_comments'
+if root_dir:
+    marks_file_path = os.path.join(root_dir, marks_file_path)
+    print_file_path = os.path.join(root_dir, print_file_path)
+    out_dir = os.path.join(root_dir, out_dir)
 
+if submissions_dir:
+    if root_dir:
+        submissions_dir = os.path.join(root_dir, submissions_dir)
 
-# marks_file_path = 'A9/A9_Marks.xlsx'
-# print_file_path = 'A9/A9_Marks_print.xlsx'
-# out_dir = 'A9/auto_comments4'
+    participant_ids = [k for k in os.listdir(submissions_dir) if
+                       os.path.isdir(os.path.join(submissions_dir, k))]
+    participant_ids_list = [k.split('_', 1) for k in participant_ids]
 
-marks_file_path = 'A10/A10_Marks.xlsx'
-print_file_path = 'A10/A10_Marks_print.xlsx'
-out_dir = 'A10/auto_comments4'
-
+    participant_ids_dict = {name: _id for name, _id in participant_ids_list}
+else:
+    participant_ids_dict = {}
 
 # sheet_name = 'proc'
 sheet_name = 'raw'
-out_row_id = 3
+out_row_id = 4
 id_col = 'Student ID'
-# _id = 0
-_id = 1590252
+_id = 0
+# _id = 1590252
 # marks_file_path = "H:/UofA/411 F18/A2/A2_Marks.xlsx"
 # print_file_path = "H:/UofA/411 F18/A2/A2_Marks_print.xlsx"
 # out_dir = 'H:/UofA/411 F18/A2/auto_comments'
@@ -72,7 +76,7 @@ ids = [k for k in ids if isinstance(k, str) or not math.isnan(k)]
 # ids = [ids[0], ]
 
 if _id:
- ids = [_id, ]
+    ids = [_id, ]
 
 for _id in ids:
     _marks = df[df[id_col] == _id]
@@ -99,9 +103,17 @@ for _id in ids:
 
     print(out_txt)
 
+    if participant_ids_dict:
+        participant_id = participant_ids_dict[name]
+        _out_dir = os.path.join(out_dir, '{}_{}'.format(name, participant_id))
+        if not os.path.isdir(_out_dir):
+            os.makedirs(_out_dir)
+    else:
+        _out_dir = out_dir
+
     # sheet.append(out_row)
     time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
-    out_xls_path = os.path.join(out_dir, '{}_{}.xlsx'.format(name, time_stamp))
+    out_xls_path = os.path.join(_out_dir, '{}_{}.xlsx'.format(name, time_stamp))
     out_xls_path = os.path.abspath(out_xls_path)
 
     book.save(out_xls_path)
@@ -111,12 +123,14 @@ for _id in ids:
 
     ws_index_list = [1, ]  # say you want to print these sheets
 
+
+
     if id_col != name_col:
         out_pdf_name = '{}_{:d}.pdf'.format(name, int(_id))
     else:
         out_pdf_name = '{}.pdf'.format(name)
 
-    out_pdf_path = os.path.join(out_dir, out_pdf_name)
+    out_pdf_path = os.path.join(_out_dir, out_pdf_name)
     out_pdf_path = os.path.abspath(out_pdf_path)
 
     wb.WorkSheets(ws_index_list).Select()
@@ -130,6 +144,3 @@ for _id in ids:
     os.remove(out_xls_path)
 
 excel_app.Quit()
-
-
-
