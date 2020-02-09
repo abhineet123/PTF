@@ -1222,10 +1222,11 @@ def main(args):
                     else:
                         img_fname = src_files[_load_id][_img_id]
                         if isinstance(img_fname, str):
+                            if not os.path.exists(img_fname):
+                                # _exit_neatly()
+                                _print('Video frame does not exist: {}'.format(img_fname))
+                                return
                             src_img = cv2.imread(img_fname)
-                            if src_img is None:
-                                _exit_neatly()
-                                raise IOError('Image does not exist: {}'.format(img_fname))
                         else:
                             src_img = np.copy(img_fname)
                     # if trim_images:
@@ -1242,13 +1243,11 @@ def main(args):
                     # print('img_id: {}'.format(img_id))
                     # print('img_fname: {}'.format(img_fname))
                     src_img_fname = img_fname
-                    if os.path.isfile(src_img_fname):
-                        src_img = cv2.imread(src_img_fname)
-                    else:
-                        src_img = None
-                    if src_img is None:
-                        _exit_neatly()
-                        raise SystemError('Source image could not be read from: {}'.format(src_img_fname))
+                    if not os.path.isfile(src_img_fname):
+                        # _exit_neatly()
+                        _print('Source image does not exist: {}'.format(src_img_fname))
+                        return
+                    src_img = cv2.imread(src_img_fname)
                     if trim_images:
                         src_img = np.asarray(trim(Image.fromarray(src_img)))
                         # src_img = wandImage(src_img).trim(color=None, fuzz=0) ()

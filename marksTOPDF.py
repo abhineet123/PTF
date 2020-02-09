@@ -48,8 +48,8 @@ else:
 sheet_name = 'raw'
 out_row_id = 4
 id_col = 'Student ID'
-_id = 0
-# _id = 1590252
+# _id = 0
+_id = 1594189
 # marks_file_path = "H:/UofA/411 F18/A2/A2_Marks.xlsx"
 # print_file_path = "H:/UofA/411 F18/A2/A2_Marks_print.xlsx"
 # out_dir = 'H:/UofA/411 F18/A2/auto_comments'
