@@ -45,6 +45,10 @@ if __name__ == '__main__':
         if start_sleep <= 0:
             start_sleep = sleep
 
+    print('sleep_1: {}'.format(sleep_1))
+    print('sleep_2: {}'.format(sleep_2))
+    print('start_sleep: {}'.format(start_sleep))
+
     curr_path = os.path.dirname(os.path.abspath(__file__))
 
     script_1_path = os.path.join(curr_path, script_root, script_1)
@@ -148,15 +152,22 @@ if __name__ == '__main__':
         win_1: 0,
         win_2: 0,
     }
+
+    print('sleep_1: {}'.format(sleep_1))
+    print('sleep_2: {}'.format(sleep_2))
+    print('start_sleep: {}'.format(start_sleep))
+    print('_sleep: {}'.format(_sleep))
+
     while True:
         time.sleep(_sleep)
 
-        if not exit_program.value:
+        _exit_program = int(exit_program.value)
+        if _exit_program:
             break
 
         num = random.random()
+        print('num: {}'.format(num))
 
-        # print('num: {}'.format(num))
         switch_t = time.time()
         try:
             if num < prob:
@@ -197,5 +208,6 @@ if __name__ == '__main__':
             visible_ratio[win_2] = visible_duration[win_2] / total_duration
             print('\n'.join('{} : {:.2f} {:.2f}%%'.format(k, visible_duration[k], visible_ratio[k] * 100)
                             for k in (win_1, win_2)) + '\n')
-        except:
+        except BaseException as e:
+            print('Exiting on exception: {}'.format(e))
             break
