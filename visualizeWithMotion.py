@@ -137,8 +137,7 @@ params = {
 }
 
 
-
-def main(args):
+def main(args, multi_exit_program=None):
     # is_switching = 0
 
     p = psutil.Process(os.getpid())
@@ -347,7 +346,9 @@ def main(args):
         DwmGetWindowAttribute = None
 
         def _exit_neatly():
-            nonlocal other_win_name, second_from_top, sft_exit_program
+            nonlocal other_win_name, second_from_top, sft_exit_program, multi_exit_program
+            if multi_exit_program is not None:
+                multi_exit_program.value = 1
             if other_win_name:
                 try:
                     _win_handle_2 = win32gui.FindWindow(None, other_win_name)
@@ -780,7 +781,7 @@ def main(args):
                     _video_files_list = [item for sublist in video_file_gen for item in sublist]
 
                 elif any([os.path.splitext(f.lower())[1] in img_exts
-                        for f in os.listdir(src_dir)]):
+                          for f in os.listdir(src_dir)]):
                     _video_files_list.append(src_dir)
             else:
                 # _print(f'Looking for videos in {src_dir}')

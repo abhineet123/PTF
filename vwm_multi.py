@@ -1,5 +1,6 @@
 from datetime import datetime
 from multiprocessing import Process
+import multiprocessing
 import sys
 import os
 import time
@@ -94,10 +95,12 @@ if __name__ == '__main__':
     args2.append('other_win_name={}'.format(win_1))
     args2.append('log_color={}'.format('green'))
 
-    thread_1 = Process(target=vwm.main, args=(args1,))
+    exit_program = multiprocessing.Value('L', 0, lock=False)
+
+    thread_1 = Process(target=vwm.main, args=(args1, exit_program))
     thread_1.start()
 
-    thread_2 = Process(target=vwm.main, args=(args2,))
+    thread_2 = Process(target=vwm.main, args=(args2, exit_program))
     thread_2.start()
 
     time.sleep(init_sleep)
@@ -147,6 +150,9 @@ if __name__ == '__main__':
     }
     while True:
         time.sleep(_sleep)
+
+        if not exit_program.value:
+            break
 
         num = random.random()
 
