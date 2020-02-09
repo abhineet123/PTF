@@ -1222,7 +1222,7 @@ def main(args):
                     else:
                         img_fname = src_files[_load_id][_img_id]
                         if isinstance(img_fname, str):
-                            if not os.path.exists(img_fname):
+                            if not os.path.isfile(img_fname):
                                 # _exit_neatly()
                                 _print('Video frame does not exist: {}'.format(img_fname))
                                 return
