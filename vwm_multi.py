@@ -153,10 +153,10 @@ if __name__ == '__main__':
         win_2: 0,
     }
 
-    print('sleep_1: {}'.format(sleep_1))
-    print('sleep_2: {}'.format(sleep_2))
-    print('start_sleep: {}'.format(start_sleep))
-    print('_sleep: {}'.format(_sleep))
+    # print('sleep_1: {}'.format(sleep_1))
+    # print('sleep_2: {}'.format(sleep_2))
+    # print('start_sleep: {}'.format(start_sleep))
+    # print('_sleep: {}'.format(_sleep))
 
     while True:
         time.sleep(_sleep)
@@ -166,7 +166,7 @@ if __name__ == '__main__':
             break
 
         num = random.random()
-        print('num: {}'.format(num))
+        # print('num: {}'.format(num))
 
         switch_t = time.time()
         try:
