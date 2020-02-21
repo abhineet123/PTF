@@ -108,12 +108,21 @@ if __name__ == '__main__':
 
         app.fatty.type_keys("^+t")
         app.fatty.type_keys("sstb~")
+        app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
+        app.fatty.type_keys("tmux{VK_SPACE}a~")
+        app.fatty.type_keys("tmux{VK_SPACE}new~")
 
         app.fatty.type_keys("^+t")
         app.fatty.type_keys("sstc~")
+        app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
+        app.fatty.type_keys("tmux{VK_SPACE}a~")
+        app.fatty.type_keys("tmux{VK_SPACE}new~")
 
         app.fatty.type_keys("^+t")
         app.fatty.type_keys("sstgr~")
+        app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
+        app.fatty.type_keys("tmux{VK_SPACE}a~")
+        app.fatty.type_keys("tmux{VK_SPACE}new~")
 
         app3.fatty.type_keys("^b^r")
 
@@ -160,6 +169,7 @@ if __name__ == '__main__':
 
         app.fatty.type_keys("^+w")
         app.fatty.type_keys("^+w")
+        app.fatty.type_keys("^+w")
 
         for _app in apps:
             _app.fatty.type_keys("^+w")
@@ -198,18 +208,27 @@ if __name__ == '__main__':
             _app.fatty.type_keys("sudo{VK_SPACE}-s~")
             _app.fatty.type_keys("%s~" % pwd2)
 
-        time.sleep(3)
+        time.sleep(5)
 
         app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name20)
         app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name21)
 
         app.fatty.type_keys("^+t")
         app.fatty.type_keys("sstb~")
+        app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
+        app.fatty.type_keys("tmux{VK_SPACE}a~")
+        app.fatty.type_keys("tmux{VK_SPACE}new~")
 
         app.fatty.type_keys("^+t")
         app.fatty.type_keys("sstc~")
+        app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
+        app.fatty.type_keys("tmux{VK_SPACE}a~")
+        app.fatty.type_keys("tmux{VK_SPACE}new~")
 
         app.fatty.type_keys("^+t")
         app.fatty.type_keys("sstgr~")
+        app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
+        app.fatty.type_keys("tmux{VK_SPACE}a~")
+        app.fatty.type_keys("tmux{VK_SPACE}new~")
 
         mouse.move(coords=(mouse_x, mouse_y))
