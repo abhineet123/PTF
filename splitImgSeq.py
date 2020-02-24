@@ -397,8 +397,9 @@ def main():
                 cv2.createTrackbar('threshold', 'scatter_plot', 0, 1000, update_thresh)
 
             while True:
-                k = cv2.waitKey(0) & 0xFF
-                if k == 32 or k == 27:
+                k = cv2.waitKey(0)
+                print('k: {}'.format(k))
+                if k == 13 or k == 27:
                     break
 
             cv2.destroyWindow('scatter_plot')
