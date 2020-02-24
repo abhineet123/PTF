@@ -29,7 +29,7 @@ from Misc import sortKey, processArguments, drawBox
 params = {
     'db_root_dir': '',
     'actor': '',
-    'seq_name': '',
+    'seq_name': '.',
     'vid_fmt': '',
     'dst_dir': '',
     'show_img': 0,
