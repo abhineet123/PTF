@@ -12,12 +12,15 @@ if __name__ == '__main__':
     src_fname = params['src_fname']
     scp_dst = params['scp_dst']
 
-    src_fname = os.path.abspath(src_fname)
+    src_fname = os.path.realpath(src_fname)
+    src_fname_abs = os.path.abspath(src_fname)
     src_dir = os.path.dirname(src_fname)
 
     home = expanduser("~")
     src_fname_rel = os.path.relpath(src_fname, home)
 
+    print('src_fname_abs: {}'.format(src_fname_abs))
+    print('src_fname: {}'.format(src_fname))
     print('home: {}'.format(home))
     print('src_fname_rel: {}'.format(src_fname_rel))
 
