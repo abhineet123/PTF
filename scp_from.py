@@ -16,7 +16,7 @@ if __name__ == '__main__':
     src_fname_abs = os.path.abspath(src_fname)
     src_dir = os.path.dirname(src_fname)
 
-    home = expanduser("~")
+    home = os.path.abspath(expanduser("~"))
     src_fname_rel = os.path.relpath(src_fname, home)
 
     print('src_fname_abs: {}'.format(src_fname_abs))
