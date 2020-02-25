@@ -1,5 +1,5 @@
 import os, sys
-from datetime import datetime
+from os.path import expanduser
 
 from Misc import processArguments
 
@@ -15,13 +15,19 @@ if __name__ == '__main__':
     src_fname = os.path.abspath(src_fname)
     src_dir = os.path.dirname(src_fname)
 
-    # if src_fname.startswith('.'):
+    home = expanduser("~")
+    src_fname_rel = os.path.relpath(src_fname, home)
+
+    print('home: {}'.format(home))
+    print('src_fname_rel: {}'.format(src_fname_rel))
+
+    scp_fname = os.path.join('~', src_fname_rel)
 
     if not os.path.isdir(src_dir):
         print('Creating folder: {}'.format(src_dir))
         os.makedirs(src_dir)
 
-    scp_cmd = 'scp -r {}:{} {}'.format(scp_dst, src_fname, src_fname)
+    scp_cmd = 'scp -r {}:{} {}'.format(scp_dst, scp_fname, src_fname)
     print('\nrunning: {}\n'.format(scp_cmd))
     os.system(scp_cmd)
 
