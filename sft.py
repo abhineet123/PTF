@@ -12,7 +12,9 @@ sft_exceptions_multi = [('XY:(', ') - RGB:(', ', HTML:('), ]
 def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
                        second_from_top, monitors, win_name, dup_win_names,
                        monitor_id, dup_monitor_ids, duplicate_window,
-                       only__maximized, frg_win_handles):
+                       only__maximized, frg_win_handles,
+                       other_vars=None
+                       ):
     # prev_active_win_name = None
     # active_monitor_id = None
     exit_program.value = 0
@@ -106,8 +108,6 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
         if frg_win_handles and _monitor_id not in prev_active_handles:
             prev_active_handles[_monitor_id] = active_handle
 
-        prev_monitor_id = _monitor_id
-
         # _monitor_id = 0
         # min_dist = np.inf
         # for curr_id, monitor in enumerate(monitors):
@@ -145,6 +145,15 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
             #
             # win32gui.ShowWindow(win_handle, 5)
             # win32gui.SetForegroundWindow(win_handle)
+
+            # if other_vars is not None and prev_monitor_id is not None:
+            #     active_monitor_id_2, active_win_handle_2, other_win_name = other_vars
+            #     print('Sending message to other_win_name: {} with monitor_id: {}, active_handle: {}'.format(
+            #         other_win_name, prev_monitor_id, prev_active_handles[prev_monitor_id]))
+            #     _win_handle_2 = win32gui.FindWindow(None, other_win_name)
+            #     active_monitor_id_2.value = prev_monitor_id
+            #     active_win_handle_2.value = prev_active_handles[prev_monitor_id]
+            #     win32api.PostMessage(_win_handle_2, win32con.WM_CHAR, 0x42, 0)
 
             prev_active_handles[_monitor_id] = active_handle
             # prev_active_win_name = active_win_name
@@ -188,5 +197,8 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
         #     print('_monitor_id: {}'.format(_monitor_id))
         #     print('monitor_ids: {}'.format(monitor_ids))
         #     print('duplicate_window: {}'.format(duplicate_window))
+
+        prev_monitor_id = _monitor_id
+
 
     print('{} :: Exiting sft'.format(win_name))

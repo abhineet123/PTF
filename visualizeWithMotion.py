@@ -137,7 +137,7 @@ params = {
 }
 
 
-def main(args, multi_exit_program=None):
+def main(args, multi_exit_program=None, sft_vars=None):
     # is_switching = 0
 
     p = psutil.Process(os.getpid())
@@ -2371,8 +2371,15 @@ def main(args, multi_exit_program=None):
     # active_win_info = [None, None, None]
     # active_monitor_id, active_win_name, active_win_handle = active_win_info
 
-    sft_active_monitor_id = multiprocessing.Value('I', lock=False)
-    sft_active_win_handle = multiprocessing.Value('L', lock=False)
+    if sft_vars is not None:
+        sft_active_monitor_id, sft_active_win_handle, sft_active_monitor_id_2, sft_active_win_handle_2 = sft_vars
+        sft_other_vars = sft_active_monitor_id_2, sft_active_win_handle_2, other_win_name
+    else:
+        sft_active_monitor_id = multiprocessing.Value('I', lock=False)
+        sft_active_win_handle = multiprocessing.Value('L', lock=False)
+
+        sft_other_vars = None
+
     sft_exit_program = multiprocessing.Value('L', 0, lock=False)
     # sft_active_win_name = multiprocessing.Value(ctypes.c_char_p, lock=False)
 
@@ -2385,7 +2392,8 @@ def main(args, multi_exit_program=None):
                                          args=(sft_active_monitor_id, sft_active_win_handle, sft_exit_program,
                                                second_from_top, monitors, win_name,
                                                dup_win_names, monitor_id, dup_monitor_ids,
-                                               duplicate_window, only_maximized, frg_win_handles))
+                                               duplicate_window, only_maximized, frg_win_handles, sft_other_vars
+                                               ))
 
         # second_from_top_thread = threading.Thread(target=second_from_top_fn)
         # second_from_top_thread = MyTask()
@@ -3029,7 +3037,8 @@ def main(args, multi_exit_program=None):
                                                          sft_active_monitor_id, sft_active_win_handle, sft_exit_program,
                                                          second_from_top, monitors, win_name,
                                                          dup_win_names, monitor_id, dup_monitor_ids,
-                                                         duplicate_window, only_maximized, frg_win_handles))
+                                                         duplicate_window, only_maximized, frg_win_handles,
+                                                         sft_other_vars))
                     second_from_top_thread.start()
                     # mouse.on_click(second_from_top_callback, args=())
                     # mouse.unhook(second_from_top_callback)

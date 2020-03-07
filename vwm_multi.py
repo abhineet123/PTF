@@ -101,10 +101,25 @@ if __name__ == '__main__':
 
     exit_program = multiprocessing.Value('L', 0, lock=False)
 
-    thread_1 = Process(target=vwm.main, args=(args1, exit_program))
+    # sft_active_monitor_id_1 = multiprocessing.Value('I', lock=False)
+    # sft_active_win_handle_1 = multiprocessing.Value('L', lock=False)
+    #
+    # sft_active_monitor_id_2 = multiprocessing.Value('I', lock=False)
+    # sft_active_win_handle_2 = multiprocessing.Value('L', lock=False)
+    #
+    # sft_vars_1 = (sft_active_monitor_id_1, sft_active_win_handle_1, sft_active_monitor_id_2, sft_active_win_handle_2)
+    # sft_vars_2 = (sft_active_monitor_id_2, sft_active_win_handle_2, sft_active_monitor_id_1, sft_active_win_handle_1)
+
+    thread_1 = Process(target=vwm.main,
+                       args=(args1, exit_program,
+                             # sft_vars_1
+                             ))
     thread_1.start()
 
-    thread_2 = Process(target=vwm.main, args=(args2, exit_program))
+    thread_2 = Process(target=vwm.main,
+                       args=(args2, exit_program,
+                             # sft_vars_2
+                             ))
     thread_2.start()
 
     time.sleep(init_sleep)
