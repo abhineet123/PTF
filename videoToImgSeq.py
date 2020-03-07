@@ -151,6 +151,9 @@ if __name__ == '__main__':
             elif roi_enabled:
                 out_seq_name = '{}_roi_{}_{}_{}_{}'.format(out_seq_name, xmin, ymin, xmax, ymax)
 
+            if reverse:
+                out_seq_name = '{}_r{}'.format(out_seq_name, reverse)
+
             dst_dir = os.path.join(os.path.dirname(src_path), out_seq_name)
 
         if dst_dir == src_path:
@@ -366,10 +369,16 @@ if __name__ == '__main__':
                 frame = cv2.resize(frame, (0, 0), fx=resize_factor, fy=resize_factor)
 
             out_id = (frame_id - start_id)
-            if reverse:
+            if reverse == 1:
                 out_id = total_frames - out_id + 1
+            elif reverse == 2:
+                out_id2 = 2 * total_frames - out_id + 1
+                out_path2 = os.path.join(dst_dir, out_fname_templ % out_id2 + '.' + ext)
+                cv2.imwrite(out_path2, frame)
+
             out_path = os.path.join(dst_dir, out_fname_templ % out_id + '.' + ext)
-            curr_img = cv2.imwrite(out_path, frame)
+            cv2.imwrite(out_path, frame)
+
             if show_img:
                 cv2.imshow('Frame', frame)
                 _k = cv2.waitKey(1 - _pause)
