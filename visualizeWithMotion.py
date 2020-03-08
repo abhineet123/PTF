@@ -131,11 +131,11 @@ params = {
     'only_maximized': 1,
     'video_mode': 0,
     'lazy_video_load': 1,
-    'fps': 100,
+    'fps': 30,
     'win_name': '',
     'other_win_name': '',
     'log_color': '',
-    'parallel_read': 1,
+    'parallel_read': 4,
 }
 
 
@@ -615,19 +615,15 @@ def main(args, multi_exit_program=None,
             except:
                 _src_files.sort()
 
+            img_sequences[_load_id] = {}
+            
             if parallel_read:
                 n_files = len(_src_files)
-                img_sequences[_load_id] = {}
-                n_threads = parallel_read + 1
-                for _id in range(n_threads):
-                    thread = threading.Thread(target=read_images, args=(_load_id, _id, n_threads, _src_files, n_files,
+                # n_threads = parallel_read + 1
+                for _id in range(parallel_read):
+                    thread = threading.Thread(target=read_images, args=(_load_id, _id, parallel_read, _src_files, n_files,
                                                                         img_sequences))
                     thread.start()
-                # thread_1 = threading.Thread(target=read_images, args=(_load_id, 1, 3, _src_files, n_files, img_sequences))
-                #                 # thread_2 = threading.Thread(target=read_images, args=(_load_id, 2, 3, _src_files, n_files, img_sequences))
-                #                 # thread_0.start()
-                #                 # thread_1.start()
-                #                 # thread_2.start()
 
         elif os.path.isfile(src_path):
             # _print('Reading frames from video file {}'.format(src_path))
@@ -1158,6 +1154,7 @@ def main(args, multi_exit_program=None,
         nonlocal target_height, target_width, min_height, start_col, end_col, height_ratio, img_fname, start_time, video_files_list
         nonlocal src_start_row, src_start_col, src_end_row, src_end_col, aspect_ratio, src_path, vid_id, \
             src_images, img_fnames, stack_idx, stack_locations, src_img, wp_id, src_files_rand, top_border, bottom_border
+        nonlocal img_sequences
 
         if decrement_id:
             if video_mode:
@@ -1265,7 +1262,11 @@ def main(args, multi_exit_program=None,
                                     # _exit_neatly()
                                     _print('Video frame does not exist: {}'.format(img_fname))
                                     return
-                                src_img = cv2.imread(img_fname)
+                                try:
+                                    src_img = img_sequences[_load_id][img_fname]
+                                except KeyError:
+                                    src_img = cv2.imread(img_fname)
+                                    img_sequences[_load_id][img_fname] = src_img
                         else:
                             src_img = np.copy(img_fname)
                     # if trim_images:
