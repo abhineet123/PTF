@@ -21,7 +21,7 @@ import win32api
 from pprint import pformat
 from datetime import datetime
 from threading import Event
-# import threading
+import threading
 from subprocess import Popen, PIPE
 from multiprocessing import Process
 import multiprocessing
@@ -131,10 +131,11 @@ params = {
     'only_maximized': 1,
     'video_mode': 0,
     'lazy_video_load': 1,
-    'fps': 30,
+    'fps': 100,
     'win_name': '',
     'other_win_name': '',
     'log_color': '',
+    'parallel_read': 1,
 }
 
 
@@ -208,6 +209,7 @@ def main(args, multi_exit_program=None,
     win_name = params['win_name']
     other_win_name = params['other_win_name']
     log_color = params['log_color']
+    parallel_read = params['parallel_read']
 
     if log_color:
         from colorlog import ColoredFormatter
@@ -595,8 +597,15 @@ def main(args, multi_exit_program=None,
     #         src_file_list.append(src_img)
     #     total_frames = len(src_file_list)
 
+    def read_images(_load_id, start_id, diff, _files, n_files, _img_sequences):
+        for _file_id in range(start_id, n_files, diff):
+            _file = _files[_file_id]
+            _img_sequences[_load_id][_file] = cv2.imread(_file)
+
+
+
     def loadVideo(_load_id):
-        nonlocal src_files, total_frames, img_id
+        nonlocal src_files, total_frames, img_id, img_sequences
 
         if os.path.isdir(src_path):
             # _print('Loading frames from video image sequence {}'.format(src_path))
@@ -607,6 +616,21 @@ def main(args, multi_exit_program=None,
                 _src_files.sort(key=img_sortKey)
             except:
                 _src_files.sort()
+
+            if parallel_read:
+                n_files = len(_src_files)
+                img_sequences[_load_id] = {}
+                n_threads = parallel_read + 1
+                for _id in range(n_threads):
+                    thread = threading.Thread(target=read_images, args=(_load_id, _id, n_threads, _src_files, n_files,
+                                                                        img_sequences))
+                    thread.start()
+                # thread_1 = threading.Thread(target=read_images, args=(_load_id, 1, 3, _src_files, n_files, img_sequences))
+                #                 # thread_2 = threading.Thread(target=read_images, args=(_load_id, 2, 3, _src_files, n_files, img_sequences))
+                #                 # thread_0.start()
+                #                 # thread_1.start()
+                #                 # thread_2.start()
+
         elif os.path.isfile(src_path):
             # _print('Reading frames from video file {}'.format(src_path))
 
@@ -680,6 +704,7 @@ def main(args, multi_exit_program=None,
         _print('Auto progression enabled')
 
     src_files = {}
+    img_sequences = {}
     src_files_rand = {}
     total_frames = {}
     img_id = {}
@@ -1227,11 +1252,20 @@ def main(args, multi_exit_program=None,
                     else:
                         img_fname = src_files[_load_id][_img_id]
                         if isinstance(img_fname, str):
-                            if not os.path.isfile(img_fname):
-                                # _exit_neatly()
-                                _print('Video frame does not exist: {}'.format(img_fname))
-                                return
-                            src_img = cv2.imread(img_fname)
+                            if parallel_read:
+                                while True:
+                                    try:
+                                        src_img = img_sequences[_load_id][img_fname]
+                                    except KeyError:
+                                        continue
+                                    else:
+                                        break
+                            else:
+                                if not os.path.isfile(img_fname):
+                                    # _exit_neatly()
+                                    _print('Video frame does not exist: {}'.format(img_fname))
+                                    return
+                                src_img = cv2.imread(img_fname)
                         else:
                             src_img = np.copy(img_fname)
                     # if trim_images:
