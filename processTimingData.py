@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+
 try:
     from Tkinter import Tk
 except ImportError:
@@ -9,8 +10,6 @@ import time
 import win32gui, win32api
 from pywinauto import application, mouse
 
-# time.sleep(1)
-
 try:
     in_txt = Tk().clipboard_get()
 except:
@@ -19,35 +18,38 @@ else:
     lines = in_txt.split('\n')
     lines = [line for line in lines if line.strip()]
 
-
-
 if all(line.endswith('.ogg') for line in lines):
     out_lines = [line.split('-')[1].split('.')[0].replace('_', ':') for line in lines]
     out_txt = '\n'.join(sorted(out_lines))
 else:
 
-    active_handle = win32gui.GetForegroundWindow()
-    target_title = win32gui.GetWindowText(active_handle)
-
-    print('target_title: {}'.format(target_title))
+    time.sleep(1)
 
     try:
-        app = application.Application().connect(title=target_title, found_index=0)
-    except BaseException as e:
-        print('Failed to connect to app for window {}: {}'.format(target_title, e))
-        exit(0)
-    try:
-        app_win = app.window(title=target_title)
-    except BaseException as e:
-        print('Failed to access app window for {}: {}'.format(target_title, e))
-        exit(0)
-    app_win.type_keys("^a")
-    app_win.type_keys("^c")
+        active_handle = win32gui.GetForegroundWindow()
+        target_title = win32gui.GetWindowText(active_handle)
 
-    x, y = win32api.GetCursorPos()
+        print('target_title: {}'.format(target_title))
 
-    mouse.click(button='left', coords=(x, y))
-    mouse.click(button='left', coords=(x, y))
+        try:
+            app = application.Application().connect(title=target_title, found_index=0)
+        except BaseException as e:
+            print('Failed to connect to app for window {}: {}'.format(target_title, e))
+            exit(0)
+        try:
+            app_win = app.window(title=target_title)
+        except BaseException as e:
+            print('Failed to access app window for {}: {}'.format(target_title, e))
+            exit(0)
+        app_win.type_keys("^a")
+        app_win.type_keys("^c")
+
+        x, y = win32api.GetCursorPos()
+
+        mouse.click(button='left', coords=(x, y))
+        mouse.click(button='left', coords=(x, y))
+    except BaseException as e:
+        print('BaseException: {}'.format(e))
 
     in_txt = Tk().clipboard_get()
 

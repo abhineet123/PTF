@@ -8,13 +8,15 @@ import functools
 import psutil
 import inspect
 import keyboard
-import mouse
+
+# import mouse
 # from pynput import mouse
 
 import win32gui, win32con
 import win32api
-import ctypes
-from pywinauto import application
+
+# import ctypes
+# from pywinauto import application
 
 from pprint import pformat
 from datetime import datetime
@@ -23,7 +25,6 @@ from threading import Event
 from subprocess import Popen, PIPE
 from multiprocessing import Process
 import multiprocessing
-# import threading
 import imageio
 from PIL import Image
 
@@ -137,9 +138,12 @@ params = {
 }
 
 
-def main(args, multi_exit_program=None, sft_vars=None):
+def main(args, multi_exit_program=None,
+         # sft_vars=None
+         ):
     # is_switching = 0
 
+    print('Here we are')
     p = psutil.Process(os.getpid())
     try:
         p.nice(psutil.BELOW_NORMAL_PRIORITY_CLASS)
@@ -2371,14 +2375,15 @@ def main(args, multi_exit_program=None, sft_vars=None):
     # active_win_info = [None, None, None]
     # active_monitor_id, active_win_name, active_win_handle = active_win_info
 
-    if sft_vars is not None:
-        sft_active_monitor_id, sft_active_win_handle, sft_active_monitor_id_2, sft_active_win_handle_2 = sft_vars
-        sft_other_vars = sft_active_monitor_id_2, sft_active_win_handle_2, other_win_name
-    else:
-        sft_active_monitor_id = multiprocessing.Value('I', lock=False)
-        sft_active_win_handle = multiprocessing.Value('L', lock=False)
+    # if sft_vars is not None:
+    #     sft_active_monitor_id, sft_active_win_handle, sft_active_monitor_id_2, sft_active_win_handle_2 = sft_vars
+    #     sft_other_vars = sft_active_monitor_id_2, sft_active_win_handle_2, other_win_name
+    # else:
 
-        sft_other_vars = None
+    sft_active_monitor_id = multiprocessing.Value('I', lock=False)
+    sft_active_win_handle = multiprocessing.Value('L', lock=False)
+
+    # sft_other_vars = None
 
     sft_exit_program = multiprocessing.Value('L', 0, lock=False)
     # sft_active_win_name = multiprocessing.Value(ctypes.c_char_p, lock=False)
@@ -2392,7 +2397,8 @@ def main(args, multi_exit_program=None, sft_vars=None):
                                          args=(sft_active_monitor_id, sft_active_win_handle, sft_exit_program,
                                                second_from_top, monitors, win_name,
                                                dup_win_names, monitor_id, dup_monitor_ids,
-                                               duplicate_window, only_maximized, frg_win_handles, sft_other_vars
+                                               duplicate_window, only_maximized, frg_win_handles,
+                                               # sft_other_vars
                                                ))
 
         # second_from_top_thread = threading.Thread(target=second_from_top_fn)
@@ -3038,7 +3044,8 @@ def main(args, multi_exit_program=None, sft_vars=None):
                                                          second_from_top, monitors, win_name,
                                                          dup_win_names, monitor_id, dup_monitor_ids,
                                                          duplicate_window, only_maximized, frg_win_handles,
-                                                         sft_other_vars))
+                                                         # sft_other_vars
+                                                     ))
                     second_from_top_thread.start()
                     # mouse.on_click(second_from_top_callback, args=())
                     # mouse.unhook(second_from_top_callback)
@@ -3294,5 +3301,8 @@ def main(args, multi_exit_program=None, sft_vars=None):
         win_wallpaper_func(SPI_SETDESKWALLPAPER, 0, orig_wp_fname, 0)
 
 
+# print('Here we are')
+
 if __name__ == '__main__':
+    # print('Here we are')
     main(sys.argv[1:])

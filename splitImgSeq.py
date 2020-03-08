@@ -179,6 +179,8 @@ def main():
 
     metric_type_ratio = f'{metric_type} Ratio'
 
+    _src_path = os.path.abspath(_src_path)
+
     if any(_src_path.endswith(_ext) for _ext in vid_exts):
         print('Converting video to image sequences: {}'.format(_src_path))
         os.system('v2i {}'.format(_src_path))
@@ -212,13 +214,14 @@ def main():
 
     for src_path in src_paths:
 
+        src_path = os.path.abspath(src_path)
+
         start_id = _start_id
         thresh = _thresh
         seq_name = os.path.basename(src_path)
 
         print('Reading source images from: {}'.format(src_path))
 
-        src_path = os.path.abspath(src_path)
         src_files = [k for k in os.listdir(src_path) for _ext in img_exts if k.endswith(_ext)]
         n_src_files = len(src_files)
         if n_src_files <= 0:
