@@ -321,7 +321,7 @@ def processArguments(args, params):
         # print('args[{}]: {}'.format(arg_id, args[arg_id]))
         # print('arg: {}'.format(arg))
         if len(arg) != 2 or arg[0] not in params.keys():
-            print('Invalid argument provided: {:s}'.format(args[arg_id]))
+            raise IOError('Invalid argument provided: {:s}'.format(args[arg_id]))
             return
 
         if not arg[1] or not arg[0] or arg[1] == '#':

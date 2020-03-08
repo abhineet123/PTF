@@ -871,7 +871,7 @@ def main(args, multi_exit_program=None,
         except:
             video_files_list.sort()
 
-        print(f'video_files_list:\n {pformat(video_files_list)}')
+        # print(f'video_files_list:\n {pformat(video_files_list)}')
 
         if random_mode:
             video_files_list = list(np.random.permutation(video_files_list))
@@ -889,6 +889,8 @@ def main(args, multi_exit_program=None,
             _print(f'Found no videos')
 
     if not video_mode or images_as_video:
+
+        print(f'src_dirs:\n {pformat(src_dirs)}')
 
         excluded_src_files = []
         for _id, src_dir in enumerate(src_dirs):
