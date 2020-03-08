@@ -602,8 +602,6 @@ def main(args, multi_exit_program=None,
             _file = _files[_file_id]
             _img_sequences[_load_id][_file] = cv2.imread(_file)
 
-
-
     def loadVideo(_load_id):
         nonlocal src_files, total_frames, img_id, img_sequences
 
@@ -873,7 +871,7 @@ def main(args, multi_exit_program=None,
         except:
             video_files_list.sort()
 
-        # print(f'video_files_list:\n {pformat(video_files_list)}')
+        print(f'video_files_list:\n {pformat(video_files_list)}')
 
         if random_mode:
             video_files_list = list(np.random.permutation(video_files_list))
