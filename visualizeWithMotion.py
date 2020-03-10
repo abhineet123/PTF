@@ -616,7 +616,7 @@ def main(args, multi_exit_program=None,
                 _src_files.sort()
 
             img_sequences[_load_id] = {}
-            
+
             if parallel_read:
                 n_files = len(_src_files)
                 # n_threads = parallel_read + 1
