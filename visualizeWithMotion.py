@@ -886,7 +886,7 @@ def main(args, multi_exit_program=None,
 
     if not video_mode or images_as_video:
 
-        print(f'src_dirs:\n {pformat(src_dirs)}')
+        # print(f'src_dirs:\n {pformat(src_dirs)}')
 
         excluded_src_files = []
         for _id, src_dir in enumerate(src_dirs):
