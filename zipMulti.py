@@ -83,6 +83,7 @@ if __name__ == '__main__':
     switches2 = ''
     if exclusions:
         for exclusion in exclusions:
+            rel_path = os.path.relpath(exclusion, zip_path)
             switches2 += ' --exclude {}'.format(exclusion)
 
     if relative:
