@@ -82,7 +82,7 @@ if __name__ == '__main__':
 
     if exclusions:
         for exclusion in exclusions:
-            switches += ' -x {}'.format(exclusion)
+            switches += ' --exclude {}'.format(exclusion)
 
     if relative:
         zip_cmd = 'cd {} && zip {} {} {}'.format(zip_root_path, switches, out_name, zip_file)
@@ -93,7 +93,7 @@ if __name__ == '__main__':
         out_path = out_name
 
     print(zip_cmd)
-    
+
     os.system(zip_cmd)
     os.system('unzip -l {}'.format(out_path))
 
