@@ -92,6 +92,8 @@ if __name__ == '__main__':
         zip_cmd = '{:s} {:s}'.format(zip_cmd, zip_path)
         out_path = out_name
 
+    print(zip_cmd)
+    
     os.system(zip_cmd)
     os.system('unzip -l {}'.format(out_path))
 
