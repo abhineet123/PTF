@@ -6,6 +6,7 @@ from Misc import processArguments
 if __name__ == '__main__':
     params = {
         'dir_names': [],
+        'exclusions': [],
         'out_name': '',
         'postfix': '',
         'scp_dst': '',
@@ -16,6 +17,7 @@ if __name__ == '__main__':
     }
     processArguments(sys.argv[1:], params)
     _dir_names = params['dir_names']
+    exclusions = params['exclusions']
     out_name = params['out_name']
     postfix = params['postfix']
     switches = params['switches']
@@ -77,6 +79,10 @@ if __name__ == '__main__':
         zip_file = os.path.basename(zip_path)
     else:
         raise IOError('zip_path is neither a folder nor a file')
+
+    if exclusions:
+        for exclusion in exclusions:
+            switches += ' -x {}'.format(exclusion)
 
     if relative:
         zip_cmd = 'cd {} && zip {} {} {}'.format(zip_root_path, switches, out_name, zip_file)
