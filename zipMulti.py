@@ -96,6 +96,9 @@ if __name__ == '__main__':
     print(zip_cmd)
 
     os.system(zip_cmd)
+
+    assert os.path.exists(out_path), "zipping failed"
+
     os.system('unzip -l {}'.format(out_path))
 
     if scp_dst:
