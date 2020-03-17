@@ -80,22 +80,26 @@ if __name__ == '__main__':
     else:
         raise IOError('zip_path is neither a folder nor a file')
 
-    switches2 = ''
-    if exclusions:
-        for exclusion in exclusions:
-            rel_path = os.path.relpath(exclusion, zip_path)
-            switches2 += ' -x "{}"'.format(exclusion)
-
     if relative:
-        zip_cmd = 'cd {} && zip {} {} {}'.format(zip_root_path, switches, out_name, zip_file, switches2)
+        zip_cmd = 'cd {} && zip {} {} {}'.format(zip_root_path, switches, out_name, zip_file)
         out_path = os.path.join(zip_root_path, out_name)
+        exclude_root = zip_file
     else:
-        zip_cmd = 'zip {:s} {:s}'.format(switches, out_name)
-        zip_cmd = '{:s} {:s} {:s}'.format(zip_cmd, zip_path, switches2)
+        zip_cmd = 'zip {:s} {:s} {:s}'.format(switches, out_name, zip_path)
         out_path = out_name
+        exclude_root = zip_path
+
+    if exclusions:
+        switches2 = ''
+        for exclusion in exclusions:
+            if os.path.isabs(exclusion):
+                exclusion = os.path.relpath(exclusion, exclude_root)
+            if exclude_root not in exclusion:
+                exclusion = os.path.join(exclude_root, exclusion)
+            switches2 += ' -x "{}"'.format(exclusion)
+        zip_cmd = '{:s} {:s}'.format(zip_cmd, switches2)
 
     print(zip_cmd)
-
     os.system(zip_cmd)
 
     assert os.path.exists(out_path), "zipping failed"
