@@ -80,15 +80,16 @@ if __name__ == '__main__':
     else:
         raise IOError('zip_path is neither a folder nor a file')
 
+    switches2 = ''
     if exclusions:
         for exclusion in exclusions:
-            switches += ' --exclude {}'.format(exclusion)
+            switches2 += ' --exclude {}'.format(exclusion)
 
     if relative:
-        zip_cmd = 'cd {} && zip {} {} {}'.format(zip_root_path, switches, out_name, zip_file)
+        zip_cmd = 'cd {} && zip {} {} {}'.format(zip_root_path, switches, out_name, switches2, zip_file)
         out_path = os.path.join(zip_root_path, out_name)
     else:
-        zip_cmd = 'zip {:s} {:s}'.format(switches, out_name)
+        zip_cmd = 'zip {:s} {:s} {:s}'.format(switches, out_name, switches2)
         zip_cmd = '{:s} {:s}'.format(zip_cmd, zip_path)
         out_path = out_name
 
