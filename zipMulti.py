@@ -84,7 +84,7 @@ if __name__ == '__main__':
     if exclusions:
         for exclusion in exclusions:
             rel_path = os.path.relpath(exclusion, zip_path)
-            switches2 += ' -x "{}"'.format(rel_path)
+            switches2 += ' -x "{}"'.format(exclusion)
 
     if relative:
         zip_cmd = 'cd {} && zip {} {} {}'.format(zip_root_path, switches, out_name, zip_file, switches2)
