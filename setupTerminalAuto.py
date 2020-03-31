@@ -106,33 +106,10 @@ if __name__ == '__main__':
         app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name20)
         app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name21)
 
-        app.fatty.type_keys("^+t")
-        app.fatty.type_keys("sstb~")
-        app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
-        app.fatty.type_keys("tmux{VK_SPACE}a~")
-        app.fatty.type_keys("tmux{VK_SPACE}new~")
-
-        app.fatty.type_keys("^+t")
-        app.fatty.type_keys("sstc~")
-        app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
-        app.fatty.type_keys("tmux{VK_SPACE}a~")
-        app.fatty.type_keys("tmux{VK_SPACE}new~")
-
-        app.fatty.type_keys("^+t")
-        app.fatty.type_keys("sstgr~")
-        app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
-        app.fatty.type_keys("tmux{VK_SPACE}a~")
-        app.fatty.type_keys("tmux{VK_SPACE}new~")
-
         app3.fatty.type_keys("^b^r")
 
         mouse.move(coords=(mouse_x, mouse_y))
-
-    elif config == 2:
-        app.fatty.type_keys("tmux{VK_SPACE}new~")
-        time.sleep(wait_t)
-        app.fatty.type_keys("^b^r")
-    else:
+    elif config == 1:
         app.fatty.type_keys("t~")
         app.fatty.type_keys("^+t")
         app.fatty.type_keys("f~")
@@ -160,59 +137,12 @@ if __name__ == '__main__':
         else:
             app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}orca2~")
 
-    while True:
-        k = input('Enter any key to restore ssh connections')
-        # print('Enter any key to restore ssh connections')
-        # os.system("pause")
+    elif config == 2:
+        app.fatty.type_keys("tmux{VK_SPACE}new~")
+        time.sleep(wait_t)
+        app.fatty.type_keys("^b^r")
 
-        mouse_x, mouse_y = win32api.GetCursorPos()
-
-        app.fatty.type_keys("^+w")
-        app.fatty.type_keys("^+w")
-        app.fatty.type_keys("^+w")
-
-        for _app in apps:
-            _app.fatty.type_keys("^+w")
-            _app.fatty.type_keys("^+w")
-            _app.fatty.type_keys("sstg{VK_SPACE}tb~")
-            _app.fatty.type_keys("sudo{VK_SPACE}-s~")
-            _app.fatty.type_keys("%s~" % pwd0)
-
-        time.sleep(3)
-
-        app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name00)
-        app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name01)
-
-        for _app in apps:
-            _app.fatty.type_keys("^+t")
-            _app.fatty.type_keys("sstg2~")
-            _app.fatty.type_keys("sstz~")
-            _app.fatty.type_keys("sudo{VK_SPACE}-s~")
-            _app.fatty.type_keys("%s~" % pwd1)
-
-        time.sleep(3)
-
-        app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name10)
-        app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name11)
-
-        # time.sleep(1)
-
-        # time.sleep(1)
-        # app.fatty.type_keys("+{RIGHT}")
-        # app2.fatty.type_keys("+{RIGHT}")
-
-        for _app in apps:
-            _app.fatty.type_keys("^+t")
-            _app.fatty.type_keys("sstg3~")
-            _app.fatty.type_keys("sstx~")
-            _app.fatty.type_keys("sudo{VK_SPACE}-s~")
-            _app.fatty.type_keys("%s~" % pwd2)
-
-        time.sleep(5)
-
-        app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name20)
-        app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name21)
-
+    elif config == 3:
         app.fatty.type_keys("^+t")
         app.fatty.type_keys("sstb~")
         app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
@@ -230,5 +160,80 @@ if __name__ == '__main__':
         app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
         app.fatty.type_keys("tmux{VK_SPACE}a~")
         app.fatty.type_keys("tmux{VK_SPACE}new~")
+
+    while True:
+
+        k = input('Enter any key to restore ssh connections')
+        # print('Enter any key to restore ssh connections')
+        # os.system("pause")
+
+        mouse_x, mouse_y = win32api.GetCursorPos()
+
+        if config == -1:
+            for _app in apps:
+                _app.fatty.type_keys("^+w")
+                _app.fatty.type_keys("^+w")
+                _app.fatty.type_keys("sstg{VK_SPACE}tb~")
+                _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+                _app.fatty.type_keys("%s~" % pwd0)
+
+            time.sleep(3)
+
+            app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name00)
+            app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name01)
+
+            for _app in apps:
+                _app.fatty.type_keys("^+t")
+                _app.fatty.type_keys("sstg2~")
+                _app.fatty.type_keys("sstz~")
+                _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+                _app.fatty.type_keys("%s~" % pwd1)
+
+            time.sleep(3)
+
+            app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name10)
+            app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name11)
+
+            # time.sleep(1)
+
+            # time.sleep(1)
+            # app.fatty.type_keys("+{RIGHT}")
+            # app2.fatty.type_keys("+{RIGHT}")
+
+            for _app in apps:
+                _app.fatty.type_keys("^+t")
+                _app.fatty.type_keys("sstg3~")
+                _app.fatty.type_keys("sstx~")
+                _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+                _app.fatty.type_keys("%s~" % pwd2)
+
+            time.sleep(5)
+
+            app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name20)
+            app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name21)
+
+        elif config == 3:
+
+            app.fatty.type_keys("^+w")
+            app.fatty.type_keys("^+w")
+            app.fatty.type_keys("^+w")
+
+            app.fatty.type_keys("^+t")
+            app.fatty.type_keys("sstb~")
+            app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
+            app.fatty.type_keys("tmux{VK_SPACE}a~")
+            app.fatty.type_keys("tmux{VK_SPACE}new~")
+
+            app.fatty.type_keys("^+t")
+            app.fatty.type_keys("sstc~")
+            app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
+            app.fatty.type_keys("tmux{VK_SPACE}a~")
+            app.fatty.type_keys("tmux{VK_SPACE}new~")
+
+            app.fatty.type_keys("^+t")
+            app.fatty.type_keys("sstgr~")
+            app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
+            app.fatty.type_keys("tmux{VK_SPACE}a~")
+            app.fatty.type_keys("tmux{VK_SPACE}new~")
 
         mouse.move(coords=(mouse_x, mouse_y))

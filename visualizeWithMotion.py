@@ -1599,7 +1599,13 @@ def main(args, multi_exit_program=None,
         x_scaled, y_scaled = x / resize_ratio, y / resize_ratio
         for i in range(n_images):
             _start_row, _start_col, _end_row, _end_col = stack_locations[i]
-            if x_scaled >= _start_col and x_scaled < _end_col and y_scaled >= _start_row and y_scaled < _end_row:
+
+            _start_row += start_row
+            _end_row += start_row
+            _start_col += start_col
+            _end_col += start_col
+
+            if _end_col > x_scaled >= _start_col and _end_row > y_scaled >= _start_row:
                 __idx = stack_idx[i]
                 fname = os.path.abspath(img_fnames[__idx])
                 _print('Clicked on image {} with id {}:\n {}'.format(i + 1, __idx, fname))
