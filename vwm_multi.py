@@ -244,7 +244,7 @@ if __name__ == '__main__':
             visible_ratio[win_1] = visible_duration[win_1] / total_duration
             visible_ratio[win_2] = visible_duration[win_2] / total_duration
             time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
-            print('{} : {}'.format(time_stamp, num) +
+            print('{} : {}\n'.format(time_stamp, num) +
                   '\n'.join('{} : {:.2f} {:.2f}%%'.format(k, visible_duration[k], visible_ratio[k] * 100)
                             for k in (win_1, win_2)) + '\n')
         except BaseException as e:
