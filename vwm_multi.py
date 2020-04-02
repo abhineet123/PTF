@@ -145,21 +145,25 @@ if __name__ == '__main__':
     if not handle_1 or not handle_2:
         raise AssertionError('Invalid handle found')
 
-    hidden_win_handle = handle_2
+    hidden_win_handle = handle_1
     win32api.PostMessage(hidden_win_handle, win32con.WM_CHAR, 0x68, 0)
     _sleep = start_sleep
 
     switch_t = time.time()
 
-    prev_shown_time = {
-        win_1: switch_t,
-        win_2: switch_t,
-    }
-    _prev_shown_time = {
-        win_1: switch_t,
-        win_2: switch_t,
-    }
+    # prev_shown_time = {
+    #     win_1: switch_t,
+    #     win_2: switch_t,
+    # }
+    # _prev_shown_time = {
+    #     win_1: switch_t,
+    #     win_2: switch_t,
+    # }
     visible_duration = {
+        win_1: 0,
+        win_2: 0,
+    }
+    _visible_time = {
         win_1: 0,
         win_2: 0,
     }
@@ -188,35 +192,53 @@ if __name__ == '__main__':
             if num < prob:
                 if hidden_win_handle == handle_1:
                     """hide win_2 / show win_1"""
-                    _visible_time = switch_t - _prev_shown_time[win_2]
                     win32api.PostMessage(handle_2, win32con.WM_CHAR, 0x68, 0)
                     win32api.PostMessage(handle_1, win32con.WM_CHAR, 0x68, 0)
                     hidden_win_handle = handle_2
-                    visible_duration[win_2] += switch_t - prev_shown_time[win_2]
-                    prev_shown_time[win_1] = switch_t
-                    _prev_shown_time[win_1] = switch_t
+
+                    # _visible_time = switch_t - _prev_shown_time[win_2]
+                    # visible_duration[win_2] += switch_t - prev_shown_time[win_2]
+                    # prev_shown_time[win_1] = switch_t
+                    # _prev_shown_time[win_1] = switch_t
+
+                    _visible_time[win_2] += sleep_2
+                    visible_duration[win_2] += sleep_2
                     _sleep = sleep_1
-                    print('\nHiding {} after being visible for {:.2f}\n'.format(win_2, _visible_time))
+                    print('\nHiding {} after being visible for {:.2f}\n'.format(win_2, _visible_time[win_2]))
+                    _visible_time[win_2] = 0
                 else:
                     """win_1 remains visible"""
-                    visible_duration[win_1] += switch_t - prev_shown_time[win_1]
-                    prev_shown_time[win_1] = switch_t
+                    # visible_duration[win_1] += switch_t - prev_shown_time[win_1]
+                    # prev_shown_time[win_1] = switch_t
+
+                    visible_duration[win_1] += sleep_1
+                    _visible_time[win_1] += sleep_1
             else:
                 if hidden_win_handle == handle_2:
                     """hide win_1 / show win_2"""
-                    _visible_time = switch_t - _prev_shown_time[win_1]
                     win32api.PostMessage(handle_2, win32con.WM_CHAR, 0x68, 0)
                     win32api.PostMessage(handle_1, win32con.WM_CHAR, 0x68, 0)
                     hidden_win_handle = handle_1
-                    visible_duration[win_1] += switch_t - prev_shown_time[win_1]
-                    prev_shown_time[win_2] = switch_t
-                    _prev_shown_time[win_2] = switch_t
+
+                    # _visible_time = switch_t - _prev_shown_time[win_1]
+                    # visible_duration[win_1] += switch_t - prev_shown_time[win_1]
+                    # prev_shown_time[win_2] = switch_t
+                    # _prev_shown_time[win_2] = switch_t
+
+                    visible_duration[win_1] += sleep_1
+                    _visible_time[win_1] += sleep_1
+
                     _sleep = sleep_2
-                    print('\nHiding {} after being visible for {:.2f}\n'.format(win_1, _visible_time))
+                    print('\nHiding {} after being visible for {:.2f}\n'.format(win_1, _visible_time[win_1]))
+                    _visible_time[win_1] = 0
+
                 else:
                     """win_2 remains visible"""
-                    visible_duration[win_2] += switch_t - prev_shown_time[win_2]
-                    prev_shown_time[win_2] = switch_t
+                    # visible_duration[win_2] += switch_t - prev_shown_time[win_2]
+                    # prev_shown_time[win_2] = switch_t
+
+                    visible_duration[win_2] += sleep_2
+                    _visible_time[win_2] += sleep_2
 
             total_duration = visible_duration[win_1] + visible_duration[win_2]
             visible_ratio[win_1] = visible_duration[win_1] / total_duration
