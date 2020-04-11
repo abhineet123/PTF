@@ -44,7 +44,7 @@ src_folders = sorted(src_folders, key=sortKey)
 total_files_found = 0
 total_files_searched = 0
 total_unique_names = 0
-
+all_unique_names = []
 matching_files = {}
 for src_folder in src_folders:
     if not os.path.exists(src_folder):
@@ -55,7 +55,7 @@ for src_folder in src_folders:
     search_results = [f for f in src_files if search_str in f]
     if len(search_results) > 0:
         print('Found {:d} matching files in {:s}'.format(len(search_results), src_folder))
-        print('\n'.join(search_results)+'\n')
+        print('\n'.join(search_results) + '\n')
         total_files_found += len(search_results)
 
         matching_files[src_folder] = search_results
@@ -85,12 +85,30 @@ for src_folder in src_folders:
     if unique_names:
         print('Found {} unique names:\n{}\n'.format(len(unique_names), unique_names))
         total_unique_names += len(unique_names)
+        all_unique_names += unique_names
 
     total_files_searched += len(src_files)
 
+
+def extract_name(_str):
+    _str_list = _str.split('_')
+    _names = []
+    for i, _substr in enumerate(_str_list):
+        if not all(k.isalpha() for k in _substr):
+            break
+        _names.append(_substr)
+    _name = ' '.join(_names)
+    return _name
+
+
 print('{:d} files searched'.format(total_files_searched))
+all_unique_names.sort()
+
+all_unique_names_proc = list(map(extract_name, all_unique_names))
+all_unique_names_cmb = list(map(lambda x: '\t'.join(x), zip(all_unique_names, all_unique_names_proc)))
+
 if find_unique_names:
-    print('{:d} unique names found'.format(total_unique_names))
+    print('{:d} unique names found:\n{}'.format(total_unique_names, '\n'.join(all_unique_names_proc)))
 
 if total_files_found > 0:
     print('{} matching files found:\n{}'.format(total_files_found, pformat(matching_files)))
