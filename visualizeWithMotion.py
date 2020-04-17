@@ -726,13 +726,20 @@ def main(args, multi_exit_program=None,
                          if os.path.isdir(os.path.join(root_dir, k)) and k != src_dir_name]
 
     # Process optional counts
+    default_count = 1
     _numerators = []
     _denominators = []
     _src_dirs = []
     _samples = []
     for _id, src_dir in enumerate(src_dirs):
-        _numerator = _denominator = 1
+        _numerator = default_count
+        _denominator = 1
         _sample = -1
+        if '***' in src_dir:
+            _src_dir, _count = src_dir.split('***')
+            src_dir = _src_dir
+            _numerator = default_count = int(_count)
+
         if '**' in src_dir:
             _src_dir, _sample = src_dir.split('**')
             src_dir = _src_dir
