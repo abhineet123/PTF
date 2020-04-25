@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
     assert os.path.exists(out_path), "zipping failed"
 
-    os.system('unzip -l {}'.format(out_path))
+    # os.system('unzip -l {}'.format(out_path))
 
     if scp_dst:
         scp_cmd = 'scp {} {}:~/'.format(out_path, scp_dst)
