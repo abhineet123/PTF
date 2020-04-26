@@ -894,8 +894,8 @@ def main(args, multi_exit_program=None,
     if not video_mode or images_as_video:
 
         # print(f'src_dirs:\n {pformat(src_dirs)}')
-
         excluded_src_files = []
+        all_total = 0
         for _id, src_dir in enumerate(src_dirs):
 
             if _samples[_id] < 0:
@@ -933,9 +933,13 @@ def main(args, multi_exit_program=None,
                 if excluded_src_files:
                     _src_files = [k for k in _src_files if k not in excluded_src_files]
                     _n_src_files = len(_src_files)
+
+                _total = int(_n_src_files * _counts[_id] / _samples[_id])
+                all_total += _total
                 _print(f'Adding {_n_src_files} images from: {src_dir} '
                        f'with sample: {_samples[_id]} and multiplicity {_counts[_id]} '
-                       f'for total: {int(_n_src_files * _counts[_id] / _samples[_id])}')
+                       f'for total: {_total} '
+                       f'(all_total: {all_total})')
                 src_files[_id] = _src_files
 
             # src_file_list = [list(x) for x in src_file_list]
@@ -949,6 +953,7 @@ def main(args, multi_exit_program=None,
             #     print('filenames', filenames)
             #     print('dirnames', dirnames)
             #     print()
+        n_unique_frames = 0
         for _id in src_files:
             # if excluded_src_files:
             #     src_files[_id] = [k for k in src_files[_id] if k not in excluded_src_files]
@@ -957,6 +962,8 @@ def main(args, multi_exit_program=None,
                 src_files[_id] = src_files[_id][::_samples[_id]]
 
             total_frames[_id] = len(src_files[_id])
+            n_unique_frames += total_frames[_id]
+
             try:
                 # nums = int(os.path.splitext(img_fname)[0].split('_')[-1])
                 src_files[_id].sort(key=img_sortKey)
@@ -980,9 +987,11 @@ def main(args, multi_exit_program=None,
                 raise IOError('No input frames found for _id: {}'.format(_id))
             # print('Found {} frames'.format(_total_frames))
 
+        if not multi_mode:
+            _print(f'total_frames: {total_frames[0]}  (unique: {n_unique_frames})')
+
         if not multi_mode and random_mode:
             src_files_rand[0] = list(np.random.permutation(src_files[0]))
-            _print('total_frames: {}'.format(total_frames[0]))
 
         if img_fname is None:
             img_fname = src_files[0][img_id[0]]
@@ -1002,9 +1011,6 @@ def main(args, multi_exit_program=None,
         _total_frames = total_frames[0]
 
     _print('transition_interval: {}'.format(transition_interval))
-
-    if not multi_mode:
-        _print(f'total_frames: {total_frames[0]}')
 
     if not multi_mode:
         img_id = {
