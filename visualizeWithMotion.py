@@ -31,6 +31,8 @@ from PIL import Image
 from Misc import processArguments, sortKey, stackImages, resizeAR, addBorder, trim
 import sft
 
+MAX_BUFFER_RAM = 1e10
+
 # from Misc import VideoCaptureGPU as VideoCapture
 VideoCapture = cv2.VideoCapture
 
@@ -564,7 +566,7 @@ def main(args, multi_exit_program=None,
     img_fnames = {}
 
     img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff')
-    vid_exts = ('.mp4', '.avi', '.mkv', '.gif')
+    vid_exts = ('.mp4', '.avi', '.mkv', '.gif', '.webm')
 
     transition_interval_diff = 1
 
@@ -597,14 +599,27 @@ def main(args, multi_exit_program=None,
     #         src_file_list.append(src_img)
     #     total_frames = len(src_file_list)
 
+    def read_images_from_video(file_name, start_id, end_id, src_files_):
+        cap = cv2.VideoCapture(file_name)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, start_id)
+
+        for _file_id in range(start_id, end_id):
+            ret, frame = cap.read()
+            if not ret:
+                break
+            src_files_[str(_file_id)] = frame
+            # if add_reverse:
+            #     src_files_[-_file_id - 1] = frame
+
     def read_images(_load_id, start_id, diff, _files, n_files, _img_sequences):
         for _file_id in range(start_id, n_files, diff):
             _file = _files[_file_id]
             _img_sequences[_load_id][_file] = cv2.imread(_file)
 
     def loadVideo(_load_id):
-        nonlocal src_files, total_frames, img_id, img_sequences
+        nonlocal src_files, total_frames, img_id, img_sequences, _lazy_video_load
 
+        _lazy_video_load = lazy_video_load
         if os.path.isdir(src_path):
             # _print('Loading frames from video image sequence {}'.format(src_path))
             _src_files = [os.path.join(src_path, k) for k in os.listdir(src_path) if
@@ -621,8 +636,9 @@ def main(args, multi_exit_program=None,
                 n_files = len(_src_files)
                 # n_threads = parallel_read + 1
                 for _id in range(parallel_read):
-                    thread = threading.Thread(target=read_images, args=(_load_id, _id, parallel_read, _src_files, n_files,
-                                                                        img_sequences))
+                    thread = threading.Thread(target=read_images,
+                                              args=(_load_id, _id, parallel_read, _src_files, n_files,
+                                                    img_sequences))
                     thread.start()
 
         elif os.path.isfile(src_path):
@@ -643,20 +659,55 @@ def main(args, multi_exit_program=None,
                 #     raise IOError('Image does not exist: {}'.format(src_path))
                 _src_files = [cv2.imread(src_path), ]
             else:
-                # cap = cv2.VideoCapture()
+                """video file"""
                 cap = VideoCapture()
                 if not cap.open(src_path):
                     _exit_neatly()
                     raise IOError('The video file ' + src_path + ' could not be opened')
-                if lazy_video_load:
+                if _lazy_video_load:
                     _src_files = cap
                 else:
-                    while True:
-                        ret, src_img = cap.read()
-                        if not ret:
-                            break
-                        _src_files.append(src_img)
-                        # total_frames += 1
+                    n_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+                    w = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                    h = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+
+                    memory_required = float(w * h * 3 * n_frames)
+
+                    _print('Video with {} frames of size {} x {} needs {} GB buffer memory'.format(
+                        n_frames, w, h, memory_required / 1e9))
+
+                    if memory_required > MAX_BUFFER_RAM:
+                        _print('Buffer memory needed is more than the maximum allowed {} GB so using lazy load'.format(
+                            MAX_BUFFER_RAM / 1e9))
+                        _src_files = cap
+                        _lazy_video_load = 1
+                    else:
+                        if parallel_read:
+                            img_sequences[_load_id] = {}
+                            if n_frames <= 0:
+                                _exit_neatly()
+                                raise IOError('Parallel reading of video files is not supported')
+
+                            _print('Reading {} frames in parallel with {} threads'.format(n_frames, parallel_read))
+
+                            _src_files = [str(k) for k in range(n_frames)]
+
+                            n_files_per_thread = int(n_frames / parallel_read)
+                            for _id in range(parallel_read):
+                                start_frame_id = _id * n_files_per_thread
+                                end_frame_id = n_frames if _id == parallel_read - 1 else start_frame_id + n_files_per_thread
+                                thread = threading.Thread(target=read_images_from_video,
+                                                          args=(src_path, start_frame_id, end_frame_id,
+                                                                img_sequences[_load_id]))
+                                thread.start()
+                        else:
+                            while True:
+                                ret, src_img = cap.read()
+                                if not ret:
+                                    break
+                                _src_files.append(src_img)
+                                # total_frames += 1
         else:
             if other_win_name:
                 _exit_neatly()
@@ -702,6 +753,7 @@ def main(args, multi_exit_program=None,
     src_files_rand = {}
     total_frames = {}
     img_id = {}
+    _lazy_video_load = lazy_video_load
 
     img_sortKey = functools.partial(sortKey, only_basename=0)
 
@@ -1167,7 +1219,7 @@ def main(args, multi_exit_program=None,
         nonlocal target_height, target_width, min_height, start_col, end_col, height_ratio, img_fname, start_time, video_files_list
         nonlocal src_start_row, src_start_col, src_end_row, src_end_col, aspect_ratio, src_path, vid_id, \
             src_images, img_fnames, stack_idx, stack_locations, src_img, wp_id, src_files_rand, top_border, bottom_border
-        nonlocal img_sequences
+        nonlocal img_sequences, _lazy_video_load
 
         if decrement_id:
             if video_mode:
@@ -1235,7 +1287,7 @@ def main(args, multi_exit_program=None,
                         loadVideo(_load_id)
                         _img_id = 0
                     else:
-                        if video_mode and reverse_video and (video_mode == 2 or not lazy_video_load):
+                        if video_mode and reverse_video and (video_mode == 2 or not _lazy_video_load):
                             src_files[_load_id] = list(reversed(src_files[_load_id]))
                         _img_id -= _total_frames
                         if not video_mode and auto_progress and random_mode:
@@ -1260,7 +1312,10 @@ def main(args, multi_exit_program=None,
                             _img_id = 0
                             ret, src_img = src_files[_load_id].read()
                     else:
-                        img_fname = src_files[_load_id][_img_id]
+                        while True:
+                            img_fname = src_files[_load_id][_img_id]
+                            if img_fname is not None:
+                                break
                         if isinstance(img_fname, str):
                             if parallel_read:
                                 while True:
