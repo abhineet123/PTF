@@ -599,17 +599,25 @@ def main(args, multi_exit_program=None,
     #         src_file_list.append(src_img)
     #     total_frames = len(src_file_list)
 
-    def read_images_from_video(file_name, start_id, end_id, src_files_):
+    def read_images_from_video(thread_id, file_name, start_id, end_id, src_files_):
         cap = cv2.VideoCapture(file_name)
         cap.set(cv2.CAP_PROP_POS_FRAMES, start_id)
 
+        print('thread {} :: Reading frames from {} to {}'.format(thread_id, start_id, end_id))
         for _file_id in range(start_id, end_id):
             ret, frame = cap.read()
             if not ret:
+                _print('thread {} :: frame {} could not be read'.format(thread_id, _file_id))
+                """duplicate last read frame"""
+                for __file_id in range(_file_id, end_id):
+                    src_files_[str(__file_id)] = src_files_[str(_file_id - 1)]
                 break
             src_files_[str(_file_id)] = frame
+
             # if add_reverse:
             #     src_files_[-_file_id - 1] = frame
+
+
 
     def read_images(_load_id, start_id, diff, _files, n_files, _img_sequences):
         for _file_id in range(start_id, n_files, diff):
@@ -698,7 +706,7 @@ def main(args, multi_exit_program=None,
                                 start_frame_id = _id * n_files_per_thread
                                 end_frame_id = n_frames if _id == parallel_read - 1 else start_frame_id + n_files_per_thread
                                 thread = threading.Thread(target=read_images_from_video,
-                                                          args=(src_path, start_frame_id, end_frame_id,
+                                                          args=(_id, src_path, start_frame_id, end_frame_id,
                                                                 img_sequences[_load_id]))
                                 thread.start()
                         else:
@@ -715,9 +723,13 @@ def main(args, multi_exit_program=None,
             # return
 
         if isinstance(_src_files, list):
-            if auto_progress and reverse_video:
-                _src_files += list(reversed(_src_files))
-            total_frames[_load_id] = len(_src_files)
+            if not parallel_read:
+                if auto_progress and reverse_video:
+                    _src_files += list(reversed(_src_files))
+                total_frames[_load_id] = len(_src_files)
+            else:
+                total_frames[_load_id] = n_frames
+
         elif isinstance(_src_files, VideoCapture):
             if cv2.__version__.startswith('2'):
                 cv_prop = cv2.cv.CAP_PROP_FRAME_COUNT
@@ -1312,16 +1324,17 @@ def main(args, multi_exit_program=None,
                             _img_id = 0
                             ret, src_img = src_files[_load_id].read()
                     else:
-                        while True:
-                            img_fname = src_files[_load_id][_img_id]
-                            if img_fname is not None:
-                                break
+                        img_fname = src_files[_load_id][_img_id]
                         if isinstance(img_fname, str):
                             if parallel_read:
                                 while True:
                                     try:
                                         src_img = img_sequences[_load_id][img_fname]
                                     except KeyError:
+                                        _print('waiting for image {}'.format(img_fname))
+                                        _print('valid keys: {}'.format(img_sequences[_load_id].keys()))
+                                        _exit_neatly()
+                                        exit()
                                         continue
                                     else:
                                         break
