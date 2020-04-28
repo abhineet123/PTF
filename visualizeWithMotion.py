@@ -1986,9 +1986,18 @@ def main(args, multi_exit_program=None,
                                 # print('here we are')
                                 clicked_img_fname, __idx = getClickedImage(x, y, get_idx=1)
                                 if clicked_img_fname is not None:
+                                    try:
+                                        import pyperclip
+
+                                        pyperclip.copy(clicked_img_fname)
+                                        spam = pyperclip.paste()
+                                    except BaseException as e:
+                                        print('Copying to clipboard failed: {}'.format(e))
+
                                     fname = '"' + clicked_img_fname + '"'
                                     time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
                                     open(log_file, 'a').write(time_stamp + "\n" + fname + '\n')
+
                                     if flags == 25:
                                         # ctrl + shift
                                         if not video_mode:
@@ -3340,13 +3349,24 @@ def main(args, multi_exit_program=None,
                         loadImage(-1)
             elif k == ord('F') or k == ord('0'):
                 if n_images == 1:
-                    _print('"' + os.path.abspath(img_fname) + '"')
+                    _txt = '"' + os.path.abspath(img_fname) + '"'
+                    _print(_txt)
                 else:
+                    _txt = ''
                     _print()
                     for _idx in stack_idx:
                         if not video_mode:
-                            _print('"' + os.path.abspath(img_fnames[_idx]) + '"')
+                            _txt += '"' + os.path.abspath(img_fnames[_idx]) + '"'
+                    _print(_txt)
                     _print()
+                try:
+                    import pyperclip
+
+                    pyperclip.copy(_txt)
+                    spam = pyperclip.paste()
+                except BaseException as e:
+                    print('Copying to clipboard failed: {}'.format(e))
+
             elif k == ord('f') or k == ord('/') or k == ord('?'):
                 fullscreen = 1 - fullscreen
                 createWindow(win_name)
