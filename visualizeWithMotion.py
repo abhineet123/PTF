@@ -3356,7 +3356,7 @@ def main(args, multi_exit_program=None,
                     _print()
                     for _idx in stack_idx:
                         if not video_mode:
-                            _txt += '"' + os.path.abspath(img_fnames[_idx]) + '"'
+                            _txt += '"' + os.path.abspath(img_fnames[_idx]) + '"' + '\n'
                     _print(_txt)
                     _print()
                 try:
