@@ -141,7 +141,7 @@ def main():
     sub_seq_start_id = params['sub_seq_start_id']
     frames_per_seq = params['frames_per_seq']
 
-    vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv', '.gif']
+    vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv', '.gif', '.webm']
     img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
 
     min_thresh = 0

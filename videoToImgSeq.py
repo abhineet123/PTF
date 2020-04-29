@@ -71,7 +71,7 @@ if __name__ == '__main__':
     tracker_type = params['tracker_type']
     filtering = params['filtering']
 
-    vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv', '.gif']
+    vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv', '.gif', '.webm']
     img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
 
     roi_enabled = False

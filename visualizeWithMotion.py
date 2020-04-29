@@ -617,8 +617,6 @@ def main(args, multi_exit_program=None,
             # if add_reverse:
             #     src_files_[-_file_id - 1] = frame
 
-
-
     def read_images(_load_id, start_id, diff, _files, n_files, _img_sequences):
         for _file_id in range(start_id, n_files, diff):
             _file = _files[_file_id]
@@ -723,7 +721,7 @@ def main(args, multi_exit_program=None,
             # return
 
         if isinstance(_src_files, list):
-            if not parallel_read:
+            if video_mode == 2 or not parallel_read:
                 if auto_progress and reverse_video:
                     _src_files += list(reversed(_src_files))
                 total_frames[_load_id] = len(_src_files)
@@ -747,7 +745,7 @@ def main(args, multi_exit_program=None,
         # else:
         #     cv_prop = cv2.cv.CAP_PROP_FRAME_COUNT
         #
-        # total_frames = int(cap.get(cv_prop))
+        # total_frames = int(cap.get(cv_prop))+
         # readVideoFrames(cap)
 
         # thread = threading.Thread(target=readVideoFrames, args=(cap, ))
@@ -1331,10 +1329,10 @@ def main(args, multi_exit_program=None,
                                     try:
                                         src_img = img_sequences[_load_id][img_fname]
                                     except KeyError:
-                                        _print('waiting for image {}'.format(img_fname))
-                                        _print('valid keys: {}'.format(img_sequences[_load_id].keys()))
-                                        _exit_neatly()
-                                        exit()
+                                        # _print('waiting for image {}'.format(img_fname))
+                                        # _print('valid keys: {}'.format(img_sequences[_load_id].keys()))
+                                        # _exit_neatly()
+                                        # exit()
                                         continue
                                     else:
                                         break
@@ -3197,11 +3195,13 @@ def main(args, multi_exit_program=None,
             elif k == ord('m') or k == ord('M'):
                 minimizeWindow()
             elif k == ord('W'):
+                # width -= 10
                 set_wallpaper = 0 if set_wallpaper else 2
                 if set_wallpaper:
                     minimizeWindow()
                     loadImage()
             elif k == ord('w'):
+                # width += 10
                 set_wallpaper = 0 if set_wallpaper else 1
                 if set_wallpaper:
                     minimizeWindow()
