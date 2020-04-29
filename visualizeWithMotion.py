@@ -936,6 +936,8 @@ def main(args, multi_exit_program=None,
         except:
             video_files_list.sort()
 
+        orig_video_files_list = video_files_list[:]
+
         # print(f'video_files_list:\n {pformat(video_files_list)}')
 
         if random_mode:
@@ -2797,6 +2799,16 @@ def main(args, multi_exit_program=None,
                 else:
                     # _print('{} :: hiding window\n'.format(win_name))
                     hideWindow()
+            elif k == ord('y'):
+                if video_mode:
+                    random_mode = 1 - random_mode
+                    if random_mode:
+                        _print('Random mode enabled')
+                        video_files_list = list(np.random.permutation(video_files_list))
+                    else:
+                        _print('Random mode disabled')
+                        video_files_list = orig_video_files_list
+
             elif k == ord('r'):
                 if video_mode:
                     _print('Reversing video')
@@ -3221,20 +3233,20 @@ def main(args, multi_exit_program=None,
             #                 createWindow(_win_name2)
             #         remove_hotkeys()
             elif k == ord(','):
-                height -= 5
+                height -= 10
                 if height < 10:
                     height = 10
                 loadImage()
             elif k == ord('.'):
-                height += 5
+                height += 10
                 loadImage()
             elif k == ord('<'):
-                width -= 5
+                width -= 10
                 if width < 10:
                     width = 10
                 loadImage()
             elif k == ord('>'):
-                width += 5
+                width += 10
                 loadImage()
             elif k == ord('/'):
                 height = _height
