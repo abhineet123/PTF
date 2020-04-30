@@ -721,7 +721,8 @@ def main(args, multi_exit_program=None,
             # return
 
         if isinstance(_src_files, list):
-            if video_mode == 2 or not parallel_read:
+            n_frames = len(_src_files)
+            if video_mode == 2 or video_mode == 3 or not parallel_read:
                 if auto_progress and reverse_video:
                     _src_files += list(reversed(_src_files))
                 total_frames[_load_id] = len(_src_files)
@@ -840,6 +841,7 @@ def main(args, multi_exit_program=None,
         video_files_list = []
         excluded_video_files = []
         n_unique_videos = 0
+        n_total_videos=0
         for _id, src_dir in enumerate(src_dirs):
             if src_dir[0] == '!':
                 src_dir = src_dir[1:]
@@ -850,50 +852,57 @@ def main(args, multi_exit_program=None,
             src_dir = os.path.abspath(src_dir)
             # src_dir = src_dir.replace(os.sep, '/')
 
+            _video_files_list = []
+
             _sample = _samples[_id]
             if _sample <= 0:
                 _video_mode = video_mode
             else:
                 _video_mode = _sample
 
-            if _video_mode == 2:
-                # _print(f'Looking for image sequences in {src_dir}')
+            if _video_mode == 2 or _video_mode == 3:
+                _print(f'\tLooking for image sequences in {src_dir}')
                 video_file_gen = [[os.path.join(dirpath, d) for d in dirnames if
                                    any([os.path.splitext(f.lower())[1] in img_exts
                                         for f in os.listdir(os.path.join(dirpath, d))])]
                                   for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
-                _video_files_list = [item for sublist in video_file_gen for item in sublist]
 
-                if not _video_files_list:
+                _video_files_list += [item for sublist in video_file_gen for item in sublist]
+
+                if not _video_files_list and  _video_mode == 2:
+                    parent_src_dir = os.path.dirname(src_dir)
+                    _print(f'\tNot found any so looking in its parent directory as well {parent_src_dir}')
                     video_file_gen = [[os.path.join(dirpath, d) for d in dirnames if
                                        any([os.path.splitext(f.lower())[1] in img_exts
                                             for f in os.listdir(os.path.join(dirpath, d))])]
-                                      for (dirpath, dirnames, filenames) in os.walk(os.path.dirname(src_dir),
+                                      for (dirpath, dirnames, filenames) in os.walk(parent_src_dir,
                                                                                     followlinks=True)]
-                    _video_files_list = [item for sublist in video_file_gen for item in sublist]
+                    _video_files_list += [item for sublist in video_file_gen for item in sublist]
 
                 elif any([os.path.splitext(f.lower())[1] in img_exts
                           for f in os.listdir(src_dir)]):
                     _video_files_list.append(src_dir)
-            else:
-                # _print(f'Looking for videos in {src_dir}')
+
+            if _video_mode == 1 or _video_mode == 3:
+                _print(f'\tLooking for videos in {src_dir}')
                 # recursive = 0
                 if recursive:
                     # _print(f'Searching recursively')
                     video_file_gen = [[os.path.join(dirpath, f) for f in filenames if
                                        os.path.splitext(f.lower())[1] in vid_exts]
                                       for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
-                    _video_files_list = [item for sublist in video_file_gen for item in sublist]
+                    __video_files_list = [item for sublist in video_file_gen for item in sublist]
                 else:
-                    _video_files_list = [os.path.join(src_dir, k) for k in os.listdir(src_dir) if
-                                         os.path.splitext(k.lower())[1] in vid_exts]
+                    __video_files_list = [os.path.join(src_dir, k) for k in os.listdir(src_dir) if
+                                          os.path.splitext(k.lower())[1] in vid_exts]
                     _all_files_list = [os.path.join(src_dir, k) for k in os.listdir(src_dir)]
 
                     _all_files_ext = [os.path.splitext(k.lower())[1] for k in _all_files_list]
                     _all_files_ext_status = [k in vid_exts for k in _all_files_ext]
 
-                    _video_files_list = [os.path.join(src_dir, k) for k in _all_files_list if
-                                         os.path.splitext(k.lower())[1] in vid_exts]
+                    __video_files_list = [os.path.join(src_dir, k) for k in _all_files_list if
+                                          os.path.splitext(k.lower())[1] in vid_exts]
+                _video_files_list += __video_files_list
 
             n_videos = len(_video_files_list)
 
@@ -907,10 +916,12 @@ def main(args, multi_exit_program=None,
 
                 n_unique_videos += n_videos
                 if n_videos:
+                    _n_videos = int(n_videos * _counts[_id])
+                    n_total_videos += _n_videos
                     # print(f'Found {n_videos} videos in {src_dir}')
                     _print(f'Adding {n_videos} videos from: {src_dir} '
                            f'with multiplicity {_counts[_id]} '
-                           f'for total: {int(n_videos * _counts[_id])}')
+                           f'for total: {_n_videos} / {n_total_videos}')
                     video_files_list += _video_files_list * _counts[_id]
                 else:
                     _print(f'Found no videos in {src_dir}')
