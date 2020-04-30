@@ -3259,6 +3259,18 @@ def main(args, multi_exit_program=None,
             elif k == ord('>'):
                 width += 10
                 loadImage()
+            elif k == ord('"'):
+                width = int(width * 2)
+                loadImage()
+            elif k == ord(':'):
+                width = int(width / 2)
+                loadImage()
+            elif k == ord("'"):
+                height = int(height * 2)
+                loadImage()
+            elif k == ord(';'):
+                height  = int(height/ 2)
+                loadImage()
             elif k == ord('/'):
                 height = _height
                 loadImage()

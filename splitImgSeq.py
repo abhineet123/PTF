@@ -125,6 +125,7 @@ def main():
         'thresh': -1,
         'order': 5,
         'frames_per_seq': 0,
+        'video_mode': 0,
     }
 
     processArguments(sys.argv[1:], params)
@@ -140,6 +141,8 @@ def main():
     order = params['order']
     sub_seq_start_id = params['sub_seq_start_id']
     frames_per_seq = params['frames_per_seq']
+    video_mode = params['video_mode']
+    codec = params['codec']
 
     vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv', '.gif', '.webm']
     img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
@@ -181,22 +184,32 @@ def main():
 
     _src_path = os.path.abspath(_src_path)
 
-    if any(_src_path.endswith(_ext) for _ext in vid_exts):
-        print('Converting video to image sequences: {}'.format(_src_path))
-        os.system('v2i {}'.format(_src_path))
+    vid_ext = None
 
-        _src_path = os.path.join(os.path.dirname(_src_path), os.path.splitext(os.path.basename(_src_path))[0])
+    if any(_src_path.endswith(_ext) for _ext in vid_exts):
+        vid_fname, vid_ext = os.path.splitext(os.path.basename(_src_path))
+        if not video_mode:
+            print('Converting video to image sequences: {}'.format(_src_path))
+            os.system('v2i {}'.format(_src_path))
+
+            _src_path = os.path.join(os.path.dirname(_src_path), vid_fname)
 
     if os.path.isdir(_src_path):
-        src_files = [k for k in os.listdir(_src_path) for _ext in img_exts if k.endswith(_ext)]
-        if not src_files:
-            src_paths = [os.path.join(_src_path, k) for k in os.listdir(_src_path) if
-                         os.path.isdir(os.path.join(_src_path, k))]
+        if video_mode:
+            src_paths = [k for k in os.listdir(_src_path) for _ext in vid_exts if k.endswith(_ext)]
         else:
-            src_paths = [_src_path]
+            src_files = [k for k in os.listdir(_src_path) for _ext in img_exts if k.endswith(_ext)]
+            if not src_files:
+                src_paths = [os.path.join(_src_path, k) for k in os.listdir(_src_path) if
+                             os.path.isdir(os.path.join(_src_path, k))]
+            else:
+                src_paths = [_src_path]
     elif os.path.isfile(_src_path):
-        print('Reading source image sequences from: {}'.format(_src_path))
-        src_paths = [x.strip() for x in open(_src_path).readlines() if x.strip()]
+        if video_mode:
+            src_paths = [_src_path]
+        else:
+            print('Reading source image sequences from: {}'.format(_src_path))
+            src_paths = [x.strip() for x in open(_src_path).readlines() if x.strip()]
         n_seq = len(src_paths)
         if n_seq <= 0:
             raise SystemError('No input sequences found')
@@ -219,29 +232,39 @@ def main():
         start_id = _start_id
         thresh = _thresh
         seq_name = os.path.basename(src_path)
-
         print('Reading source images from: {}'.format(src_path))
 
-        src_files = [k for k in os.listdir(src_path) for _ext in img_exts if k.endswith(_ext)]
-        n_src_files = len(src_files)
-        if n_src_files <= 0:
-            raise SystemError('No input frames found')
+        if not video_mode:
 
-        # print('src_files: {}'.format(src_files))
+            src_files = [k for k in os.listdir(src_path) for _ext in img_exts if k.endswith(_ext)]
+            n_src_files = len(src_files)
+            if n_src_files <= 0:
+                raise SystemError('No input frames found')
 
-        src_files.sort(key=sortKey)
-        print('n_src_files: {}'.format(n_src_files))
+            # print('src_files: {}'.format(src_files))
 
-        if reverse == 1:
-            src_files = src_files[::-1]
-        elif reverse == 2:
-            src_files += src_files[::-1]
-            n_src_files *= 2
+            src_files.sort(key=sortKey)
+            print('n_src_files: {}'.format(n_src_files))
 
-        filename = src_files[start_id]
-        file_path = os.path.join(src_path, filename)
-        assert os.path.exists(file_path), f'Image file {file_path} does not exist'
-        prev_image = cv2.imread(file_path)
+            if reverse == 1:
+                src_files = src_files[::-1]
+            elif reverse == 2:
+                src_files += src_files[::-1]
+                n_src_files *= 2
+
+            filename = src_files[start_id]
+            file_path = os.path.join(src_path, filename)
+            assert os.path.exists(file_path), f'Image file {file_path} does not exist'
+            prev_image = cv2.imread(file_path)
+        else:
+            src_files = None
+            cap = cv2.VideoCapture(src_path)
+            n_src_files = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            cap.set(cv2.CAP_PROP_POS_FRAMES, start_id)
+            ret, prev_image = cap.read()
+            if not ret:
+                raise IOError('frame {} could not be read'.format(start_id))
+
         prev_image = cv2.cvtColor(prev_image, cv2.COLOR_BGR2GRAY)
 
         frame_id = start_id + 1
@@ -261,11 +284,17 @@ def main():
             print_diff = max(1, int(n_src_files / 100))
             start_t = time.time()
             while True:
-                filename = src_files[frame_id]
-                file_path = os.path.join(src_path, filename)
-                assert os.path.exists(file_path), f'Image file {file_path} does not exist'
+                if not video_mode:
+                    filename = src_files[frame_id]
+                    file_path = os.path.join(src_path, filename)
+                    assert os.path.exists(file_path), f'Image file {file_path} does not exist'
+                    image = cv2.imread(file_path)
+                else:
+                    cap.set(cv2.CAP_PROP_POS_FRAMES, start_id)
+                    ret, image = cap.read()
+                    if not ret:
+                        raise IOError('frame {} could not be read'.format(start_id))
 
-                image = cv2.imread(file_path)
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
                 if image.shape != prev_image.shape:
@@ -427,15 +456,32 @@ def main():
         sub_seq_id = sub_seq_start_id
         for end_id in split_indices:
             print(f'sub_seq_id: {sub_seq_id} with start_id: {start_id}, end_id: {end_id}')
-            dst_path = os.path.join(src_path, f'{seq_name}_{sub_seq_id}')
-            if not os.path.isdir(dst_path):
-                os.makedirs(dst_path)
 
-            for i in range(start_id, end_id):
-                filename = src_files[i]
-                src_file_path = os.path.join(src_path, filename)
-                dst_file_path = os.path.join(dst_path, filename)
-                shutil.move(src_file_path, dst_file_path)
+            if video_mode:
+                w = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                h = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+
+                dst_path = os.path.join(src_path, f'{seq_name}_{sub_seq_id}.{vid_ext}')
+                fourcc = cv2.VideoWriter_fourcc(*codec)
+                video_out = cv2.VideoWriter(dst_path, fourcc, fps, (w, h))
+                if video_out is None:
+                    raise IOError('Output video file could not be opened: {}'.format(dst_path))
+
+                for i in range(start_id, end_id):
+                    cap.set(cv2.CAP_PROP_POS_FRAMES, start_id)
+                    ret, image = cap.read()
+                    if not ret:
+                        raise IOError('frame {} could not be read'.format(start_id))
+                    video_out.write(image)
+            else:
+                dst_path = os.path.join(src_path, f'{seq_name}_{sub_seq_id}')
+                if not os.path.isdir(dst_path):
+                    os.makedirs(dst_path)
+                for i in range(start_id, end_id):
+                    filename = src_files[i]
+                    src_file_path = os.path.join(src_path, filename)
+                    dst_file_path = os.path.join(dst_path, filename)
+                    shutil.move(src_file_path, dst_file_path)
 
             start_id = end_id
             sub_seq_id += 1

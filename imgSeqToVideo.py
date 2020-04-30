@@ -195,9 +195,9 @@ for src_id, src_path in enumerate(src_paths):
 
         if frame_id % print_diff == 0:
             end_t = time.time()
-            fps = float(print_diff) / (end_t - start_t)
+            proc_fps = float(print_diff) / (end_t - start_t)
             sys.stdout.write('\rDone {:d}/{:d} frames at {:.4f} fps'.format(
-                frame_id - start_id, n_src_files - start_id, fps))
+                frame_id - start_id, n_src_files - start_id, proc_fps))
             sys.stdout.flush()
             start_t = end_t
 

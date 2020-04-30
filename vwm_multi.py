@@ -145,7 +145,7 @@ if __name__ == '__main__':
     if not handle_1 or not handle_2:
         raise AssertionError('Invalid handle found')
 
-    hidden_win_handle = handle_1
+    hidden_win_handle = handle_2
     win32api.PostMessage(hidden_win_handle, win32con.WM_CHAR, 0x68, 0)
     _sleep = start_sleep
 
