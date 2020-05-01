@@ -290,7 +290,7 @@ def main():
                     assert os.path.exists(file_path), f'Image file {file_path} does not exist'
                     image = cv2.imread(file_path)
                 else:
-                    cap.set(cv2.CAP_PROP_POS_FRAMES, start_id)
+                    cap.set(cv2.CAP_PROP_POS_FRAMES, frame_id)
                     ret, image = cap.read()
                     if not ret:
                         raise IOError('frame {} could not be read'.format(start_id))

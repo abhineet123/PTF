@@ -31,8 +31,6 @@ from PIL import Image
 from Misc import processArguments, sortKey, stackImages, resizeAR, addBorder, trim
 import sft
 
-MAX_BUFFER_RAM = 1e10
-
 # from Misc import VideoCaptureGPU as VideoCapture
 VideoCapture = cv2.VideoCapture
 
@@ -138,6 +136,7 @@ params = {
     'other_win_name': '',
     'log_color': '',
     'parallel_read': 4,
+    'max_buffer_ram': 1e10,
 }
 
 
@@ -212,6 +211,7 @@ def main(args, multi_exit_program=None,
     other_win_name = params['other_win_name']
     log_color = params['log_color']
     parallel_read = params['parallel_read']
+    max_buffer_ram = params['max_buffer_ram']
 
     if log_color:
         from colorlog import ColoredFormatter
@@ -683,9 +683,9 @@ def main(args, multi_exit_program=None,
                     _print('Video with {} frames of size {} x {} needs {} GB buffer memory'.format(
                         n_frames, w, h, memory_required / 1e9))
 
-                    if memory_required > MAX_BUFFER_RAM:
+                    if memory_required > max_buffer_ram:
                         _print('Buffer memory needed is more than the maximum allowed {} GB so using lazy load'.format(
-                            MAX_BUFFER_RAM / 1e9))
+                            max_buffer_ram / 1e9))
                         _src_files = cap
                         _lazy_video_load = 1
                     else:
