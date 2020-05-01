@@ -143,6 +143,7 @@ def main():
     frames_per_seq = params['frames_per_seq']
     video_mode = params['video_mode']
     codec = params['codec']
+    fps = params['fps']
 
     vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv', '.gif', '.webm']
     img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
@@ -257,6 +258,8 @@ def main():
             assert os.path.exists(file_path), f'Image file {file_path} does not exist'
             prev_image = cv2.imread(file_path)
         else:
+            vid_fname, vid_ext = os.path.splitext(os.path.basename(_src_path))
+
             src_files = None
             cap = cv2.VideoCapture(src_path)
             n_src_files = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -293,7 +296,11 @@ def main():
                     cap.set(cv2.CAP_PROP_POS_FRAMES, frame_id)
                     ret, image = cap.read()
                     if not ret:
-                        raise IOError('frame {} could not be read'.format(start_id))
+                        print('frame {} could not be read'.format(frame_id))
+                    cap.set(cv2.CAP_PROP_POS_FRAMES, frame_id - 1)
+                    ret, image = cap.read()
+                    if not ret:
+                        raise IOError('frame {} could not be read'.format(frame_id - 1))
 
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -345,9 +352,9 @@ def main():
 
                 if frame_id % print_diff == 0:
                     end_t = time.time()
-                    fps = float(print_diff) / (end_t - start_t)
+                    proc_fps = float(print_diff) / (end_t - start_t)
                     sys.stdout.write('\rDone {:d}/{:d} frames at {:.4f} fps'.format(
-                        frame_id - start_id, n_src_files - start_id, fps))
+                        frame_id - start_id, n_src_files - start_id, proc_fps))
                     sys.stdout.flush()
                     start_t = end_t
 
@@ -458,21 +465,26 @@ def main():
             print(f'sub_seq_id: {sub_seq_id} with start_id: {start_id}, end_id: {end_id}')
 
             if video_mode:
-                w = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                h = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 
-                dst_path = os.path.join(src_path, f'{seq_name}_{sub_seq_id}.{vid_ext}')
+                dst_path = os.path.join(os.path.dirname(src_path), f'{vid_fname}_{sub_seq_id}.{vid_ext}')
                 fourcc = cv2.VideoWriter_fourcc(*codec)
                 video_out = cv2.VideoWriter(dst_path, fourcc, fps, (w, h))
                 if video_out is None:
                     raise IOError('Output video file could not be opened: {}'.format(dst_path))
-
+                print(f'Writing output video of size {w}x{h}: {dst_path}')
                 for i in range(start_id, end_id):
-                    cap.set(cv2.CAP_PROP_POS_FRAMES, start_id)
+                    cap.set(cv2.CAP_PROP_POS_FRAMES, i)
                     ret, image = cap.read()
                     if not ret:
-                        raise IOError('frame {} could not be read'.format(start_id))
+                        print('frame {} could not be read'.format(i))
+                    cap.set(cv2.CAP_PROP_POS_FRAMES, i - 1)
+                    ret, image = cap.read()
+                    if not ret:
+                        raise IOError('frame {} could not be read'.format(i - 1))
                     video_out.write(image)
+                video_out.release()
             else:
                 dst_path = os.path.join(src_path, f'{seq_name}_{sub_seq_id}')
                 if not os.path.isdir(dst_path):
