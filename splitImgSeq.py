@@ -144,6 +144,7 @@ def main():
     video_mode = params['video_mode']
     codec = params['codec']
     fps = params['fps']
+    ext = params['ext']
 
     vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv', '.gif', '.webm']
     img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
@@ -197,6 +198,7 @@ def main():
 
     if os.path.isdir(_src_path):
         if video_mode:
+            print('Getting videos from: {}'.format(_src_path))
             src_paths = [k for k in os.listdir(_src_path) for _ext in vid_exts if k.endswith(_ext)]
         else:
             src_files = [k for k in os.listdir(_src_path) for _ext in img_exts if k.endswith(_ext)]
@@ -233,10 +235,9 @@ def main():
         start_id = _start_id
         thresh = _thresh
         seq_name = os.path.basename(src_path)
-        print('Reading source images from: {}'.format(src_path))
 
         if not video_mode:
-
+            print('Reading source images from: {}'.format(src_path))
             src_files = [k for k in os.listdir(src_path) for _ext in img_exts if k.endswith(_ext)]
             n_src_files = len(src_files)
             if n_src_files <= 0:
@@ -258,7 +259,13 @@ def main():
             assert os.path.exists(file_path), f'Image file {file_path} does not exist'
             prev_image = cv2.imread(file_path)
         else:
-            vid_fname, vid_ext = os.path.splitext(os.path.basename(_src_path))
+            print('Pocessing video: {}'.format(src_path))
+
+            vid_fname, vid_ext = os.path.splitext(os.path.basename(src_path))
+
+            print(f'src_path: {src_path}')
+            print(f'vid_fname: {vid_fname}')
+            print(f'vid_ext: {vid_ext}')
 
             src_files = None
             cap = cv2.VideoCapture(src_path)
@@ -468,7 +475,7 @@ def main():
                 h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
                 w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 
-                dst_path = os.path.join(os.path.dirname(src_path), f'{vid_fname}_{sub_seq_id}.{vid_ext}')
+                dst_path = os.path.join(os.path.dirname(src_path), f'{vid_fname}_{sub_seq_id}.{ext}')
                 fourcc = cv2.VideoWriter_fourcc(*codec)
                 video_out = cv2.VideoWriter(dst_path, fourcc, fps, (w, h))
                 if video_out is None:
