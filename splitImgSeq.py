@@ -227,6 +227,7 @@ def main():
 
     labels_col_rgb = col_rgb[labels_col]
     plot_cols = [labels_col_rgb, ]
+    prev_seek_id = 0
 
     for src_path in src_paths:
 
@@ -259,7 +260,7 @@ def main():
             assert os.path.exists(file_path), f'Image file {file_path} does not exist'
             prev_image = cv2.imread(file_path)
         else:
-            print('Pocessing video: {}'.format(src_path))
+            print('Processing video: {}'.format(src_path))
 
             vid_fname, vid_ext = os.path.splitext(os.path.basename(src_path))
 
@@ -270,7 +271,9 @@ def main():
             src_files = None
             cap = cv2.VideoCapture(src_path)
             n_src_files = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-            cap.set(cv2.CAP_PROP_POS_FRAMES, start_id)
+            if start_id > 0:
+                cap.set(cv2.CAP_PROP_POS_FRAMES, start_id)
+                prev_seek_id = start_id
             ret, prev_image = cap.read()
             if not ret:
                 raise IOError('frame {} could not be read'.format(start_id))
@@ -300,14 +303,20 @@ def main():
                     assert os.path.exists(file_path), f'Image file {file_path} does not exist'
                     image = cv2.imread(file_path)
                 else:
-                    cap.set(cv2.CAP_PROP_POS_FRAMES, frame_id)
+
+                    if frame_id != prev_seek_id+1:
+                        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_id)
+                        prev_seek_id = frame_id
                     ret, image = cap.read()
                     if not ret:
                         print('frame {} could not be read'.format(frame_id))
-                    cap.set(cv2.CAP_PROP_POS_FRAMES, frame_id - 1)
-                    ret, image = cap.read()
-                    if not ret:
-                        raise IOError('frame {} could not be read'.format(frame_id - 1))
+                        if frame_id - 1 != prev_seek_id + 1:
+                            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_id - 1)
+                            prev_seek_id = frame_id - 1
+
+                        ret, image = cap.read()
+                        if not ret:
+                            raise IOError('frame {} could not be read'.format(frame_id - 1))
 
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -482,14 +491,21 @@ def main():
                     raise IOError('Output video file could not be opened: {}'.format(dst_path))
                 print(f'Writing output video of size {w}x{h}: {dst_path}')
                 for i in range(start_id, end_id):
-                    cap.set(cv2.CAP_PROP_POS_FRAMES, i)
+                    if i != prev_seek_id + 1:
+                        cap.set(cv2.CAP_PROP_POS_FRAMES, i)
+                        prev_seek_id = i
+
                     ret, image = cap.read()
+                    
                     if not ret:
                         print('frame {} could not be read'.format(i))
-                    cap.set(cv2.CAP_PROP_POS_FRAMES, i - 1)
-                    ret, image = cap.read()
-                    if not ret:
-                        raise IOError('frame {} could not be read'.format(i - 1))
+                        if i - 1 != prev_seek_id + 1:
+                            cap.set(cv2.CAP_PROP_POS_FRAMES, i - 1)
+                            prev_seek_id = i - 1
+
+                        ret, image = cap.read()
+                        if not ret:
+                            raise IOError('frame {} could not be read'.format(i - 1))
                     video_out.write(image)
                 video_out.release()
             else:
