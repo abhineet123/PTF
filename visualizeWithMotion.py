@@ -680,8 +680,8 @@ def main(args, multi_exit_program=None,
 
                     memory_required = float(w * h * 3 * n_frames)
 
-                    _print('Video with {} frames of size {} x {} needs {} GB buffer memory'.format(
-                        n_frames, w, h, memory_required / 1e9))
+                    _print('Video {} with {} frames of size {} x {} needs {} GB buffer memory'.format(
+                        os.path.basename(src_path), n_frames, w, h, memory_required / 1e9))
 
                     if memory_required > max_buffer_ram:
                         _print('Buffer memory needed is more than the maximum allowed {} GB so using lazy load'.format(

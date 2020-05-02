@@ -124,6 +124,7 @@ def main():
         'metric': 4,
         'thresh': -1,
         'order': 5,
+        'n_splits': 0,
         'frames_per_seq': 0,
         'video_mode': 0,
     }
@@ -140,11 +141,14 @@ def main():
     _thresh = params['thresh']
     order = params['order']
     sub_seq_start_id = params['sub_seq_start_id']
+    _n_splits = params['n_splits']
     frames_per_seq = params['frames_per_seq']
     video_mode = params['video_mode']
     codec = params['codec']
     fps = params['fps']
     ext = params['ext']
+
+    n_splits = _n_splits
 
     vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv', '.gif', '.webm']
     img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
@@ -237,6 +241,8 @@ def main():
         thresh = _thresh
         seq_name = os.path.basename(src_path)
 
+        win_name = seq_name + 'scatter_plot'
+
         if not video_mode:
             print('Reading source images from: {}'.format(src_path))
             src_files = [k for k in os.listdir(src_path) for _ext in img_exts if k.endswith(_ext)]
@@ -271,6 +277,7 @@ def main():
             src_files = None
             cap = cv2.VideoCapture(src_path)
             n_src_files = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
             if start_id > 0:
                 cap.set(cv2.CAP_PROP_POS_FRAMES, start_id)
                 prev_seek_id = start_id
@@ -283,7 +290,10 @@ def main():
         frame_id = start_id + 1
         pause_after_frame = 0
 
-        if frames_per_seq > 0:
+        if _n_splits > 0:
+            frames_per_seq = int(n_src_files / _n_splits)
+            split_indices = list(range(frames_per_seq, n_src_files, frames_per_seq))
+        elif frames_per_seq > 0:
             split_indices = list(range(frames_per_seq, n_src_files, frames_per_seq))
         else:
             sim_list = []
@@ -304,7 +314,7 @@ def main():
                     image = cv2.imread(file_path)
                 else:
 
-                    if frame_id != prev_seek_id+1:
+                    if frame_id != prev_seek_id + 1:
                         cap.set(cv2.CAP_PROP_POS_FRAMES, frame_id)
                         prev_seek_id = frame_id
                     ret, image = cap.read()
@@ -404,6 +414,24 @@ def main():
                     # plt.scatter(c_max_index[0], sim_ratio_list[c_max_index[0]], linewidth=0.3, s=50, c='r')
                     # plt.show()
 
+                def update_n_splits(__n_splits):
+                    nonlocal n_splits, split_indices
+                    n_splits = __n_splits
+
+                    if n_splits == 0:
+                        split_indices = []
+                    else:
+                        _frames_per_seq = int(n_src_files / n_splits)
+                        split_indices = list(range(_frames_per_seq, n_src_files, _frames_per_seq))
+
+                    scatter_plot = getPlotImage([list(range(len(_data))), ], [_data, ], plot_cols,
+                                                metric_type, [metric_type, ], 'frame', metric_type,
+                                                scatter=split_indices)
+                    print(f'n_splits: {n_splits}')
+                    print(f'frames_per_seq: {_frames_per_seq}')
+                    cv2.imshow(win_name, scatter_plot)
+
+
                 def update_order(_order):
                     nonlocal order, split_indices
                     order = _order
@@ -413,22 +441,33 @@ def main():
                                                 metric_type, [metric_type, ], 'frame', metric_type,
                                                 scatter=split_indices)
                     print(f'order: {order}')
-                    cv2.imshow('scatter_plot', scatter_plot)
+                    cv2.imshow(win_name, scatter_plot)
 
                 def update_thresh(x):
                     nonlocal thresh, split_indices
-                    thresh = min_thresh + float(max_thresh - min_thresh) / float(1000) * x
+                    thresh = min_thresh + float(max_thresh - min_thresh) / float(100000) * x
                     split_indices = argrelextrema(_data, cmp_func, order=order)[0]
                     split_indices = [k for k in split_indices if cmp_func(_data[k], thresh)]
                     scatter_plot = getPlotImage([list(range(len(_data))), ], [_data, ], plot_cols,
                                                 metric_type, [metric_type, ], 'frame', metric_type,
                                                 scatter=split_indices)
-                    print(f'thresh: {thresh}')
-                    cv2.imshow('scatter_plot', scatter_plot)
+                    n_splits = len(split_indices)
+                    split_lengths = [split_indices[j + 1] - split_indices[j] for j in range(n_splits - 1)]
+
+                    if split_lengths:
+                        max_split = np.max(split_lengths)
+                        min_split = np.min(split_lengths)
+                    else:
+                        max_split = min_split = 0
+
+                    print(f'thresh: {thresh} n_splits: {n_splits} '
+                          f'max_split: {max_split} min_split: {min_split}')
+                    cv2.imshow(win_name, scatter_plot)
 
                 update_order(order)
-                cv2.createTrackbar('order', 'scatter_plot', order, 100, update_order)
-                cv2.createTrackbar('threshold', 'scatter_plot', 0, 1000, update_thresh)
+                cv2.createTrackbar('n_splits', win_name, n_splits, 100, update_n_splits)
+                cv2.createTrackbar('order', win_name, order, 100, update_order)
+                cv2.createTrackbar('threshold', win_name, 0, 100000, update_thresh)
 
             else:
                 if thresh == 0:
@@ -446,10 +485,10 @@ def main():
                     scatter_plot = getPlotImage([list(range(len(_data))), ], [_data, ], plot_cols,
                                                 metric_type, [metric_type, ], 'frame', metric_type,
                                                 scatter=split_indices)
-                    cv2.imshow('scatter_plot', scatter_plot)
+                    cv2.imshow(win_name, scatter_plot)
 
                 update_order(order)
-                cv2.createTrackbar('threshold', 'scatter_plot', 0, 1000, update_thresh)
+                cv2.createTrackbar('threshold', win_name, 0, 1000, update_thresh)
 
             while True:
                 k = cv2.waitKey(0)
@@ -457,7 +496,7 @@ def main():
                 if k == 13 or k == 27:
                     break
 
-            cv2.destroyWindow('scatter_plot')
+            cv2.destroyWindow(win_name)
 
             if show_img:
                 cv2.destroyAllWindows()
@@ -474,11 +513,15 @@ def main():
 
         split_indices = list(split_indices)
         n_splits = len(split_indices)
+        if n_splits <= 1:
+            print(f'Splitting not needed')
+            return
+
         print(f'Splitting into {n_splits} sub sequences:\n{split_indices}')
         start_id = 0
         sub_seq_id = sub_seq_start_id
         for end_id in split_indices:
-            print(f'sub_seq_id: {sub_seq_id} with start_id: {start_id}, end_id: {end_id}')
+            print(f'sub_seq_id: {sub_seq_id} with start_id: {start_id}, end_id: {end_id}, n_frames: {end_id-start_id}')
 
             if video_mode:
                 h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -496,7 +539,7 @@ def main():
                         prev_seek_id = i
 
                     ret, image = cap.read()
-                    
+
                     if not ret:
                         print('frame {} could not be read'.format(i))
                         if i - 1 != prev_seek_id + 1:
@@ -506,6 +549,7 @@ def main():
                         ret, image = cap.read()
                         if not ret:
                             raise IOError('frame {} could not be read'.format(i - 1))
+
                     video_out.write(image)
                 video_out.release()
             else:
