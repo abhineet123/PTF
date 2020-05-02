@@ -603,11 +603,11 @@ def main(args, multi_exit_program=None,
         cap = cv2.VideoCapture(file_name)
         cap.set(cv2.CAP_PROP_POS_FRAMES, start_id)
 
-        print('thread {} :: Reading frames from {} to {}'.format(thread_id, start_id, end_id))
+        # print('thread {} :: Reading frames from {} to {}'.format(thread_id, start_id, end_id))
         for _file_id in range(start_id, end_id):
             ret, frame = cap.read()
             if not ret:
-                _print('thread {} :: frame {} could not be read'.format(thread_id, _file_id))
+                # _print('thread {} :: frame {} could not be read'.format(thread_id, _file_id))
                 """duplicate last read frame"""
                 for __file_id in range(_file_id, end_id):
                     src_files_[str(__file_id)] = src_files_[str(_file_id - 1)]
@@ -684,8 +684,8 @@ def main(args, multi_exit_program=None,
                         os.path.basename(src_path), n_frames, w, h, memory_required / 1e9))
 
                     if memory_required > max_buffer_ram:
-                        _print('Buffer memory needed is more than the maximum allowed {} GB so using lazy load'.format(
-                            max_buffer_ram / 1e9))
+                        # _print('Buffer memory needed is more than the maximum allowed {} GB so using lazy load'.format(
+                        #     max_buffer_ram / 1e9))
                         _src_files = cap
                         _lazy_video_load = 1
                     else:
@@ -695,7 +695,7 @@ def main(args, multi_exit_program=None,
                                 _exit_neatly()
                                 raise IOError('Parallel reading of video files is not supported')
 
-                            _print('Reading {} frames in parallel with {} threads'.format(n_frames, parallel_read))
+                            # _print('Reading {} frames in parallel with {} threads'.format(n_frames, parallel_read))
 
                             _src_files = [str(k) for k in range(n_frames)]
 
