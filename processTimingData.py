@@ -29,80 +29,11 @@ def foreach_window(hwnd, lParam):
     return True
 
 
-win_titles = ['Timing', 'Google Chrome']
-try:
-    in_txt = Tk().clipboard_get()
-except BaseException as e:
-    print('Tk().clipboard_get() failed: {}'.format(e))
-    lines = []
-else:
+def procss(in_txt):
     lines = in_txt.split('\n')
     lines = [line for line in lines if line.strip()]
 
-if lines and all(line.endswith('.ogg') for line in lines):
-    out_lines = [line.split('-')[1].split('.')[0].replace('_', ':') for line in lines]
-    out_txt = '\n'.join(sorted(out_lines))
-else:
-    # time.sleep(1)
-    try:
-        orig_x, orig_y = win32api.GetCursorPos()
-        print('GetCursorPos x: {}'.format(orig_x))
-        print('GetCursorPos y: {}'.format(orig_y))
-
-        win32gui.EnumWindows(foreach_window, None)
-
-        # for i in range(len(titles)):
-        #     print(titles[i])
-
-        target_title = [k[1] for k in titles if all(title in k[1] for title in win_titles)]
-        # print('target_title: {}'.format(target_title))
-
-        if not target_title:
-            raise IOError('Window with win_titles: {} not found'.format(win_titles))
-
-        target_title = target_title[0]
-
-        target_handle = win32gui.FindWindow(None, target_title)
-        rect = win32gui.GetWindowRect(target_handle)
-
-        x = int((rect[0] + rect[2]) / 2)
-        y = int((rect[1] + rect[3]) / 2)
-
-        # active_handle = win32gui.GetForegroundWindow()
-        # target_title = win32gui.GetWindowText(active_handle)
-
-        print('target_title: {}'.format(target_title))
-        print('rect: {}'.format(rect))
-        print('x: {}'.format(x))
-        print('y: {}'.format(y))
-
-        try:
-            app = application.Application().connect(title=target_title, found_index=0)
-        except BaseException as e:
-            print('Failed to connect to app for window {}: {}'.format(target_title, e))
-            exit(0)
-        try:
-            app_win = app.window(title=target_title)
-        except BaseException as e:
-            print('Failed to access app window for {}: {}'.format(target_title, e))
-            exit(0)
-        app_win.type_keys("^a")
-        app_win.type_keys("^c")
-
-        mouse.move(coords=(x, y))
-
-        mouse.click(button='left', coords=(x, y))
-        mouse.click(button='left', coords=(x, y))
-
-        mouse.move(coords=(orig_x, orig_y))
-
-    except BaseException as e:
-        print('BaseException: {}'.format(e))
-
-    in_txt = Tk().clipboard_get()
-
-    lines = in_txt.split('\n')
-    lines = [line for line in lines if line.strip()]
+    print('lines: {}'.format(lines))
 
     start_t = None
     curr_t = None
@@ -153,14 +84,103 @@ else:
             curr_t = start_t + timedelta(hours=lap_total_t.hour, minutes=lap_total_t.minute,
                                          seconds=lap_total_t.second, microseconds=lap_total_t.microsecond)
             out_txt += curr_t.strftime('%H:%M:%S') + '.{}\n'.format(int(curr_t.microsecond / 10000))
+    return out_txt
 
-print(out_txt)
-# with open(out_fname, 'w') as out_fid:
-#     out_fid.write(out_txt)
-try:
-    import pyperclip
 
-    pyperclip.copy(out_txt)
-    spam = pyperclip.paste()
-except BaseException as e:
-    print('Copying to clipboard failed: {}'.format(e))
+def main():
+    win_titles = ['Timing', 'Google Chrome']
+    try:
+        in_txt = Tk().clipboard_get()
+    except BaseException as e:
+        print('Tk().clipboard_get() failed: {}'.format(e))
+        lines = []
+    else:
+        lines = in_txt.split('\n')
+        lines = [line for line in lines if line.strip()]
+
+    out_txt = ''
+
+    if lines:
+        if all(line.endswith('.ogg') for line in lines):
+            out_lines = [line.split('-')[1].split('.')[0].replace('_', ':') for line in lines]
+            out_txt = '\n'.join(sorted(out_lines))
+        else:
+            try:
+                out_txt = procss(in_txt)
+            except:
+                out_txt = ''
+
+    if not out_txt:
+        # time.sleep(1)
+        try:
+            orig_x, orig_y = win32api.GetCursorPos()
+            print('GetCursorPos x: {}'.format(orig_x))
+            print('GetCursorPos y: {}'.format(orig_y))
+
+            win32gui.EnumWindows(foreach_window, None)
+
+            # for i in range(len(titles)):
+            #     print(titles[i])
+
+            target_title = [k[1] for k in titles if all(title in k[1] for title in win_titles)]
+            # print('target_title: {}'.format(target_title))
+
+            if not target_title:
+                raise IOError('Window with win_titles: {} not found'.format(win_titles))
+
+            target_title = target_title[0]
+
+            target_handle = win32gui.FindWindow(None, target_title)
+            rect = win32gui.GetWindowRect(target_handle)
+
+            x = int((rect[0] + rect[2]) / 2)
+            y = int((rect[1] + rect[3]) / 2)
+
+            # active_handle = win32gui.GetForegroundWindow()
+            # target_title = win32gui.GetWindowText(active_handle)
+
+            print('target_title: {}'.format(target_title))
+            print('rect: {}'.format(rect))
+            print('x: {}'.format(x))
+            print('y: {}'.format(y))
+
+            try:
+                app = application.Application().connect(title=target_title, found_index=0)
+            except BaseException as e:
+                print('Failed to connect to app for window {}: {}'.format(target_title, e))
+                exit(0)
+            try:
+                app_win = app.window(title=target_title)
+            except BaseException as e:
+                print('Failed to access app window for {}: {}'.format(target_title, e))
+                exit(0)
+            app_win.type_keys("^a")
+            app_win.type_keys("^c")
+
+            mouse.move(coords=(x, y))
+
+            mouse.click(button='left', coords=(x, y))
+            mouse.click(button='left', coords=(x, y))
+
+            mouse.move(coords=(orig_x, orig_y))
+
+        except BaseException as e:
+            print('BaseException: {}'.format(e))
+
+        in_txt = Tk().clipboard_get()
+        out_txt = procss(in_txt)
+
+    print(out_txt)
+    # with open(out_fname, 'w') as out_fid:
+    #     out_fid.write(out_txt)
+    try:
+        import pyperclip
+
+        pyperclip.copy(out_txt)
+        spam = pyperclip.paste()
+    except BaseException as e:
+        print('Copying to clipboard failed: {}'.format(e))
+
+
+if __name__ == '__main__':
+    main()

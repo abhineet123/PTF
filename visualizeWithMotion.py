@@ -1772,9 +1772,10 @@ def main(args, multi_exit_program=None,
                 }
                 if flags == 2:
                     if video_mode and auto_progress:
-                        vid_id = (vid_id + 1) % n_videos
-                        src_path = video_files_list[vid_id]
-                        loadVideo(0)
+                        for __load_id in range(n_images):
+                            vid_id = (vid_id + 1) % n_videos
+                            src_path = video_files_list[vid_id]
+                            loadVideo(__load_id)
                         loadImage()
                     else:
                         _print('next image')
@@ -1974,11 +1975,12 @@ def main(args, multi_exit_program=None,
                     }
                     if flags == 1:
                         if video_mode and auto_progress:
-                            vid_id -= 1
-                            if vid_id < 0:
-                                vid_id = n_videos - 1
-                            src_path = video_files_list[vid_id]
-                            loadVideo(0)
+                            for __load_id in range(n_images):
+                                vid_id -= 1
+                                if vid_id < 0:
+                                    vid_id = n_videos - 1
+                                src_path = video_files_list[vid_id]
+                                loadVideo(__load_id)
                             loadImage()
                         else:
                             loadImage(-1)
@@ -3359,9 +3361,10 @@ def main(args, multi_exit_program=None,
             elif k == 2555904 or k == 39:
                 # right
                 if video_mode and auto_progress:
-                    vid_id = (vid_id + 1) % n_videos
-                    src_path = video_files_list[vid_id]
-                    loadVideo(0)
+                    for __load_id in range(n_images):
+                        vid_id = (vid_id + 1) % n_videos
+                        src_path = video_files_list[vid_id]
+                        loadVideo(__load_id)
                     loadImage()
                 else:
                     if speed == 0 and auto_progress:
@@ -3371,11 +3374,12 @@ def main(args, multi_exit_program=None,
             elif k == 2424832 or k == 40:
                 # left
                 if video_mode and auto_progress:
-                    vid_id -= 1
-                    if vid_id < 0:
-                        vid_id = n_videos - 1
-                    src_path = video_files_list[vid_id]
-                    loadVideo(0)
+                    for __load_id in range(n_images):
+                        vid_id -= 1
+                        if vid_id < 0:
+                            vid_id = n_videos - 1
+                        src_path = video_files_list[vid_id]
+                        loadVideo(__load_id)
                     loadImage()
                 else:
                     if speed == 0 and auto_progress:
