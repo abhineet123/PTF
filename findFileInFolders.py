@@ -52,6 +52,7 @@ for src_folder in src_folders:
     src_files = [f for f in os.listdir(src_folder) if f not in exclusions and
                  os.path.isfile(os.path.join(src_folder, f))]
 
+    n_src_files = len(src_files)
     search_results = [f for f in src_files if search_str in f]
     if len(search_results) > 0:
         print('Found {:d} matching files in {:s}'.format(len(search_results), src_folder))
@@ -60,7 +61,7 @@ for src_folder in src_folders:
 
         matching_files[src_folder] = search_results
     else:
-        print('Done searching {:s}'.format(src_folder))
+        print('Done searching {:s} with {:d} files'.format(src_folder, n_src_files))
 
     unique_names = []
     if find_unique_names:

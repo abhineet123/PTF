@@ -565,7 +565,7 @@ def main(args, multi_exit_program=None,
     src_images = []
     img_fnames = {}
 
-    img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff')
+    img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff', '.webp')
     vid_exts = ('.mp4', '.avi', '.mkv', '.gif', '.webm')
 
     transition_interval_diff = 1
@@ -620,7 +620,9 @@ def main(args, multi_exit_program=None,
     def read_images(_load_id, start_id, diff, _files, n_files, _img_sequences):
         for _file_id in range(start_id, n_files, diff):
             _file = _files[_file_id]
-            _img_sequences[_load_id][_file] = cv2.imread(_file)
+            img = cv2.imread(_file)
+            assert img is not None, f"Failed to read image: {_file}"
+            _img_sequences[_load_id][_file] = img
 
     def loadVideo(_load_id):
         nonlocal src_files, total_frames, img_id, img_sequences, _lazy_video_load
@@ -663,7 +665,9 @@ def main(args, multi_exit_program=None,
             elif _ext in img_exts:
                 # if not os.path.isfile(src_path):
                 #     raise IOError('Image does not exist: {}'.format(src_path))
-                _src_files = [cv2.imread(src_path), ]
+                img = cv2.imread(src_path)
+                assert img is not None, f"Failed to read image: {src_path}"
+                _src_files = [img, ]
             else:
                 """video file"""
                 cap = VideoCapture()
@@ -841,7 +845,7 @@ def main(args, multi_exit_program=None,
         video_files_list = []
         excluded_video_files = []
         n_unique_videos = 0
-        n_total_videos=0
+        n_total_videos = 0
         for _id, src_dir in enumerate(src_dirs):
             if src_dir[0] == '!':
                 src_dir = src_dir[1:]
@@ -869,7 +873,7 @@ def main(args, multi_exit_program=None,
 
                 _video_files_list += [item for sublist in video_file_gen for item in sublist]
 
-                if not _video_files_list and  _video_mode == 2:
+                if not _video_files_list and _video_mode == 2:
                     parent_src_dir = os.path.dirname(src_dir)
                     _print(f'\tNot found any so looking in its parent directory as well {parent_src_dir}')
                     video_file_gen = [[os.path.join(dirpath, d) for d in dirnames if
@@ -1358,6 +1362,7 @@ def main(args, multi_exit_program=None,
                                     src_img = img_sequences[_load_id][img_fname]
                                 except KeyError:
                                     src_img = cv2.imread(img_fname)
+                                    assert src_img is not None, f"Failed to read image: {img_fname}"
                                     img_sequences[_load_id][img_fname] = src_img
                         else:
                             src_img = np.copy(img_fname)
@@ -1380,6 +1385,8 @@ def main(args, multi_exit_program=None,
                         _print('Source image does not exist: {}'.format(src_img_fname))
                         return
                     src_img = cv2.imread(src_img_fname)
+                    assert src_img is not None, f"Failed to read image: {src_img_fname}"
+
                     if trim_images:
                         src_img = np.asarray(trim(Image.fromarray(src_img)))
                         # src_img = wandImage(src_img).trim(color=None, fuzz=0) ()
@@ -3271,7 +3278,7 @@ def main(args, multi_exit_program=None,
                 height = int(height * 2)
                 loadImage()
             elif k == ord(';'):
-                height  = int(height/ 2)
+                height = int(height / 2)
                 loadImage()
             elif k == ord('/'):
                 height = _height
