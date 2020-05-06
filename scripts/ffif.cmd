@@ -1,2 +1,2 @@
 @echo off
-python2 "%~dp0\..\findFileInFolders.py" %1 %2 %3 %4
+python3 "%~dp0\..\findFileInFolders.py" recursive=0 search_str=%1 folder_end_id=%2 folder_start_id=%3 folder_prefix=%4 

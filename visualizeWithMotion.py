@@ -1017,8 +1017,7 @@ def main(args, multi_exit_program=None,
                 all_total += _total
                 _print(f'Adding {_n_src_files} images from: {src_dir} '
                        f'with sample: {_samples[_id]} and multiplicity {_counts[_id]} '
-                       f'for total: {_total} '
-                       f'(all_total: {all_total})')
+                       f'for total: {_total} / {all_total}')
                 src_files[_id] = _src_files
 
             # src_file_list = [list(x) for x in src_file_list]
