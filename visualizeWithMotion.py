@@ -3085,9 +3085,9 @@ def main(args, multi_exit_program=None,
                     # continue
                 else:
                     prev_active_win_name = _active_win_name
-
-                    _print('{} --> {}'.format(
-                        win_name, prev_active_win_name))
+                    time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+                    _print('{} :: {} --> {}'.format(
+                        time_stamp, win_name, prev_active_win_name))
                 # time.sleep(1)
                 # is_switching = 0
 
@@ -3167,8 +3167,10 @@ def main(args, multi_exit_program=None,
                             dup_win_names[_i], prev_active_win_name, e))
                         # continue
                     else:
-                        _print('{} --> {}'.format(
-                            dup_win_names[_i], prev_active_win_name))
+                        time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+
+                        _print('{} :: {} --> {}'.format(
+                            time_stamp, dup_win_names[_i], prev_active_win_name))
 
                     # time.sleep(1)
                     # is_switching = 0

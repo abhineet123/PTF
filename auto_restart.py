@@ -91,9 +91,10 @@ if __name__ == '__main__':
         'post_wait_time': 10,
         'check_vpn_gap': 30,
         'max_vpn_wait_time': 600,
-        'vpn_path': 'C:\Users\Tommy\Desktop\purevpn.lnk',
-        'tor_path': 'C:\Users\Tommy\Desktop\uTorrent.lnk',
-        'settings_path': 'C:\Users\Tommy\AppData\Roaming\uTorrent\settings.dat',
+        'proc_kill_type': 0,
+        'vpn_path': 'C:/Users/Tommy/Desktop/purevpn.lnk',
+        'tor_path': 'C:/Users/Tommy/Desktop/uTorrent.lnk',
+        'settings_path': 'C:/Users/Tommy/AppData/Roaming/uTorrent/settings.dat',
         'vpn_proc': 'purevpn.exe',
         'tor_proc': 'uTorrent.exe',
         'syatem_name': 'GT1K',
@@ -114,6 +115,7 @@ if __name__ == '__main__':
     tor_proc = params['tor_proc']
     email_auth = params['email_auth']
     max_vpn_wait_time = params['max_vpn_wait_time']
+    proc_kill_type = params['proc_kill_type']
 
     global_start_t = time.time()
 
@@ -192,7 +194,7 @@ if __name__ == '__main__':
 
         print('Waiting for {} seconds. Press any key to continue'.format(wait_time))
 
-        for i in xrange(wait_time):
+        for i in range(wait_time):
             if (i + 1) % check_vpn_gap == 0:
                 ip_address = check_interface(interface_name)
                 if ip_address is None:
@@ -211,25 +213,29 @@ if __name__ == '__main__':
         sys.stdout.write('\n')
         sys.stdout.flush()
 
-        tor_killed = 0
-        for proc in psutil.process_iter():
-            if proc.name() == tor_proc:
-                proc.terminate()
-                tor_killed = 1
-                break
+        if proc_kill_type == 0:
+            tor_killed = 0
+            for proc in psutil.process_iter():
+                if proc.name() == tor_proc:
+                    proc.terminate()
+                    tor_killed = 1
+                    break
 
-        if not tor_killed:
-            raise IOError('Tor process {} not found'.format(tor_proc))
+            if not tor_killed:
+                raise IOError('Tor process {} not found'.format(tor_proc))
 
-        vpn_killed = 0
-        for proc in psutil.process_iter():
-            if proc.name() == vpn_proc:
-                proc.kill()
-                vpn_killed = 1
-                break
+            vpn_killed = 0
+            for proc in psutil.process_iter():
+                if proc.name() == vpn_proc:
+                    proc.kill()
+                    vpn_killed = 1
+                    break
 
-        if not vpn_killed:
-            raise IOError('VPN process {} not found'.format(vpn_proc))
+            if not vpn_killed:
+                raise IOError('VPN process {} not found'.format(vpn_proc))
+        else:
+            os.system('TASKKILL /IM {}'.format(tor_proc))
+            os.system('TASKKILL /IM {}'.format(vpn_proc))
 
         if time.time() - global_start_t > restart_time:
             restart_now = 1
@@ -239,7 +245,7 @@ if __name__ == '__main__':
             break
 
         print('Waiting for {} seconds. Press any key to continue'.format(post_wait_time))
-        for i in xrange(post_wait_time):
+        for i in range(post_wait_time):
             if msvcrt.kbhit():
                 inp = msvcrt.getch()
                 print('\ncontinuing')
