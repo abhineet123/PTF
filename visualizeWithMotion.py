@@ -827,7 +827,7 @@ def main(args, multi_exit_program=None,
         _denominators.append(_denominator)
         _samples.append(_sample)
 
-        _print(f'{src_dir} : {_numerator} / {_denominator}, {_sample}')
+        # _print(f'{src_dir} : {_numerator} / {_denominator}, {_sample}')
 
         _src_dirs.append(src_dir)
 
