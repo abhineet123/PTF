@@ -145,7 +145,6 @@ def main(args, multi_exit_program=None,
          ):
     # is_switching = 0
 
-    print('Here we are')
     p = psutil.Process(os.getpid())
     try:
         p.nice(psutil.BELOW_NORMAL_PRIORITY_CLASS)
@@ -175,6 +174,10 @@ def main(args, multi_exit_program=None,
     recursive = params['recursive']
     fullscreen = params['fullscreen']
     reversed_pos = params['reversed_pos']
+
+    # if len(reversed_pos) == 1:
+    #     reversed_pos = int(reversed_pos)
+
     dup_reversed_pos = params['dup_reversed_pos']
     double_click_interval = params['double_click_interval']
     n_images = params['n_images']
@@ -424,7 +427,6 @@ def main(args, multi_exit_program=None,
             #     print(titles[i])
 
             for frg_win_title in frg_win_titles:
-                _reversed_pos = reversed_pos
                 if frg_win_title.startswith('!!!'):
                     frg_win_title = frg_win_title.lstrip('!')
                     _reversed_pos = 2
@@ -434,6 +436,8 @@ def main(args, multi_exit_program=None,
                 elif frg_win_title.startswith('!'):
                     frg_win_title = frg_win_title.lstrip('!')
                     _reversed_pos = 0
+                else:
+                    _reversed_pos = reversed_pos
                 # target_id = [i for i, k in enumerate(titles) if frg_win_title in k[1]]
                 # target_id = [i for i, k in enumerate(titles) if
                 #              k[1].startswith(frg_win_title) or findWholeWord(frg_win_title)(k[1])]
@@ -1472,6 +1476,8 @@ def main(args, multi_exit_program=None,
         #     src_img = np.rot90(src_img)
         #     src_height, src_width, n_channels = src_img.shape
 
+        print('load image reversed_pos: {}'.format(reversed_pos))
+
         src_aspect_ratio = float(src_width) / float(src_height)
 
         if src_aspect_ratio == aspect_ratio:
@@ -2394,6 +2400,9 @@ def main(args, multi_exit_program=None,
             cv2.moveWindow(_win_name, frg_positions[frg_win_id][0], frg_positions[frg_win_id][1])
             return
 
+        if isinstance(_reversed_pos, int):
+            _reversed_pos = (_reversed_pos, 0)
+
         if mode == 0:
             _curr_monitor = _monitor_id
         elif mode == 1:
@@ -2402,18 +2411,21 @@ def main(args, multi_exit_program=None,
             else:
                 _curr_monitor = 2
 
-        _y_offset = win_offset_y + monitors[_curr_monitor][1]
+        if _reversed_pos[1] == 0:
+            _y_offset = win_offset_y + monitors[_curr_monitor][1]
+        elif _reversed_pos[1] == 1:
+            _y_offset = int(win_offset_y + monitors[_curr_monitor][1] + (height - dst_img.shape[0]) / 2)
+        elif _reversed_pos[1] == 2:
+            _y_offset = win_offset_y + int(monitors[_curr_monitor][1] + height - dst_img.shape[0])
 
-        if _reversed_pos == 0:
-            cv2.moveWindow(_win_name, win_offset_x + monitors[_curr_monitor][0],
-                           _y_offset)
-        elif _reversed_pos == 1:
-            cv2.moveWindow(_win_name,
-                           int(win_offset_x + monitors[_curr_monitor][0] + (width - dst_img.shape[1]) / 2),
-                           _y_offset)
-        elif _reversed_pos == 2:
-            cv2.moveWindow(_win_name, win_offset_x + int(monitors[_curr_monitor][0] + width - dst_img.shape[1]),
-                           _y_offset)
+        if _reversed_pos[0] == 0:
+            _x_offset = win_offset_x + monitors[_curr_monitor][0]
+        elif _reversed_pos[0] == 1:
+            _x_offset = int(win_offset_x + monitors[_curr_monitor][0] + (width - dst_img.shape[1]) / 2)
+        elif _reversed_pos[0] == 2:
+            _x_offset = win_offset_x + int(monitors[_curr_monitor][0] + width - dst_img.shape[1])
+
+        cv2.moveWindow(_win_name, _x_offset, _y_offset)
 
     img_id[0] += n_images - 1
     loadImage(set_grid_size=set_grid_size)
@@ -2657,6 +2669,8 @@ def main(args, multi_exit_program=None,
                     frg_positions[frg_win_id] = rect
                 x1, y1, x2, y2 = frg_positions[frg_win_id]
                 reversed_pos = frg_reversed_pos[frg_win_id]
+                print('frg_reversed_pos: {}'.format(frg_reversed_pos))
+                print('reversed_pos: {}'.format(reversed_pos))
                 __w, __h = x2 - x1, y2 - y1
                 dst_img = resizeAR(dst_img, __w, __h, placement_type=reversed_pos)
                 # print('__w: ', __w)
@@ -3490,8 +3504,6 @@ def main(args, multi_exit_program=None,
         win_wallpaper_func(SPI_SETDESKWALLPAPER, 0, orig_wp_fname, 0)
 
 
-# print('Here we are')
-
 if __name__ == '__main__':
-    # print('Here we are')
+    print('sys.argv:\n{}'.format(pformat(sys.argv)))
     main(sys.argv[1:])

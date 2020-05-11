@@ -362,6 +362,11 @@ def resizeAR(src_img, width=0, height=0, return_factors=False,
     src_height, src_width, n_channels = src_img.shape
     src_aspect_ratio = float(src_width) / float(src_height)
 
+    if isinstance(placement_type, int):
+        placement_type = (placement_type, placement_type)
+
+    print('placement_type: {}'.format(placement_type))
+
     if resize_factor != 0:
         width, height = int(src_width * resize_factor), int(src_height * resize_factor)
 
@@ -376,6 +381,9 @@ def resizeAR(src_img, width=0, height=0, return_factors=False,
 
     aspect_ratio = float(width) / float(height)
 
+    print('src_aspect_ratio: {}'.format(src_aspect_ratio))
+    print('aspect_ratio: {}'.format(aspect_ratio))
+
     if src_aspect_ratio == aspect_ratio:
         dst_width = src_width
         dst_height = src_height
@@ -384,12 +392,12 @@ def resizeAR(src_img, width=0, height=0, return_factors=False,
         dst_width = src_width
         dst_height = int(src_width / aspect_ratio)
         start_row = int((dst_height - src_height) / 2.0)
-        if placement_type == 0:
+        if placement_type[0] == 0:
             start_row = 0
             # start_row = int(dst_height - src_height)
-        elif placement_type == 1:
+        elif placement_type[0] == 1:
             start_row = int((dst_height - src_height) / 2.0)
-        elif placement_type == 2:
+        elif placement_type[0] == 2:
             # start_row = 0
             start_row = int(dst_height - src_height)
         start_col = 0
@@ -397,11 +405,11 @@ def resizeAR(src_img, width=0, height=0, return_factors=False,
         dst_height = src_height
         dst_width = int(src_height * aspect_ratio)
         start_col = int((dst_width - src_width) / 2.0)
-        if placement_type == 0:
+        if placement_type[1] == 0:
             start_col = 0
-        elif placement_type == 1:
+        elif placement_type[1] == 1:
             start_col = int((dst_width - src_width) / 2.0)
-        elif placement_type == 2:
+        elif placement_type[1] == 2:
             start_col = int(dst_width - src_width)
         start_row = 0
 
