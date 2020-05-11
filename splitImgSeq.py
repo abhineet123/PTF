@@ -531,7 +531,8 @@ def main():
                 fourcc = cv2.VideoWriter_fourcc(*codec)
                 video_out = cv2.VideoWriter(dst_path, fourcc, fps, (w, h))
                 if video_out is None:
-                    raise IOError('Output video file could not be opened: {}'.format(dst_path))
+                    raise IOError('Output video file could not be opened: {}'.format(
+                        dst_path))
                 print(f'Writing output video of size {w}x{h}: {dst_path}')
                 for i in range(start_id, end_id):
                     if i != prev_seek_id + 1:

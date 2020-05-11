@@ -1476,7 +1476,7 @@ def main(args, multi_exit_program=None,
         #     src_img = np.rot90(src_img)
         #     src_height, src_width, n_channels = src_img.shape
 
-        print('load image reversed_pos: {}'.format(reversed_pos))
+        # print('load image reversed_pos: {}'.format(reversed_pos))
 
         src_aspect_ratio = float(src_width) / float(src_height)
 
@@ -2669,8 +2669,8 @@ def main(args, multi_exit_program=None,
                     frg_positions[frg_win_id] = rect
                 x1, y1, x2, y2 = frg_positions[frg_win_id]
                 reversed_pos = frg_reversed_pos[frg_win_id]
-                print('frg_reversed_pos: {}'.format(frg_reversed_pos))
-                print('reversed_pos: {}'.format(reversed_pos))
+                # print('frg_reversed_pos: {}'.format(frg_reversed_pos))
+                # print('reversed_pos: {}'.format(reversed_pos))
                 __w, __h = x2 - x1, y2 - y1
                 dst_img = resizeAR(dst_img, __w, __h, placement_type=reversed_pos)
                 # print('__w: ', __w)

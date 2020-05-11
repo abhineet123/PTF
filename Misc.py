@@ -365,7 +365,7 @@ def resizeAR(src_img, width=0, height=0, return_factors=False,
     if isinstance(placement_type, int):
         placement_type = (placement_type, placement_type)
 
-    print('placement_type: {}'.format(placement_type))
+    # print('placement_type: {}'.format(placement_type))
 
     if resize_factor != 0:
         width, height = int(src_width * resize_factor), int(src_height * resize_factor)
@@ -381,8 +381,8 @@ def resizeAR(src_img, width=0, height=0, return_factors=False,
 
     aspect_ratio = float(width) / float(height)
 
-    print('src_aspect_ratio: {}'.format(src_aspect_ratio))
-    print('aspect_ratio: {}'.format(aspect_ratio))
+    # print('src_aspect_ratio: {}'.format(src_aspect_ratio))
+    # print('aspect_ratio: {}'.format(aspect_ratio))
 
     if src_aspect_ratio == aspect_ratio:
         dst_width = src_width
