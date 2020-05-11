@@ -136,7 +136,8 @@ if __name__ == '__main__':
             if ip_address is not None:
                 break
             current_t = time.time()
-            if current_t - global_start_t > restart_time or current_t - vpn_wait_start_t > max_vpn_wait_time:
+            if (restart_time > 0 and current_t - global_start_t > restart_time) or \
+                    (current_t - vpn_wait_start_t > max_vpn_wait_time):
                 restart_now = 1
                 break
             time.sleep(0.1)
@@ -237,7 +238,7 @@ if __name__ == '__main__':
             os.system('TASKKILL /IM {}'.format(tor_proc))
             os.system('TASKKILL /IM {}'.format(vpn_proc))
 
-        if time.time() - global_start_t > restart_time:
+        if time.time() - global_start_t > restart_time > 0:
             restart_now = 1
             break
 

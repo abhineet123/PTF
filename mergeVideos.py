@@ -91,7 +91,7 @@ for i, video in enumerate(videos):
         video_dir = os.path.dirname(video)
 
         out_video = os.path.join(video_dir, video_fname + '_merged' + video_ext)
-        out_dir = os.path.join(video_dir, video_fname + 'merged')
+        out_dir = os.path.join(video_dir, video_fname + '_merged')
         if not os.path.isdir(out_dir):
             os.makedirs(out_dir)
 
