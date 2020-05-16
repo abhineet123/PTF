@@ -1,5 +1,6 @@
 import fnmatch
 import os
+import shutil
 import sys
 import inspect
 import re
@@ -253,7 +254,8 @@ for src_id, src_path in enumerate(src_file_paths):
         if write_log == 2:
             continue
         try:
-            os.rename(src_path, dst_path)
+            shutil.move(src_path, dst_path)
+            # os.rename(src_path, dst_path)
         except BaseException as e:
             print('Renaming failed: {}'.format(e))
     # print matches
