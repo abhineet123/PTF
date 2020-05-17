@@ -43,6 +43,7 @@ print('start_id: {}'.format(start_id))
 print('end_id: {}'.format(end_id))
 
 print('actor: {}'.format(actor))
+print('actor_sequences: {}'.format(actor_sequences))
 
 n_frames_list = []
 
