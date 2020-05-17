@@ -5,7 +5,7 @@ import glob
 from Misc import processArguments
 from Misc import getParamDict
 
-params = {
+_params = {
     'root_dir': 'E:/Datasets',
     'actor_id': 4,
     'start_id': 0,
@@ -19,13 +19,13 @@ params = {
     'auto_progress': 0,
 }
 
-processArguments(sys.argv[1:], params)
+processArguments(sys.argv[1:], _params)
 
-root_dir = params['root_dir']
-actor_id = params['actor_id']
-start_id = params['start_id']
-ignored_region_only = params['ignored_region_only']
-end_id = params['end_id']
+root_dir = _params['root_dir']
+actor_id = _params['actor_id']
+start_id = _params['start_id']
+ignored_region_only = _params['ignored_region_only']
+end_id = _params['end_id']
 
 params = getParamDict()
 actors = params['mot_actors']
