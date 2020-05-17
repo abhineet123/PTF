@@ -21,7 +21,7 @@ params = {
 
 processArguments(sys.argv[1:], params)
 
-root_dir = params['params']
+root_dir = params['root_dir']
 actor_id = params['actor_id']
 start_id = params['start_id']
 ignored_region_only = params['ignored_region_only']
