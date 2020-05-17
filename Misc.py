@@ -3634,7 +3634,7 @@ def getParamDict():
         3: 'GRAM',
         4: 'IDOT',
         5: 'DETRAC',
-        6: 'DETRAC_test',
+        6: 'DETRAC_Test',
     }
     mot_sequences = dict(zip([mot_actors[i] for i in range(len(mot_actors))],                             [
                                  [sequences_mot2015_train, sequences_mot2015_test],
