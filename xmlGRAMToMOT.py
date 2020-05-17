@@ -8,7 +8,7 @@ seq_name = seq_names[seq_id]
 n_frames = seq_n_frames[seq_id]
 out_fname= '{:s}/{:s}.txt'.format(root_dir, seq_name)
 out_fid = open(out_fname, 'w')
-for frame_id in xrange(n_frames):
+for frame_id in range(n_frames):
     fname = '{:s}/{:s}/xml/{:d}.xml'.format(root_dir, seq_name, frame_id)
     tree = ET.parse(fname)
     root = tree.getroot()

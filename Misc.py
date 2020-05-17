@@ -12,8 +12,6 @@ try:
 except ImportError as e:
     print('OpenCV import failed: {}'.format(e))
 
-
-
 try:
     import matplotlib
     from matplotlib import pyplot as plt
@@ -797,6 +795,7 @@ def drawRegion(img, corners, color, thickness=1, annotate_corners=False,
             cv2.putText(img, '{:d}'.format(i + 1), p1, cv2.FONT_HERSHEY_COMPLEX_SMALL,
                         annotation_font_size, annotation_col)
 
+
 def getPixValsRGB(pts, img):
     try:
         n_channels = img.shape[2]
@@ -869,6 +868,7 @@ def drawGrid(img, pts, res_x, res_y, color, thickness=1):
             p1 = (int(pts[0, pt_id1]), int(pts[1, pt_id1]))
             p2 = (int(pts[0, pt_id2]), int(pts[1, pt_id2]))
             cv2.line(img, p1, p2, color, thickness)
+
 
 def drawBox(image, xmin, ymin, xmax, ymax, box_color=(0, 255, 0), label=None):
     # if cv2.__version__.startswith('3'):
@@ -1549,6 +1549,7 @@ def getPointPlot(root_dir=None, filenames=None, plot_fname=None,
 
     if show_plot:
         plt.show()
+
 
 class InteractivePlot:
     def __init__(self, root_dir=None, filenames=None, plot_fname=None,
@@ -3558,20 +3559,65 @@ def getParamDict():
         'MVI_63562',
         'MVI_63563'
     ]
+    sequences_detrac_test = [
+        'MVI_39031',
+        'MVI_39051',
+        'MVI_39211',
+        'MVI_39271',
+        'MVI_39311',
+        'MVI_39361',
+        'MVI_39371',
+        'MVI_39401',
+        'MVI_39501',
+        'MVI_39511',
+        'MVI_40701',
+        'MVI_40711',
+        'MVI_40712',
+        'MVI_40714',
+        'MVI_40742',
+        'MVI_40743',
+        'MVI_40761',
+        'MVI_40762',
+        'MVI_40763',
+        'MVI_40771',
+        'MVI_40772',
+        'MVI_40773',
+        'MVI_40774',
+        'MVI_40775',
+        'MVI_40792',
+        'MVI_40793',
+        'MVI_40851',
+        'MVI_40852',
+        'MVI_40853',
+        'MVI_40854',
+        'MVI_40855',
+        'MVI_40863',
+        'MVI_40864',
+        'MVI_40891',
+        'MVI_40892',
+        'MVI_40901',
+        'MVI_40902',
+        'MVI_40903',
+        'MVI_40904',
+        'MVI_40905',
+    ]
     mot_actors = {
         0: 'MOT2015',
         1: 'KITTI',
         2: 'GRAM',
         3: 'IDOT',
         4: 'DETRAC',
+        5: 'DETRAC_test',
     }
-    mot_sequences = dict(zip([mot_actors[i] for i in range(len(mot_actors))],
-                             [[sequences_mot2015_train, sequences_mot2015_test],
-                              [sequences_kitti_train, sequences_kitti_test],
-                              sequences_gram,
-                              sequences_idot,
-                              sequences_detrac,
-                              ]))
+    mot_sequences = dict(zip([mot_actors[i] for i in range(len(mot_actors))],                             [
+                                 [sequences_mot2015_train, sequences_mot2015_test],
+                                 [sequences_mot2017_train, sequences_mot2017_test],
+                                 [sequences_kitti_train, sequences_kitti_test],
+                                 sequences_gram,
+                                 sequences_idot,
+                                 sequences_detrac,
+                                 sequences_detrac_test,
+                             ]))
 
     challenges = {0: 'angle',
                   1: 'fast_close',

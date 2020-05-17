@@ -1,12 +1,31 @@
 import xml.etree.cElementTree as ET
-from Misc import getParamDict
+import sys
 import glob
 
-root_dir = 'E:/Datasets'
-actor_id = 4
-start_id = 0
-end_id = -1
-ignored_region_only = 0
+from Misc import processArguments
+from Misc import getParamDict
+
+params = {
+    'root_dir': 'E:/Datasets',
+    'actor_id': 4,
+    'start_id': 0,
+    'end_id': -1,
+    'ignored_region_only': 0,
+    'speed': 0.5,
+    'show_img': 0,
+    'quality': 3,
+    'resize': 0,
+    'mode': 0,
+    'auto_progress': 0,
+}
+
+processArguments(sys.argv[1:], params)
+
+root_dir = params['params']
+actor_id = params['actor_id']
+start_id = params['start_id']
+ignored_region_only = params['ignored_region_only']
+end_id = params['end_id']
 
 params = getParamDict()
 actors = params['mot_actors']
