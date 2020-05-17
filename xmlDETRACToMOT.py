@@ -30,14 +30,24 @@ end_id = _params['end_id']
 params = getParamDict()
 actors = params['mot_actors']
 sequences = params['mot_sequences']
+
 actor = actors[actor_id]
-n_frames_list = []
+actor_sequences = sequences[actor]
 
 if end_id <= start_id:
-    end_id = len(sequences[actor]) - 1
+    end_id = len(actor_sequences) - 1
+
+print('root_dir: {}'.format(root_dir))
+print('actor_id: {}'.format(actor_id))
+print('start_id: {}'.format(start_id))
+print('end_id: {}'.format(end_id))
+
+print('actor: {}'.format(actor))
+
+n_frames_list = []
 
 for seq_id in range(start_id, end_id + 1):
-    seq_name = sequences[actor][seq_id]
+    seq_name = actor_sequences[seq_id]
     fname = '{:s}/{:s}/Annotations/{:s}.xml'.format(root_dir, actor, seq_name)
     tree = ET.parse(fname)
     root = tree.getroot()
