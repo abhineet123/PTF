@@ -3420,6 +3420,32 @@ def getParamDict():
         9: 'KITTI-19',
         10: 'Venice-1'
     }
+    sequences_mot2017_train = {
+        0: 'TUD-Stadtmitte',
+        1: 'TUD-Campus',
+        2: 'PETS09-S2L1',
+        3: 'ETH-Bahnhof',
+        4: 'ETH-Sunnyday',
+        5: 'ETH-Pedcross2',
+        6: 'ADL-Rundle-6',
+        7: 'ADL-Rundle-8',
+        8: 'KITTI-13',
+        9: 'KITTI-17',
+        10: 'Venice-2'
+    }
+    sequences_mot2017_test = {
+        0: 'TUD-Crossing',
+        1: 'PETS09-S2L2',
+        2: 'ETH-Jelmoli',
+        3: 'ETH-Linthescher',
+        4: 'ETH-Crossing',
+        5: 'AVG-TownCentre',
+        6: 'ADL-Rundle-1',
+        7: 'ADL-Rundle-3',
+        8: 'KITTI-16',
+        9: 'KITTI-19',
+        10: 'Venice-1'
+    }
     sequences_kitti_train = {
         0: '0000',
         1: '0001',
