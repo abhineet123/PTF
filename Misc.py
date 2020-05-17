@@ -3629,11 +3629,12 @@ def getParamDict():
     ]
     mot_actors = {
         0: 'MOT2015',
-        1: 'KITTI',
-        2: 'GRAM',
-        3: 'IDOT',
-        4: 'DETRAC',
-        5: 'DETRAC_test',
+        1: 'MOT2017',
+        2: 'KITTI',
+        3: 'GRAM',
+        4: 'IDOT',
+        5: 'DETRAC',
+        6: 'DETRAC_test',
     }
     mot_sequences = dict(zip([mot_actors[i] for i in range(len(mot_actors))],                             [
                                  [sequences_mot2015_train, sequences_mot2015_test],
