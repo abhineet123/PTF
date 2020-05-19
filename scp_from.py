@@ -22,18 +22,21 @@ if __name__ == '__main__':
 
     src_fname = os.path.realpath(src_fname)
     src_fname_abs = os.path.abspath(src_fname)
-    src_dir = os.path.dirname(src_fname)
 
-    home = os.path.abspath(expanduser("~"))
-    src_fname_rel = os.path.relpath(src_fname, home)
+    home_path = os.path.abspath(expanduser("~"))
+    if src_fname_abs.startswith(home_path):
+        src_fname_rel = os.path.relpath(src_fname, home_path)
+        scp_fname = os.path.join('~', src_fname_rel)
+    else:
+        scp_fname = src_fname
 
     print('src_fname_abs: {}'.format(src_fname_abs))
     print('src_fname: {}'.format(src_fname))
-    print('home: {}'.format(home))
+    print('home_path: {}'.format(home_path))
     print('src_fname_rel: {}'.format(src_fname_rel))
+    print('scp_fname: {}'.format(scp_fname))
 
-    scp_fname = os.path.join('~', src_fname_rel)
-
+    src_dir = os.path.dirname(src_fname)
     if not os.path.isdir(src_dir):
         print('Creating folder: {}'.format(src_dir))
         os.makedirs(src_dir)
