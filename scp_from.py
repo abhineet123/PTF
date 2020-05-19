@@ -43,12 +43,16 @@ if __name__ == '__main__':
         print('Creating folder: {}'.format(src_dir))
         os.makedirs(src_dir)
 
-    if overwrite:
-        scp_cmd = 'scp -r {}:{} {}'.format(scp_dst, scp_fname, src_fname)
-    else:
-        scp_cmd = 'rsync -r -v --ignore-existing {}:{} {}'.format(scp_dst, scp_fname, src_fname)
+    switches = '-r -v'
+    if not overwrite:
+        switches += ' --ignore-existing'
 
-    print('\nrunning: {}\n'.format(scp_cmd))
-    os.system(scp_cmd)
+    # if overwrite:
+    #     rsync_cmd = 'scp -r {}:{} {}'.format(scp_dst, scp_fname, src_fname)
+        
+    rsync_cmd = 'rsync {} {}:{} {}'.format(switches, scp_dst, scp_fname, src_fname)
+
+    print('\nrunning: {}\n'.format(rsync_cmd))
+    os.system(rsync_cmd)
 
 
