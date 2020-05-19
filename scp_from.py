@@ -19,8 +19,6 @@ if __name__ == '__main__':
 
     src_fname_no_ext, src_fname_ext = os.path.splitext(os.path.basename(src_fname))
 
-
-
     home_path = os.path.abspath(expanduser("~"))
     if src_fname_abs.startswith(home_path):
         src_fname_rel = os.path.relpath(src_fname, home_path)
@@ -48,7 +46,7 @@ if __name__ == '__main__':
     if overwrite:
         scp_cmd = 'scp -r {}:{} {}'.format(scp_dst, scp_fname, src_fname)
     else:
-        scp_cmd = 'rsync -r --ignore-existing {}:{} {}'.format(scp_dst, scp_fname, src_fname)
+        scp_cmd = 'rsync -r -v --ignore-existing {}:{} {}'.format(scp_dst, scp_fname, src_fname)
 
     print('\nrunning: {}\n'.format(scp_cmd))
     os.system(scp_cmd)
