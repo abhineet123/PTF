@@ -87,6 +87,8 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
             if active_handle not in frg_win_handles:
                 # print('active_name: {} with handle {} not same as frg_win_handle: {}'.format(
                 #     active_name, active_handle, frg_win_handle))
+                """another win on same monitor was active and now target win is active again
+                """
                 prev_active_handles[_monitor_id] = active_handle
                 continue
         else:
@@ -98,7 +100,7 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
         try:
             prev_active_handle = prev_active_handles[_monitor_id]
         except KeyError:
-            pass
+            prev_active_handle = None
         else:
             if prev_active_handle is not None and prev_active_handle == active_handle:
                 if not frg_win_handles or prev_monitor_id == _monitor_id:
@@ -134,9 +136,15 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
             active_win_handle.value = active_handle
             # active_win_name.value = active_name.encode('utf-8')
 
-            # print('sft: active_monitor_id: {}'.format(active_monitor_id))
-            # print('sft: active_win_handle: {}'.format(active_win_handle))
+            # print('sft: active_monitor_id: {}'.format(active_monitor_id.value))
+            # print('sft: active_win_handle: {}'.format(active_win_handle.value))
             # print('sft: active_win_name: {}'.format(active_name))
+            #
+            # if prev_active_handle is not None:
+            #     prev_active_name = win32gui.GetWindowText(prev_active_handle)
+            #     print('sft: prev_monitor_id: {}'.format(prev_monitor_id))
+            #     print('sft: prev_active_handle: {}'.format(prev_active_handle))
+            #     print('sft: prev_active_name: {}'.format(prev_active_name))
 
             win32api.PostMessage(_win_handle, win32con.WM_CHAR, 0x42, 0)
 
