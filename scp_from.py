@@ -22,6 +22,7 @@ if __name__ == '__main__':
     if not src_fname_ext and not src_fname.endswith('/'):
         """no ext --> directory -> add terminating / to prevent recreation of directory structure on dst"""
         src_fname += '/'
+        src_fname_rel += '/'
 
     home_path = os.path.abspath(expanduser("~"))
     if src_fname_abs.startswith(home_path):
