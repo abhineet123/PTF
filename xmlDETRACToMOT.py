@@ -6,8 +6,8 @@ from Misc import processArguments
 from Misc import getParamDict
 
 _params = {
-    'root_dir': 'E:/Datasets',
-    'actor_id': 4,
+    'root_dir': 'G:/Datasets',
+    'actor_id': 6,
     'start_id': 0,
     'end_id': -1,
     'ignored_region_only': 0,
