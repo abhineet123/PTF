@@ -14,14 +14,14 @@ if __name__ == '__main__':
     scp_dst = params['scp_dst']
     overwrite = params['overwrite']
 
+    src_fname = os.path.realpath(src_fname)
+    src_fname_abs = os.path.abspath(src_fname)
+
     src_fname_no_ext, src_fname_ext = os.path.splitext(os.path.basename(src_fname))
 
     if not src_fname_ext and not src_fname.endswith('/'):
         """no ext --> directory -> add terminating / to prevent recreation of directory structure on dst"""
         src_fname += '/'
-
-    src_fname = os.path.realpath(src_fname)
-    src_fname_abs = os.path.abspath(src_fname)
 
     home_path = os.path.abspath(expanduser("~"))
     if src_fname_abs.startswith(home_path):
@@ -35,6 +35,8 @@ if __name__ == '__main__':
     print('home_path: {}'.format(home_path))
     print('src_fname_rel: {}'.format(src_fname_rel))
     print('scp_fname: {}'.format(scp_fname))
+
+
 
     src_dir = os.path.dirname(src_fname)
     if not os.path.isdir(src_dir):
