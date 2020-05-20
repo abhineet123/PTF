@@ -93,17 +93,17 @@ for seq_name in sequences:
 
     if not ignore_img:
         assert os.path.exists(in_img_path), "in_img_path: {} does not exist".format(in_img_path)
-        out_img_path = os.path.join(out_img_root, seq_name)
-        shutil.move(in_img_path, out_img_path)
-        print('{} --> {}'.format(in_img_path, out_img_path))
 
         _src_files = [os.path.join(in_img_path, k) for k in os.listdir(in_img_path) if
                       os.path.splitext(k.lower())[1] in img_exts]
-
         n_src_files = len(_src_files)
         n_frames_list.append(n_src_files)
         print('n_src_files: {}'.format(n_src_files))
         out_txt += '{}\n'.format(n_src_files)
+
+        out_img_path = os.path.join(out_img_root, seq_name)
+        shutil.move(in_img_path, out_img_path)
+        print('{} --> {}'.format(in_img_path, out_img_path))
 
     assert os.path.exists(in_det_path), "in_det_path: {} does not exist".format(in_det_path)
     out_det_path = os.path.join(out_det_root, seq_name + '.txt')
