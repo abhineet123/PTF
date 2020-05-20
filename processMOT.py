@@ -16,17 +16,7 @@ _params = {
     # 'db_type': 'test',
     'det_type': '',
     # 'det_type': 'FRCNN',
-    'ignore_img': 1,
-    'actor_id': 4,
-    'start_id': 0,
-    'end_id': -1,
-    'ignored_region_only': 0,
-    'speed': 0.5,
-    'show_img': 0,
-    'quality': 3,
-    'resize': 0,
-    'mode': 0,
-    'auto_progress': 0,
+    'ignore_img': 0,
 }
 
 processArguments(sys.argv[1:], _params)

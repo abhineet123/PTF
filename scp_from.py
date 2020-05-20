@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
     # if overwrite:
     #     rsync_cmd = 'scp -r {}:{} {}'.format(scp_dst, scp_fname, src_fname)
-        
+
     rsync_cmd = 'rsync {} {}:{} {}'.format(switches, scp_dst, scp_fname, src_fname)
 
     print('\nrunning: {}\n'.format(rsync_cmd))
