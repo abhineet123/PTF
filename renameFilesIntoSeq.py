@@ -116,11 +116,11 @@ def main():
                                   os.path.isfile(os.path.join(src_dir, f)) and f != 'Thumbs.db']
 
             if seq_prefix_filter:
-                print(('Restricting search to files containing:{}'.format(seq_prefix_filter)))
+                print(('Restricting search to files containing: {}'.format(seq_prefix_filter)))
                 src_file_names = [k for k in src_file_names if seq_prefix_filter in k]
 
             if seq_prefix_ext:
-                print(('Restricting search to files with extension:{}'.format(seq_prefix_ext)))
+                print(('Restricting search to files with extension: {}'.format(seq_prefix_ext)))
                 src_file_names = [k for k in src_file_names if k.endswith(seq_prefix_ext)]
 
             src_file_names.sort(key=sortKey)
