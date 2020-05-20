@@ -10,7 +10,24 @@ import win32api
 
 from Misc import processArguments
 
-if __name__ == '__main__':
+
+def run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode):
+    dst_full_path = '{}/{}'.format(dst_path, k)
+    if mode == 0:
+        scp_cmd = "pscp -pw {} {}:{}/{} {}".format(pwd0, scp_dst, scp_path, k, dst_full_path)
+    elif mode == 1:
+        scp_cmd = "pscp -pw {} {} {}:{}/".format(pwd0, dst_full_path, scp_dst, scp_path)
+
+    # print('Running {}'.format(scp_cmd))
+    os.system(scp_cmd)
+
+    if mode == 1:
+        rm_cmd = 'rm {}'.format(dst_full_path)
+        # print('Running {}'.format(rm_cmd))
+        os.system(rm_cmd)
+
+
+def main():
     params = {
         'win_title': 'The Journal 8',
         'mode': 0,
@@ -63,7 +80,6 @@ if __name__ == '__main__':
 
         titles = []
 
-
         def foreach_window(hwnd, lParam):
             if IsWindowVisible(hwnd):
                 length = GetWindowTextLength(hwnd)
@@ -71,7 +87,6 @@ if __name__ == '__main__':
                 GetWindowText(hwnd, buff, length + 1)
                 titles.append((hwnd, buff.value))
             return True
-
 
         win32gui.EnumWindows(foreach_window, None)
 
@@ -83,6 +98,7 @@ if __name__ == '__main__':
 
         if not target_title:
             print('Window with win_title: {} not found'.format(win_title))
+            run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode)
             continue
 
         target_title = target_title[0]
@@ -92,49 +108,47 @@ if __name__ == '__main__':
             app = application.Application().connect(title=target_title, found_index=0)
         except BaseException as e:
             print('Failed to connect to app for window {}: {}'.format(target_title, e))
+            run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode)
             continue
         try:
             app_win = app.window(title=target_title)
         except BaseException as e:
             print('Failed to access app window for {}: {}'.format(target_title, e))
+            run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode)
             continue
 
-        if mode == 2:
-            enable_highlight = k.strip()
+        try:
+            if mode == 2:
+                enable_highlight = k.strip()
+                app_win.type_keys("^t~")
+                app_win.type_keys("^v")
+                if enable_highlight:
+                    app_win.type_keys("^+%a")
+                    # time.sleep(1)
+                    app_win.type_keys("^+z")
+                    app_win.type_keys("{RIGHT}{VK_SPACE}~")
+                else:
+                    app_win.type_keys("{VK_SPACE}~")
+
+                app_win.type_keys("^s")
+                continue
+
             app_win.type_keys("^t~")
+            app_win.type_keys("^b")
             app_win.type_keys("^v")
-            if enable_highlight:
-                app_win.type_keys("^+%a")
-                # time.sleep(1)
-                app_win.type_keys("^+z")
-                app_win.type_keys("{RIGHT}{VK_SPACE}~")
-            else:
-                app_win.type_keys("{VK_SPACE}~")
-
+            app_win.type_keys("^b")
+            if mode == 1:
+                app_win.type_keys("{RIGHT}{VK_SPACE}to{VK_SPACE}%s" % scp_name)
+            app_win.type_keys("~")
             app_win.type_keys("^s")
-            continue
 
-        app_win.type_keys("^t~")
-        app_win.type_keys("^b")
-        app_win.type_keys("^v")
-        app_win.type_keys("^b")
-        if mode == 1:
-            app_win.type_keys("{RIGHT}{VK_SPACE}to{VK_SPACE}%s" % scp_name)
-        app_win.type_keys("~")
-        app_win.type_keys("^s")
+            mouse.move(coords=(x, y))
+        except BaseException as e:
+            print('Failed to type entry in app : {}'.format(e))
+            pass
 
-        mouse.move(coords=(x, y))
+        run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode)
 
-        dst_full_path = '{}/{}'.format(dst_path, k)
-        if mode == 0:
-            scp_cmd = "pscp -pw {} {}:{}/{} {}".format(pwd0, scp_dst, scp_path, k, dst_full_path)
-        elif mode == 1:
-            scp_cmd = "pscp -pw {} {} {}:{}/".format(pwd0, dst_full_path, scp_dst, scp_path)
 
-        # print('Running {}'.format(scp_cmd))
-        os.system(scp_cmd)
-
-        if mode == 1:
-            rm_cmd = 'rm {}'.format(dst_full_path)
-            # print('Running {}'.format(rm_cmd))
-            os.system(rm_cmd)
+if __name__ == '__main__':
+    main()
