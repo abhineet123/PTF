@@ -3102,6 +3102,19 @@ def main(args, multi_exit_program=None,
                     time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
                     _print('{} :: {} --> {}'.format(
                         time_stamp, win_name, prev_active_win_name))
+                    """current window sometimes becomes active so move it back 
+                    behind the target window"""
+                    # active_handle = win32gui.GetForegroundWindow()
+                    # active_name = win32gui.GetWindowText(active_handle)
+                    # _print('active_handle: {}'.format(active_handle))
+                    # _print('active_name: {}'.format(active_name))
+                    # _print('win_handle: {}'.format(win_handle))
+                    # _print('win_name: {}'.format(win_name))
+                    # if active_handle == win_handle:
+                    #     _print('moving window back from foreground')
+                    #     win32gui.SetWindowPos(win_handle, _active_win_handle, 0, 0, 0, 0,
+                    #                           win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+
                 # time.sleep(1)
                 # is_switching = 0
 
