@@ -125,6 +125,23 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
         if frg_win_handles or _monitor_id == monitor_id:
             # print('sft: here we are in monitor_id')
 
+            # if prev_active_handle is not None:
+            #     prev_active_name = win32gui.GetWindowText(prev_active_handle)
+            # else:
+            #     prev_active_name = ''
+            #
+            # if prev_monitor_id == _monitor_id and not win32gui.IsWindow(prev_active_handle):
+            #     """
+            #     previous active window closed
+            #     """
+            #     print('sft: previous active window closed: {}'.format(prev_active_name))
+            #     prev_active_handles[_monitor_id] = active_handle
+            #     prev_monitor_id = _monitor_id
+            #     continue
+            # else:
+            #     print('sft: previous active window still exists: {}'.format(prev_active_name))
+
+
             _win_handle = win32gui.FindWindow(None, win_name)
             # print('sft: _win_handle: {}'.format(_win_handle))
 
