@@ -94,13 +94,14 @@ for seq_id in range(start_id, end_id + 1):
         width = float(bndbox['width'])
         height = float(bndbox['height'])
         filename = bndbox['filename']
+        confidence = bndbox['confidence']
 
         try:
             frame_id = _src_files.index(filename)
         except:
             raise IOError('Invalid filename found: {}'.format(filename))
 
-        out_fid.write('{:d},{:d},{:f},{:f},{:f},{:f},1,-1,-1,-1\n'.format(
-            frame_id + 1, -1, xmin, ymin, width, height))
+        out_fid.write('{:d},{:d},{:f},{:f},{:f},{:f},{:f},-1,-1,-1\n'.format(
+            frame_id + 1, -1, xmin, ymin, width, height, confidence))
     out_fid.close()
 
