@@ -67,8 +67,8 @@ for seq_id in range(start_id, end_id + 1):
         ymin = float(row['ymin'])
         xmax = float(row['xmax'])
         ymax = float(row['ymax'])
-        width = float(row['width'])
-        height = float(row['height'])
+        # width = float(row['width'])
+        # height = float(row['height'])
         class_name = row['class']
 
 
@@ -76,8 +76,8 @@ for seq_id in range(start_id, end_id + 1):
             {"class": class_name,
              "confidence": confidence,
              "filename": filename,
-             "width": width,
-             "height": height,
+             # "width": width,
+             # "height": height,
              "bbox": [xmin, ymin, xmax, ymax]}
         )
 
@@ -91,8 +91,10 @@ for seq_id in range(start_id, end_id + 1):
     for bndbox in bounding_boxes:
 
         xmin, ymin, xmax, ymax = bndbox['bbox']
-        width = float(bndbox['width'])
-        height = float(bndbox['height'])
+
+        w, h = xmax - xmin, ymax - ymin
+        # width = float(bndbox['width'])
+        # height = float(bndbox['height'])
         filename = bndbox['filename']
         confidence = bndbox['confidence']
 
@@ -102,6 +104,6 @@ for seq_id in range(start_id, end_id + 1):
             raise IOError('Invalid filename found: {}'.format(filename))
 
         out_fid.write('{:d},{:d},{:f},{:f},{:f},{:f},{:f},-1,-1,-1\n'.format(
-            frame_id + 1, -1, xmin, ymin, width, height, confidence))
+            frame_id + 1, -1, xmin, ymin, w, h, confidence))
     out_fid.close()
 
