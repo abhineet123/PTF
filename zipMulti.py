@@ -107,6 +107,7 @@ if __name__ == '__main__':
         switches2 = ''
         for _ext in exclude_ext:
             switches2 += ' -x "*.{}"'.format(_ext)
+            switches2 += ' -x "*.{}.*"'.format(_ext)
         zip_cmd = '{:s} {:s}'.format(zip_cmd, switches2)
 
     print(zip_cmd)
