@@ -3375,7 +3375,14 @@ def main(args, multi_exit_program=None,
                 loadImage(1, 1, 1)
             elif k == ord('i'):
                 direction = -direction
-            elif k == ord('s') or k == ord('l') or k == ord('R'):
+            elif k == ord('s'):
+                img_fname_full = os.path.abspath(img_fname)
+                img_dir = os.path.dirname(img_fname_full)
+                img_fname_no_ext, img_fname_ext = os.path.splitext(os.path.basename(img_fname_full))
+                out_img_fname = os.path.join(img_dir, img_fname_no_ext + '_vwm' + img_fname_ext)
+                print('Saving image to {}'.format(out_img_fname))
+                cv2.imwrite(out_img_fname, dst_img)
+            elif k == ord('l') or k == ord('R'):
                 loadImage()
             elif k == 2490368:
                 # up
