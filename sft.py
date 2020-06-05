@@ -10,7 +10,7 @@ sft_exceptions_multi = [('XY:(', ') - RGB:(', ', HTML:('), ]
 
 
 def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
-                       second_from_top, monitors, win_name, dup_win_names,
+                       second_from_top, monitors, vwm_win_name, dup_win_names,
                        monitor_id, dup_monitor_ids, duplicate_window,
                        only__maximized, frg_win_handles,
                        other_vars=None
@@ -18,11 +18,13 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
     # prev_active_win_name = None
     # active_monitor_id = None
     exit_program.value = 0
-    win_names = [win_name, ] + dup_win_names
+    vwm_win_names = [vwm_win_name, ] + dup_win_names
     monitor_ids = [monitor_id, ] + dup_monitor_ids
     prev_active_handles = {i: None for i in monitor_ids}
 
     prev_monitor_id = None
+    global_prev_active_name = None
+
 
     centroids = []
     for curr_id, monitor in enumerate(monitors):
@@ -30,6 +32,8 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
         _centroid_y = (monitor[1] + monitor[1] + 1080) / 2.0
 
         centroids.append((_centroid_x, _centroid_y))
+
+    # active_names = []
 
     while True:
         _exit_program = int(exit_program.value)
@@ -47,9 +51,27 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
             # print('empty active_name')
             continue
 
-        if active_name in win_names:
-            # print('win_names')
+        if active_name in vwm_win_names:
+            # print('vwm_win_names')
+            if global_prev_active_name is not None and _monitor_id in prev_active_handles:
+                _prev_win_handle = win32gui.FindWindow(None, global_prev_active_name)
+                # print('global_prev_active_name: {}'.format(global_prev_active_name))
+                # print('_prev_win_handle: {}'.format(_prev_win_handle))
+                if not _prev_win_handle:
+                    # print('XYplorer bug')
+                    # print('prev_succesful_active_handle: {}'.format(prev_active_handles[_monitor_id]))
+                    _win_handle = win32gui.FindWindow(None, vwm_win_name)
+                    active_win_handle.value = prev_active_handles[_monitor_id]
+                    win32api.PostMessage(_win_handle, win32con.WM_CHAR, 0x42, 0)
             continue
+
+        # print('active_name: {}'.format(active_name))
+        # print('active_names: {}'.format(active_names))
+
+        # active_names.append(active_name)
+
+        global_prev_active_name = active_name
+        # global_prev_active_handle = active_handle
 
         if any([k in active_name for k in sft_exceptions]):
             # print('sft_exceptions')
@@ -87,8 +109,10 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
             if active_handle not in frg_win_handles:
                 # print('active_name: {} with handle {} not same as frg_win_handle: {}'.format(
                 #     active_name, active_handle, frg_win_handle))
+                # print(
                 """another win on same monitor was active and now target win is active again
                 """
+                # )
                 prev_active_handles[_monitor_id] = active_handle
                 continue
         else:
@@ -104,7 +128,9 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
         else:
             if prev_active_handle is not None and prev_active_handle == active_handle:
                 if not frg_win_handles or prev_monitor_id == _monitor_id:
-                    # print('prev_active_handle')
+                    # active_name = win32gui.GetWindowText(active_handle)
+                    # if ' - XYplorer 20.10' not in active_name:
+                    #     print('no XYplorer')
                     continue
 
         if frg_win_handles and _monitor_id not in prev_active_handles:
@@ -142,7 +168,7 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
             #     print('sft: previous active window still exists: {}'.format(prev_active_name))
 
 
-            _win_handle = win32gui.FindWindow(None, win_name)
+            _win_handle = win32gui.FindWindow(None, vwm_win_name)
             # print('sft: _win_handle: {}'.format(_win_handle))
 
             # active_win_info[0] = _monitor_id
@@ -226,4 +252,4 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
         prev_monitor_id = _monitor_id
 
 
-    print('{} :: Exiting sft'.format(win_name))
+    print('{} :: Exiting sft'.format(vwm_win_name))
