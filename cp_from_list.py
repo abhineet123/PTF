@@ -89,6 +89,7 @@ if __name__ == '__main__':
             continue
 
         cp_cmd = 'cp -r "{}" "{}"'.format(src_path, dst_path)
+        # cp_cmd = 'rsync -r "{}" "{}"'.format(src_path, dst_path)
         done_pc = (done_size / total_size) * 100
 
         print('\n{}/{} ({:.6f} GB) :: running: {}'.format(i + 1, n_src_paths, src_to_size[src_path], cp_cmd))
