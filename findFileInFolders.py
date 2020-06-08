@@ -1,7 +1,12 @@
 import os
+import shutil
 import sys
 from pprint import pformat
-from Misc import sortKey, processArguments
+from pathlib import Path
+
+import cv2
+
+from Misc import sortKey, processArguments, stackImages
 
 if __name__ == '__main__':
     params = {
@@ -12,6 +17,7 @@ if __name__ == '__main__':
         'search_str': '',
         'find_unique_names': 1,
         'recursive': 0,
+        'collage': 1,
     }
     processArguments(sys.argv[1:], params)
     root_dir = params['root_dir']
@@ -21,6 +27,7 @@ if __name__ == '__main__':
     search_str = params['search_str']
     find_unique_names = params['find_unique_names']
     recursive = params['recursive']
+    collage = params['collage']
 
     # arg_id = 1
     # if len(sys.argv) > arg_id:
@@ -57,8 +64,16 @@ if __name__ == '__main__':
     total_files_searched = 0
     total_unique_names = 0
     all_unique_names = []
+    all_collage_images = []
     matching_files = {}
     n_src_files = {}
+
+
+    if src_folders:
+        collage_path = os.path.join(os.path.dirname(src_folders[0]), 'collage')
+        if not os.path.isdir(collage_path):
+            os.makedirs(collage_path)
+
     for src_folder in src_folders:
         if not os.path.exists(src_folder):
             print('src_folder does not exist: {}'.format(src_folder))
@@ -68,11 +83,12 @@ if __name__ == '__main__':
             src_file_gen = [[os.path.join(dirpath, f) for f in filenames if
                              os.path.splitext(f.lower())[1] in img_exts]
                             for (dirpath, dirnames, filenames) in os.walk(src_folder, followlinks=True)]
-            src_files = [item for sublist in src_file_gen for item in sublist]
+            src_paths = [item for sublist in src_file_gen for item in sublist]
         else:
-            src_files = [f for f in os.listdir(src_folder) if f not in exclusions and
-                     os.path.isfile(os.path.join(src_folder, f))]
+            src_paths = [os.path.join(src_folder, f) for f in os.listdir(src_folder) if f not in exclusions and
+                         os.path.isfile(os.path.join(src_folder, f)) and os.path.splitext(f.lower())[1] in img_exts]
 
+        src_files = [os.path.basename(f) for f in src_paths]
         n_src_files[src_folder] = len(src_files)
         search_results = [f for f in src_files if search_str in f]
         if len(search_results) > 0:
@@ -85,29 +101,43 @@ if __name__ == '__main__':
             print('Done searching {:s} with {:d} files'.format(src_folder, n_src_files[src_folder]))
 
         unique_names = []
+        collage_images = []
         if find_unique_names:
-            src_files = [os.path.splitext(f)[0] for f in src_files if os.path.splitext(f)[1] in img_exts]
-            if src_files:
-                unique_names.append(src_files[0])
-            for i in range(1, len(src_files)):
-                commonprefix = os.path.commonprefix(src_files[i - 1:i + 1])
+            src_files_no_ext = [os.path.splitext(f)[0] for f in src_files]
+            if src_files_no_ext:
+                unique_names.append(src_files_no_ext[0])
+                if collage:
+                    collage_images.append(cv2.imread(src_paths[0]))
+                    shutil.copy(src_paths[0], os.path.join(collage_path, src_files[0]))
+            for i in range(1, len(src_files_no_ext)):
+                commonprefix = os.path.commonprefix(src_files_no_ext[i - 1:i + 1])
                 if not commonprefix:
-                    unique_names.append(src_files[i])
+                    unique_names.append(src_files_no_ext[i])
+                    if collage:
+                        # collage_images.append(cv2.imread(src_paths[i]))
+                        shutil.copy(src_paths[i], os.path.join(collage_path, src_files[i]))
+
                     continue
 
-                non_prefix = src_files[i].replace(commonprefix, '')
+                non_prefix = src_files_no_ext[i].replace(commonprefix, '')
                 found_digit = 0
                 for _c in non_prefix:
                     if str(_c).isdigit():
                         found_digit = 1
                         break
                     if str(_c).isalpha():
-                        unique_names.append(src_files[i])
+                        unique_names.append(src_files_no_ext[i])
+                        if collage:
+                            # collage_images.append(cv2.imread(src_paths[i]))
+                            shutil.copy(src_paths[i], os.path.join(collage_path, src_files[i]))
+
                         break
         if unique_names:
             print('Found {} unique names:\n{}\n'.format(len(unique_names), unique_names))
             total_unique_names += len(unique_names)
             all_unique_names += unique_names
+            # if collage:
+            #     all_collage_images += collage_images
 
         total_files_searched += len(src_files)
 
@@ -142,3 +172,13 @@ if __name__ == '__main__':
 
     n_src_files = [(k, v) for k, v in sorted(n_src_files.items(), key=lambda item: item[1])]
     print('\nn_src_files:\n{}'.format(pformat(n_src_files)))
+
+    # if collage and all_collage_images:
+    #     collage_path = os.path.join('.', 'collage.jpg')
+    #     print('\ncreating collage image from {} images...'.format(len(all_collage_images)))
+    #     collage_img = stackImages(all_collage_images)
+    #     print('\nsaving collage image to: {}'.format(collage_path))
+    #
+    #     cv2.imwrite(collage_path, collage_img)
+
+

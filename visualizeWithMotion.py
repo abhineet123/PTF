@@ -1,6 +1,6 @@
 import os
 import re
-import cv2
+
 import math
 import sys, time, random, glob, shutil
 import numpy as np
@@ -8,6 +8,9 @@ import functools
 import psutil
 import inspect
 import keyboard
+
+# os.environ["CV_IO_MAX_IMAGE_PIXELS"] = pow(2,64).__str__()
+import cv2
 
 # import mouse
 # from pynput import mouse
@@ -1387,8 +1390,14 @@ def main(args, multi_exit_program=None,
                         # _exit_neatly()
                         _print('Source image does not exist: {}'.format(src_img_fname))
                         return
-                    src_img = cv2.imread(src_img_fname)
-                    assert src_img is not None, f"Failed to read image: {src_img_fname}"
+                    try:
+                        src_img = cv2.imread(src_img_fname)
+                    except cv2.error:
+                        Image.MAX_IMAGE_PIXELS = 4175427070
+                        src_img = Image.open(src_img_fname)
+                        src_img = np.array(src_img)
+                    else:
+                        assert src_img is not None, f"Failed to read image: {src_img_fname}"
 
                     if trim_images:
                         src_img = np.asarray(trim(Image.fromarray(src_img)))
