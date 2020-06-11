@@ -52,24 +52,12 @@ def main():
         'ext': 'mkv',
         'out_postfix': '',
         'reverse': 0,
+        'min_free_space': 30,
     }
 
     processArguments(sys.argv[1:], params)
     src_path = params['src_path']
-    save_path = params['save_path']
-    img_ext = params['img_ext']
-    show_img = params['show_img']
-    del_src = params['del_src']
-    start_id = params['start_id']
-    n_frames = params['n_frames']
-    _width = params['width']
-    _height = params['height']
-    fps = params['fps']
-    codec = params['codec']
-    ext = params['ext']
-    out_postfix = params['out_postfix']
-    reverse = params['reverse']
-    save_root_dir = params['save_root_dir']
+    min_free_space = params['min_free_space']
 
     img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff', '.webp')
 
@@ -93,6 +81,8 @@ def main():
         os.makedirs(read_img_path)
 
     print('SIIF started in {}'.format(src_path))
+
+    img_id = 0
 
     while True:
         _src_files = [k for k in os.listdir(src_path) if
@@ -126,8 +116,15 @@ def main():
                 shutil.move(_src_path, _dst_path)
                 cv2.imshow(_src_file_id, img)
 
-                free_space = get_free_space_mb(src_path)
-                print('free_space {}'.format(free_space))
+                img_id += 1
+
+                if img_id % 100 == 0:
+                    free_space = get_free_space_mb(src_path)
+                    print('free_space {}'.format(free_space))
+                    if free_space < min_free_space:
+                        print('Free space running low. Press any key to clear the backup directory')
+                        cv2.waitKey(0)
+                        clear_dir(src_path)
 
             del_images = []
             for existing_image in existing_images.keys():
