@@ -62,7 +62,7 @@ def main():
     img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff', '.webp')
 
     existing_images = {}
-    _pause = 0
+    _pause = 1
 
     src_path = os.path.abspath(src_path)
     script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -99,7 +99,7 @@ def main():
 
             if _src_file_id not in existing_images or existing_images[_src_file_id] != _src_file_timestamp:
                 existing_images[_src_file] = _src_file_timestamp
-                # print('reading {} with time: {}'.format(_src_file_id, _src_file_timestamp))
+                print('reading {} with time: {}'.format(_src_file_id, _src_file_timestamp))
 
                 img = cv2.imread(_src_path)
 
@@ -112,8 +112,8 @@ def main():
                 _dst_path = os.path.join(read_img_path, os.path.basename(_src_path))
 
                 # os.remove(_src_path)
-
                 shutil.move(_src_path, _dst_path)
+
                 cv2.imshow(_src_file_id, img)
 
                 img_id += 1
@@ -124,7 +124,7 @@ def main():
                     if free_space < min_free_space:
                         print('Free space running low. Press any key to clear the backup directory')
                         cv2.waitKey(0)
-                        clear_dir(src_path)
+                        clear_dir(read_img_path)
 
             del_images = []
             for existing_image in existing_images.keys():
