@@ -68,13 +68,20 @@ if __name__ == '__main__':
     matching_files = {}
     n_src_files = {}
 
-
     if src_folders:
         collage_path = os.path.join(os.path.dirname(src_folders[0]), 'collage')
+        collage_path = os.path.abspath(collage_path)
         if not os.path.isdir(collage_path):
             os.makedirs(collage_path)
 
     for src_folder in src_folders:
+        src_folder = os.path.abspath(src_folder)
+
+        if src_folder == collage_path:
+            continue
+
+        src_folder_name = os.path.basename(src_folder)
+
         if not os.path.exists(src_folder):
             print('src_folder does not exist: {}'.format(src_folder))
             break
@@ -107,15 +114,19 @@ if __name__ == '__main__':
             if src_files_no_ext:
                 unique_names.append(src_files_no_ext[0])
                 if collage:
-                    collage_images.append(cv2.imread(src_paths[0]))
-                    shutil.copy(src_paths[0], os.path.join(collage_path, src_files[0]))
+                    # collage_images.append(cv2.imread(src_paths[0]))
+                    _name, _ext = os.path.splitext(src_files[0])
+                    dst_file = '{}_{}{}'.format(_name, src_folder_name, _ext)
+                    shutil.copy(src_paths[0], os.path.join(collage_path, dst_file))
             for i in range(1, len(src_files_no_ext)):
                 commonprefix = os.path.commonprefix(src_files_no_ext[i - 1:i + 1])
                 if not commonprefix:
                     unique_names.append(src_files_no_ext[i])
                     if collage:
                         # collage_images.append(cv2.imread(src_paths[i]))
-                        shutil.copy(src_paths[i], os.path.join(collage_path, src_files[i]))
+                        _name, _ext = os.path.splitext(src_files[i])
+                        dst_file = '{}_{}{}'.format(_name, src_folder_name, _ext)
+                        shutil.copy(src_paths[i], os.path.join(collage_path, dst_file))
 
                     continue
 
@@ -129,8 +140,9 @@ if __name__ == '__main__':
                         unique_names.append(src_files_no_ext[i])
                         if collage:
                             # collage_images.append(cv2.imread(src_paths[i]))
-                            shutil.copy(src_paths[i], os.path.join(collage_path, src_files[i]))
-
+                            _name, _ext = os.path.splitext(src_files[i])
+                            dst_file = '{}_{}{}'.format(_name, src_folder_name, _ext)
+                            shutil.copy(src_paths[i], os.path.join(collage_path, dst_file))
                         break
         if unique_names:
             print('Found {} unique names:\n{}\n'.format(len(unique_names), unique_names))

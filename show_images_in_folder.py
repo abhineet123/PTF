@@ -48,6 +48,24 @@ img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff', '.webp')
 
 existing_images = {}
 _pause = 0
+
+src_path = os.path.abspath(src_path)
+script_dir = os.path.dirname(os.path.realpath(__file__))
+log_path =  os.path.join(script_dir, 'siif_log.txt')
+with open(log_path, 'w') as fid:
+    fid.write(src_path)
+
+os.environ["SIIF_DUMP_IMAGE_PATH"] = src_path
+
+read_img_path = os.path.join(src_path, "read")
+
+if os.path.exists(read_img_path):
+    shutil.rmtree(read_img_path)
+
+os.makedirs(read_img_path)
+
+print('SIIF started in {}'.format(src_path))
+
 while True:
     _src_files = [k for k in os.listdir(src_path) if
                   os.path.splitext(k.lower())[1] in img_exts]
@@ -73,7 +91,11 @@ while True:
             #     fid.write('siif')
             #     fid.close()
 
-            os.remove(_src_path)
+            _dst_path = os.path.join(read_img_path, os.path.basename(_src_path))
+
+            # os.remove(_src_path)
+
+            shutil.move(_src_path, _dst_path)
             cv2.imshow(_src_file_id, img)
 
         del_images = []
