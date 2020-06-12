@@ -62,6 +62,7 @@ def main():
     img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff', '.webp')
 
     existing_images = {}
+    image_pause = {}
     _pause = 1
 
     src_path = os.path.abspath(src_path)
@@ -83,8 +84,8 @@ def main():
     print('SIIF started in {}'.format(src_path))
 
     img_id = 0
-
-    while True:
+    exit_program = 0
+    while not exit_program:
         _src_files = [k for k in os.listdir(src_path) if
                       os.path.splitext(k.lower())[1] in img_exts]
         for _src_file in _src_files:
@@ -116,6 +117,16 @@ def main():
 
                 cv2.imshow(_src_file_id, img)
 
+                if _src_file not in image_pause:
+                    image_pause[_src_file] = _pause
+
+                k = cv2.waitKey(1 - image_pause[_src_file])
+                if k == 27:
+                    exit_program = 1
+                    break
+                elif k == 32:
+                    image_pause[_src_file] = 1 - image_pause[_src_file]
+
                 img_id += 1
 
                 if img_id % 100 == 0:
@@ -134,12 +145,6 @@ def main():
 
             for del_image in del_images:
                 del existing_images[del_image]
-
-        k = cv2.waitKey(1 - _pause)
-        if k == 27:
-            break
-        elif k == 32:
-            _pause = 1 - _pause
 
     for existing_image in existing_images.keys():
         cv2.destroyWindow(existing_image)
