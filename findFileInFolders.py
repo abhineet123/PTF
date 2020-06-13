@@ -17,7 +17,7 @@ if __name__ == '__main__':
         'search_str': '',
         'find_unique_names': 1,
         'recursive': 0,
-        'collage': 1,
+        'collage': 0,
     }
     processArguments(sys.argv[1:], params)
     root_dir = params['root_dir']

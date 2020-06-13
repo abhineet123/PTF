@@ -74,7 +74,7 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
             print('prev_active_called_handles: {}'.format(prev_active_called_handles))
             print('prev_active_called_names: {}'.format(prev_active_called_names))
 
-            if global_prev_active_name is not None and _monitor_id in prev_active_handles:
+            if global_prev_active_name is not None and _monitor_id in prev_active_called_handles:
                 prev_active_called_handle = prev_active_called_handles[_monitor_id]
                 prev_active_called_name = prev_active_called_names[_monitor_id]
 
