@@ -61,18 +61,18 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
         if active_name in vwm_win_names:
             if fixed_xy_bug:
                 continue
-            time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
-            print('\n{} :: vwm_win_names'.format(time_stamp))
-            print('frg_win_handles: {}'.format(frg_win_handles))
+            # time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+            # print('\n{} :: vwm_win_names'.format(time_stamp))
+            # print('frg_win_handles: {}'.format(frg_win_handles))
             # print('active_handle: {}'.format(active_handle))
             # print('active_name: {}'.format(active_name))
-            print('global_prev_active_name: {}'.format(global_prev_active_name))
+            # print('global_prev_active_name: {}'.format(global_prev_active_name))
 
-            print('prev_active_handles: {}'.format(prev_active_handles))
-            print('prev_active_names: {}'.format(prev_active_names))
+            # print('prev_active_handles: {}'.format(prev_active_handles))
+            # print('prev_active_names: {}'.format(prev_active_names))
 
-            print('prev_active_called_handles: {}'.format(prev_active_called_handles))
-            print('prev_active_called_names: {}'.format(prev_active_called_names))
+            # print('prev_active_called_handles: {}'.format(prev_active_called_handles))
+            # print('prev_active_called_names: {}'.format(prev_active_called_names))
 
             if global_prev_active_name is not None and _monitor_id in prev_active_called_handles:
                 prev_active_called_handle = prev_active_called_handles[_monitor_id]
