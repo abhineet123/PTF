@@ -61,7 +61,7 @@ def main():
 
     img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff', '.webp')
 
-    existing_images = {}
+    # existing_images = {}
     image_pause = {}
     _pause = 1
 
@@ -130,6 +130,7 @@ def main():
                     image_pause[_src_file_id] = _pause
             elif k == ord('q'):
                 cv2.destroyWindow(_src_file_id)
+                del image_pause[_src_file_id]
             elif k == ord('p'):
                 image_pause[_src_file_id] = 1 - image_pause[_src_file_id]
 
@@ -145,19 +146,19 @@ def main():
                     cv2.waitKey(0)
                     clear_dir(read_img_path)
 
-            del_images = []
-            for existing_image in existing_images.keys():
-                if existing_image not in _src_files:
-                    cv2.destroyWindow(existing_image)
-                    del_images.append(existing_image)
-
-            for del_image in del_images:
-                del existing_images[del_image]
+            # del_images = []
+            # for existing_image in existing_images.keys():
+            #     if existing_image not in _src_files:
+            #         cv2.destroyWindow(existing_image)
+            #         del_images.append(existing_image)
+            #
+            # for del_image in del_images:
+            #     del existing_images[del_image]
 
         cv2.waitKey(1)
 
-    for existing_image in existing_images.keys():
-        cv2.destroyWindow(existing_image)
+    for _src_file_id in image_pause.keys():
+        cv2.destroyWindow(_src_file_id)
 
 
 if __name__ == '__main__':
