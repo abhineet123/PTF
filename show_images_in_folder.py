@@ -98,44 +98,52 @@ def main():
                 print('Invalid _src_file: {} with _src_file_no_ext: {}'.format(
                     _src_file, _src_file_no_ext))
 
-            if _src_file_id not in existing_images or existing_images[_src_file_id] != _src_file_timestamp:
-                existing_images[_src_file] = _src_file_timestamp
-                print('reading {} with time: {}'.format(_src_file_id, _src_file_timestamp))
+            # if _src_file_id not in existing_images or existing_images[_src_file_id] != _src_file_timestamp:
+            #     existing_images[_src_file] = _src_file_timestamp
+            print('reading {} with time: {}'.format(_src_file_id, _src_file_timestamp))
 
-                img = cv2.imread(_src_path)
+            img = cv2.imread(_src_path)
 
-                # out_path = _src_path+'.done'
-                # print('writing to {}'.format(out_path))
-                # with open(out_path, 'w') as fid:
-                #     fid.write('siif')
-                #     fid.close()
+            # out_path = _src_path+'.done'
+            # print('writing to {}'.format(out_path))
+            # with open(out_path, 'w') as fid:
+            #     fid.write('siif')
+            #     fid.close()
 
-                _dst_path = os.path.join(read_img_path, os.path.basename(_src_path))
+            _dst_path = os.path.join(read_img_path, os.path.basename(_src_path))
 
-                # os.remove(_src_path)
-                shutil.move(_src_path, _dst_path)
+            # os.remove(_src_path)
+            shutil.move(_src_path, _dst_path)
 
-                cv2.imshow(_src_file_id, img)
+            cv2.imshow(_src_file_id, img)
 
-                if _src_file not in image_pause:
-                    image_pause[_src_file] = _pause
+            if _src_file_id not in image_pause:
+                image_pause[_src_file_id] = _pause
 
-                k = cv2.waitKey(1 - image_pause[_src_file])
-                if k == 27:
-                    exit_program = 1
-                    break
-                elif k == 32:
-                    image_pause[_src_file] = 1 - image_pause[_src_file]
+            k = cv2.waitKey(1 - image_pause[_src_file_id])
+            if k == 27:
+                exit_program = 1
+                break
+            elif k == 32:
+                _pause = 1 - _pause
+                for _src_file_id in image_pause:
+                    image_pause[_src_file_id] = _pause
+            elif k == ord('q'):
+                cv2.destroyWindow(_src_file_id)
+            elif k == ord('p'):
+                image_pause[_src_file_id] = 1 - image_pause[_src_file_id]
 
-                img_id += 1
+            img_id += 1
 
-                if img_id % 100 == 0:
-                    free_space = get_free_space_mb(src_path)
-                    print('free_space {}'.format(free_space))
-                    if free_space < min_free_space:
-                        print('Free space running low. Press any key to clear the backup directory')
-                        cv2.waitKey(0)
-                        clear_dir(read_img_path)
+            print('image_pause: {}'.format(image_pause))
+
+            if img_id % 100 == 0:
+                free_space = get_free_space_mb(src_path)
+                print('free_space {}'.format(free_space))
+                if free_space < min_free_space:
+                    print('Free space running low. Press any key to clear the backup directory')
+                    cv2.waitKey(0)
+                    clear_dir(read_img_path)
 
             del_images = []
             for existing_image in existing_images.keys():
@@ -145,6 +153,8 @@ def main():
 
             for del_image in del_images:
                 del existing_images[del_image]
+
+        cv2.waitKey(1)
 
     for existing_image in existing_images.keys():
         cv2.destroyWindow(existing_image)

@@ -24,7 +24,7 @@ def roman_to_int(s):
 
 
 def main():
-    file_path = 'Something Fresh - P. G. Wodehouse.txt'
+    file_path = 'Stumbling on Happiness - Daniel Gilbert.txt'
 
     file_path = os.path.abspath(file_path)
 
@@ -33,7 +33,7 @@ def main():
     out_fname_noext, out_fname_ext = os.path.splitext(out_fname)
     # chap_sep = ''
     chapter_sep = 'CHAPTER'
-    convert_to_int = 1
+    convert_to_int = 0
 
     # fichier = open(file_path, "rb")
     # contentOfFile = fichier.read()
