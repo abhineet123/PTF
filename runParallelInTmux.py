@@ -49,6 +49,8 @@ for line in lines:
 
     if server and pane_id and not pane_id.startswith(server):
         print('skipping {} with invalid server'.format(pane_id))
+        if pane_id in pane_to_commands:
+            del pane_to_commands[pane_id]
         continue
 
     pane_to_commands[pane_id] = '{} "{}" Enter'.format(pane_to_commands[pane_id], _line)
