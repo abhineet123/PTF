@@ -7,6 +7,7 @@ params = {
     'in_fname': 'all.txt',
     'start_id': 0,
     'end_id': -1,
+    'server': '',
 }
 
 if __name__ == '__main__':
@@ -15,6 +16,7 @@ if __name__ == '__main__':
 in_fname = params['in_fname']
 start_id = params['start_id']
 end_id = params['end_id']
+server = params['server']
 
 lines = open(in_fname, 'r').readlines()
 pane_to_commands = {}
@@ -26,11 +28,15 @@ for line in lines:
         continue
     if _line.startswith('## @ '):
         pane_id = _line.replace('## @ ', '')
+        if server and not pane_id.startswith(server):
+            print('skipping {} with invalid server'.format(pane_id))
         if pane_id not in pane_to_commands:
             cmd_id += 1
             if cmd_id < start_id:
+                print('skipping {} with too small cmd_id'.format(pane_id))
                 continue
             if cmd_id > end_id > start_id:
+                print('skipping {} with too large cmd_id'.format(pane_id))
                 break
             pane_to_commands[pane_id] = 'tmux send-keys -t {}'.format(pane_id)
         continue
