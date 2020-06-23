@@ -24,8 +24,8 @@ for line in lines:
     _line = line.strip()
     if not _line:
         continue
-    if _line.startswith('@ '):
-        pane_id = int(_line.replace('@', ''))
+    if _line.startswith('## @ '):
+        pane_id = int(_line.replace('## @ ', ''))
         if pane_id not in pane_to_commands:
             cmd_id += 1
             if cmd_id < start_id:
