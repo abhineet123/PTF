@@ -25,7 +25,7 @@ for line in lines:
     if not _line:
         continue
     if _line.startswith('## @ '):
-        pane_id = int(_line.replace('## @ ', ''))
+        pane_id = _line.replace('## @ ', '')
         if pane_id not in pane_to_commands:
             cmd_id += 1
             if cmd_id < start_id:
