@@ -100,9 +100,21 @@ def main():
 
             # if _src_file_id not in existing_images or existing_images[_src_file_id] != _src_file_timestamp:
             #     existing_images[_src_file] = _src_file_timestamp
-            print('reading {} with time: {}'.format(_src_file_id, _src_file_timestamp))
 
-            img = cv2.imread(_src_path)
+            # print('reading {} with time: {}'.format(_src_file_id, _src_file_timestamp))
+
+            read_success = 1
+
+            try:
+                img = cv2.imread(_src_path)
+            except cv2.error as e:
+                print('Error reading image {} with ID: {}: {}'.format(_src_file, _src_file_id, e))
+                read_success = 0
+
+            if img is None:
+                print('Failed to read image {} with ID: {}'.format(_src_file, _src_file_id))
+                read_success = 0
+
 
             # out_path = _src_path+'.done'
             # print('writing to {}'.format(out_path))
@@ -115,7 +127,14 @@ def main():
             # os.remove(_src_path)
             shutil.move(_src_path, _dst_path)
 
-            cv2.imshow(_src_file_id, img)
+            if not read_success:
+                continue
+
+            try:
+                cv2.imshow(_src_file_id, img)
+            except cv2.error as e:
+                print('Error showing image {} with ID: {}: {}'.format(_src_file, _src_file_id, e))
+                continue
 
             if _src_file_id not in image_pause:
                 image_pause[_src_file_id] = _pause
@@ -128,17 +147,19 @@ def main():
                 _pause = 1 - _pause
                 for _src_file_id in image_pause:
                     image_pause[_src_file_id] = _pause
+                print('image_pause: {}'.format(image_pause))
             elif k == ord('q'):
                 cv2.destroyWindow(_src_file_id)
                 del image_pause[_src_file_id]
             elif k == ord('p'):
                 image_pause[_src_file_id] = 1 - image_pause[_src_file_id]
+                print('image_pause: {}'.format(image_pause))
 
             img_id += 1
 
-            print('image_pause: {}'.format(image_pause))
+            # print('image_pause: {}'.format(image_pause))
 
-            if img_id % 100 == 0:
+            if img_id % 10 == 0:
                 free_space = get_free_space_mb(src_path)
                 print('free_space {}'.format(free_space))
                 if free_space < min_free_space:

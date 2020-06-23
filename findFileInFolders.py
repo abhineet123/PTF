@@ -178,11 +178,12 @@ if __name__ == '__main__':
         print('{:d} unique names found:\n{}'.format(total_unique_names, '\n'.join(all_unique_names_proc)))
 
     if total_files_found > 0:
-        print('\n{} matching files found:\n{}'.format(total_files_found, pformat(matching_files)))
+        print('\n{} matching files found in folders {}'.format(
+            total_files_found, [os.path.relpath(k, os.getcwd()) for k in matching_files.keys()]))
     else:
         print('\nNo matching files found')
 
-    n_src_files = [(k, v) for k, v in sorted(n_src_files.items(), key=lambda item: item[1])]
+    n_src_files = [(os.path.relpath(k, os.getcwd()), v) for k, v in sorted(n_src_files.items(), key=lambda item: item[1])]
     print('\nn_src_files:\n{}'.format(pformat(n_src_files)))
 
     # if collage and all_collage_images:
@@ -192,5 +193,3 @@ if __name__ == '__main__':
     #     print('\nsaving collage image to: {}'.format(collage_path))
     #
     #     cv2.imwrite(collage_path, collage_img)
-
-

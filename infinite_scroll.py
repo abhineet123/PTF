@@ -2,6 +2,10 @@ import time
 import win32gui, win32api
 from pywinauto import application, mouse
 import ctypes
+import os, sys
+
+from Misc import processArguments
+
 
 EnumWindows = ctypes.windll.user32.EnumWindows
 EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int))
@@ -22,7 +26,14 @@ def foreach_window(hwnd, lParam):
 
 
 def main():
-    max_t = 120
+    params = {
+        'max_t': 120,
+        'relative': 0,
+    }
+    processArguments(sys.argv[1:], params)
+
+    max_t = params['max_t']
+
     win_titles = ['Google Chrome']
     try:
         orig_x, orig_y = win32api.GetCursorPos()
