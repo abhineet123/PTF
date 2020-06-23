@@ -28,11 +28,12 @@ for line in lines:
         continue
     if _line.startswith('## @ '):
         pane_id = _line.replace('## @ ', '')
-        if server and not pane_id.startswith(server):
-            print('skipping {} with invalid server'.format(pane_id))
-            continue
+
         if pane_id not in pane_to_commands:
             cmd_id += 1
+            if server and not pane_id.startswith(server):
+                print('skipping {} with invalid server'.format(pane_id))
+                continue
             if cmd_id < start_id:
                 print('skipping {} with too small cmd_id'.format(pane_id))
                 continue
