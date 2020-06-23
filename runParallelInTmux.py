@@ -28,10 +28,6 @@ for line in lines:
     if not _line:
         continue
 
-    if server and pane_id and not pane_id.startswith(server):
-        print('skipping {} with invalid server'.format(pane_id))
-        continue
-
     if _line.startswith('## @ '):
         pane_id = _line.replace('## @ ', '')
 
@@ -50,6 +46,11 @@ for line in lines:
         continue
     elif _line.startswith('# '):
         continue
+
+    if server and pane_id and not pane_id.startswith(server):
+        print('skipping {} with invalid server'.format(pane_id))
+        continue
+
     pane_to_commands[pane_id] = '{} "{}" Enter'.format(pane_to_commands[pane_id], _line)
 
 for pane_id in pane_to_commands:
