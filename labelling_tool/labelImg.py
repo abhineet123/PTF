@@ -171,6 +171,10 @@ class LabelingParams:
         self.mask = MaskParams()
         self.server = ServerParams()
         self.visualizer = VisualizerParams()
+        # self.save_fmt = ('avi', 'XVID', 30)
+        # self.save_fmt = ('avi', 'FFV1', 30)
+        # self.save_fmt = ('mkv', 'H264', 30)
+        self.save_fmt = ('mp4', 'avc1', 30)
 
         self.help = {
             'cfg': 'optional ASCII text file from where parameter values can be read;'
@@ -2646,7 +2650,8 @@ class MainWindow(QMainWindow, WindowMixin):
             video_path = self.frames_reader.video_fn
             video_fname, video_fname_ext = os.path.splitext(os.path.basename(video_path))
             video_dir = os.path.dirname(video_path)
-            roi_save_path = os.path.join(video_dir, video_fname + '_' + roi_save_dir + '.mkv')
+            roi_save_path = os.path.join(video_dir, '{}_{}.{}'.format(
+                video_fname, roi_save_dir, self.params.save_fmt[0]))
 
         n_frames = self.frames_reader.num_frames
 
@@ -2663,7 +2668,8 @@ class MainWindow(QMainWindow, WindowMixin):
                 vid_out = cv2.VideoWriter()
                 frame_size = roi_img.shape[:2][::-1]
                 vid_out.open(filename=roi_save_path, apiPreference=cv2.CAP_FFMPEG,
-                             fourcc=cv2.VideoWriter_fourcc(*'H264'), fps=30, frameSize=frame_size)
+                             fourcc=cv2.VideoWriter_fourcc(*self.params.save_fmt[1]),
+                             fps=self.params.save_fmt[2], frameSize=frame_size)
 
             cv2.imshow(roi_save_dir, roi_img)
             k = cv2.waitKey(1 - _pause)
@@ -2674,6 +2680,7 @@ class MainWindow(QMainWindow, WindowMixin):
             vid_out.write(roi_img)
             # cv2.imwrite(out_fname, roi_img)
 
+        print('Done saving ROI sequence')
         cv2.destroyWindow(roi_save_dir)
         vid_out.release()
 

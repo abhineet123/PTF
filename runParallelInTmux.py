@@ -71,7 +71,7 @@ def main():
             pane_to_commands[pane_id] = '{} "{}" Enter'.format(pane_to_commands[pane_id], _line)
 
         for pane_id in pane_to_commands:
-            print('running command in'.format(pane_id))
+            print('running command in {}'.format(pane_id))
             # print('running: {}'.format(pane_to_commands[pane_id]))
             os.system(pane_to_commands[pane_id])
 
