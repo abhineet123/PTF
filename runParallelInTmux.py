@@ -19,7 +19,7 @@ def main():
     server = params['server']
 
     while True:
-        if not _in_fname:
+        if _in_fname:
             in_fname = _in_fname
         else:
             in_fname = input('Enter script path\n')
