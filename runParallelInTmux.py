@@ -18,9 +18,7 @@ def main():
         'end_id': -1,
         'server': '',
     }
-    obj = Struct(params)
-    paramparse.process(obj)
-    params = obj.__dict__
+    paramparse.process_dict(params)
 
     # processArguments(sys.argv[1:], params)
 
