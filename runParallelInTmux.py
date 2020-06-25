@@ -1,6 +1,14 @@
 import sys
 import os
-from Misc import processArguments
+
+import paramparse
+
+
+# from Misc import processArguments
+
+class Struct:
+    def __init__(self, entries):
+        self.__dict__.update(entries)
 
 
 def main():
@@ -10,8 +18,11 @@ def main():
         'end_id': -1,
         'server': '',
     }
+    obj = Struct(params)
+    paramparse.process(obj)
+    params = obj.__dict__
 
-    processArguments(sys.argv[1:], params)
+    # processArguments(sys.argv[1:], params)
 
     _in_fname = params['in_fname']
     start_id = params['start_id']
