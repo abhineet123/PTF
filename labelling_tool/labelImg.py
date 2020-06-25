@@ -65,6 +65,29 @@ def have_qstring():
 def util_qt_strlistclass():
     return QStringList if have_qstring() else list
 
+def linux_path(*args, **kwargs):
+    return os.path.join(*args, **kwargs).replace(os.sep, '/')
+
+
+class ImageWriter:
+    def __init__(self, file_path):
+        self.file_path = file_path
+        split_path = os.path.splitext(file_path)
+        self.save_dir = split_path[0]
+        self.ext = split_path[1][1:]
+        if not os.path.isdir(self.save_dir):
+            os.makedirs(self.save_dir)
+        self.frame_id = 0
+
+        print('Saving images of type {:s} to {:s}'.format(self.ext, self.save_dir))
+
+    def write(self, frame):
+        self.frame_id += 1
+        cv2.imwrite(linux_path(self.save_dir, 'image{:06d}.{:s}'.format(self.frame_id, self.ext)), frame)
+
+    def release(self):
+        pass
+
 
 # PyQt5: TypeError: unhashable type: 'QListWidgetItem'
 class HashableQListWidgetItem(QListWidgetItem):
@@ -139,7 +162,7 @@ class LabelingParams:
     """
 
     def __init__(self):
-        self.cfg = 'params.cfg'
+        self.cfg = ''
         self.load_prev = 0
         self.file_name = ''
         self.predef_class_file = 'data/predefined_classes.txt'
@@ -2260,9 +2283,9 @@ class MainWindow(QMainWindow, WindowMixin):
             print('mayContinue')
             return
 
-        if self.autoSaving.isChecked():
-            print('saveFile')
-            self.saveFile()
+        # if self.autoSaving.isChecked():
+        #     print('saveFile')
+        #     self.saveFile()
 
         if self.frames_reader is not None:
             self.frames_reader.close(self.delete_bin)
@@ -2608,23 +2631,26 @@ class MainWindow(QMainWindow, WindowMixin):
 
         roi_save_dir = 'roi_{}_{}_{}_{}'.format(self.roi['xmin'], self.roi['ymin'],
                                                 self.roi['xmax'], self.roi['ymax'])
+        vid_out = None
 
         if isinstance(self.frames_reader, DirectoryReader):
             dir_path = self.dirname
             root_dir = os.path.dirname(dir_path)
             dir_name = os.path.splitext(os.path.basename(dir_path))[0]
             roi_save_path = os.path.join(root_dir, dir_name + '_' + roi_save_dir)
+            if not os.path.isdir(roi_save_path):
+                os.makedirs(roi_save_path)
+
+            vid_out = ImageWriter(roi_save_path)
         elif isinstance(self.frames_reader, VideoReader):
             video_path = self.frames_reader.video_fn
-            video_fname = os.path.splitext(os.path.basename(video_path))[0]
+            video_fname, video_fname_ext = os.path.splitext(os.path.basename(video_path))
             video_dir = os.path.dirname(video_path)
-            roi_save_path = os.path.join(video_dir, video_fname + '_' + roi_save_dir)
+            roi_save_path = os.path.join(video_dir, video_fname + '_' + roi_save_dir + '.mkv')
+
         n_frames = self.frames_reader.num_frames
 
         print('Saving ROI sequence with {} frames to {}'.format(n_frames, roi_save_path))
-
-        if not os.path.isdir(roi_save_path):
-            os.makedirs(roi_save_path)
 
         _pause = 0
         for i in range(n_frames):
@@ -2632,16 +2658,24 @@ class MainWindow(QMainWindow, WindowMixin):
             roi_img = self.frames_reader.get_frame(i)
             out_fname = os.path.join(roi_save_path, fname)
             roi_img = cv2.cvtColor(roi_img, cv2.COLOR_RGB2BGR)
+
+            if vid_out is None:
+                vid_out = cv2.VideoWriter()
+                frame_size = roi_img.shape[:2][::-1]
+                vid_out.open(filename=roi_save_path, apiPreference=cv2.CAP_FFMPEG,
+                             fourcc=cv2.VideoWriter_fourcc(*'H264'), fps=30, frameSize=frame_size)
+
             cv2.imshow(roi_save_dir, roi_img)
             k = cv2.waitKey(1 - _pause)
             if k == 32:
                 _pause = 1 - _pause
             elif k == 27:
                 break
-
-            cv2.imwrite(out_fname, roi_img)
+            vid_out.write(roi_img)
+            # cv2.imwrite(out_fname, roi_img)
 
         cv2.destroyWindow(roi_save_dir)
+        vid_out.release()
 
     def setROI(self):
 
