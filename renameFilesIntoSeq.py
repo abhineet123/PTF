@@ -16,7 +16,7 @@ def has_hidden_attribute2(filepath):
 
 
 def has_hidden_attribute(filepath):
-    print('filepath: {}'.format(filepath))
+    # print('filepath: {}'.format(filepath))
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(unicode(filepath))
         assert attrs != -1
@@ -132,11 +132,12 @@ def main():
         split_str = seq_prefix.split('_')
         try:
             seq_start_id = int(split_str[-1]) + 1
-            seq_prefix = split_str[0]
         except ValueError:
             seq_start_id = 1
-        for _str in split_str[1:-1]:
-            seq_prefix = '{}_{}'.format(seq_prefix, _str)
+        else:
+            seq_prefix = '_'.join(split_str[:-1])
+        # for _str in split_str[1:-1]:
+        #     seq_prefix = '{}_{}'.format(seq_prefix, _str)
 
     print('seq_prefix: {:s}'.format(seq_prefix))
     print('seq_start_id: {:d}'.format(seq_start_id))
