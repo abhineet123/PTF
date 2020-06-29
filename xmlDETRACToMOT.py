@@ -14,13 +14,13 @@ from Misc import getParamDict, drawBox, resizeAR, imshow
 
 def main():
     _params = {
-        'root_dir': 'G:/Datasets',
+        'root_dir': '/data',
         'actor_id': 5,
-        'start_id': 22,
+        'start_id': 0,
         'end_id': -1,
         'ignored_region_only': 0,
         'speed': 0.5,
-        'show_img': 1,
+        'show_img': 0,
         'quality': 3,
         'resize': 0,
         'mode': 0,
@@ -145,8 +145,9 @@ def main():
                         _occ_id = obj_id
                     elif occ_status == -1:
                         """occluded by background"""
-                        _obj_id = obj_id
-                        _occ_id = occ_id
+                        # _obj_id = obj_id
+                        # _occ_id = occ_id
+                        continue
                     else:
                         raise AssertionError('Invalid occ_status: {}'.format(occ_status))
 
