@@ -899,7 +899,7 @@ def imshow(titles, frames, _pause):
     if isinstance(titles, str):
         titles = (titles,)
         frames = (frames,)
-        
+
     for title, frame in zip(titles, frames):
         cv2.imshow(title, frame)
 
@@ -912,10 +912,10 @@ def imshow(titles, frames, _pause):
 
     if k == 27:
         sys.exit()
-    if k == 32:
+    elif k == 32:
         _pause = 1 - _pause
 
-    return _pause
+    return _pause, k
 
 
 def draw_dotted_poly(img, pts, color, thickness=1):
