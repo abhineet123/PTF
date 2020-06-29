@@ -870,13 +870,83 @@ def drawGrid(img, pts, res_x, res_y, color, thickness=1):
             cv2.line(img, p1, p2, color, thickness)
 
 
-def drawBox(image, xmin, ymin, xmax, ymax, box_color=(0, 255, 0), label=None):
+def draw_dotted_line(img, pt1, pt2, color, thickness=1, gap=7):
+    dist = ((pt1[0] - pt2[0]) ** 2 + (pt1[1] - pt2[1]) ** 2) ** .5
+    pts = []
+    for i in np.arange(0, dist, gap):
+        r = i / dist
+        x = int((pt1[0] * (1 - r) + pt2[0] * r) + .5)
+        y = int((pt1[1] * (1 - r) + pt2[1] * r) + .5)
+        p = (x, y)
+        pts.append(p)
+
+    # if style == 'dotted':
+    for p in pts:
+        cv2.circle(img, p, thickness, color, -1)
+    # else:
+    #     s = pts[0]
+    #     e = pts[0]
+    #     i = 0
+    #     for p in pts:
+    #         s = e
+    #         e = p
+    #         if i % 2 == 1:
+    #             cv2.line(img, s, e, color, thickness)
+    #         i += 1
+
+
+def imshow(titles, frames, _pause):
+    if isinstance(titles, str):
+        titles = (titles,)
+        frames = (frames,)
+        
+    for title, frame in zip(titles, frames):
+        cv2.imshow(title, frame)
+
+    if _pause > 1:
+        wait = _pause
+    else:
+        wait = 1 - _pause
+
+    k = cv2.waitKey(wait)
+
+    if k == 27:
+        sys.exit()
+    if k == 32:
+        _pause = 1 - _pause
+
+    return _pause
+
+
+def draw_dotted_poly(img, pts, color, thickness=1):
+    s = pts[0]
+    e = pts[0]
+    pts.append(pts.pop(0))
+    for p in pts:
+        s = e
+        e = p
+        draw_dotted_line(img, s, e, color, thickness)
+
+
+def draw_dotted_rect(img, pt1, pt2, color, thickness=1):
+    pts = [pt1, (pt2[0], pt1[1]), pt2, (pt1[0], pt2[1])]
+    draw_dotted_poly(img, pts, color, thickness)
+
+
+def drawBox(image, xmin, ymin, xmax, ymax,
+            box_color=(0, 255, 0), label=None, thickness=2, is_dotted=False):
     # if cv2.__version__.startswith('3'):
     #     font_line_type = cv2.LINE_AA
     # else:
     #     font_line_type = cv2.CV_AA
 
-    cv2.rectangle(image, (int(xmin), int(ymin)), (int(xmax), int(ymax)), box_color)
+    if is_dotted:
+        pt1 = (int(xmin), int(ymin))
+        pt2 = (int(xmax), int(ymax))
+        draw_dotted_rect(image, pt1, pt2, box_color, thickness=thickness)
+    else:
+        cv2.rectangle(image, (int(xmin), int(ymin)), (int(xmax), int(ymax)),
+                      box_color, thickness=thickness)
 
     _bb = [xmin, ymin, xmax, ymax]
     if _bb[1] > 10:
@@ -3583,9 +3653,8 @@ def getParamDict():
         'MVI_63554',
         'MVI_63561',
         'MVI_63562',
-        'MVI_63563'
-    ]
-    sequences_detrac_test = [
+        'MVI_63563',
+
         'MVI_39031',
         'MVI_39051',
         'MVI_39211',
@@ -3634,17 +3703,17 @@ def getParamDict():
         3: 'GRAM',
         4: 'IDOT',
         5: 'DETRAC',
-        6: 'DETRAC_Test',
+        # 6: 'DETRAC_Test',
     }
-    mot_sequences = dict(zip([mot_actors[i] for i in range(len(mot_actors))],                             [
-                                 [sequences_mot2015_train, sequences_mot2015_test],
-                                 [sequences_mot2017_train, sequences_mot2017_test],
-                                 [sequences_kitti_train, sequences_kitti_test],
-                                 sequences_gram,
-                                 sequences_idot,
-                                 sequences_detrac,
-                                 sequences_detrac_test,
-                             ]))
+    mot_sequences = dict(zip([mot_actors[i] for i in range(len(mot_actors))], [
+        [sequences_mot2015_train, sequences_mot2015_test],
+        [sequences_mot2017_train, sequences_mot2017_test],
+        [sequences_kitti_train, sequences_kitti_test],
+        sequences_gram,
+        sequences_idot,
+        sequences_detrac,
+        # sequences_detrac_test,
+    ]))
 
     challenges = {0: 'angle',
                   1: 'fast_close',
