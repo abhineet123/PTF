@@ -3,11 +3,10 @@ import sys
 import time
 import ctypes
 import platform
+import paramparse
 import os, shutil
 from datetime import datetime
 from pprint import pformat
-
-from Misc import processArguments, sortKey, resizeAR
 
 
 def main():
@@ -25,6 +24,7 @@ def main():
         'fps': 30,
         # 'codec': 'FFV1',
         # 'ext': 'avi',
+        'sleep': 0.,
         'codec': 'H264',
         'ext': 'mkv',
         'out_postfix': '',
@@ -32,9 +32,10 @@ def main():
         'min_free_space': 30,
     }
 
-    processArguments(sys.argv[1:], params)
+    paramparse.process_dict(params)
     src_path = params['src_path']
     min_free_space = params['min_free_space']
+    sleep = params['sleep']
 
     img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff', '.webp')
 
@@ -48,15 +49,16 @@ def main():
 
     read_img_path = os.path.join(src_path, "read")
 
-    if os.path.exists(read_img_path):
-        clear_dir(read_img_path)
-    else:
+    if not os.path.exists(read_img_path):
         os.makedirs(read_img_path)
 
     print('MIIF started in {}'.format(src_path))
 
     exit_program = 0
     while not exit_program:
+        if sleep > 0:
+            time.sleep(sleep)
+            
         _src_files = [k for k in os.listdir(src_path) if
                       os.path.splitext(k.lower())[1] in img_exts]
         for _src_file in _src_files:
