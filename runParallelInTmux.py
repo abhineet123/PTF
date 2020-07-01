@@ -45,7 +45,7 @@ def main():
             print('Reading from: {}'.format(in_fname))
             lines = open(in_fname, 'r').readlines()
 
-            print('lines: {}'.format(pformat(lines)))
+            # print('lines: {}'.format(pformat(lines)))
 
             pane_to_commands = {}
             # pprint(lines)
