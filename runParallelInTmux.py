@@ -33,7 +33,18 @@ def main():
         else:
             in_fname = input('Enter script path\n')
 
-        lines = open(in_fname, 'r').readlines()
+        in_fname_no_ext, in_fname_ext = os.path.splitext(os.path.basename(in_fname))
+        if in_fname_ext == '.bshm':
+            in_fnames = open(in_fname, 'r').readlines()
+            lines = []
+            for _in_fname in in_fnames:
+                _in_fname = _in_fname.strip()
+                if not _in_fname:
+                    continue
+                print('Reading from: {}'.format(_in_fname))
+                lines += open(in_fname, 'r').readlines()
+        else:
+            lines = open(in_fname, 'r').readlines()
         pane_to_commands = {}
         # pprint(lines)
         cmd_id = 0

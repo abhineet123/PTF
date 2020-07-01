@@ -163,8 +163,8 @@ def main():
                 free_space = get_free_space_mb(src_path)
                 print('free_space {}'.format(free_space))
                 if free_space < min_free_space:
-                    print('Free space running low. Press any key to clear the backup directory')
-                    cv2.waitKey(0)
+                    # print('Free space running low. Press any key to clear the backup directory')
+                    # cv2.waitKey(0)
                     clear_dir(read_img_path)
 
             # del_images = []
