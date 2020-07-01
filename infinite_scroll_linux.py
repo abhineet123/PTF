@@ -4,6 +4,8 @@ import paramparse
 import os, sys
 from subprocess import Popen, PIPE
 
+"""apt-get install xautomation"""
+
 
 def keypress(sequence):
     p = Popen(['xte'], stdin=PIPE)
@@ -12,13 +14,15 @@ def keypress(sequence):
 def main():
 
     params = {
+        'switch_t': 3,
         'max_t': 120,
-        'relative': 0,
     }
     paramparse.process_dict(params)
     max_t = params['max_t']
+    switch_t = params['switch_t']
 
-    time.sleep(3)
+    print(f'Waiting for {switch_t} seconds to allow switching to the target window')
+    time.sleep(switch_t)
 
     start_t = time.time()
     while True:
