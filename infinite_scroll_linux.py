@@ -14,20 +14,28 @@ def keypress(sequence):
 def main():
 
     params = {
+        'mode': 0,
         'switch_t': 3,
         'max_t': 120,
     }
     paramparse.process_dict(params)
     max_t = params['max_t']
     switch_t = params['switch_t']
+    mode = params['mode']
 
     print(f'Waiting for {switch_t} seconds to allow switching to the target window')
     time.sleep(switch_t)
 
+    if mode == 0:
+        key = b'key Page_Down'
+    else:
+        key = b'key Return'
+
+
     start_t = time.time()
     while True:
         try:
-            keypress(b'key Page_Down')
+            keypress(key)
             # pyautogui.press("pagedown")
         except BaseException as e:
             print('BaseException: {}'.format(e))
