@@ -27,9 +27,9 @@ def main():
     time.sleep(switch_t)
 
     if mode == 0:
-        key = b'key Page_Down'
+        key = b'key Page_Down '
     else:
-        key = b'key Return'
+        key = b'key Return '
 
 
     start_t = time.time()
