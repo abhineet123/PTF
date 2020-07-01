@@ -42,7 +42,7 @@ def main():
             in_fnames = [in_fname, ]
 
         for in_fname in in_fnames:
-            print('Reading from: {}'.format(in_fname))
+            print('\nReading from: {}'.format(in_fname))
             lines = open(in_fname, 'r').readlines()
 
             # print('lines: {}'.format(pformat(lines)))
