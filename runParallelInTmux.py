@@ -2,7 +2,7 @@ import sys
 import os
 
 import paramparse
-
+from pprint import pformat
 
 # from Misc import processArguments
 
@@ -45,6 +45,9 @@ def main():
                 lines += open(_in_fname, 'r').readlines()
         else:
             lines = open(in_fname, 'r').readlines()
+
+        print('lines: {}'.format(pformat(lines)))
+
         pane_to_commands = {}
         # pprint(lines)
         cmd_id = 0
@@ -81,10 +84,12 @@ def main():
 
             pane_to_commands[pane_id] = '{} "{}" Enter'.format(pane_to_commands[pane_id], _line)
 
+        print('pane_to_commands: {}'.format(pformat(pane_to_commands)))
+
         for pane_id in pane_to_commands:
             print('running command in {}'.format(pane_id))
             # print('running: {}'.format(pane_to_commands[pane_id]))
-            os.system(pane_to_commands[pane_id])
+            # os.system(pane_to_commands[pane_id])
 
             # cmd_prefix = 'tmux send-keys -t {}'.format(pane_id)
             # for _line in pane_to_commands[pane_id]:
