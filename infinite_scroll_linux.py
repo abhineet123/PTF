@@ -1,25 +1,30 @@
 import time
-import pyautogui
+# import pyautogui
+import paramparse
 import os, sys
+from subprocess import Popen, PIPE
 
-from Misc import processArguments
+
+def keypress(sequence):
+    p = Popen(['xte'], stdin=PIPE)
+    p.communicate(input=sequence)
 
 def main():
+
     params = {
         'max_t': 120,
         'relative': 0,
     }
-    processArguments(sys.argv[1:], params)
-
-    time.sleep(3)
-
+    paramparse.process_dict(params)
     max_t = params['max_t']
 
+    time.sleep(3)
 
     start_t = time.time()
     while True:
         try:
-            pyautogui.press("pagedown")
+            keypress('Page_Down')
+            # pyautogui.press("pagedown")
         except BaseException as e:
             print('BaseException: {}'.format(e))
             break
