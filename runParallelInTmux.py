@@ -30,6 +30,7 @@ def main():
     while True:
         if _in_fname:
             in_fname = _in_fname
+            _in_fname = ''
         else:
             in_fname = input('Enter script path\n')
 
@@ -37,12 +38,12 @@ def main():
         if in_fname_ext == '.bshm':
             in_fnames = open(in_fname, 'r').readlines()
             lines = []
-            for _in_fname in in_fnames:
-                _in_fname = _in_fname.strip()
-                if not _in_fname:
+            for __in_fname in in_fnames:
+                __in_fname = __in_fname.strip()
+                if not __in_fname:
                     continue
-                print('Reading from: {}'.format(_in_fname))
-                lines += open(_in_fname, 'r').readlines()
+                print('Reading from: {}'.format(__in_fname))
+                lines += open(__in_fname, 'r').readlines()
         else:
             lines = open(in_fname, 'r').readlines()
 
