@@ -42,7 +42,7 @@ def main():
                 if not _in_fname:
                     continue
                 print('Reading from: {}'.format(_in_fname))
-                lines += open(in_fname, 'r').readlines()
+                lines += open(_in_fname, 'r').readlines()
         else:
             lines = open(in_fname, 'r').readlines()
         pane_to_commands = {}
