@@ -23,7 +23,7 @@ def main():
     start_t = time.time()
     while True:
         try:
-            keypress('Page_Down')
+            keypress(b'Page_Down')
             # pyautogui.press("pagedown")
         except BaseException as e:
             print('BaseException: {}'.format(e))
