@@ -59,8 +59,9 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
             continue
 
         if active_name in vwm_win_names:
-            if fixed_xy_bug:
-                continue
+            # if fixed_xy_bug:
+            #     continue
+
             # time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
             # print('\n{} :: vwm_win_names'.format(time_stamp))
             # print('frg_win_handles: {}'.format(frg_win_handles))
@@ -85,20 +86,23 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
                 print('prev_active_called_name: {}'.format(prev_active_called_name))
                 print('prev_active_called_handle: {}'.format(prev_active_called_handle))
 
-                if not global_prev_win_handle or (
-                        xyplorer_id in global_prev_active_name and global_prev_win_handle == prev_active_called_handle
-                ):
-                    # print('XYplorer bug')
-                    # if not _prev_active_handle_now:
-                    #     print('_prev_active_handle_now is invalid')
+                # if not global_prev_win_handle or (
+                        # xyplorer_id in global_prev_active_name and
+                        # global_prev_win_handle == prev_active_called_handle
+                # ):
 
-                    _win_handle = win32gui.FindWindow(None, vwm_win_name)
-                    active_win_handle.value = prev_active_called_handle
-                    win32api.PostMessage(_win_handle, win32con.WM_CHAR, 0x42, 0)
-                    fixed_xy_bug = 1
+                # print('XYplorer bug')
+                # if not _prev_active_handle_now:
+                #     print('_prev_active_handle_now is invalid')
+
+                _win_handle = win32gui.FindWindow(None, vwm_win_name)
+                active_win_handle.value = prev_active_called_handle
+                win32api.PostMessage(_win_handle, win32con.WM_CHAR, 0x42, 0)
+
+                # fixed_xy_bug = 1
             continue
 
-        fixed_xy_bug = 0
+        # fixed_xy_bug = 0
 
         # print('active_name: {}'.format(active_name))
         # print('active_names: {}'.format(active_names))

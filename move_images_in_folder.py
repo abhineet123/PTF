@@ -58,7 +58,7 @@ def main():
     while not exit_program:
         if sleep > 0:
             time.sleep(sleep)
-            
+
         _src_files = [k for k in os.listdir(src_path) if
                       os.path.splitext(k.lower())[1] in img_exts]
         for _src_file in _src_files:
