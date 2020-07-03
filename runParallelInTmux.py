@@ -81,13 +81,15 @@ def main():
                         del pane_to_commands[pane_id]
                     continue
 
-                pane_to_commands[pane_id] = '{} Escape "{}" Enter'.format(pane_to_commands[pane_id], _line)
+                pane_to_commands[pane_id] = '{} "{}" Enter'.format(pane_to_commands[pane_id], _line)
 
             # print('pane_to_commands: {}'.format(pformat(pane_to_commands)))
 
             for pane_id in pane_to_commands:
                 print('running command in {}'.format(pane_id))
                 # print('running: {}'.format(pane_to_commands[pane_id]))
+                esc_command = 'tmux send-keys -t {} Escape'.format(pane_id)
+                os.system(esc_command)
                 os.system(pane_to_commands[pane_id])
 
                 # cmd_prefix = 'tmux send-keys -t {}'.format(pane_id)
