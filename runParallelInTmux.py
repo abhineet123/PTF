@@ -81,7 +81,7 @@ def main():
                         del pane_to_commands[pane_id]
                     continue
 
-                pane_to_commands[pane_id] = 'Escape {} "{}" Enter'.format(pane_to_commands[pane_id], _line)
+                pane_to_commands[pane_id] = '{} Escape "{}" Enter'.format(pane_to_commands[pane_id], _line)
 
             # print('pane_to_commands: {}'.format(pformat(pane_to_commands)))
 
