@@ -84,10 +84,10 @@ def main():
     print('SIIF started in {}'.format(src_path))
 
     img_id = 0
-    exit_program = 0
-    while not exit_program:
+    reset_program = exit_program = 0
+    while not reset_program:
         _src_files = [k for k in os.listdir(src_path) if
-                      os.path.splitext(k.lower())[1] in img_exts]
+                      os.path.splitext(k.lower())[1] in img_exts and '~' not in k]
         for _src_file in _src_files:
             _src_path = os.path.join(src_path, _src_file)
             # mod_time = os.path.getmtime(_src_path)
@@ -124,8 +124,11 @@ def main():
 
             _dst_path = os.path.join(read_img_path, os.path.basename(_src_path))
 
-            # os.remove(_src_path)
-            shutil.move(_src_path, _dst_path)
+            try:
+                # os.remove(_src_path)
+                shutil.move(_src_path, _dst_path)
+            except PermissionError as e:
+                print('Failed to move image {} :: {}'.format(_src_path, e))
 
             if not read_success:
                 continue
@@ -141,7 +144,7 @@ def main():
 
             k = cv2.waitKey(1 - image_pause[_src_file_id])
             if k == 27:
-                exit_program = 1
+                reset_program = 1
                 break
             elif k == 32:
                 _pause = 1 - _pause
@@ -161,7 +164,7 @@ def main():
 
             if img_id % 10 == 0:
                 free_space = get_free_space_mb(src_path)
-                print('free_space {}'.format(free_space))
+                # print('free_space {}'.format(free_space))
                 if free_space < min_free_space:
                     # print('Free space running low. Press any key to clear the backup directory')
                     # cv2.waitKey(0)
@@ -176,11 +179,23 @@ def main():
             # for del_image in del_images:
             #     del existing_images[del_image]
 
-        cv2.waitKey(1)
+        k = cv2.waitKey(1)
+        if k == 27:
+            break
+        elif k == ord('q'):
+            exit_program = 1
+            break
 
     for _src_file_id in image_pause.keys():
         cv2.destroyWindow(_src_file_id)
 
+    if exit_program:
+        return False
+
+    return True
+
 
 if __name__ == '__main__':
-    main()
+    while True:
+        if not main():
+            break

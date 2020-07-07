@@ -16,7 +16,7 @@ def main():
     _params = {
         'root_dir': '/data',
         'actor_id': 5,
-        'start_id': 0,
+        'start_id': 1,
         'end_id': -1,
         'ignored_region_only': 0,
         'speed': 0.5,
@@ -145,6 +145,7 @@ def main():
                         _occ_id = obj_id
                     elif occ_status == -1:
                         """occluded by background"""
+                        """"seems extremely unreliable so ignoring"""
                         # _obj_id = obj_id
                         # _occ_id = occ_id
                         continue
@@ -213,8 +214,6 @@ def main():
                 else:
                     occ_id = occ_xmin = occ_ymin = occ_width = occ_height = -1
                     occluded_ratio = 0
-
-
 
                 out_str = '{:d},{:d},{:f},{:f},{:f},{:f},1,-1,-1,-1,{:f}\n'.format(
                     frame_id, obj_id, xmin, ymin, width, height, occluded_ratio)
