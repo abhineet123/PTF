@@ -52,7 +52,7 @@ def main():
         'ext': 'mkv',
         'out_postfix': '',
         'reverse': 0,
-        'min_free_space': 30,
+        'min_free_space': 100,
     }
 
     processArguments(sys.argv[1:], params)

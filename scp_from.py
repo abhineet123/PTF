@@ -8,11 +8,13 @@ if __name__ == '__main__':
         'src_fname': '',
         'scp_dst': '',
         'overwrite': 0,
+        'file_mode': 0,
     }
     processArguments(sys.argv[1:], params)
     src_fname = params['src_fname']
     scp_dst = params['scp_dst']
     overwrite = params['overwrite']
+    file_mode = params['file_mode']
 
     src_fname = os.path.realpath(src_fname)
     src_fname_abs = os.path.abspath(src_fname)
@@ -27,10 +29,10 @@ if __name__ == '__main__':
         src_fname_rel = src_fname
         scp_fname = src_fname
 
-    # if not src_fname_ext and not src_fname.endswith('/'):
-    #     """no ext --> directory -> add terminating / to prevent recreation of directory structure on dst"""
-    #     src_fname += '/'
-    #     scp_fname += '/'
+    if not file_mode and not src_fname_ext and not src_fname.endswith('/'):
+        """no ext --> directory -> add terminating / to prevent recreation of directory structure on dst"""
+        src_fname += '/'
+        scp_fname += '/'
 
     print('src_fname_abs: {}'.format(src_fname_abs))
     print('src_fname: {}'.format(src_fname))
