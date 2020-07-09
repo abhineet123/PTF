@@ -4,6 +4,7 @@ import os
 import paramparse
 from pprint import pformat
 
+
 # from Misc import processArguments
 
 class Struct:
@@ -27,6 +28,11 @@ def main():
     end_id = params['end_id']
     server = params['server']
 
+    src_dir = os.getcwd()
+    src_file_gen = [[(f, os.path.join(dirpath, f)) for f in filenames]
+                    for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
+    fname_to_path = dict([item for sublist in src_file_gen for item in sublist])
+
     while True:
         if _in_fname:
             in_fname = _in_fname
@@ -42,8 +48,14 @@ def main():
             in_fnames = [in_fname, ]
 
         for in_fname in in_fnames:
-            print('\nReading from: {}'.format(in_fname))
-            lines = open(in_fname, 'r').readlines()
+
+            try:
+                in_fname_path = fname_to_path[in_fname]
+            except KeyError:
+                print('invalid file name: {}'.format(in_fname))
+
+            print('\nReading from: {}'.format(in_fname_path))
+            lines = open(in_fname_path, 'r').readlines()
 
             # print('lines: {}'.format(pformat(lines)))
 
