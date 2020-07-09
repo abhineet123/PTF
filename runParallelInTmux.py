@@ -52,7 +52,7 @@ def main():
             try:
                 in_fname_path = fname_to_path[in_fname]
             except KeyError:
-                print('invalid file name: {}'.format(in_fname))
+                raise IOError('invalid file name: {}'.format(in_fname))
 
             print('\nReading from: {}'.format(in_fname_path))
             lines = open(in_fname_path, 'r').readlines()
