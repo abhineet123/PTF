@@ -27,12 +27,6 @@ def main():
     start_id = params['start_id']
     end_id = params['end_id']
     server = params['server']
-
-    src_dir = os.getcwd()
-    src_file_gen = [[(f, os.path.join(dirpath, f)) for f in filenames]
-                    for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
-    fname_to_path = dict([item for sublist in src_file_gen for item in sublist])
-
     while True:
         if _in_fname:
             in_fname = _in_fname
@@ -46,6 +40,11 @@ def main():
             in_fnames = [__in_fname.strip() for __in_fname in in_fnames if __in_fname.strip()]
         else:
             in_fnames = [in_fname, ]
+
+        src_dir = os.getcwd()
+        src_file_gen = [[(f, os.path.join(dirpath, f)) for f in filenames]
+                        for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
+        fname_to_path = dict([item for sublist in src_file_gen for item in sublist])
 
         for in_fname in in_fnames:
 
