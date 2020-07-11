@@ -52,11 +52,23 @@ def main():
             in_fnames = open(in_fname, 'r').readlines()
             in_fnames = [__in_fname.strip() for __in_fname in in_fnames if __in_fname.strip()]
         else:
-            if pane_id_sep in in_fname:
-                _pane_id, _line = in_fname.split(pane_id_sep)
+            tokens = in_fname.split(' ')
+            try:
+                _pane_id = int(tokens[0])
+            except ValueError:
+                try:
+                    _pane_id = float(tokens[0])
+                    _pane_id, _line = in_fname.split(pane_id_sep)
+                except ValueError:
+                    _pane_id = pane_id_default
+                    _line = in_fname
+                else:
+                    _pane_id = str(_pane_id)
+                    in_fname = in_fname[len(tokens[0])+1:]
             else:
-                _pane_id = pane_id_default
-                _line = in_fname
+                _pane_id = '{}.0'.format(_pane_id)
+                in_fname = in_fname[len(tokens[0]) + 1:]
+
             lines = ['## @ {}:{}'.format(server, _pane_id), _line]
             in_fnames = [in_fname, ]
 
