@@ -64,10 +64,10 @@ def main():
                     _line = in_fname
                 else:
                     _pane_id = str(_pane_id)
-                    in_fname = in_fname[len(tokens[0])+1:]
+                    _line = in_fname[len(tokens[0])+1:]
             else:
                 _pane_id = '{}.0'.format(_pane_id)
-                in_fname = in_fname[len(tokens[0]) + 1:]
+                _line = in_fname[len(tokens[0]) + 1:]
 
             lines = ['## @ {}:{}'.format(server, _pane_id), _line]
             in_fnames = [in_fname, ]
