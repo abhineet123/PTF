@@ -53,8 +53,10 @@ def main():
             else:
                 _pane_id = pane_id
                 _line = in_fname
-            lines = ['## @{}.{}'.format(server, _pane_id), _line]
+            lines = ['## @{}:{}'.format(server, _pane_id), _line]
             in_fnames = [in_fname, ]
+
+            print('lines:\n{}'.format(lines))
 
         src_dir = os.getcwd()
         src_file_gen = [[(f, os.path.join(dirpath, f)) for f in filenames]
