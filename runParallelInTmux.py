@@ -21,6 +21,8 @@ def main():
         'server': '',
         'pane_id': '2.0',
         'pane_id_sep': '>',
+        'log_dir': 'log/tee',
+        'enable_logging': 0,
     }
     paramparse.process_dict(params)
 
@@ -32,6 +34,8 @@ def main():
     server = params['server']
     pane_id_sep = params['pane_id_sep']
     pane_id = params['pane_id']
+    log_dir = params['log_dir']
+    enable_logging = params['enable_logging']
 
     while True:
         lines = None
@@ -76,6 +80,7 @@ def main():
             # print('lines: {}'.format(pformat(lines)))
 
             pane_to_commands = {}
+            pane_to_log_paths = {}
             # pprint(lines)
             cmd_id = 0
             pane_id = ''
@@ -111,23 +116,32 @@ def main():
 
                 time_stamp = datetime.now().strftime("%y%m%d_%H%M%S_%f")
 
-                pane_to_commands[pane_id] = '{} "{} @ time_stamp={} 2>&1 | tee {}.log" Enter Enter'.format(
-                    pane_to_commands[pane_id], _line, time_stamp, time_stamp)
+                if enable_logging:
+                    log_path = os.path.join(log_dir, '{}.log'.format(time_stamp))
+                    _line = '{} @ time_stamp={} 2>&1 | tee {}'.format(_line, time_stamp, log_path)
+                    pane_to_log_paths[pane_id] = log_path
+
+                pane_to_commands[pane_id] = '{} "{}" Enter Enter'.format(pane_to_commands[pane_id], _line)
 
             # print('pane_to_commands: {}'.format(pformat(pane_to_commands)))
 
             for pane_id in pane_to_commands:
-                print('running command in {}'.format(pane_id))
+                txt = 'running command in {}'.format(pane_id)
                 # print('running: {}'.format(pane_to_commands[pane_id]))
                 # esc_command = 'tmux send-keys -t {} Escape'.format(pane_id)
                 # os.system(esc_command)
-                os.system(pane_to_commands[pane_id])
+                if enable_logging:
+                    mkdir_cmd = 'mkdir -p {}'.format(pane_to_log_paths[pane_id])
+                    os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, mkdir_cmd))
+                    txt += ' with logging in {}'.format(pane_to_log_paths[pane_id])
 
-                # cmd_prefix = 'tmux send-keys -t {}'.format(pane_id)
-                # for _line in pane_to_commands[pane_id]:
-                #     cmd = '{} "{}" Enter'.format(cmd_prefix, _line)
-                #     print('running: {}'.format(cmd))
-                #     os.system(cmd)
+                print(txt)
+
+                os.system(pane_to_commands[pane_id])
+                if enable_logging:
+                    zip_path = pane_to_log_paths[pane_id].replace('.log', '.zip')
+                    zip_cmd = 'zip {} {}'.format(zip_path, pane_to_log_paths[pane_id])
+                    os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, zip_cmd))
 
 
 if __name__ == '__main__':
