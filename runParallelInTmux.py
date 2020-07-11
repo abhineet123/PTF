@@ -19,7 +19,7 @@ def main():
         'start_id': 0,
         'end_id': -1,
         'server': '',
-        'pane_id': '2.0',
+        'pane_id': '12.0',
         'pane_id_sep': '>',
         'log_dir': 'log/tee',
         'enable_logging': 0,
