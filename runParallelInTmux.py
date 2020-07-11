@@ -45,6 +45,8 @@ def main():
         else:
             in_fname = input('\nEnter script path or command\n')
 
+        write('processing input: {}'.format(in_fname))
+
         in_fname_no_ext, in_fname_ext = os.path.splitext(os.path.basename(in_fname))
         if in_fname_ext == '.bsh':
             in_fnames = [in_fname, ]
@@ -72,7 +74,7 @@ def main():
             lines = ['## @ {}:{}'.format(server, _pane_id), _line]
             in_fnames = [in_fname, ]
 
-            write('lines:\n{}'.format(lines))
+            # write('lines:\n{}'.format(lines))
 
         src_dir = os.getcwd()
         src_file_gen = [[(f, os.path.join(dirpath, f)) for f in filenames]
