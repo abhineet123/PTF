@@ -39,7 +39,7 @@ def main():
             in_fname = _in_fname
             _in_fname = ''
         else:
-            in_fname = input('\nEnter script path\n')
+            in_fname = input('\nEnter script path or command\n')
 
         in_fname_no_ext, in_fname_ext = os.path.splitext(os.path.basename(in_fname))
         if in_fname_ext == '.bsh':
