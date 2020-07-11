@@ -131,7 +131,7 @@ def main():
                 # esc_command = 'tmux send-keys -t {} Escape'.format(pane_id)
                 # os.system(esc_command)
                 if enable_logging:
-                    mkdir_cmd = 'mkdir -p {}'.format(pane_to_log_paths[pane_id])
+                    mkdir_cmd = 'mkdir -p {}'.format(log_dir)
                     os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, mkdir_cmd))
                     txt += ' with logging in {}'.format(pane_to_log_paths[pane_id])
 
