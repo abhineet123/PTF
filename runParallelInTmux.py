@@ -140,7 +140,7 @@ def main():
                 os.system(pane_to_commands[pane_id])
                 if enable_logging:
                     zip_path = pane_to_log_paths[pane_id].replace('.log', '.zip')
-                    zip_cmd = 'zip {} {}'.format(zip_path, pane_to_log_paths[pane_id])
+                    zip_cmd = 'zip -rm {} {}'.format(zip_path, pane_to_log_paths[pane_id])
                     os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, zip_cmd))
 
 
