@@ -6,11 +6,11 @@ from datetime import datetime
 
 import paramparse
 
-# from Misc import processArguments
 
-class Struct:
-    def __init__(self, entries):
-        self.__dict__.update(entries)
+def write(_str):
+    with open('rpit.log', 'a') as fid:
+        fid.write(_str + '\n')
+    print(_str)
 
 
 def main():
@@ -64,7 +64,7 @@ def main():
                     _line = in_fname
                 else:
                     _pane_id = str(_pane_id)
-                    _line = in_fname[len(tokens[0])+1:]
+                    _line = in_fname[len(tokens[0]) + 1:]
             else:
                 _pane_id = '{}.0'.format(_pane_id)
                 _line = in_fname[len(tokens[0]) + 1:]
@@ -72,7 +72,7 @@ def main():
             lines = ['## @ {}:{}'.format(server, _pane_id), _line]
             in_fnames = [in_fname, ]
 
-            print('lines:\n{}'.format(lines))
+            write('lines:\n{}'.format(lines))
 
         src_dir = os.getcwd()
         src_file_gen = [[(f, os.path.join(dirpath, f)) for f in filenames]
@@ -86,10 +86,10 @@ def main():
                 except KeyError:
                     raise IOError('invalid file name: {}'.format(in_fname))
 
-                print('\nReading from: {}'.format(in_fname_path))
+                write('\nReading from: {}'.format(in_fname_path))
                 lines = open(in_fname_path, 'r').readlines()
 
-            # print('lines: {}'.format(pformat(lines)))
+            # write('lines: {}'.format(pformat(lines)))
 
             pane_to_commands = {}
             pane_to_log_paths = {}
@@ -108,11 +108,11 @@ def main():
                         cmd_id += 1
 
                         if cmd_id < start_id:
-                            print('skipping {} with too small cmd_id'.format(pane_id))
+                            write('skipping {} with too small cmd_id'.format(pane_id))
                             continue
 
                         if cmd_id > end_id > start_id:
-                            print('skipping {} with too large cmd_id'.format(pane_id))
+                            write('skipping {} with too large cmd_id'.format(pane_id))
                             break
 
                         pane_to_commands[pane_id] = 'tmux send-keys -t {}'.format(pane_id)
@@ -121,7 +121,7 @@ def main():
                     continue
 
                 if server and pane_id and not pane_id.startswith(server):
-                    # print('skipping {} with invalid server'.format(pane_id))
+                    # write('skipping {} with invalid server'.format(pane_id))
                     if pane_id in pane_to_commands:
                         del pane_to_commands[pane_id]
                     continue
@@ -135,11 +135,11 @@ def main():
 
                 pane_to_commands[pane_id] = '{} "{}" Enter Enter'.format(pane_to_commands[pane_id], _line)
 
-            # print('pane_to_commands: {}'.format(pformat(pane_to_commands)))
+            # write('pane_to_commands: {}'.format(pformat(pane_to_commands)))
 
             for pane_id in pane_to_commands:
                 txt = 'running command in {}'.format(pane_id)
-                # print('running: {}'.format(pane_to_commands[pane_id]))
+                # write('running: {}'.format(pane_to_commands[pane_id]))
                 # esc_command = 'tmux send-keys -t {} Escape'.format(pane_id)
                 # os.system(esc_command)
                 if enable_logging:
@@ -147,7 +147,7 @@ def main():
                     os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, mkdir_cmd))
                     txt += ' with logging in {}'.format(pane_to_log_paths[pane_id])
 
-                print(txt)
+                write(txt)
 
                 os.system(pane_to_commands[pane_id])
                 if enable_logging:
