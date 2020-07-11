@@ -16,11 +16,13 @@ def main():
     _params = {
         'field_id': 1,
         'field_sep': '\t',
+        'token_sep': '/',
 
     }
     paramparse.process_dict(_params)
     field_id = _params['field_id']
     field_sep = _params['field_sep']
+    token_sep = _params['token_sep']
 
     # pyautogui.hotkey('ctrl', 'c')
 
@@ -67,7 +69,13 @@ def main():
 
         # print(f'proc_lines: {pformat(proc_lines)}')
 
-        sort_idx = [i[0] for i in sorted(enumerate(proc_lines), key=lambda x: x[1])]
+        # proc_lines_sorted = sorted(proc_lines)
+        # proc_lines_txt = '\n'.join(proc_lines)
+        # proc_lines_sorted_txt = '\n'.join(proc_lines_sorted)
+
+        proc_lines_tokens = [k.split(token_sep)[::-1] for k in proc_lines]
+
+        sort_idx = [i[0] for i in sorted(enumerate(proc_lines_tokens), key=lambda x: x[1])]
 
         # print(f'sort_idx: {pformat(sort_idx)}')
 

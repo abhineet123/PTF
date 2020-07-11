@@ -1,9 +1,10 @@
 import sys
 import os
 
-import paramparse
 from pprint import pformat
+from datetime import datetime
 
+import paramparse
 
 # from Misc import processArguments
 
@@ -92,7 +93,10 @@ def main():
                         del pane_to_commands[pane_id]
                     continue
 
-                pane_to_commands[pane_id] = '{} "{}" Enter Enter'.format(pane_to_commands[pane_id], _line)
+                time_stamp = datetime.now().strftime("%y%m%d_%H%M%S_%f")
+
+                pane_to_commands[pane_id] = '{} "{} @ time_stamp={} 2>&1 | tee {}.log" Enter Enter'.format(
+                    pane_to_commands[pane_id], _line, time_stamp, time_stamp)
 
             # print('pane_to_commands: {}'.format(pformat(pane_to_commands)))
 
