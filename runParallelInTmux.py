@@ -33,7 +33,7 @@ def main():
     end_id = params['end_id']
     server = params['server']
     pane_id_sep = params['pane_id_sep']
-    pane_id = params['pane_id']
+    pane_id_default = params['pane_id']
     log_dir = params['log_dir']
     enable_logging = params['enable_logging']
 
@@ -55,7 +55,7 @@ def main():
             if pane_id_sep in in_fname:
                 _pane_id, _line = in_fname.split(pane_id_sep)
             else:
-                _pane_id = pane_id
+                _pane_id = pane_id_default
                 _line = in_fname
             lines = ['## @ {}:{}'.format(server, _pane_id), _line]
             in_fnames = [in_fname, ]
