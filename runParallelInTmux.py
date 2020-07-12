@@ -37,6 +37,7 @@ def main():
     log_dir = params['log_dir']
     enable_logging = params['enable_logging']
 
+    prev_in_fname = None
     while True:
         lines = None
         if _in_fname:
@@ -45,7 +46,15 @@ def main():
         else:
             in_fname = input('\nEnter script path or command\n')
 
+        if not in_fname.strip():
+            if prev_in_fname is not None:
+                in_fname = prev_in_fname
+            else:
+                continue
+
         write('processing input: {}'.format(in_fname))
+
+        prev_in_fname = in_fname
 
         in_fname_no_ext, in_fname_ext = os.path.splitext(os.path.basename(in_fname))
         if in_fname_ext == '.bsh':
