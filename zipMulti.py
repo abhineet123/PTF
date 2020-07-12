@@ -1,4 +1,7 @@
-import os, sys
+import os
+import sys
+import shutil
+
 from datetime import datetime
 
 from Misc import processArguments
@@ -61,6 +64,8 @@ if __name__ == '__main__':
         out_name = '{}.zip'.format(out_name)
 
         out_path = os.path.join(zip_dir, out_name)
+
+        shutil.copy(zip_path, out_path)
     else:
         out_start_id = 0
         if out_name:
@@ -129,7 +134,7 @@ if __name__ == '__main__':
         print(zip_cmd)
         os.system(zip_cmd)
 
-    assert os.path.exists(out_path), "zipping failed"
+    assert os.path.exists(out_path), "zipping failed: {}".format(out_path)
 
     # os.system('unzip -l {}'.format(out_path))
 
