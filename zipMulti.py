@@ -46,72 +46,88 @@ if __name__ == '__main__':
 
     print('zip_path: ', zip_path)
 
-    out_start_id = 0
-    if out_name:
-        try:
-            out_start_id = int(out_name)
-        except ValueError:
-            pass
+    zip_dir = os.path.dirname(zip_path)
+    zip_fname = os.path.basename(zip_path)
+    zip_fname_noext, zip_fname_ext = os.path.splitext(zip_fname)
+    if zip_fname_ext == '.zip':
+        out_name = zip_fname_noext
+        if postfix:
+            out_name = '{}_{}'.format(out_name, postfix)
+
+        out_name = out_name.replace('.', '_')
+        if add_time_stamp:
+            time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+            out_name = '{}_{}'.format(out_name, time_stamp)
+        out_name = '{}.zip'.format(out_name)
+
+        out_path = os.path.join(zip_dir, out_name)
+    else:
+        out_start_id = 0
+        if out_name:
+            try:
+                out_start_id = int(out_name)
+            except ValueError:
+                pass
+            else:
+                out_name = ''
+
+        if dir_names[0].startswith(os.sep):
+            dir_names[0] = dir_names[0].replace(os.sep, '')
+
+        if not out_name:
+            for _dir in dir_names[out_start_id:]:
+                out_name = '{}_{}'.format(out_name, _dir) if out_name else _dir
         else:
-            out_name = ''
+            out_name = os.path.splitext(out_name)[0]
 
-    if dir_names[0].startswith(os.sep):
-        dir_names[0] = dir_names[0].replace(os.sep, '')
+        if postfix:
+            out_name = '{}_{}'.format(out_name, postfix)
 
-    if not out_name:
-        for _dir in dir_names[out_start_id:]:
-            out_name = '{}_{}'.format(out_name, _dir) if out_name else _dir
-    else:
-        out_name = os.path.splitext(out_name)[0]
+        out_name = out_name.replace('.', '_')
+        if add_time_stamp:
+            time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+            out_name = '{}_{}'.format(out_name, time_stamp)
+        out_name = '{}.zip'.format(out_name)
 
-    if postfix:
-        out_name = '{}_{}'.format(out_name, postfix)
+        if os.path.isdir(zip_path):
+            zip_root_path = zip_path
+            zip_file = '*'
+        elif os.path.isfile(zip_path):
+            zip_root_path = os.path.dirname(zip_path)
+            zip_file = os.path.basename(zip_path)
+        else:
+            raise IOError('zip_path is neither a folder nor a file')
 
-    out_name = out_name.replace('.', '_')
-    if add_time_stamp:
-        time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
-        out_name = '{}_{}'.format(out_name, time_stamp)
-    out_name = '{}.zip'.format(out_name)
+        if relative:
+            zip_cmd = 'cd {} && zip {} {} {}'.format(zip_root_path, switches, out_name, zip_file)
+            out_path = os.path.join(zip_root_path, out_name)
+            exclude_root = zip_file
+        else:
+            zip_cmd = 'zip {:s} {:s} {:s}'.format(switches, out_name, zip_path)
+            out_path = out_name
+            exclude_root = zip_path
 
-    if os.path.isdir(zip_path):
-        zip_root_path = zip_path
-        zip_file = '*'
-    elif os.path.isfile(zip_path):
-        zip_root_path = os.path.dirname(zip_path)
-        zip_file = os.path.basename(zip_path)
-    else:
-        raise IOError('zip_path is neither a folder nor a file')
+        if exclusions:
+            print('Excluding files / folders: {}'.format(exclusions))
+            switches2 = ''
+            for exclusion in exclusions:
+                if os.path.isabs(exclusion):
+                    exclusion = os.path.relpath(exclusion, exclude_root)
+                if exclude_root not in exclusion:
+                    exclusion = os.path.join(exclude_root, exclusion)
+                switches2 += ' -x "{}"'.format(exclusion)
+            zip_cmd = '{:s} {:s}'.format(zip_cmd, switches2)
 
-    if relative:
-        zip_cmd = 'cd {} && zip {} {} {}'.format(zip_root_path, switches, out_name, zip_file)
-        out_path = os.path.join(zip_root_path, out_name)
-        exclude_root = zip_file
-    else:
-        zip_cmd = 'zip {:s} {:s} {:s}'.format(switches, out_name, zip_path)
-        out_path = out_name
-        exclude_root = zip_path
+        if exclude_ext:
+            print('Excluding files with extensions: {}'.format(exclude_ext))
+            switches2 = ''
+            for _ext in exclude_ext:
+                switches2 += ' -x "*.{}"'.format(_ext)
+                switches2 += ' -x "*.{}.*"'.format(_ext)
+            zip_cmd = '{:s} {:s}'.format(zip_cmd, switches2)
 
-    if exclusions:
-        print('Excluding files / folders: {}'.format(exclusions))
-        switches2 = ''
-        for exclusion in exclusions:
-            if os.path.isabs(exclusion):
-                exclusion = os.path.relpath(exclusion, exclude_root)
-            if exclude_root not in exclusion:
-                exclusion = os.path.join(exclude_root, exclusion)
-            switches2 += ' -x "{}"'.format(exclusion)
-        zip_cmd = '{:s} {:s}'.format(zip_cmd, switches2)
-
-    if exclude_ext:
-        print('Excluding files with extensions: {}'.format(exclude_ext))
-        switches2 = ''
-        for _ext in exclude_ext:
-            switches2 += ' -x "*.{}"'.format(_ext)
-            switches2 += ' -x "*.{}.*"'.format(_ext)
-        zip_cmd = '{:s} {:s}'.format(zip_cmd, switches2)
-
-    print(zip_cmd)
-    os.system(zip_cmd)
+        print(zip_cmd)
+        os.system(zip_cmd)
 
     assert os.path.exists(out_path), "zipping failed"
 
