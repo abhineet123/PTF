@@ -132,7 +132,7 @@ def main():
 
                 if enable_logging:
                     log_path = os.path.join(log_dir, '{}.log'.format(time_stamp))
-                    _line = '{} @ time_stamp={} 2>&1 | tee {}'.format(_line, time_stamp, log_path)
+                    _line = '{} @ tee_log={} 2>&1 | tee {}'.format(_line, log_path, log_path)
                     pane_to_log_paths[pane_id] = log_path
 
                 pane_to_commands[pane_id] = '{} "{}" Enter Enter'.format(pane_to_commands[pane_id], _line)
