@@ -152,7 +152,7 @@ def main():
                     zip_fname = pane_to_log[pane_id].replace('.log', '.zip')
                     zip_path = os.path.join(log_dir, zip_fname)
 
-                    zip_cmd = 'cd {} && zip -rm {} {}'.format(log_dir, zip_fname, pane_to_log[pane_id])
+                    zip_cmd = 'cd {} && zip -rm {} {} && cd -'.format(log_dir, zip_fname, pane_to_log[pane_id])
                     os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, zip_cmd))
                     txt += ' with logging in {}'.format(zip_path)
 
