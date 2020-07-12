@@ -94,7 +94,7 @@ def main():
             # write('lines: {}'.format(pformat(lines)))
 
             pane_to_commands = {}
-            pane_to_log_paths = {}
+            pane_to_log = {}
             # pprint(lines)
             cmd_id = 0
             pane_id = ''
@@ -131,9 +131,10 @@ def main():
                 time_stamp = datetime.now().strftime("%y%m%d_%H%M%S_%f")
 
                 if enable_logging:
-                    log_path = os.path.join(log_dir, '{}.log'.format(time_stamp))
-                    _line = '{} @ tee_log={} 2>&1 | tee {}'.format(_line, log_path, log_path)
-                    pane_to_log_paths[pane_id] = log_path
+                    log_fname = '{}.log'.format(time_stamp)
+                    log_path = os.path.join(log_dir, log_fname)
+                    _line = '{} @ tee_log={} 2>&1 | tee {}'.format(_line, log_fname, log_path)
+                    pane_to_log[pane_id] = log_fname
 
                 pane_to_commands[pane_id] = '{} "{}" Enter Enter'.format(pane_to_commands[pane_id], _line)
 
@@ -141,21 +142,21 @@ def main():
 
             for pane_id in pane_to_commands:
                 txt = 'running command in {}'.format(pane_id)
-                # write('running: {}'.format(pane_to_commands[pane_id]))
-                # esc_command = 'tmux send-keys -t {} Escape'.format(pane_id)
-                # os.system(esc_command)
                 if enable_logging:
                     mkdir_cmd = 'mkdir -p {}'.format(log_dir)
                     os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, mkdir_cmd))
-                    txt += ' with logging in {}'.format(pane_to_log_paths[pane_id])
-
-                write(txt)
 
                 os.system(pane_to_commands[pane_id])
+
                 if enable_logging:
-                    zip_path = pane_to_log_paths[pane_id].replace('.log', '.zip')
-                    zip_cmd = 'zip -rm {} {}'.format(zip_path, pane_to_log_paths[pane_id])
+                    zip_fname = pane_to_log[pane_id].replace('.log', '.zip')
+                    zip_path = os.path.join(log_dir, zip_fname)
+
+                    zip_cmd = 'cd {} && zip -rm {} {}'.format(log_dir, zip_fname, pane_to_log[pane_id])
                     os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, zip_cmd))
+                    txt += ' with logging in {}'.format(zip_path)
+
+                write(txt)
 
 
 if __name__ == '__main__':
