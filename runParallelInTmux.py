@@ -52,7 +52,7 @@ def main():
             else:
                 continue
 
-        write('processing input: {}'.format(in_fname))
+        write('\nprocessing input: {}'.format(in_fname))
 
         prev_in_fname = in_fname
 
