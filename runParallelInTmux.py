@@ -8,7 +8,7 @@ import paramparse
 
 
 def write(_str):
-    with open('rpit.log', 'a') as fid:
+    with open('rpit.ansi', 'a') as fid:
         fid.write(_str + '\n')
     print(_str)
 
@@ -131,7 +131,7 @@ def main():
                 time_stamp = datetime.now().strftime("%y%m%d_%H%M%S_%f")
 
                 if enable_logging:
-                    log_fname = '{}.log'.format(time_stamp)
+                    log_fname = '{}.ansi'.format(time_stamp)
                     log_path = os.path.join(log_dir, log_fname)
                     _line = '{} @ tee_log={} 2>&1 | tee {}'.format(_line, log_fname, log_path)
                     pane_to_log[pane_id] = log_fname
@@ -149,7 +149,7 @@ def main():
                 os.system(pane_to_commands[pane_id])
 
                 if enable_logging:
-                    zip_fname = pane_to_log[pane_id].replace('.log', '.zip')
+                    zip_fname = pane_to_log[pane_id].replace('.ansi', '.zip')
                     zip_path = os.path.join(log_dir, zip_fname)
 
                     zip_cmd = 'cd {} && zip -rm {} {} && cd -'.format(log_dir, zip_fname, pane_to_log[pane_id])
