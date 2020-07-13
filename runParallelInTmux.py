@@ -69,12 +69,12 @@ def main():
             except ValueError:
                 try:
                     _pane_id = float(tokens[0])
-                    _pane_id, _line = in_fname.split(pane_id_sep)
-                except ValueError:
+                except ValueError as e:
+                    print('float pane id failed: {}'.format(e))
                     _pane_id = pane_id_default
                     _line = in_fname
                 else:
-                    _pane_id = str(_pane_id)
+                    _pane_id = tokens[0]
                     _line = in_fname[len(tokens[0]) + 1:]
             else:
                 _pane_id = '{}.0'.format(_pane_id)
