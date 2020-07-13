@@ -166,7 +166,7 @@ def main():
                         zip_fname = log_fname.replace('.ansi', '.zip')
                         zip_path = os.path.join(log_dir, zip_fname)
 
-                        zip_cmd = 'cd {} && zip -rm {} {} && cd -'.format(log_dir, zip_fname, log_fname)
+                        zip_cmd = '(cd {} && zip -rm {} {})'.format(log_dir, zip_fname, log_fname)
                         os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, zip_cmd))
                         txt += ' with logging in {}'.format(zip_path)
 
