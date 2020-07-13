@@ -126,7 +126,10 @@ def main():
                             write('skipping {} with too large cmd_id'.format(pane_id))
                             break
 
-                        pane_to_commands[pane_id] = 'tmux send-keys -t {}'.format(pane_id)
+                        pane_to_commands[pane_id] = []
+                        pane_to_log[pane_id] = []
+
+                    pane_to_commands[pane_id].append('tmux send-keys -t {}'.format(pane_id))
                     continue
                 elif _line.startswith('# '):
                     continue
@@ -135,37 +138,39 @@ def main():
                     # write('skipping {} with invalid server'.format(pane_id))
                     if pane_id in pane_to_commands:
                         del pane_to_commands[pane_id]
+                        del pane_to_log[pane_id]
                     continue
 
-                time_stamp = datetime.now().strftime("%y%m%d_%H%M%S_%f")
-
                 if enable_logging:
+                    time_stamp = datetime.now().strftime("%y%m%d_%H%M%S_%f")
                     log_fname = '{}.ansi'.format(time_stamp)
                     log_path = os.path.join(log_dir, log_fname)
                     _line = '{} @ tee_log={} 2>&1 | tee {}'.format(_line, log_fname, log_path)
-                    pane_to_log[pane_id] = log_fname
+                    pane_to_log[pane_id].append(log_fname)
 
-                pane_to_commands[pane_id] = '{} "{}" Enter Enter'.format(pane_to_commands[pane_id], _line)
+                pane_to_commands[pane_id][-1] = '{} "{}" Enter Enter'.format(pane_to_commands[pane_id][-1], _line)
 
             # write('pane_to_commands: {}'.format(pformat(pane_to_commands)))
 
             for pane_id in pane_to_commands:
-                txt = 'running command in {}'.format(pane_id)
-                if enable_logging:
-                    mkdir_cmd = 'mkdir -p {}'.format(log_dir)
-                    os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, mkdir_cmd))
+                for _cmd_id, _cmd in enumerate(pane_to_commands[pane_id]):
+                    txt = 'running command {} in {}'.format(_cmd_id, pane_id)
+                    if enable_logging:
+                        mkdir_cmd = 'mkdir -p {}'.format(log_dir)
+                        os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, mkdir_cmd))
 
-                os.system(pane_to_commands[pane_id])
+                    os.system(_cmd)
 
-                if enable_logging:
-                    zip_fname = pane_to_log[pane_id].replace('.ansi', '.zip')
-                    zip_path = os.path.join(log_dir, zip_fname)
+                    if enable_logging:
+                        log_fname = pane_to_log[pane_id][_cmd_id]
+                        zip_fname = log_fname.replace('.ansi', '.zip')
+                        zip_path = os.path.join(log_dir, zip_fname)
 
-                    zip_cmd = 'cd {} && zip -rm {} {} && cd -'.format(log_dir, zip_fname, pane_to_log[pane_id])
-                    os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, zip_cmd))
-                    txt += ' with logging in {}'.format(zip_path)
+                        zip_cmd = 'cd {} && zip -rm {} {} && cd -'.format(log_dir, zip_fname, log_fname)
+                        os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, zip_cmd))
+                        txt += ' with logging in {}'.format(zip_path)
 
-                write(txt)
+                    write(txt)
 
 
 if __name__ == '__main__':
