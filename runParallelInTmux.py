@@ -81,7 +81,7 @@ def main():
                 _line = in_fname[len(tokens[0]) + 1:]
 
             lines = ['## @ {}:{}'.format(server, _pane_id), _line]
-            in_fnames = [in_fname, ]
+            in_fnames = [None, ]
 
             # write('lines:\n{}'.format(lines))
 
@@ -91,7 +91,7 @@ def main():
         fname_to_path = dict([item for sublist in src_file_gen for item in sublist])
 
         for in_fname in in_fnames:
-            if lines is None:
+            if in_fname is not None:
                 try:
                     in_fname_path = fname_to_path[in_fname]
                 except KeyError:
@@ -99,6 +99,8 @@ def main():
 
                 write('\nReading from: {}'.format(in_fname_path))
                 lines = open(in_fname_path, 'r').readlines()
+            else:
+                assert lines is not None, "Both lines and in_fname cannot be None"
 
             # write('lines: {}'.format(pformat(lines)))
 
@@ -151,6 +153,7 @@ def main():
                 pane_to_commands[pane_id][-1] = '{} "{}" Enter Enter'.format(pane_to_commands[pane_id][-1], _line)
 
             # write('pane_to_commands: {}'.format(pformat(pane_to_commands)))
+            lines = None
 
             for pane_id in pane_to_commands:
                 for _cmd_id, _cmd in enumerate(pane_to_commands[pane_id]):

@@ -146,12 +146,15 @@ def main():
             if k == 27:
                 reset_program = 1
                 break
+            elif k == ord('q'):
+                exit_program = 1
+                break
             elif k == 32:
                 _pause = 1 - _pause
                 for _src_file_id in image_pause:
                     image_pause[_src_file_id] = _pause
                 print('image_pause: {}'.format(image_pause))
-            elif k == ord('q'):
+            elif k == ord('k'):
                 cv2.destroyWindow(_src_file_id)
                 del image_pause[_src_file_id]
             elif k == ord('p'):
