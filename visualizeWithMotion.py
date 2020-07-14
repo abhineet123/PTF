@@ -1489,6 +1489,8 @@ def main(args, multi_exit_program=None,
 
         src_aspect_ratio = float(src_width) / float(src_height)
 
+        # prev_start_row, prev_start_col = start_row, start_col
+
         if src_aspect_ratio == aspect_ratio:
             dst_width = src_width
             dst_height = src_height
@@ -1541,7 +1543,12 @@ def main(args, multi_exit_program=None,
         target_width = dst_width
         target_height = dst_height
 
+        # print('prev_start_row: ', prev_start_row)
+
         start_row = start_col = 0
+        # if prev_start_row is not None:
+        #     start_row, start_col = prev_start_row, prev_start_col
+
         end_row = dst_height
         end_col = dst_width
 
@@ -1619,38 +1626,38 @@ def main(args, multi_exit_program=None,
         elif row_offset + start_row < 0:
             row_offset = -start_row
 
-    def setOffset(x, y):
-        nonlocal row_offset, col_offset
-
-        curr_width = end_col - start_col + 1
-        col_offset = col_offset + (x * float(curr_width) / float(width))
-        # print('start_offset: {}'.format(start_offset))
-
-        if end_col + col_offset > dst_width:
-            col_offset -= end_col + col_offset - dst_width
-
-        col_offset -= dst_width / 2.0
-        if col_offset + start_col < 0:
-            col_offset = - start_col
-        # print('start_row: {}'.format(start_row))
-        # print('height_ratio: {}'.format(height_ratio))
-        # print('dst_height: {}'.format(dst_height))
-        # print('start_offset: {}'.format(start_offset))
-
-        curr_height = end_row - start_row + 1
-        row_offset = row_offset + (y * float(curr_height) / float(height))
-        # print('start_offset: {}'.format(start_offset))
-
-        if end_row + row_offset > dst_height:
-            row_offset -= end_row + row_offset - dst_height
-
-        # print('start_row: {}'.format(start_row))
-        # print('height_ratio: {}'.format(height_ratio))
-        # print('dst_height: {}'.format(dst_height))
-        # print('start_offset: {}'.format(start_offset))
+    # def setOffset(x, y):
+    #     nonlocal row_offset, col_offset
+    #
+    #     curr_width = end_col - start_col + 1
+    #     col_offset = col_offset + (x * float(curr_width) / float(width))
+    #     # print('start_offset: {}'.format(start_offset))
+    #
+    #     if end_col + col_offset > dst_width:
+    #         col_offset -= end_col + col_offset - dst_width
+    #
+    #     col_offset -= dst_width / 2.0
+    #     if col_offset + start_col < 0:
+    #         col_offset = - start_col
+    #     # print('start_row: {}'.format(start_row))
+    #     # print('height_ratio: {}'.format(height_ratio))
+    #     # print('dst_height: {}'.format(dst_height))
+    #     # print('start_offset: {}'.format(start_offset))
+    #
+    #     curr_height = end_row - start_row + 1
+    #     row_offset = row_offset + (y * float(curr_height) / float(height))
+    #     # print('start_offset: {}'.format(start_offset))
+    #
+    #     if end_row + row_offset > dst_height:
+    #         row_offset -= end_row + row_offset - dst_height
+    #
+    #     # print('start_row: {}'.format(start_row))
+    #     # print('height_ratio: {}'.format(height_ratio))
+    #     # print('dst_height: {}'.format(dst_height))
+    #     # print('start_offset: {}'.format(start_offset))
 
     def updateZoom(_speed=None, _direction=None):
-        nonlocal target_height, direction, start_col, start_row, end_row, end_col, n_switches
+        nonlocal target_height, target_width, direction, start_col, start_row, end_row, end_col, n_switches
 
         if _speed is None:
             _speed = speed if mode == 0 else 2 * speed
@@ -1813,7 +1820,8 @@ def main(args, multi_exit_program=None,
                 pass
             elif event == cv2.EVENT_MBUTTONDOWN:
                 flags_str = '{0:b}'.format(flags)
-                # print('EVENT_MBUTTONDOWN flags: {:s}'.format(flags_str))
+                print('EVENT_MBUTTONDOWN flags: {}'.format(flags))
+                print('EVENT_MBUTTONDOWN flags_str: {:s}'.format(flags_str))
                 if flags_str == '100':
                     if video_mode:
                         auto_progress = 1 - auto_progress
@@ -1977,8 +1985,8 @@ def main(args, multi_exit_program=None,
                     #     print('click_interval: ', click_interval)
                     #     if click_interval < double_click_interval:
                     #         lc_start_t = None
-                    # print('flags: {}'.format(flags))
-                    # print('flags_b: {0:b}'.format(flags))
+                    print('flags: {}'.format(flags))
+                    print('flags_b: {0:b}'.format(flags))
 
                     flags_to_sort_type = {
                         33: ('1', 'alt'),
@@ -2621,6 +2629,15 @@ def main(args, multi_exit_program=None,
 
         if _col_offset + start_col < 0:
             _col_offset = -start_col
+
+        # _print('start_row: ', start_row)
+        # _print('end_row: ', end_row)
+        #
+        # _print('start_col: ', start_col)
+        # _print('end_col: ', end_col)
+        #
+        # _print('_col_offset: ', _col_offset)
+        # _print('_row_offset: ', _row_offset)
 
         temp = src_img_ar[int(start_row + _row_offset):int(end_row + _row_offset),
                int(start_col + _col_offset):int(end_col + _col_offset), :]
