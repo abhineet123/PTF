@@ -85,7 +85,7 @@ def main():
 
     img_id = 0
     reset_program = exit_program = 0
-    while not reset_program:
+    while True:
         _src_files = [k for k in os.listdir(src_path) if
                       os.path.splitext(k.lower())[1] in img_exts and '~' not in k]
         for _src_file in _src_files:
@@ -144,10 +144,12 @@ def main():
 
             k = cv2.waitKey(1 - image_pause[_src_file_id])
             if k == 27:
+                print('resetting')
                 reset_program = 1
                 break
             elif k == ord('q'):
                 exit_program = 1
+                print('exiting')
                 break
             elif k == 32:
                 _pause = 1 - _pause
@@ -182,10 +184,15 @@ def main():
             # for del_image in del_images:
             #     del existing_images[del_image]
 
+        if exit_program or reset_program:
+            break
+
         k = cv2.waitKey(1)
         if k == 27:
+            print('resetting global')
             break
         elif k == ord('q'):
+            print('exiting global')
             exit_program = 1
             break
 

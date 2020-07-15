@@ -61,7 +61,8 @@ def main():
             in_fnames = [in_fname, ]
         elif in_fname_ext == '.bshm':
             in_fnames = open(in_fname, 'r').readlines()
-            in_fnames = [__in_fname.strip() for __in_fname in in_fnames if __in_fname.strip()]
+            in_fnames = [__in_fname.strip() for __in_fname in in_fnames if __in_fname.strip()
+                         and not __in_fname.startswith('#')]
         else:
             tokens = in_fname.split(' ')
             try:
