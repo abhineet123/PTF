@@ -24,7 +24,13 @@ videos.sort(key=sortKey)
 print('merging videos {}'.format(videos))
 
 fps = 30
-codec = 'H264'
+
+ext_to_codec= {
+    '.avi': 'XVID',
+    '.mkv': 'H264',
+    '.mp4': 'H264',
+    '.webm': 'XVID',
+}
 #
 # processArguments(sys.argv[1:], params)
 # dst_path = params['dst_path']
@@ -85,15 +91,22 @@ for i, video in enumerate(videos):
     cap = cv2.VideoCapture(video)
     h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    video_fname, video_ext = os.path.splitext(os.path.basename(videos[0]))
+    video_fname, video_ext = os.path.splitext(os.path.basename(video))
 
     if i == 0:
         video_dir = os.path.dirname(video)
+        if video_ext in ext_to_codec.keys():
+            out_video_ext = video_ext
+            codec = ext_to_codec[video_ext]
+        else:
+            out_video_ext = '.avi'
+            codec = 'XVID'
 
-        out_video = os.path.join(video_dir, video_fname + '_merged' + video_ext)
+        out_video = os.path.join(video_dir, video_fname + '_merged' + out_video_ext)
         out_dir = os.path.join(video_dir, video_fname + '_merged')
         if not os.path.isdir(out_dir):
             os.makedirs(out_dir)
+
 
         fourcc = cv2.VideoWriter_fourcc(*codec)
         video_out = cv2.VideoWriter(out_video, fourcc, fps, (w, h))

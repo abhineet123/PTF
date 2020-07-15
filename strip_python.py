@@ -28,6 +28,7 @@ def main():
         print('Tk().clipboard_get() failed: {}'.format(e))
         return
 
+    in_txt = in_txt.lstrip('#')
     tokens = in_txt.strip().split(field_sep)
 
     print('tokens: {}'.format(tokens))
