@@ -1,6 +1,7 @@
 import os
 import sys
 import glob
+from tqdm import tqdm
 import pandas as pd
 
 from Misc import processArguments, sortKey
@@ -65,7 +66,7 @@ for seq_id in range(start_id, end_id + 1):
 
     df_det = pd.read_csv(csv_path)
 
-    for _, row in df_det.iterrows():
+    for _, row in tqdm(df_det.iterrows(), ncols=10):
         filename = row['filename']
 
         confidence = row['confidence']
