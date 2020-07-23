@@ -59,9 +59,9 @@ for seq_id in range(start_id, end_id + 1):
 
     print('Processing sequence {:d} :: {:s}'.format(seq_id, seq_name))
     print('Reading from {}'.format(csv_path))
-    print('Writing to {}'.format(mot_path))
     mot_path = csv_path.replace('.csv', '.txt')
     out_fid = open(mot_path, 'w')
+    print('Writing to {}'.format(mot_path))
 
     df_det = pd.read_csv(csv_path)
 
