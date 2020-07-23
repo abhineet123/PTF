@@ -57,6 +57,12 @@ for seq_id in range(start_id, end_id + 1):
 
     bounding_boxes = []
 
+    print('Processing sequence {:d} :: {:s}'.format(seq_id, seq_name))
+    print('Reading from {}'.format(csv_path))
+    print('Writing to {}'.format(mot_path))
+    mot_path = csv_path.replace('.csv', '.txt')
+    out_fid = open(mot_path, 'w')
+
     df_det = pd.read_csv(csv_path)
 
     for _, row in df_det.iterrows():
@@ -71,32 +77,7 @@ for seq_id in range(start_id, end_id + 1):
         # height = float(row['height'])
         class_name = row['class']
 
-
-        bounding_boxes.append(
-            {"class": class_name,
-             "confidence": confidence,
-             "filename": filename,
-             # "width": width,
-             # "height": height,
-             "bbox": [xmin, ymin, xmax, ymax]}
-        )
-
-    # tree = ET.parse(fname)
-    # root = tree.getroot()
-
-    mot_path = csv_path.replace('.csv', '.txt')
-    out_fid = open(mot_path, 'w')
-
-    print('Processing sequence {:d} :: {:s}'.format(seq_id, seq_name))
-    for bndbox in bounding_boxes:
-
-        xmin, ymin, xmax, ymax = bndbox['bbox']
-
         w, h = xmax - xmin, ymax - ymin
-        # width = float(bndbox['width'])
-        # height = float(bndbox['height'])
-        filename = bndbox['filename']
-        confidence = bndbox['confidence']
 
         try:
             frame_id = _src_files.index(filename)
@@ -105,5 +86,21 @@ for seq_id in range(start_id, end_id + 1):
 
         out_fid.write('{:d},{:d},{:f},{:f},{:f},{:f},{:f},-1,-1,-1\n'.format(
             frame_id + 1, -1, xmin, ymin, w, h, confidence))
+
+
+        # bounding_boxes.append(
+        #     {"class": class_name,
+        #      "confidence": confidence,
+        #      "filename": filename,
+        #      # "width": width,
+        #      # "height": height,
+        #      "bbox": [xmin, ymin, xmax, ymax]}
+        # )
+
+    # for bndbox in bounding_boxes:
+    #
+    #     xmin, ymin, xmax, ymax = bndbox['bbox']
+
+
     out_fid.close()
 

@@ -1,6 +1,7 @@
 import time
 import win32gui, win32con
 import win32api
+import pywintypes
 import numpy as np
 from datetime import datetime
 
@@ -120,7 +121,11 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
             # print('sft_exceptions_multi')
             continue
 
-        tup = win32gui.GetWindowPlacement(active_handle)
+        try:
+            tup = win32gui.GetWindowPlacement(active_handle)
+        except pywintypes.error as e:
+            print('sft :: failed to get window location for {} :: {}'.format(active_name, e))
+            continue
         if tup[1] == win32con.SW_SHOWMAXIMIZED:
             # print("sft :: {} is maximized".format(active_name))
             pass

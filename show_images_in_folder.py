@@ -46,23 +46,29 @@ def main():
         'width': 0,
         'height': 0,
         'fps': 30,
-        # 'codec': 'FFV1',
-        # 'ext': 'avi',
-        'codec': 'H264',
-        'ext': 'mkv',
+        'codec': 'XVID',
+        'ext': 'avi',
+        # 'codec': 'H264',
+        # 'ext': 'mkv',
         'out_postfix': '',
         'reverse': 0,
+        'save_video': 0,
         'min_free_space': 100,
     }
 
     processArguments(sys.argv[1:], params)
     src_path = params['src_path']
     min_free_space = params['min_free_space']
+    save_video = params['save_video']
+    codec = params['codec']
+    ext = params['ext']
+    fps = params['fps']
 
     img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff', '.webp')
 
     # existing_images = {}
     image_pause = {}
+    video_writers = {}
     _pause = 1
 
     src_path = os.path.abspath(src_path)
@@ -115,7 +121,6 @@ def main():
                 print('Failed to read image {} with ID: {}'.format(_src_file, _src_file_id))
                 read_success = 0
 
-
             # out_path = _src_path+'.done'
             # print('writing to {}'.format(out_path))
             # with open(out_path, 'w') as fid:
@@ -141,6 +146,26 @@ def main():
 
             if _src_file_id not in image_pause:
                 image_pause[_src_file_id] = _pause
+
+            if save_video:
+                if _src_file_id not in video_writers:
+                    time_stamp = datetime.now().strftime("%y%m%d_%H%M%S_%f")
+                    out_fname = '{}_{}.{}'.format(_src_file_id, time_stamp, ext)
+
+                    frame_size = img.shape[:2][::-1]
+
+                    writer = cv2.VideoWriter()
+                    writer.open(filename=out_fname, fourcc=cv2.VideoWriter_fourcc(*codec),
+                                fps=fps, frameSize=frame_size)
+
+                    assert writer.isOpened(), 'Video file {:s} could not be opened'.format(out_fname)
+
+                    video_writers[_src_file_id] = writer
+
+                    print('Saving output video for {} to {}  of size {} x {}'.format(
+                        _src_file_id, out_fname, *frame_size))
+
+                video_writers[_src_file_id].write(img)
 
             k = cv2.waitKey(1 - image_pause[_src_file_id])
             if k == 27:
@@ -198,6 +223,10 @@ def main():
 
     for _src_file_id in image_pause.keys():
         cv2.destroyWindow(_src_file_id)
+
+    if save_video:
+        for _src_file_id in video_writers.keys():
+            video_writers[_src_file_id].release()
 
     if exit_program:
         return False

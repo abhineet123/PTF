@@ -25,7 +25,7 @@ print('merging videos {}'.format(videos))
 
 fps = 30
 
-ext_to_codec= {
+ext_to_codec = {
     '.avi': 'XVID',
     '.mkv': 'H264',
     '.mp4': 'H264',
@@ -106,7 +106,6 @@ for i, video in enumerate(videos):
         out_dir = os.path.join(video_dir, video_fname + '_merged')
         if not os.path.isdir(out_dir):
             os.makedirs(out_dir)
-
 
         fourcc = cv2.VideoWriter_fourcc(*codec)
         video_out = cv2.VideoWriter(out_video, fourcc, fps, (w, h))
