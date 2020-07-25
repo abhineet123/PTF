@@ -54,13 +54,23 @@ def main():
 
         write('\nprocessing input: {}'.format(in_fname))
 
+        src_dir = os.getcwd()
+        src_file_gen = [[(f, os.path.join(dirpath, f)) for f in filenames]
+                        for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
+        fname_to_path = dict([item for sublist in src_file_gen for item in sublist])
+
         prev_in_fname = in_fname
 
         in_fname_no_ext, in_fname_ext = os.path.splitext(os.path.basename(in_fname))
         if in_fname_ext == '.bsh':
             in_fnames = [in_fname, ]
         elif in_fname_ext == '.bshm':
-            in_fnames = open(in_fname, 'r').readlines()
+            try:
+                in_fname_path = fname_to_path[in_fname]
+            except KeyError:
+                raise IOError('invalid file name: {}'.format(in_fname))
+
+            in_fnames = open(in_fname_path, 'r').readlines()
             in_fnames = [__in_fname.strip() for __in_fname in in_fnames if __in_fname.strip()
                          and not __in_fname.startswith('#')]
         else:
@@ -85,11 +95,6 @@ def main():
             in_fnames = [None, ]
 
             # write('lines:\n{}'.format(lines))
-
-        src_dir = os.getcwd()
-        src_file_gen = [[(f, os.path.join(dirpath, f)) for f in filenames]
-                        for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
-        fname_to_path = dict([item for sublist in src_file_gen for item in sublist])
 
         all_pane_ids = []
 
