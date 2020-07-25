@@ -91,6 +91,8 @@ def main():
                         for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
         fname_to_path = dict([item for sublist in src_file_gen for item in sublist])
 
+        all_pane_ids = []
+
         for in_fname in in_fnames:
             if in_fname is not None:
                 try:
@@ -176,6 +178,11 @@ def main():
                         txt += ' with logging in {}'.format(zip_path)
 
                     write(txt)
+
+            all_pane_ids += list(pane_to_commands.keys())
+
+        all_pane_ids_str = '__'.join(all_pane_ids).replace(':', '_')
+        write('all_pane_ids: {}'.format(all_pane_ids_str))
 
 
 if __name__ == '__main__':
