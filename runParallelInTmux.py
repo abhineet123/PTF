@@ -148,7 +148,8 @@ def main():
                     time_stamp = datetime.now().strftime("%y%m%d_%H%M%S_%f")
                     log_fname = '{}.ansi'.format(time_stamp)
                     log_path = os.path.join(log_dir, log_fname)
-                    _line = '{} @ tee_log={} 2>&1 | tee {}'.format(_line, log_fname, log_path)
+                    tee_log_id = '{}:{}'.format(pane_id, time_stamp)
+                    _line = '{} @ tee_log={} 2>&1 | tee {}'.format(_line, tee_log_id, log_path)
                     pane_to_log[pane_id].append(log_fname)
 
                 pane_to_commands[pane_id][-1] = '{} "{}" Enter Enter'.format(pane_to_commands[pane_id][-1], _line)
