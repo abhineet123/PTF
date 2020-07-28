@@ -187,7 +187,7 @@ def main():
             all_pane_ids += list(pane_to_commands.keys())
 
         all_pane_ids_str = '__'.join(all_pane_ids).replace(':', '_')
-        write('all_pane_ids: {}'.format(all_pane_ids_str))
+        write('{}'.format(all_pane_ids_str))
 
 
 if __name__ == '__main__':
