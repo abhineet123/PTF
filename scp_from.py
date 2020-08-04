@@ -45,7 +45,7 @@ if __name__ == '__main__':
         print('Creating folder: {}'.format(src_dir))
         os.makedirs(src_dir)
 
-    switches = '-r -v'
+    switches = '-r -v --progress'
     if not overwrite:
         switches += ' --ignore-existing'
 
