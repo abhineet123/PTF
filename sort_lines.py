@@ -17,12 +17,14 @@ def main():
         'field_id': 1,
         'field_sep': '\t',
         'token_sep': '/',
+        'inverted': 1,
 
     }
     paramparse.process_dict(_params)
     field_id = _params['field_id']
     field_sep = _params['field_sep']
     token_sep = _params['token_sep']
+    inverted = _params['inverted']
 
     # pyautogui.hotkey('ctrl', 'c')
 
@@ -73,7 +75,10 @@ def main():
         # proc_lines_txt = '\n'.join(proc_lines)
         # proc_lines_sorted_txt = '\n'.join(proc_lines_sorted)
 
-        proc_lines_tokens = [k.split(token_sep)[::-1] for k in proc_lines]
+        if inverted:
+            proc_lines_tokens = [k.split(token_sep)[::-1] for k in proc_lines]
+        else:
+            proc_lines_tokens = [k.split(token_sep) for k in proc_lines]
 
         sort_idx = [i[0] for i in sorted(enumerate(proc_lines_tokens), key=lambda x: x[1])]
 
@@ -81,7 +86,7 @@ def main():
 
         out_lines = [lines[idx] for idx in sort_idx]
 
-        out_txt = '\n'.join(out_lines)
+        out_txt = '\n'.join(out_lines) + '\n'
 
         # print(out_txt)
     except BaseException as e:
