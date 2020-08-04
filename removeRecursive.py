@@ -25,7 +25,7 @@ if __name__ == '__main__':
                     for (dirpath, dirnames, filenames) in os.walk(root_dir, followlinks=True)]
     sub_dirs = [os.path.relpath(item, root_dir) for sublist in sub_dirs_gen for item in sublist]
 
-    print('sub_dirs:\n{}'.format(sub_dirs))
+    # print('sub_dirs:\n{}'.format(sub_dirs))
 
     # sub_dirs = [x for x in os.listdir(root_dir) if os.path.isdir(os.path.join(root_dir, x))]
 
@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
         matches = glob.glob(full_path)
         for _match in matches:
-            rm_cmd = 'rm {:s} {:s}'.format(root_dir, switches, _match)
+            rm_cmd = 'rm {:s} {:s}'.format(switches, _match)
             print('running: {}\n'.format(rm_cmd))
             os.system(rm_cmd)
 
