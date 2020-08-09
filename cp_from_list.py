@@ -60,8 +60,7 @@ if __name__ == '__main__':
         if src_path.startswith('#'):
             continue
         if not os.path.exists(src_path):
-            print('src_path does not exist: {}'.format(src_path))
-            continue
+            raise IOError('src_path does not exist: {}'.format(src_path))
         # cp_cmd = 'rsync -r -ah --progress "{}" "{}"'.format(src_path, dst_path)
 
         if os.path.isdir(src_path):
@@ -85,8 +84,7 @@ if __name__ == '__main__':
         if src_path.startswith('#'):
             continue
         if not os.path.exists(src_path):
-            print('src_path does not exist: {}'.format(src_path))
-            continue
+            raise IOError('src_path does not exist: {}'.format(src_path))
 
         cp_cmd = 'cp -r "{}" "{}"'.format(src_path, dst_path)
         # cp_cmd = 'rsync -r "{}" "{}"'.format(src_path, dst_path)
