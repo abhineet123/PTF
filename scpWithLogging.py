@@ -61,13 +61,16 @@ def main():
     IsWindowVisible = ctypes.windll.user32.IsWindowVisible
 
     # Form1.SetFocus()
-
+    default_fmy_key = '0'
     if mode == 0:
         data_type = 'filename (from)'
+        highlight_key = '2'
     elif mode == 1:
         data_type = 'filename (to)'
+        highlight_key = '3'
     elif mode == 2:
         data_type = 'log'
+        highlight_key = '4'
     else:
         raise AssertionError('Invalid mode: {}'.format(mode))
 
@@ -118,28 +121,30 @@ def main():
             continue
 
         try:
-            if mode == 2:
-                enable_highlight = k.strip()
-                app_win.type_keys("^t~")
-                app_win.type_keys("^v")
-                if enable_highlight:
-                    app_win.type_keys("^+%a")
-                    # time.sleep(1)
-                    app_win.type_keys("^+z")
-                    app_win.type_keys("{RIGHT}{VK_SPACE}~")
-                else:
-                    app_win.type_keys("{VK_SPACE}~")
-
-                app_win.type_keys("^s")
-                continue
+            # if mode == 2:
+            #     enable_highlight = k.strip()
+            #     app_win.type_keys("^t~")
+            #     app_win.type_keys("^v")
+            #     app_win.type_keys("^+a")
+            #     if enable_highlight:
+            #         app_win.type_keys("^+%a")
+            #         # time.sleep(1)
+            #         app_win.type_keys("^+z")
+            #         app_win.type_keys("{RIGHT}{VK_SPACE}~")
+            #     else:
+            #         app_win.type_keys("{VK_SPACE}~")
+            #
+            #     app_win.type_keys("^s")
+            #     continue
 
             app_win.type_keys("^t~")
-            app_win.type_keys("^b")
             app_win.type_keys("^v")
-            app_win.type_keys("^b")
             if mode == 1:
-                app_win.type_keys("{RIGHT}{VK_SPACE}to{VK_SPACE}%s" % scp_name)
-            app_win.type_keys("~")
+                app_win.type_keys("{LEFT}{RIGHT}{VK_SPACE}to{VK_SPACE}%s" % scp_name)
+            app_win.type_keys("^+a")
+            app_win.type_keys("^{}".format(highlight_key))
+            app_win.type_keys("{LEFT}{RIGHT}~")
+            app_win.type_keys("^{}".format(default_fmy_key))
             app_win.type_keys("^s")
 
             mouse.move(coords=(x, y))

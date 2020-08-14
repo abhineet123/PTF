@@ -157,6 +157,14 @@ def main():
                     log_path = os.path.join(log_dir, log_fname)
                     tee_log_id = '{}:{}'.format(pane_id, time_stamp)
                     _line = '{} @ tee_log={} 2>&1 | tee {}'.format(_line, tee_log_id, log_path)
+
+                    """disable python output buffering to ensure in-order output in the logging fine"""
+                    if _line.startswith('python '):
+                        _line = _line.replace('python ', 'python -u ', 1)
+                    elif _line.startswith('python3 '):
+                        _line = _line.replace('python3 ', 'python3 -u ', 1)
+                    elif _line.startswith('python2 '):
+                        _line = _line.replace('python2 ', 'python2 -u ', 1)
                     pane_to_log[pane_id].append(log_fname)
 
                 pane_to_commands[pane_id][-1] = '{} "{}" Enter Enter'.format(pane_to_commands[pane_id][-1], _line)

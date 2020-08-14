@@ -73,14 +73,15 @@ def main():
     # in_lines = in_txt.splitlines()
     # in_line_id = -1
 
-    out_txt2 = in_txt
+    out_txt2 = in_txt.strip().lstrip('{').rstrip('}').replace('                ', '        ')
+
     for _var_name in in_dict:
         # out_line = '{}'.format(in_dict[_var_name])
 
         new_line = ':ivar {}: {}'.format(_var_name, in_dict[_var_name])
         new_line_broken = new_line
 
-        out_txt2 = out_txt2.replace("'{}'".format(_var_name), ':ivar {}'.format(_var_name))
+        out_txt2 = out_txt2.replace("'{}': ".format(_var_name), ':ivar {}: '.format(_var_name))
 
         if break_lines:
             # new_line_broken = re.sub("(.{70})", "\\1\n", new_line, 0, re.DOTALL)
@@ -92,10 +93,10 @@ def main():
     print('out_txt:\n{}'.format(out_txt))
     print('out_txt2:\n{}'.format(out_txt2))
 
-    out_txt_final = out_txt + '\n\n' + out_txt2
+    # out_txt_final = out_txt + '\n\n' + out_txt2
 
     try:
-        pyperclip.copy(out_txt_final)
+        pyperclip.copy(out_txt2)
         spam = pyperclip.paste()
     except BaseException as e:
         print('Copying to clipboard failed: {}'.format(e))
