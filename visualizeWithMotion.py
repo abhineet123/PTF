@@ -1235,17 +1235,25 @@ def main(args, multi_exit_program=None,
         try:
             n_rows, n_cols = predef_grid_sizes[n_images]
         except KeyError:
-            if n_images % 3 == 0:
-                n_cols = 3
-                n_rows = int(n_images / 3)
-            elif n_images % 2 == 0 and n_images > 2:
-                n_rows = 2
-                n_cols = int(n_images / 2)
-            else:
-                n_rows = 1
-                n_cols = n_images
-                # n_cols = n_rows = int(np.ceil(np.sqrt(n_images)))
+            # if n_images % 3 == 0:
+            #     n_cols = 3
+            #     n_rows = int(n_images / 3)
+            # elif n_images % 2 == 0 and n_images > 2:
+            #     n_rows = 2
+            #     n_cols = int(n_images / 2)
+            # else:
+
+            # n_rows = 1
+            # n_cols = n_images
+            _ar = float(width) / float(height)
+            n_rows = int(np.floor(np.sqrt(n_images / _ar)))
+            # n_rows = int(np.floor(np.sqrt(n_images)))
+            n_cols = int(np.ceil((n_images / n_rows)))
+            print('_ar: {}'.format(_ar))
+
         grid_size = (n_rows, n_cols)
+        print('n_images: {}'.format(n_images))
+        print('grid_size: {}'.format(grid_size))
 
     def loadImage(_type=0, set_grid_size=0, decrement_id=0):
         nonlocal src_img_ar, start_row, end_row, start_col, end_col, dst_height, dst_width, n_switches, img_id, direction
@@ -2849,6 +2857,36 @@ def main(args, multi_exit_program=None,
             elif k == ord('R'):
                 # single row grid
                 grid_size = (1, n_images)
+                loadImage()
+            elif k == ord('['):
+                # decrement grid rows
+                _r, _c = grid_size
+                if _r > 1:
+                    new_r = _r - 1
+                    new_c = int(np.ceil((n_images / new_r)))
+                    grid_size = (new_r, new_c)
+                    loadImage()
+            elif k == ord(']'):
+                # increment grid cols
+                _r, _c = grid_size
+                new_r = _r + 1
+                new_c = int(np.ceil((n_images / new_r)))
+                grid_size = (new_r, new_c)
+                loadImage()
+            elif k == ord('{'):
+                # decrement grid cols
+                _r, _c = grid_size
+                if _c > 1:
+                    new_c = _c - 1
+                    new_r = int(np.ceil((n_images / new_c)))
+                    grid_size = (new_r, new_c)
+                    loadImage()
+            elif k == ord('}'):
+                # increment grid rows
+                _r, _c = grid_size
+                new_c = _c + 1
+                new_r = int(np.ceil((n_images / new_c)))
+                grid_size = (new_r, new_c)
                 loadImage()
             elif k == ord('h'):
                 show_window = 1 - show_window
