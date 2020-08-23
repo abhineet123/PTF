@@ -25,6 +25,7 @@ if __name__ == '__main__':
         'dst_path': '',
         'accumulative_log': '',
         'dst_disk_label': '',
+        'backup_path': '',
     }
     processArguments(sys.argv[1:], params)
     list_file = params['list_file']
@@ -33,6 +34,7 @@ if __name__ == '__main__':
     dst_path = params['dst_path']
     dst_disk_label = params['dst_disk_label']
     accumulative_log = params['accumulative_log']
+    backup_path = params['backup_path']
 
     if not dst_path or not os.path.isdir(dst_path):
         raise IOError('dst_path is invalid: {}'.format(dst_path))
@@ -144,8 +146,16 @@ if __name__ == '__main__':
             fid.write(src_path_full + "\n")
 
     if accumulative_log:
+        print('writing to accumulative_log: {}'.format(accumulative_log))
         with open(accumulative_log, "a") as fid:
             fid.write('\n# {}\n'.format(time_stamp))
             if dst_disk_label and root_dir_name:
                 fid.write('## {}-->{}\n'.format(root_dir_name, dst_disk_label))
             fid.write(src_path_txt + "\n")
+
+            if backup_path:
+                print('backing up accumulative_log to {}'.format(backup_path))
+                cp_cmd = 'cp {} {}'.format(accumulative_log, backup_path)
+                os.system(cp_cmd)
+
+
