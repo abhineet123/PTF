@@ -1265,10 +1265,10 @@ def main(args, multi_exit_program=None,
         if decrement_id:
             if video_mode:
                 for _id in img_id:
-                    img_id[_id] -= 1
+                    img_id[_id] -= n_images - 1
             else:
                 for _id in img_id:
-                    img_id[_id] -= 1
+                    img_id[_id] -= n_images - 1
         if set_grid_size:
             setGridSize()
 
@@ -3385,7 +3385,6 @@ def main(args, multi_exit_program=None,
                 n_images -= 1
                 if n_images < 1:
                     n_images = 1
-
                 loadImage(1, 1)
             elif k == ord('='):
                 predef_n_image_id = (predef_n_image_id + 1) % n_predef_n_images
