@@ -1,0 +1,31 @@
+import os
+import sys
+import cv2
+
+from Misc import stackImages
+
+image_paths = sys.argv[1:]
+n_images = len(image_paths)
+
+print('vertically stacking images {}'.format(image_paths))
+
+src_images = [cv2.imread(image) for image in image_paths]
+grid_size = [n_images, 1]
+
+stacked_img, _, _ = stackImages(src_images, grid_size, borderless=1,
+                                                  return_idx=1, preserve_order=1)
+
+in_img_path = image_paths[0]
+in_img_dir = os.path.dirname(in_img_path)
+in_img_fname, in_img_ext = os.path.splitext(os.path.basename(in_img_path))
+out_img_path = os.path.join(in_img_dir, in_img_fname + '_stacked_vert' + in_img_ext)
+
+
+print('saving stacked image to {}'.format(out_img_path))
+
+cv2.imwrite(out_img_path, stacked_img)
+
+
+
+
+
