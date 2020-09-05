@@ -12,7 +12,7 @@ n_images = len(image_paths)
 print('vertically stacking images {}'.format(image_paths))
 
 src_images = [cv2.imread(image) for image in image_paths]
-grid_size = [n_images, 1]
+grid_size = None
 
 stacked_img, _, _ = stackImages(src_images, grid_size, borderless=1,
                                                   return_idx=1, preserve_order=1)

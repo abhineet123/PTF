@@ -6,6 +6,7 @@ import inspect
 
 import ctypes
 
+
 def is_hidden(filepath):
     name = os.path.basename(os.path.abspath(filepath))
     return name.startswith('.') or has_hidden_attribute(filepath)
@@ -21,7 +22,7 @@ def has_hidden_attribute(filepath):
         attrs = ctypes.windll.kernel32.GetFileAttributesW(unicode(filepath))
         assert attrs != -1
         result = bool(attrs & 2)
-    except (UnicodeDecodeError, ):
+    except (UnicodeDecodeError,):
         result = False
     except (AttributeError, AssertionError):
         result = False
@@ -40,6 +41,7 @@ def main():
         'write_log': 1,
         'target_ext': '',
         'recursive': 0,
+        'recursive_src': 1,
     }
     processArguments(sys.argv[1:], params)
     seq_prefix = params['seq_prefix']
@@ -52,37 +54,9 @@ def main():
     write_log = params['write_log']
     target_ext = params['target_ext']
     recursive = params['recursive']
+    recursive_src = params['recursive_src']
 
-    # seq_prefix = 'Seq'
-    # seq_root_dir = '.'
-    # seq_start_id = 1
-    # shuffle_files = 1
-    # filename_fmt = 0
-    # write_log = 1
-    # target_ext = ''
-    #
-    # arg_id = 1
-    # if len(sys.argv) > arg_id:
-    #     seq_prefix = sys.argv[arg_id]
-    #     arg_id += 1
-    # if len(sys.argv) > arg_id:
-    #     seq_start_id = int(sys.argv[arg_id])
-    #     arg_id += 1
-    # if len(sys.argv) > arg_id:
-    #     shuffle_files = int(sys.argv[arg_id])
-    #     arg_id += 1
-    # if len(sys.argv) > arg_id:
-    #     filename_fmt = int(sys.argv[arg_id])
-    #     arg_id += 1
-    # if len(sys.argv) > arg_id:
-    #     _seq_root_dir = sys.argv[arg_id]
-    #     arg_id += 1
-    # if len(sys.argv) > arg_id:
-    #     write_log = int(sys.argv[arg_id])
-    #     arg_id += 1
-    # if len(sys.argv) > arg_id:
-    #     target_ext = sys.argv[arg_id]
-    #     arg_id += 1
+    excluded_files = ['rseq_log.txt', 'Thumbs.db']
 
     print('seq_prefix: {}'.format(seq_prefix))
 
@@ -170,11 +144,18 @@ def main():
         log_fid = open(log_file, 'w')
 
     for seq_root_dir in seq_root_dirs:
+        seq_root_dir = os.path.abspath(seq_root_dir)
+
         print('Processing: {}'.format(seq_root_dir))
-        src_file_names = [f for f in os.listdir(seq_root_dir) if os.path.isfile(os.path.join(seq_root_dir, f))
-                          and f != 'rseq_log.txt'
-                          and f != 'Thumbs.db'
-                          ]
+        if recursive_src:
+            src_file_gen = [[os.path.join(dirpath, f) for f in filenames if f not in excluded_files]
+                            for (dirpath, dirnames, filenames) in os.walk(seq_root_dir, followlinks=False)]
+            src_file_names = [item for sublist in src_file_gen for item in sublist]
+
+        else:
+            src_file_names = [os.path.join(seq_root_dir, f) for f in os.listdir(seq_root_dir)
+                              if os.path.isfile(os.path.join(seq_root_dir, f))
+                              and f not in excluded_files]
         if shuffle_files:
             print('Shuffling files...')
             random.shuffle(src_file_names)
@@ -185,33 +166,45 @@ def main():
         file_count = 1
         n_files = len(src_file_names)
 
-        for src_fname in src_file_names:
+        for src_file_path in src_file_names:
+            src_dir = os.path.dirname(src_file_path)
+            src_fname = os.path.basename(src_file_path)
+
+            if recursive_src and os.path.normpath(src_dir) != os.path.normpath(seq_root_dir):
+                rel_path = os.path.relpath(src_dir, seq_root_dir)
+                _seq_prefix = '{}_{}'.format(seq_prefix, rel_path.replace(os.sep, '_'))
+                # print('src_dir: {}'.format(src_dir))
+                # print('rel_path: {}'.format(rel_path))
+            else:
+                _seq_prefix = seq_prefix
+
             filename, file_extension = os.path.splitext(src_fname)
 
             if target_ext and file_extension[1:] != target_ext:
                 print(('Ignoring file {} with invalid extension {}'.format(src_fname, file_extension)))
                 continue
 
-            src_path = os.path.join(seq_root_dir, src_fname)
+            # src_path = os.path.join(seq_root_dir, src_fname)
+            src_path = src_file_path
 
             if is_hidden(src_path):
                 print('Skipping hidden file: {}'.format(src_path))
                 continue
 
             if filename_fmt == 0:
-                dst_fname = '{:s}_{:d}{:s}'.format(seq_prefix, seq_id, file_extension)
+                dst_fname = '{:s}_{:d}{:s}'.format(_seq_prefix, seq_id, file_extension)
             else:
-                dst_fname = '{:s}{:06d}{:s}'.format(seq_prefix, seq_id, file_extension)
-            dst_path = os.path.join(seq_root_dir, dst_fname)
+                dst_fname = '{:s}{:06d}{:s}'.format(_seq_prefix, seq_id, file_extension)
+            dst_path = os.path.join(src_dir, dst_fname)
 
             if src_path != dst_path:
                 while os.path.exists(dst_path):
                     seq_id += 1
                     if filename_fmt == 0:
-                        dst_fname = '{:s}_{:d}{:s}'.format(seq_prefix, seq_id, file_extension)
+                        dst_fname = '{:s}_{:d}{:s}'.format(_seq_prefix, seq_id, file_extension)
                     else:
-                        dst_fname = '{:s}{:06d}{:s}'.format(seq_prefix, seq_id, file_extension)
-                    dst_path = os.path.join(seq_root_dir, dst_fname)
+                        dst_fname = '{:s}{:06d}{:s}'.format(_seq_prefix, seq_id, file_extension)
+                    dst_path = os.path.join(src_dir, dst_fname)
                 try:
                     os.rename(src_path, dst_path)
                 except WindowsError as e:
