@@ -1,10 +1,11 @@
 import os
 import sys
+import shutil
 import cv2
 
 from datetime import datetime
 
-from Misc import stackImages
+from Misc import stackImages, add_suffix
 
 image_paths = sys.argv[1:]
 n_images = len(image_paths)
@@ -28,6 +29,10 @@ out_img_path = os.path.join(in_img_dir, time_stamp + in_img_ext)
 print('saving stacked image to {}'.format(out_img_path))
 
 cv2.imwrite(out_img_path, stacked_img)
+
+dst_image_paths = [add_suffix(image, 'horz') for image in image_paths]
+for src_path, dst_path in zip(image_paths, dst_image_paths):
+    shutil.move(src_path, dst_path)
 
 
 

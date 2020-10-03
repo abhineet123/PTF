@@ -131,6 +131,7 @@ params = {
     'reverse_video': 1,
     'images_as_video': 0,
     'frg_win_titles': [],
+    'frg_monitor_ids': [],
     'only_maximized': 1,
     'video_mode': 0,
     'lazy_video_load': 1,
@@ -210,6 +211,7 @@ def main(args, multi_exit_program=None,
     reverse_video = params['reverse_video']
     images_as_video = params['images_as_video']
     frg_win_titles = params['frg_win_titles']
+    frg_monitor_ids = params['frg_monitor_ids']
     only_maximized = params['only_maximized']
     video_mode = params['video_mode']
     lazy_video_load = params['lazy_video_load']
@@ -2584,7 +2586,7 @@ def main(args, multi_exit_program=None,
                                          args=(sft_active_monitor_id, sft_active_win_handle, sft_exit_program,
                                                second_from_top, monitors, win_name,
                                                dup_win_names, monitor_id, dup_monitor_ids,
-                                               duplicate_window, only_maximized, frg_win_handles,
+                                               duplicate_window, only_maximized, frg_win_handles, frg_monitor_ids,
                                                # sft_other_vars
                                                ))
 
@@ -3164,8 +3166,9 @@ def main(args, multi_exit_program=None,
                 else:
                     prev_active_win_name = _active_win_name
                     time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
-                    _print('{} :: {} --> {}'.format(
-                        time_stamp, win_name, prev_active_win_name))
+                    # _print('{} :: {} --> {}'.format(
+                    #     time_stamp, win_name, prev_active_win_name))
+
                     """current window sometimes becomes active so move it back 
                     behind the target window"""
                     # active_handle = win32gui.GetForegroundWindow()
@@ -3258,10 +3261,10 @@ def main(args, multi_exit_program=None,
                             dup_win_names[_i], prev_active_win_name, e))
                         # continue
                     else:
-                        time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
-
-                        _print('{} :: {} --> {}'.format(
-                            time_stamp, dup_win_names[_i], prev_active_win_name))
+                        pass
+                        # time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+                        # _print('{} :: {} --> {}'.format(
+                        #     time_stamp, dup_win_names[_i], prev_active_win_name))
 
                     # time.sleep(1)
                     # is_switching = 0

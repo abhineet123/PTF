@@ -14,7 +14,7 @@ sft_exceptions_multi = [('XY:(', ') - RGB:(', ', HTML:('), ]
 def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
                        second_from_top, monitors, vwm_win_name, dup_win_names,
                        monitor_id, dup_monitor_ids, duplicate_window,
-                       only__maximized, frg_win_handles,
+                       only__maximized, frg_win_handles, frg_monitor_ids,
                        other_vars=None
                        ):
     # prev_active_win_name = None
@@ -160,11 +160,16 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
                 prev_active_handles[_monitor_id] = active_handle
                 prev_active_names[_monitor_id] = active_name
                 continue
+            if frg_monitor_ids and _monitor_id not in frg_monitor_ids:
+                # print('_monitor_id: {}'.format(_monitor_id))
+                # print('frg_monitor_ids: {}'.format(frg_monitor_ids))
+                continue
         else:
             if _monitor_id not in monitor_ids:
                 # print('_monitor_id: {}'.format(_monitor_id))
                 # print('monitor_ids: {}'.format(monitor_ids))
                 continue
+
 
         try:
             prev_active_handle = prev_active_handles[_monitor_id]

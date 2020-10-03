@@ -2441,6 +2441,14 @@ def arrangeCornersWithIDs(orig_corners):
     return new_corners, rearrangement_ids
 
 
+def add_suffix(src_path, suffix, sep='_'):
+    # abs_src_path = os.path.abspath(src_path)
+    src_dir = os.path.dirname(src_path)
+    src_name, src_ext = os.path.splitext(os.path.basename(src_path))
+    dst_path = os.path.join(src_dir, src_name + sep + suffix + src_ext)
+    return dst_path
+
+
 def getSyntheticSeqSuffix(syn_ssm, syn_ssm_sigma_id, syn_ilm='0',
                           syn_am_sigma_id=0, syn_add_noise=0,
                           syn_noise_mean=0, syn_noise_sigma=10):
