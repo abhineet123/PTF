@@ -12,11 +12,11 @@ import pyperclip
 
 def main():
     _params = {
-        'field_id': 2,
-        'field_sep': ' ',
+        'horz': 0,
 
     }
     paramparse.process_dict(_params)
+    horz = _params['horz']
 
     try:
         in_txt = Tk().clipboard_get()  # type: str
@@ -34,7 +34,12 @@ def main():
         else:
             out_lines.append(line)
 
-    out_txt = '\n'.join(out_lines)
+    if horz:
+        field_sep = '\t'
+    else:
+        field_sep = '\n'
+
+    out_txt = field_sep.join(out_lines)
     print('out_txt: {}'.format(out_txt))
 
     try:
