@@ -575,7 +575,7 @@ def main(args, multi_exit_program=None,
     img_fnames = {}
 
     img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff', '.webp')
-    vid_exts = ('.mp4', '.avi', '.mkv', '.gif', '.webm')
+    vid_exts = ('.mp4', '.avi', '.mkv', '.gif', '.webm', '.mov')
 
     transition_interval_diff = 1
 
@@ -590,7 +590,7 @@ def main(args, multi_exit_program=None,
         img_fname = None
     elif os.path.isfile(src_path):
         src_dir = os.path.dirname(src_path)
-        _ext = os.path.splitext(src_path)[1]
+        _ext = os.path.splitext(src_path)[1].lower()
         if _ext in vid_exts:
             video_mode = 1
             img_fname = None
