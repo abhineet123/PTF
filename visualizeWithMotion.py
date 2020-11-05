@@ -116,7 +116,7 @@ params = {
     'show_window': 1,
     'enable_hotkeys': 0,
     'check_images': 0,
-    'move_to_right': 0,
+    'tall_position': 0,
     'on_top': 1,
     'second_from_top': 0,
     'top_border': 0,
@@ -167,7 +167,7 @@ def main(args, multi_exit_program=None,
     quality = params['quality']
     resize = params['resize']
     mode = params['mode']
-    move_to_right = params['move_to_right']
+    tall_position = params['tall_position']
     widescreen_mode = params['widescreen_mode']
     auto_progress = params['auto_progress']
     auto_progress_video = params['auto_progress_video']
@@ -340,6 +340,7 @@ def main(args, multi_exit_program=None,
             [0, -1080],
             [1920, 0],
             [1920, -1080],
+            [-1920, -1080],
         ]
 
         def get_monitor_id(x, y):
@@ -415,8 +416,11 @@ def main(args, multi_exit_program=None,
                             ctypes.byref(ext_rect),
                             ctypes.sizeof(ext_rect)
                         )
+                        # border = [0, 0, 0, 0]
+
                         border = [ext_rect.left - rect[0], ext_rect.top - rect[1],
                                   rect[2] - ext_rect.right, rect[3] - ext_rect.bottom]
+
                         rect = [rect[0] + border[0], rect[1] + border[1],
                                 rect[2] - border[2], rect[3] - border[3]]
 
@@ -697,7 +701,8 @@ def main(args, multi_exit_program=None,
                         os.path.basename(src_path), n_frames, w, h, memory_required / 1e9))
 
                     if memory_required > max_buffer_ram:
-                        # _print('Buffer memory needed is more than the maximum allowed {} GB so using lazy load'.format(
+                        # _print('Buffer memory needed is more than the maximum allowed {} GB so using lazy
+                        # load'.format(
                         #     max_buffer_ram / 1e9))
                         _src_files = cap
                         _lazy_video_load = 1
@@ -715,7 +720,8 @@ def main(args, multi_exit_program=None,
                             n_files_per_thread = int(n_frames / parallel_read)
                             for _id in range(parallel_read):
                                 start_frame_id = _id * n_files_per_thread
-                                end_frame_id = n_frames if _id == parallel_read - 1 else start_frame_id + n_files_per_thread
+                                end_frame_id = n_frames if _id == parallel_read - 1 else start_frame_id + \
+                                                                                         n_files_per_thread
                                 thread = threading.Thread(target=read_images_from_video,
                                                           args=(_id, src_path, start_frame_id, end_frame_id,
                                                                 img_sequences[_load_id]))
@@ -1140,7 +1146,7 @@ def main(args, multi_exit_program=None,
                     _set_id + 1, _img_id + 1, _n_images))
 
     def createWindow(_win_name):
-        nonlocal mode, move_to_right
+        nonlocal mode, tall_position
 
         try:
             cv2.destroyWindow(_win_name)
@@ -1191,9 +1197,11 @@ def main(args, multi_exit_program=None,
                     cv2.moveWindow(_win_name, win_offset_x + widescreen_monitor[0],
                                    win_offset_y + widescreen_monitor[1])
                 else:
-                    if move_to_right:
+                    if tall_position == 2:
                         cv2.moveWindow(_win_name, win_offset_x + monitors[4][0], win_offset_y + monitors[4][1])
-                    else:
+                    elif tall_position == 1:
+                        cv2.moveWindow(_win_name, win_offset_x + monitors[5][0], win_offset_y + monitors[5][1])
+                    elif tall_position == 0:
                         cv2.moveWindow(_win_name, win_offset_x + monitors[2][0], win_offset_y + monitors[2][1])
 
         cv2.setMouseCallback(_win_name, mouseHandler)
@@ -1258,10 +1266,13 @@ def main(args, multi_exit_program=None,
         print('grid_size: {}'.format(grid_size))
 
     def loadImage(_type=0, set_grid_size=0, decrement_id=0):
-        nonlocal src_img_ar, start_row, end_row, start_col, end_col, dst_height, dst_width, n_switches, img_id, direction
-        nonlocal target_height, target_width, min_height, start_col, end_col, height_ratio, img_fname, start_time, video_files_list
+        nonlocal src_img_ar, start_row, end_row, start_col, end_col, dst_height, dst_width, n_switches, img_id, \
+            direction
+        nonlocal target_height, target_width, min_height, start_col, end_col, height_ratio, img_fname, start_time, \
+            video_files_list
         nonlocal src_start_row, src_start_col, src_end_row, src_end_col, aspect_ratio, src_path, vid_id, \
-            src_images, img_fnames, stack_idx, stack_locations, src_img, wp_id, src_files_rand, top_border, bottom_border
+            src_images, img_fnames, stack_idx, stack_locations, src_img, wp_id, src_files_rand, top_border, \
+            bottom_border
         nonlocal img_sequences, _lazy_video_load
 
         if decrement_id:
@@ -1771,7 +1782,8 @@ def main(args, multi_exit_program=None,
 
     def mouseHandler(event, x, y, flags=None, param=None):
         nonlocal img_id, row_offset, col_offset, lc_start_t, rc_start_t, end_exec, fullscreen, \
-            direction, target_height, prev_pos, prev_win_pos, speed, old_speed, min_height, min_height_ratio, n_images, src_images
+            direction, target_height, prev_pos, prev_win_pos, speed, old_speed, min_height, min_height_ratio, \
+            n_images, src_images
         nonlocal win_offset_x, win_offset_y, width, height, top_border, bottom_border, images_to_sort, \
             images_to_sort_inv, auto_progress, src_files, rotate_images, src_path, vid_id, auto_progress_video
         reset_prev_pos = reset_prev_win_pos = True
@@ -2064,7 +2076,8 @@ def main(args, multi_exit_program=None,
                                     # click_found = 0
                                     # for i in range(n_images):
                                     #     _start_row, _start_col, _end_row, _end_col = stack_locations[i]
-                                    #     if x_scaled >= _start_col and x_scaled < _end_col and y_scaled >= _start_row and y_scaled < _end_row:
+                                    #     if x_scaled >= _start_col and x_scaled < _end_col and y_scaled >=
+                                    #     _start_row and y_scaled < _end_row:
                                     #         __idx = stack_idx[i]
                                     #         fname = '"' + os.path.abspath(img_fnames[__idx]) + '"'
                                     #         print('Clicked on image {} with id {}:\n {}'.format(i + 1, __idx, fname))
@@ -2433,8 +2446,10 @@ def main(args, multi_exit_program=None,
         if mode == 0:
             _curr_monitor = _monitor_id
         elif mode == 1:
-            if move_to_right:
+            if tall_position == 2:
                 _curr_monitor = 4
+            if tall_position == 2:
+                _curr_monitor = 5
             else:
                 _curr_monitor = 2
 
@@ -2680,11 +2695,18 @@ def main(args, multi_exit_program=None,
 
             if frg_win_titles and not first_img:
                 hwnd = frg_win_handles[frg_win_id]
+
                 try:
                     rect = win32gui.GetWindowRect(hwnd)
                 except:
                     pass
                 else:
+                    tup = win32gui.GetWindowPlacement(hwnd)
+                    if tup[1] == win32con.SW_SHOWMAXIMIZED:
+                        border = [abs(rect[0]) % 10, abs(rect[1]) % 10, abs(rect[2]) % 10, abs(rect[3]) % 10]
+                    else:
+                        border = [0, 0, 0, 0]
+
                     if DwmGetWindowAttribute:
                         ext_rect = ctypes.wintypes.RECT()
                         DWMWA_EXTENDED_FRAME_BOUNDS = 9
@@ -2694,13 +2716,20 @@ def main(args, multi_exit_program=None,
                             ctypes.byref(ext_rect),
                             ctypes.sizeof(ext_rect)
                         )
-                        border = [ext_rect.left - rect[0], ext_rect.top - rect[1],
-                                  rect[2] - ext_rect.right, rect[3] - ext_rect.bottom]
+                        # border = [0, 0, 0, 0]
+
+                        # border = [ext_rect.left - rect[0], ext_rect.top - rect[1],
+                        #           rect[2] - ext_rect.right, rect[3] - ext_rect.bottom]
+
                         # rect = [rect[0] - border[0], rect[1] - border[1],
                         #         rect[2] + border[0] + border[2], rect[3] + border[1] + border[3]]
 
                         rect = [rect[0] + border[0], rect[1] + border[1],
                                 rect[2] - border[2], rect[3] - border[3]]
+
+                        # print('frg_titles {}'.format(frg_titles[frg_win_id]))
+                        # print('border {}'.format(border))
+                        # print('rect {}'.format(rect))
 
                     frg_positions[frg_win_id] = rect
                 x1, y1, x2, y2 = frg_positions[frg_win_id]
@@ -2721,7 +2750,7 @@ def main(args, multi_exit_program=None,
             # if mode == 0:
             #     _curr_monitor = monitor_id
             # elif mode == 1:
-            #     if move_to_right:
+            #     if tall_position:
             #         _curr_monitor = 4
             #     else:
             #         _curr_monitor = 2
@@ -2842,11 +2871,21 @@ def main(args, multi_exit_program=None,
                 break
             elif k == 13:
                 changeMode()
-            elif k == 10:
+            elif k == 92:  # \ --> tall left
                 if mode == 1:
                     widescreen_mode = 1 - widescreen_mode
+                elif tall_position == 1:
+                    tall_position = 0
                 else:
-                    move_to_right = 1 - move_to_right
+                    tall_position = 1
+                changeMode()
+            elif k == 10 or k == 124:  # | --> tall right
+                if mode == 1:
+                    widescreen_mode = 1 - widescreen_mode
+                elif tall_position == 2:
+                    tall_position = 0
+                else:
+                    tall_position = 2
                 changeMode()
             elif k == ord('g'):
                 # grid transpose
@@ -2990,7 +3029,7 @@ def main(args, multi_exit_program=None,
                     _print('duplicate window disabled')
             elif k == ord('N'):
                 max_switches += 1
-            elif ord('1') <= k <= ord('5'):
+            elif ord('1') <= k <= ord('6'):
                 _monitor_id = k - ord('1')
                 try:
                     active_win_name = win32gui.GetWindowText(win32gui.GetForegroundWindow())
