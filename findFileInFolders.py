@@ -4,6 +4,7 @@ import sys
 from pprint import pformat
 from pathlib import Path
 from difflib import SequenceMatcher
+from collections import Counter
 
 import paramparse
 
@@ -128,18 +129,24 @@ def main():
 
                 stripped_names = [strip_from_first_num(k) for k in src_files_no_ext if strip_from_first_num(k)]
 
-                unique_names = list(set(stripped_names))
+                # unique_names = list(set(stripped_names))
+
+                unique_names = Counter(stripped_names)
+
                 if collage:
                     for unique_name in unique_names:
-                        unique_name_matching_files = [
-                            (i, k) for i, k in enumerate(src_files_no_ext) if
-                            longest_common_substring(k, unique_name).size > 0.7 * len(unique_name)]
+                        # unique_name_matching_files = [
+                        #     (i, k) for i, k in enumerate(src_files_no_ext) if
+                        #     longest_common_substring(k, unique_name).size > 0.7 * len(unique_name)]
+                        #
+                        # assert unique_name_matching_files, "No matching files found for {} in {}".format(
+                        #     unique_name, src_folder)
+                        # unique_name_count = len(unique_name_matching_files)
+                        # first_idx = unique_name_matching_files[0][0]
 
-                        assert unique_name_matching_files, "No matching files found for {} in {}".format(
-                            unique_name, src_folder)
+                        unique_name_count = unique_names[unique_name]
 
-                        unique_name_count = len(unique_name_matching_files)
-                        first_idx = unique_name_matching_files[0][0]
+                        first_idx = stripped_names.index(unique_name)
 
                         _name, _ext = os.path.splitext(src_files[first_idx])
 
