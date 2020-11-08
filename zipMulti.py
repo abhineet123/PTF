@@ -11,6 +11,7 @@ if __name__ == '__main__':
         'dir_names': [],
         'exclusions': [],
         'exclude_ext': [],
+        'include_ext': [],
         'out_name': '',
         'postfix': '',
         'scp_dst': '',
@@ -23,6 +24,7 @@ if __name__ == '__main__':
     _dir_names = params['dir_names']
     exclusions = params['exclusions']
     exclude_ext = params['exclude_ext']
+    include_ext = params['include_ext']
     out_name = params['out_name']
     postfix = params['postfix']
     switches = params['switches']
@@ -123,7 +125,13 @@ if __name__ == '__main__':
                 switches2 += ' -x "{}"'.format(exclusion)
             zip_cmd = '{:s} {:s}'.format(zip_cmd, switches2)
 
-        if exclude_ext:
+        if include_ext:
+            print('Including only files with extensions: {}'.format(include_ext))
+            switches2 = ''
+            for _ext in include_ext:
+                switches2 += ' -i "*.{}"'.format(_ext)
+            zip_cmd = '{:s} {:s}'.format(zip_cmd, switches2)
+        elif exclude_ext:
             print('Excluding files with extensions: {}'.format(exclude_ext))
             switches2 = ''
             for _ext in exclude_ext:
