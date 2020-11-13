@@ -14,6 +14,7 @@ params = {
     'quality': 3,
     'recursive': 1,
     'border_type': 2,
+    'border_size': 100.,
     'resize': 0,
     'out_size': '',
     'out_ext': 'jpg',
@@ -27,7 +28,8 @@ if __name__ == '__main__':
     show_img = params['show_img']
     quality = params['quality']
     border_type = params['border_type']
-    # 0: LHS, 1:RHS, 2: both
+    border_size = params['border_size']
+    # 0: LHS, 1:RHS, 2: both, : bottom
     resize = params['resize']
     out_size = params['out_size']
     out_ext = params['out_ext']
@@ -69,6 +71,8 @@ if __name__ == '__main__':
         print('Removing only RHS borders')
     elif border_type == 2:
         print('Removing both LHS and RHS borders')
+    elif border_type == 3:
+        print('Removing only bottom border')
     else:
         raise AssertionError('Invalid border type: {}'.format(border_type))
 
@@ -99,7 +103,13 @@ if __name__ == '__main__':
 
         src_height, src_width, n_channels = src_img.shape
 
-        if border_type < 0:
+        if border_type == 3:
+            start_row_id = 0
+            end_row_id = int(src_height - border_size)
+
+            dst_img = src_img[start_row_id:end_row_id, :, :].astype(np.uint8)
+
+        elif border_type < 0:
             dst_img = np.asarray(trim(Image.fromarray(src_img)))
         else:
             if border_type == 1:
