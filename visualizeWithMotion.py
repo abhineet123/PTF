@@ -1281,7 +1281,7 @@ def main(args, multi_exit_program=None,
                     img_id[_id] -= n_images - 1
             else:
                 for _id in img_id:
-                    img_id[_id] -= n_images - 1
+                    img_id[_id] -= len(img_fnames)
         if set_grid_size:
             setGridSize()
 
