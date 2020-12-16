@@ -171,8 +171,8 @@ def main():
                         _line = _line.replace('python2 ', 'python2 -u ', 1)
                     pane_to_log[pane_id].append(log_fname)
 
-                list_start_indices = [m.start() for m in re.finditer(_line, "\{")]
-                list_end_indices = [m.start() for m in re.finditer(_line, "\}")]
+                list_start_indices = [m.start() for m in re.finditer("{", _line)]
+                list_end_indices = [m.start() for m in re.finditer("}", _line)]
 
                 assert len(list_start_indices) == len(list_end_indices), \
                     "mismatch between number of list start and end markers"
@@ -186,7 +186,7 @@ def main():
                     temp_line_list = []
                     for __line in _multi_token_lines:
                         for _val in replacement_vals:
-                            new_line = __line.replace(substr, _val, count=1)
+                            new_line = __line.replace(substr, str(_val), 1)
                             temp_line_list.append(new_line)
 
                     _multi_token_lines = temp_line_list
@@ -211,6 +211,9 @@ def main():
                 # else:
                 #     _multi_token_lines = [_line, ]
 
+
+                print(_multi_token_lines)
+
                 for __line in _multi_token_lines:
                     pane_to_commands[pane_id].append('tmux send-keys -t {} "{}" Enter Enter'.format(
                         pane_id,
@@ -224,6 +227,7 @@ def main():
             for pane_id in pane_to_commands:
                 for _cmd_id, _cmd in enumerate(pane_to_commands[pane_id]):
                     txt = 'running command {} in {}'.format(_cmd_id, pane_id)
+                    txt += '\n' + _cmd
                     if enable_logging:
                         mkdir_cmd = 'mkdir -p {}'.format(log_dir)
                         # os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, mkdir_cmd))
