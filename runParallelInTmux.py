@@ -230,9 +230,9 @@ def main():
                     txt += '\n' + _cmd
                     if enable_logging:
                         mkdir_cmd = 'mkdir -p {}'.format(log_dir)
-                        # os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, mkdir_cmd))
+                        os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, mkdir_cmd))
 
-                    # os.system(_cmd)
+                    os.system(_cmd)
 
                     if enable_logging:
                         log_fname = pane_to_log[pane_id][_cmd_id]
@@ -240,7 +240,7 @@ def main():
                         zip_path = os.path.join(log_dir, zip_fname)
 
                         zip_cmd = '(cd {} && zip -rm {} {})'.format(log_dir, zip_fname, log_fname)
-                        # os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, zip_cmd))
+                        os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, zip_cmd))
                         txt += ' with logging in {}'.format(zip_path)
 
                     write(txt)
