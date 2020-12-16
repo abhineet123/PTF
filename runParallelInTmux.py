@@ -171,8 +171,8 @@ def main():
                         _line = _line.replace('python2 ', 'python2 -u ', 1)
                     pane_to_log[pane_id].append(log_fname)
 
-                list_start_indices = [m.start() for m in re.finditer(_line, '{')]
-                list_end_indices = [m.start() for m in re.finditer(_line, '}')]
+                list_start_indices = [m.start() for m in re.finditer(_line, "\{")]
+                list_end_indices = [m.start() for m in re.finditer(_line, "\}")]
 
                 assert len(list_start_indices) == len(list_end_indices), \
                     "mismatch between number of list start and end markers"
