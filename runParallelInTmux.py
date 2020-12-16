@@ -227,7 +227,7 @@ def main():
             for pane_id in pane_to_commands:
                 for _cmd_id, _cmd in enumerate(pane_to_commands[pane_id]):
                     txt = 'running command {} in {}'.format(_cmd_id, pane_id)
-                    txt += '\n' + _cmd
+                    # txt += '\n' + _cmd
                     if enable_logging:
                         mkdir_cmd = 'mkdir -p {}'.format(log_dir)
                         os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, mkdir_cmd))
