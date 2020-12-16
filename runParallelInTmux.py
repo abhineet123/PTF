@@ -23,7 +23,7 @@ def main():
         'pane_id': '12.0',
         'pane_id_sep': '>',
         'log_dir': 'log/tee',
-        'enable_logging': 0,
+        'enable_logging': 1,
     }
     paramparse.process_dict(params)
 
@@ -155,22 +155,6 @@ def main():
                         del pane_to_log[pane_id]
                     continue
 
-                if enable_logging:
-                    time_stamp = datetime.now().strftime("%y%m%d_%H%M%S_%f")
-                    log_fname = '{}.ansi'.format(time_stamp)
-                    log_path = os.path.join(log_dir, log_fname)
-                    tee_log_id = '{}:{}'.format(pane_id, time_stamp)
-                    _line = '{} @ tee_log={} 2>&1 | tee {}'.format(_line, tee_log_id, log_path)
-
-                    """disable python output buffering to ensure in-order output in the logging fine"""
-                    if _line.startswith('python '):
-                        _line = _line.replace('python ', 'python -u ', 1)
-                    elif _line.startswith('python3 '):
-                        _line = _line.replace('python3 ', 'python3 -u ', 1)
-                    elif _line.startswith('python2 '):
-                        _line = _line.replace('python2 ', 'python2 -u ', 1)
-                    pane_to_log[pane_id].append(log_fname)
-
                 list_start_indices = [m.start() for m in re.finditer("{", _line)]
                 list_end_indices = [m.start() for m in re.finditer("}", _line)]
 
@@ -212,9 +196,25 @@ def main():
                 #     _multi_token_lines = [_line, ]
 
 
-                print(_multi_token_lines)
+                # print(_multi_token_lines)
 
                 for __line in _multi_token_lines:
+                    if enable_logging:
+                        time_stamp = datetime.now().strftime("%y%m%d_%H%M%S_%f")
+                        log_fname = '{}.ansi'.format(time_stamp)
+                        log_path = os.path.join(log_dir, log_fname)
+                        tee_log_id = '{}:{}'.format(pane_id, time_stamp)
+                        __line = '{} @ tee_log={} 2>&1 | tee {}'.format(__line, tee_log_id, log_path)
+
+                        """disable python output buffering to ensure in-order output in the logging fine"""
+                        if __line.startswith('python '):
+                            __line = __line.replace('python ', 'python -u ', 1)
+                        elif __line.startswith('python3 '):
+                            __line = __line.replace('python3 ', 'python3 -u ', 1)
+                        elif __line.startswith('python2 '):
+                            __line = __line.replace('python2 ', 'python2 -u ', 1)
+                        pane_to_log[pane_id].append(log_fname)
+                        
                     pane_to_commands[pane_id].append('tmux send-keys -t {} "{}" Enter Enter'.format(
                         pane_id,
                         # pane_to_commands[pane_id][-1],
@@ -230,9 +230,9 @@ def main():
                     txt += '\n' + _cmd
                     if enable_logging:
                         mkdir_cmd = 'mkdir -p {}'.format(log_dir)
-                        os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, mkdir_cmd))
+                        # os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, mkdir_cmd))
 
-                    os.system(_cmd)
+                    # os.system(_cmd)
 
                     if enable_logging:
                         log_fname = pane_to_log[pane_id][_cmd_id]
@@ -240,7 +240,7 @@ def main():
                         zip_path = os.path.join(log_dir, zip_fname)
 
                         zip_cmd = '(cd {} && zip -rm {} {})'.format(log_dir, zip_fname, log_fname)
-                        os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, zip_cmd))
+                        # os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, zip_cmd))
                         txt += ' with logging in {}'.format(zip_path)
 
                     write(txt)
