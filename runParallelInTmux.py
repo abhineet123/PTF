@@ -3,6 +3,7 @@ import os
 
 from pprint import pformat
 from datetime import datetime
+import re
 
 import paramparse
 
@@ -117,6 +118,9 @@ def main():
             # pprint(lines)
             cmd_id = 0
             pane_id = ''
+
+            command_lines = [_line for _line in lines if not _line.startswith('## @ ') and not _line.startswith('# ')]
+
             for line in lines:
                 _line = line.strip()
                 if not _line:
@@ -139,7 +143,7 @@ def main():
                         pane_to_commands[pane_id] = []
                         pane_to_log[pane_id] = []
 
-                    pane_to_commands[pane_id].append('tmux send-keys -t {}'.format(pane_id))
+                    # pane_to_commands[pane_id].append('tmux send-keys -t {}'.format(pane_id))
                     continue
                 elif _line.startswith('# '):
                     continue
@@ -167,7 +171,52 @@ def main():
                         _line = _line.replace('python2 ', 'python2 -u ', 1)
                     pane_to_log[pane_id].append(log_fname)
 
-                pane_to_commands[pane_id][-1] = '{} "{}" Enter Enter'.format(pane_to_commands[pane_id][-1], _line)
+                list_start_indices = [m.start() for m in re.finditer(_line, '{')]
+                list_end_indices = [m.start() for m in re.finditer(_line, '}')]
+
+                assert len(list_start_indices) == len(list_end_indices), \
+                    "mismatch between number of list start and end markers"
+
+                _multi_token_lines = [_line, ]
+                for _start_id, _end_id in zip(list_start_indices, list_end_indices):
+                    substr = _line[_start_id:_end_id + 1]
+
+                    replacement_vals = paramparse.str_to_tuple(substr[1:-1])
+
+                    temp_line_list = []
+                    for __line in _multi_token_lines:
+                        for _val in replacement_vals:
+                            new_line = __line.replace(substr, _val, count=1)
+                            temp_line_list.append(new_line)
+
+                    _multi_token_lines = temp_line_list
+
+                # _line_tokens = _line.split(' ')
+                # _multi_tokens = [(__id, token) for __id, token in enumerate(_line_tokens)
+                #                  if token.startswith('__rpit_multi__')]
+                # if _multi_tokens:
+                #     assert len(_multi_tokens) == 1, "only singluar multi_tokens per line supported for now"
+                #     __id, _multi_token = _multi_tokens[0]
+                #
+                #     _multi_token_lines = []
+                #     _arg_name, _file_name, _start_id, _end_id = _multi_token.split(':')
+                #     _multi_token_arg_vals = open(_file_name, 'r').readlines()[_start_id:_end_id + 1]
+                #
+                #     for _arg_val in _multi_token_arg_vals:
+                #         _multi_tokens_copy = _multi_tokens[:]
+                #         _multi_tokens_copy[__id] = '{}={}'.format(_arg_name, _arg_val)
+                #
+                #         _multi_token_line = ' '.join(_multi_tokens_copy)
+                #         _multi_token_lines.append(_multi_token_line)
+                # else:
+                #     _multi_token_lines = [_line, ]
+
+                for __line in _multi_token_lines:
+                    pane_to_commands[pane_id].append('tmux send-keys -t {} "{}" Enter Enter'.format(
+                        pane_id,
+                        # pane_to_commands[pane_id][-1],
+                        __line)
+                    )
 
             # write('pane_to_commands: {}'.format(pformat(pane_to_commands)))
             lines = None
@@ -177,9 +226,9 @@ def main():
                     txt = 'running command {} in {}'.format(_cmd_id, pane_id)
                     if enable_logging:
                         mkdir_cmd = 'mkdir -p {}'.format(log_dir)
-                        os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, mkdir_cmd))
+                        # os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, mkdir_cmd))
 
-                    os.system(_cmd)
+                    # os.system(_cmd)
 
                     if enable_logging:
                         log_fname = pane_to_log[pane_id][_cmd_id]
@@ -187,7 +236,7 @@ def main():
                         zip_path = os.path.join(log_dir, zip_fname)
 
                         zip_cmd = '(cd {} && zip -rm {} {})'.format(log_dir, zip_fname, log_fname)
-                        os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, zip_cmd))
+                        # os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, zip_cmd))
                         txt += ' with logging in {}'.format(zip_path)
 
                     write(txt)
