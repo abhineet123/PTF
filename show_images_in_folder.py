@@ -187,6 +187,9 @@ def main():
             elif k == ord('p'):
                 image_pause[_src_file_id] = 1 - image_pause[_src_file_id]
                 print('image_pause: {}'.format(image_pause))
+            elif k == ord('P'):
+                image_pause = {k: 1 - image_pause[k] if k != _src_file_id else image_pause[k] for k in image_pause}
+                print('image_pause: {}'.format(image_pause))
 
             img_id += 1
 

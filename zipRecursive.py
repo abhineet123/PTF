@@ -30,7 +30,6 @@ if __name__ == '__main__':
     if not file_pattern:
         file_pattern = '*'
 
-
     if os.path.isdir(_root_dir):
         root_dirs = [_root_dir]
         root_base_dir = _root_dir
@@ -74,8 +73,8 @@ if __name__ == '__main__':
 
     sub_dirs = filter_func(sub_dirs)
 
-    print('sub_dirs:\n')
-    pprint(sub_dirs)
+    # print('sub_dirs:\n')
+    # pprint(sub_dirs)
 
     sub_dirs.append('.')
     zip_paths = ''
@@ -86,8 +85,8 @@ if __name__ == '__main__':
 
     # zip_paths.replace(root_dir, '')
 
-    # print('zip_paths:\n')
-    # pprint(zip_paths)
+    print('zip_paths:\n')
+    pprint(zip_paths)
 
     if postfix:
         out_name = '{}_{}'.format(out_name, postfix)
@@ -98,10 +97,13 @@ if __name__ == '__main__':
 
     zip_cmd = 'cd {:s} && zip {:s} {:s} {:s}'.format(root_base_dir, switches, out_name, zip_paths)
 
-    # print('\nrunning: {}\n'.format(zip_cmd))
+    print('\nrunning: {}\n'.format(zip_cmd))
     # subprocess.call(zip_cmd)
     os.system(zip_cmd)
-    os.system('cd {:s} && unzip -l {}'.format(root_base_dir, out_name))
+
+    unzip_cmd = 'cd {:s} && unzip -l {}'.format(root_base_dir, out_name)
+    print('\nrunning: {}\n'.format(unzip_cmd))
+    os.system(unzip_cmd)
 
     if scp_dst:
         scp_cmd = 'cd {:s} && scp {} {}:~/'.format(root_base_dir, out_name, scp_dst)
