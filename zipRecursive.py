@@ -80,19 +80,28 @@ if __name__ == '__main__':
 
     sub_dirs.append('.')
     # zip_paths = ''
+
+    all_matching_files = []
     for _dir in sub_dirs:
         for _pattern in file_pattern:
-            current_path = os.path.join(_dir, _pattern) if _pattern else _dir
+            current_path = os.path.join(root_base_dir, _dir, _pattern) if _pattern else _dir
 
             matching_files = glob.glob(current_path)
             if matching_files:
                 print('{}: {}'.format(current_path, matching_files))
+                all_matching_files += matching_files
             # zip_paths = '{} {}'.format(zip_paths, current_path) if zip_paths else current_path
 
     # zip_paths.replace(root_dir, '')
 
     # print('zip_paths:\n')
     # pprint(zip_paths)
+
+    if not all_matching_files:
+        print('No matching files found')
+        exit()
+
+    zip_paths = ' '.join(all_matching_files)
 
     if postfix:
         out_name = '{}_{}'.format(out_name, postfix)
@@ -101,26 +110,26 @@ if __name__ == '__main__':
     time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
     out_name = '{}_{}.zip'.format(out_name, time_stamp)
 
-    # zip_cmd = 'cd {:s} && zip {:s} {:s} {:s}'.format(root_base_dir, switches, out_name, zip_paths)
+    zip_cmd = 'cd {:s} && zip {:s} {:s} {:s}'.format(root_base_dir, switches, out_name, zip_paths)
 
     # print('\nrunning: {}\n'.format(zip_cmd))
     # subprocess.call(zip_cmd)
     # os.system(zip_cmd)
 
-    # unzip_cmd = 'cd {:s} && unzip -l {}'.format(root_base_dir, out_name)
+    unzip_cmd = 'cd {:s} && unzip -l {}'.format(root_base_dir, out_name)
     # print('\nrunning: {}\n'.format(unzip_cmd))
     # os.system(unzip_cmd)
 
-    # if scp_dst:
-    #     scp_cmd = 'cd {:s} && scp {} {}:~/'.format(root_base_dir, out_name, scp_dst)
-    #     print('\nrunning: {}\n'.format(scp_cmd))
-    #     os.system(scp_cmd)
-    #     rm_cmd = 'cd {:s} && rm {}'.format(root_base_dir, out_name)
-    #     print('\nrunning: {}\n'.format(rm_cmd))
-    #     os.system(rm_cmd)
-    # else:
-    #     mv_cmd = 'cd {:s} && mv {:s} ~'.format(root_base_dir, out_name)
-    #     print('\nrunning: {}\n'.format(mv_cmd))
-    #     os.system(mv_cmd)
+    if scp_dst:
+        scp_cmd = 'cd {:s} && scp {} {}:~/'.format(root_base_dir, out_name, scp_dst)
+        print('\nrunning: {}\n'.format(scp_cmd))
+        # os.system(scp_cmd)
+        rm_cmd = 'cd {:s} && rm {}'.format(root_base_dir, out_name)
+        print('\nrunning: {}\n'.format(rm_cmd))
+        # os.system(rm_cmd)
+    else:
+        mv_cmd = 'cd {:s} && mv {:s} ~'.format(root_base_dir, out_name)
+        print('\nrunning: {}\n'.format(mv_cmd))
+        # os.system(mv_cmd)
 
     print('out_name:\n {}'.format(out_name))
