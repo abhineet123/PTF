@@ -88,7 +88,7 @@ if __name__ == '__main__':
 
             matching_files = glob.glob(os.path.join(root_base_dir, current_path))
             if matching_files:
-                matching_files = [os.path.relpath(k, root_base_dir) for k in root_base_dir]
+                matching_files = [os.path.relpath(k, root_base_dir) for k in matching_files]
                 print('{}: {}'.format(current_path, matching_files))
                 all_matching_files += matching_files
             # zip_paths = '{} {}'.format(zip_paths, current_path) if zip_paths else current_path
