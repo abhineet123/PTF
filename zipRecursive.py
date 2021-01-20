@@ -85,8 +85,8 @@ if __name__ == '__main__':
 
     # zip_paths.replace(root_dir, '')
 
-    print('zip_paths:\n')
-    pprint(zip_paths)
+    # print('zip_paths:\n')
+    # pprint(zip_paths)
 
     if postfix:
         out_name = '{}_{}'.format(out_name, postfix)
