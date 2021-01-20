@@ -115,22 +115,22 @@ if __name__ == '__main__':
 
     # print('\nrunning: {}\n'.format(zip_cmd))
     # subprocess.call(zip_cmd)
-    # os.system(zip_cmd)
+    os.system(zip_cmd)
 
     unzip_cmd = 'cd {:s} && unzip -l {}'.format(root_base_dir, out_name)
     # print('\nrunning: {}\n'.format(unzip_cmd))
-    # os.system(unzip_cmd)
+    os.system(unzip_cmd)
 
     if scp_dst:
         scp_cmd = 'cd {:s} && scp {} {}:~/'.format(root_base_dir, out_name, scp_dst)
         print('\nrunning: {}\n'.format(scp_cmd))
-        # os.system(scp_cmd)
+        os.system(scp_cmd)
         rm_cmd = 'cd {:s} && rm {}'.format(root_base_dir, out_name)
         print('\nrunning: {}\n'.format(rm_cmd))
-        # os.system(rm_cmd)
+        os.system(rm_cmd)
     else:
         mv_cmd = 'cd {:s} && mv {:s} ~'.format(root_base_dir, out_name)
         print('\nrunning: {}\n'.format(mv_cmd))
-        # os.system(mv_cmd)
+        os.system(mv_cmd)
 
     print('out_name:\n {}'.format(out_name))
