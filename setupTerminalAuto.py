@@ -10,7 +10,7 @@ if __name__ == '__main__':
         'exe_path': '',
         'auth_path': '',
         'config': 0,
-        'wait_t': 10,
+        'wait_t': 3,
     }
     processArguments(sys.argv[1:], params)
     exe_path = params['exe_path']
@@ -71,7 +71,7 @@ if __name__ == '__main__':
         app3.window().maximize()
         app3.fatty.type_keys("tmux{VK_SPACE}new~")
 
-        time.sleep(5)
+        time.sleep(wait_t)
 
         app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name00)
         app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name01)
@@ -83,7 +83,7 @@ if __name__ == '__main__':
             _app.fatty.type_keys("sudo{VK_SPACE}-s~")
             _app.fatty.type_keys("%s~" % pwd1)
 
-        time.sleep(5)
+        time.sleep(wait_t)
 
         app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name10)
         app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name11)
@@ -101,7 +101,7 @@ if __name__ == '__main__':
             _app.fatty.type_keys("sudo{VK_SPACE}-s~")
             _app.fatty.type_keys("%s~" % pwd2)
 
-        time.sleep(5)
+        time.sleep(wait_t)
 
         app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name20)
         app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name21)
@@ -177,7 +177,7 @@ if __name__ == '__main__':
                 _app.fatty.type_keys("sudo{VK_SPACE}-s~")
                 _app.fatty.type_keys("%s~" % pwd0)
 
-            time.sleep(3)
+            time.sleep(wait_t)
 
             app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name00)
             app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name01)
@@ -189,7 +189,7 @@ if __name__ == '__main__':
                 _app.fatty.type_keys("sudo{VK_SPACE}-s~")
                 _app.fatty.type_keys("%s~" % pwd1)
 
-            time.sleep(3)
+            time.sleep(wait_t)
 
             app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name10)
             app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name11)
@@ -207,7 +207,7 @@ if __name__ == '__main__':
                 _app.fatty.type_keys("sudo{VK_SPACE}-s~")
                 _app.fatty.type_keys("%s~" % pwd2)
 
-            time.sleep(5)
+            time.sleep(wait_t)
 
             app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name20)
             app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name21)

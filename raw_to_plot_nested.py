@@ -120,7 +120,8 @@ class RTPNParams:
     io_file = 'fence_gen1_circ.xcfg'
     # io_file = 'fence_gen1_cmb.xcfg'
     src_file_path = 'fence_gen1.xlsx'
-    root_dir = 'C:/UofA/Acamp/fence_code/scripts/scripts_gen1/fence_results'
+    # root_dir = 'C:/UofA/Acamp/fence_code/scripts/scripts_gen1/fence_results',
+    root_dir = '.'
 
 
 def main():
@@ -161,22 +162,22 @@ def main():
         src_book.save(dst_file_path)
 
     else:
+        # dst_file_path = src_file_path
+        src_book.save(src_file_path)
 
-        dst_file_path = src_file_path
+    # import win32com.client
+    #
+    # excel_app = win32com.client.Dispatch("Excel.Application")
+    # excel_app.Visible = False
+    #
+    # try:
+    #     src_book.save(dst_file_path)
+    # except PermissionError:
+    #     # excel_app.Workbooks.Open(dst_file_path).Close()
+    #     # wb.Close()
+    #     src_book.save(dst_file_path)
 
-    import win32com.client
-
-    excel_app = win32com.client.Dispatch("Excel.Application")
-    excel_app.Visible = False
-
-    try:
-        src_book.save(dst_file_path)
-    except PermissionError:
-        excel_app.Workbooks.Open(dst_file_path).Close()
-        # wb.Close()
-        src_book.save(dst_file_path)
-
-    excel_app.Workbooks.Open(dst_file_path)
+    # excel_app.Workbooks.Open(dst_file_path)
 
 
 if __name__ == '__main__':

@@ -10,6 +10,7 @@ from Misc import getParamDict
 _params = {
     # 'root_dir': 'G:/Datasets/MOT2015',
     'root_dir': 'G:/Datasets/MOT2017',
+    'root_dir': 'G:/Datasets/MOT2017',
     # 'db_dir': '2DMOT2015',
     'db_dir': '',
     'db_type': 'train',
