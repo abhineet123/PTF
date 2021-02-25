@@ -29,6 +29,7 @@ def check_interface(interface_names):
     ip_address = ''
     # mac_address = ''
     name = ''
+    description = ''
 
     for line in lines:
         # -------------
@@ -57,9 +58,15 @@ def check_interface(interface_names):
 
             print('name: {}'.format(name))
 
+        if ':' not in line:
+            continue
+
+        value = line.split(':')[-1]
+        value = value.strip()
+
         is_description = line.startswith('description')
         if is_description:
-            description = line.split(':')[1]
+            description = value
 
             print('\ndescription: {}\n'.format(description))
 
@@ -69,16 +76,17 @@ def check_interface(interface_names):
 
             # name = description
 
-        if ':' not in line:
-            continue
 
-        value = line.split(':')[-1]
-        value = value.strip()
 
         # -------------
         # IP Address
 
-        is_ip_address = not ip_address and re.match(r'ipv4 address|autoconfiguration ipv4 address|ip address', line)
+        # is_ip_address = re.match(r'ipv4 address|autoconfiguration ipv4 address|ip address', line)
+        is_ip_address = line.startswith('ipv4 address') or \
+                        line.startswith('autoconfiguration ipv4 address') or \
+                        line.startswith('ip address')
+
+        is_ip_address = not ip_address and is_ip_address
 
         if is_ip_address:
             ip_address = value
