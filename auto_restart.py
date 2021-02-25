@@ -37,12 +37,12 @@ def check_interface(interface_names):
 
         print('line: {}'.format(line))
 
-        is_interface_names = re.match(r'^[a-zA-Z0-9].*:$', line)
+        is_interface_name = re.match(r'^[a-zA-Z0-9].*:$', line)
 
-        print('is_interface_names: {}'.format(is_interface_names))
+        print('is_interface_name: {}'.format(is_interface_name))
 
-        # is_interface_names = 1
-        if is_interface_names:
+        # is_interface_name = 1
+        if is_interface_name:
 
             # Check if there's previews values, if so - yield them
             if name and ip_address:
@@ -55,6 +55,14 @@ def check_interface(interface_names):
 
             print('name: {}\n\n'.format(name))
 
+        is_description = re.match(r'^description.*:$', line)
+        if is_description:
+            description = line.split(':')[1]
+
+            print('description: {}\n\n'.format(description))
+
+            # name = description
+            
         if ':' not in line:
             continue
 
