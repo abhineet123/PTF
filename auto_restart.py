@@ -24,7 +24,7 @@ def check_interface(interface_names):
 
     print('interface_names: {}\n\n'.format(interface_names))
     print('output: {}'.format(output))
-    print('lines:\n {}'.format(pformat(lines)))
+    # print('lines:\n {}'.format(pformat(lines)))
 
     ip_address = ''
     # mac_address = ''
@@ -37,7 +37,7 @@ def check_interface(interface_names):
         line = line.strip().lower()
 
         print('line: {}'.format(line))
-        print('ip_address: {}'.format(ip_address))
+        # print('ip_address: {}'.format(ip_address))
 
         is_interface_name = re.match(r'^[a-zA-Z0-9].*:$', line)
 
@@ -55,13 +55,13 @@ def check_interface(interface_names):
             # mac_address = ''
             name = line.rstrip(':')
 
-            print('name: {}\n\n'.format(name))
+            print('name: {}'.format(name))
 
         is_description = line.startswith('description')
         if is_description:
             description = line.split(':')[1]
 
-            print('description: {}\n\n'.format(description))
+            print('description: {}'.format(description))
 
             if description and ip_address:
                 if description in interface_names:
@@ -98,8 +98,12 @@ def check_interface(interface_names):
         #     mac_address = mac_address.replace('-', ':')
         #     mac_address = mac_address.strip()
 
-    if (name and ip_address) or (description and ip_address):
-        if name == interface_names:
+    print('ip_address: {}\n\n'.format(ip_address))
+
+    if ip_address:
+        if name and name in interface_names:
+            return ip_address
+        if description and description in interface_names:
             return ip_address
 
     print('\n')
