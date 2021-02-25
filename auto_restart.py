@@ -55,14 +55,14 @@ def check_interface(interface_names):
 
             print('name: {}\n\n'.format(name))
 
-        is_description = re.match(r'^description.*:$', line)
+        is_description = line.startswith('description.')
         if is_description:
             description = line.split(':')[1]
 
             print('description: {}\n\n'.format(description))
 
             # name = description
-            
+
         if ':' not in line:
             continue
 
