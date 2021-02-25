@@ -83,7 +83,7 @@ def check_interface(interface_names):
         is_ip_address = line.startswith('ipv4 address') or \
                         line.startswith('autoconfiguration ipv4 address') or \
                         line.startswith('ip address')
-        
+
         print('is_ip_address: {}'.format(is_ip_address))
 
         # is_ip_address = not ip_address and is_ip_address
@@ -92,6 +92,8 @@ def check_interface(interface_names):
             ip_address = value
             ip_address = ip_address.replace('(preferred)', '')
             ip_address = ip_address.strip()
+
+            print('ip_address: {}'.format(ip_address))
 
             # print('line: ', line)
             # print('ip_address: ', ip_address)
@@ -106,13 +108,13 @@ def check_interface(interface_names):
         #     mac_address = mac_address.replace('-', ':')
         #     mac_address = mac_address.strip()
 
-    print('ip_address: {}\n\n'.format(ip_address))
+        if ip_address:
+            if name and name in interface_names:
+                return ip_address
 
-    if ip_address:
-        if name and name in interface_names:
-            return ip_address
-        if description and description in interface_names:
-            return ip_address
+            if description and description in interface_names:
+                return ip_address
+
     return None
 
 
