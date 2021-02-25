@@ -105,10 +105,6 @@ def check_interface(interface_names):
             return ip_address
         if description and description in interface_names:
             return ip_address
-
-    print('\n')
-    print('ip_address: {}'.format(ip_address))
-
     return None
 
 
