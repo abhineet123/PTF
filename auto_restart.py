@@ -55,7 +55,7 @@ def check_interface(interface_names):
 
             print('name: {}\n\n'.format(name))
 
-        is_description = line.startswith('description.')
+        is_description = line.startswith('description')
         if is_description:
             description = line.split(':')[1]
 
