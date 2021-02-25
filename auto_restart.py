@@ -36,7 +36,7 @@ def check_interface(interface_names):
 
         line = line.strip().lower()
 
-        print('line: {}'.format(line))
+        print('\nline: {}\n'.format(line))
         # print('ip_address: {}'.format(ip_address))
 
         is_interface_name = re.match(r'^[a-zA-Z0-9].*:$', line)
@@ -61,7 +61,7 @@ def check_interface(interface_names):
         if is_description:
             description = line.split(':')[1]
 
-            print('description: {}'.format(description))
+            print('\ndescription: {}\n'.format(description))
 
             if description and ip_address:
                 if description in interface_names:
