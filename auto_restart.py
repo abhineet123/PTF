@@ -84,7 +84,7 @@ def check_interface(interface_names):
                         line.startswith('autoconfiguration ipv4 address') or \
                         line.startswith('ip address')
 
-        is_ip_address = not ip_address and is_ip_address
+        # is_ip_address = not ip_address and is_ip_address
 
         if is_ip_address:
             ip_address = value
