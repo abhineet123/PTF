@@ -4,6 +4,8 @@ import bencode
 import codecs
 import psutil
 
+from pprint import pformat
+
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
 import smtplib
@@ -21,7 +23,7 @@ def check_interface(interface_names):
     lines = filter(lambda x: x, lines)
 
     print('output: {}'.format(output))
-    print('lines: {}'.format(lines))
+    print('lines:\n {}'.format(pformat(lines)))
 
     ip_address = ''
     # mac_address = ''
@@ -34,9 +36,11 @@ def check_interface(interface_names):
         line = line.strip().lower()
 
         print('line: {}'.format(line))
-        print('is_interface_names: {}'.format(is_interface_names))
 
         is_interface_names = re.match(r'^[a-zA-Z0-9].*:$', line)
+
+        print('is_interface_names: {}'.format(is_interface_names))
+
         # is_interface_names = 1
         if is_interface_names:
 
