@@ -98,7 +98,7 @@ def check_interface(interface_names):
         #     mac_address = mac_address.replace('-', ':')
         #     mac_address = mac_address.strip()
 
-    if name and ip_address:
+    if (name and ip_address) or (description and ip_address):
         if name == interface_names:
             return ip_address
 
