@@ -31,6 +31,11 @@ def check_interface(interface_names):
         # -------------
         # Interface Name
 
+        line = line.strip().lower()
+
+        print('line: {}'.format(line))
+        print('is_interface_names: {}'.format(is_interface_names))
+
         is_interface_names = re.match(r'^[a-zA-Z0-9].*:$', line)
         # is_interface_names = 1
         if is_interface_names:
@@ -44,12 +49,7 @@ def check_interface(interface_names):
             # mac_address = ''
             name = line.rstrip(':')
 
-            print('line: {}'.format(line))
             print('name: {}'.format(name))
-
-        line = line.strip().lower()
-
-        print('line: {}'.format(line))
 
         if ':' not in line:
             continue
