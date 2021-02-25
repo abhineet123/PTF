@@ -9,7 +9,7 @@ from email.MIMEText import MIMEText
 import smtplib
 
 # import paramparse
-# 
+#
 
 from Misc import processArguments
 
@@ -152,7 +152,10 @@ if __name__ == '__main__':
                     (current_t - vpn_wait_start_t > max_vpn_wait_time):
                 restart_now = 1
                 break
-            time.sleep(0.1)
+            try:
+                time.sleep(1)
+            except KeyboardInterrupt:
+                exit()
 
         if restart_now:
             break
