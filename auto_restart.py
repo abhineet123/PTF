@@ -8,8 +8,8 @@ from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
 import smtplib
 
-import paramparse
-
+# import paramparse
+# 
 
 from Misc import processArguments
 
@@ -110,9 +110,9 @@ if __name__ == '__main__':
         'email_auth': [],
     }
 
-    paramparse.process_dict(params)
+    # paramparse.process_dict(params)
 
-    # processArguments(sys.argv[1:], params)
+    processArguments(sys.argv[1:], params)
 
     utorrent_mode = params['utorrent_mode']
     interface_names = params['interface_names']
