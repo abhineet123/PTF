@@ -75,9 +75,7 @@ def check_interface(interface_names):
                     return ip_address
 
             # name = description
-
-
-
+            
         # -------------
         # IP Address
 
