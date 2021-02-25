@@ -22,6 +22,7 @@ def check_interface(interface_names):
     lines = output.splitlines()
     lines = filter(lambda x: x, lines)
 
+    print('interface_names: {}\n\n'.format(interface_names))
     print('output: {}'.format(output))
     print('lines:\n {}'.format(pformat(lines)))
 
@@ -36,10 +37,11 @@ def check_interface(interface_names):
         line = line.strip().lower()
 
         print('line: {}'.format(line))
+        print('ip_address: {}'.format(ip_address))
 
         is_interface_name = re.match(r'^[a-zA-Z0-9].*:$', line)
 
-        print('is_interface_name: {}'.format(is_interface_name))
+        # print('is_interface_name: {}'.format(is_interface_name))
 
         # is_interface_name = 1
         if is_interface_name:
@@ -60,6 +62,10 @@ def check_interface(interface_names):
             description = line.split(':')[1]
 
             print('description: {}\n\n'.format(description))
+
+            if description and ip_address:
+                if description in interface_names:
+                    return ip_address
 
             # name = description
 
@@ -146,6 +152,8 @@ if __name__ == '__main__':
     restart_now = 0
     prev_ip_address = ''
     restarted = 1
+
+    interface_names = [k.lower() for k in interface_names]
 
     while True:
 
