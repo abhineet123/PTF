@@ -8,16 +8,19 @@ from Misc import processArguments
 from Misc import getParamDict
 
 _params = {
+    'start_out_id': 47,
     # 'root_dir': 'G:/Datasets/MOT2015',
-    'root_dir': 'G:/Datasets/MOT2017',
-    'root_dir': 'G:/Datasets/MOT2017',
+    # 'root_dir': 'G:/Datasets/MOT2017',
+    'root_dir': '/data/CTMC',
     # 'db_dir': '2DMOT2015',
     'db_dir': '',
-    'db_type': 'train',
-    # 'db_type': 'test',
+    # 'db_type': 'train',
+    'db_type': 'test',
     'det_type': '',
     # 'det_type': 'FRCNN',
     'ignore_img': 0,
+    'ignore_det': 1,
+    'no_move': 1,
 }
 
 processArguments(sys.argv[1:], _params)
@@ -27,6 +30,10 @@ db_dir = _params['db_dir']
 db_type = _params['db_type']
 det_type = _params['det_type']
 ignore_img = _params['ignore_img']
+ignore_det = _params['ignore_det']
+no_move = _params['no_move']
+start_out_id = _params['start_out_id']
+
 # actor_id = _params['actor_id']
 # start_id = _params['start_id']
 # ignored_region_only = _params['ignored_region_only']
@@ -83,38 +90,40 @@ img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff', '.webp')
 
 out_txt = ''
 
-for seq_name in sequences:
+for seq_id, seq_name in enumerate(sequences):
     in_img_path = os.path.join(in_img_root, seq_name, 'img1')
     in_gt_path = os.path.join(in_img_root, seq_name, 'gt', 'gt.txt')
 
-    if det_type:
-        in_det_path = os.path.join(in_img_root, det_type, seq_name + '-' + det_type, 'det', 'det.txt')
-    else:
-        in_det_path = os.path.join(in_img_root, seq_name, 'det', 'det.txt')
+    if not ignore_det:
+        if det_type:
+            in_det_path = os.path.join(in_img_root, det_type, seq_name + '-' + det_type, 'det', 'det.txt')
+        else:
+            in_det_path = os.path.join(in_img_root, seq_name, 'det', 'det.txt')
+        assert os.path.exists(in_det_path), "in_det_path: {} does not exist".format(in_det_path)
+        out_det_path = os.path.join(out_det_root, seq_name + '.txt')
+        if not no_move:
+            shutil.move(in_det_path, out_det_path)
+        print('{} --> {}'.format(in_det_path, out_det_path))
 
     if not ignore_img:
-        assert os.path.exists(in_img_path), "in_img_path: {} does not exist".format(in_img_path)
 
         _src_files = [os.path.join(in_img_path, k) for k in os.listdir(in_img_path) if
                       os.path.splitext(k.lower())[1] in img_exts]
         n_src_files = len(_src_files)
         n_frames_list.append(n_src_files)
         print('n_src_files: {}'.format(n_src_files))
-        out_txt += '{}\n'.format(n_src_files)
+        out_txt += "{}: ('{}', {}), \n".format(seq_id + start_out_id, seq_name, n_src_files)
 
         out_img_path = os.path.join(out_img_root, seq_name)
-        shutil.move(in_img_path, out_img_path)
+        if not no_move:
+            assert os.path.exists(in_img_path), "in_img_path: {} does not exist".format(in_img_path)
+            shutil.move(in_img_path, out_img_path)
         print('{} --> {}'.format(in_img_path, out_img_path))
-
-    assert os.path.exists(in_det_path), "in_det_path: {} does not exist".format(in_det_path)
-    out_det_path = os.path.join(out_det_root, seq_name + '.txt')
-    shutil.move(in_det_path, out_det_path)
-
-    print('{} --> {}'.format(in_det_path, out_det_path))
 
     if os.path.exists(in_gt_path):
         out_gt_path = os.path.join(out_gt_root, seq_name + '.txt')
-        shutil.move(in_gt_path, out_gt_path)
+        if not no_move:
+            shutil.move(in_gt_path, out_gt_path)
         print('{} --> {}'.format(in_gt_path, out_gt_path))
 
     print()
