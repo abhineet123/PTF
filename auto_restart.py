@@ -53,7 +53,7 @@ def check_interface(interface_names):
             # mac_address = ''
             name = line.rstrip(':')
 
-            print('name: {}'.format(name))
+            print('name: {}\n\n'.format(name))
 
         if ':' not in line:
             continue
