@@ -83,6 +83,8 @@ def check_interface(interface_names):
         is_ip_address = line.startswith('ipv4 address') or \
                         line.startswith('autoconfiguration ipv4 address') or \
                         line.startswith('ip address')
+        
+        print('is_ip_address: {}'.format(is_ip_address))
 
         # is_ip_address = not ip_address and is_ip_address
 
