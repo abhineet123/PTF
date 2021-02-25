@@ -132,7 +132,7 @@ if __name__ == '__main__':
         'vpn_path': 'C:/Users/Tommy/Desktop/purevpn.lnk',
         'tor_path': 'C:/Users/Tommy/Desktop/uTorrent.lnk',
         'settings_path': 'C:/Users/Tommy/AppData/Roaming/uTorrent/settings.dat',
-        'vpn_proc': 'purevpn.exe',
+        'vpn_proc': 'PureVPN.exe',
         'tor_proc': 'uTorrent.exe',
         'syatem_name': 'GT1K',
         'email_auth': [],
