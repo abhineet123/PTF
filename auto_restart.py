@@ -17,8 +17,8 @@ def check_interface(interface_name):
     lines = output.splitlines()
     lines = filter(lambda x: x, lines)
 
-    # print('output: ', output)
-    # print('lines: ', lines)
+    print('output: ', output)
+    print('lines: ', lines)
 
     ip_address = ''
     # mac_address = ''
@@ -41,10 +41,12 @@ def check_interface(interface_name):
             # mac_address = ''
             name = line.rstrip(':')
 
-            # print('line: ', line)
-            # print('name: ', name)
+            print('line: ', line)
+            print('name: ', name)
 
         line = line.strip().lower()
+
+        print('line: ', line)
 
         if ':' not in line:
             continue
@@ -78,6 +80,9 @@ def check_interface(interface_name):
     if name and ip_address:
         if name == interface_name:
             return ip_address
+
+    print('\n')
+
     return None
 
 
