@@ -11,7 +11,7 @@ import smtplib
 from Misc import processArguments
 
 
-def check_interface(interface_name):
+def check_interface(interface_names):
     output = subprocess.check_output("ipconfig /all")
 
     lines = output.splitlines()
@@ -28,13 +28,13 @@ def check_interface(interface_name):
         # -------------
         # Interface Name
 
-        is_interface_name = re.match(r'^[a-zA-Z0-9].*:$', line)
-        # is_interface_name = 1
-        if is_interface_name:
+        is_interface_names = re.match(r'^[a-zA-Z0-9].*:$', line)
+        # is_interface_names = 1
+        if is_interface_names:
 
             # Check if there's previews values, if so - yield them
             if name and ip_address:
-                if name == interface_name:
+                if name in interface_names:
                     return ip_address
 
             ip_address = ''
@@ -46,7 +46,7 @@ def check_interface(interface_name):
 
         line = line.strip().lower()
 
-        print('line: ', line)
+        print('line: {}'.format(line))
 
         if ':' not in line:
             continue
@@ -78,10 +78,11 @@ def check_interface(interface_name):
         #     mac_address = mac_address.strip()
 
     if name and ip_address:
-        if name == interface_name:
+        if name == interface_names:
             return ip_address
 
     print('\n')
+    print('ip_address: {}'.format(ip_address))
 
     return None
 
@@ -89,7 +90,7 @@ def check_interface(interface_name):
 if __name__ == '__main__':
 
     params = {
-        'interface_name': 'PPP adapter PureVPN',
+        'interface_names': ['PPP adapter PureVPN', 'TAP-Windows Adapter V9'],
         'utorrent_mode': 1,
         'restart_time': 86400,
         'wait_time': 10800,
@@ -108,7 +109,7 @@ if __name__ == '__main__':
 
     processArguments(sys.argv[1:], params)
     utorrent_mode = params['utorrent_mode']
-    interface_name = params['interface_name']
+    interface_names = params['interface_names']
     restart_time = params['restart_time']
     wait_time = params['wait_time']
     post_wait_time = params['post_wait_time']
@@ -137,7 +138,7 @@ if __name__ == '__main__':
         vpn_wait_start_t = time.time()
 
         while True:
-            ip_address = check_interface(interface_name)
+            ip_address = check_interface(interface_names)
             if ip_address is not None:
                 break
             current_t = time.time()
@@ -202,7 +203,7 @@ if __name__ == '__main__':
 
         for i in range(wait_time):
             if (i + 1) % check_vpn_gap == 0:
-                ip_address = check_interface(interface_name)
+                ip_address = check_interface(interface_names)
                 if ip_address is None:
                     print('\nvpn disconnection detected')
                     break
