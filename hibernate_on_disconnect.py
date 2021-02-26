@@ -94,22 +94,22 @@ def main():
 
     interface_name = params['interface_name']
 
-    hibernate_now = 0
+    # hibernate_now = 0
 
     interface_name = interface_name.lower()
 
     while True:
         if not is_connected(interface_name):
-            hibernate_now = 1
-            break
+            # hibernate_now = 1
+            print("hibernating...")
+            os.system("shutdown /h")
         try:
             time.sleep(5)
         except KeyboardInterrupt:
             exit()
 
-    if hibernate_now:
-        print("hibernating...")
-        os.system("shutdown /h")
+    # if hibernate_now:
+
 
 
 if __name__ == '__main__':
