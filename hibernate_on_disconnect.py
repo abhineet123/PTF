@@ -109,7 +109,7 @@ def main():
 
     if hibernate_now:
         print("hibernating...")
-        # os.system("shutdown /h")
+        os.system("shutdown /h")
 
 
 if __name__ == '__main__':
