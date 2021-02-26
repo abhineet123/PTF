@@ -1,10 +1,13 @@
 import subprocess
-import time, os, sys
+import time
+import sys
+import os
+import re
 
 from Misc import processArguments
 
 
-def is_connected(interface_name='ethernet'):
+def is_connected(interface_name):
     output = subprocess.check_output("ipconfig /all")
 
     lines = output.splitlines()
@@ -24,12 +27,14 @@ def is_connected(interface_name='ethernet'):
 
         print('line: {}'.format(line))
 
-        is_interface_name = line.startswith('ethernet adapter')
+        is_interface_name = re.match(r'^[a-zA-Z0-9].*:$', line)
+        # is_interface_name = line.startswith('ethernet adapter')
 
         print('is_interface_name: {}'.format(is_interface_name))
 
         if is_interface_name:
-            name = line.replace('ethernet adapter', '').rstrip(':').strip()
+            # name = line.replace('ethernet adapter', '').rstrip(':').strip()
+            name = line.rstrip(':').strip()
 
             print('\n\nname: {}'.format(name))
 
@@ -65,10 +70,10 @@ def is_connected(interface_name='ethernet'):
 
     return True
 
-if __name__ == '__main__':
 
+def main():
     params = {
-        'interface_name': 'ethernet',
+        'interface_name': 'ethernet adapter ethernet',
         'utorrent_mode': 1,
         'restart_time': 86400,
         'wait_time': 10800,
@@ -85,26 +90,9 @@ if __name__ == '__main__':
         'email_auth': [],
     }
 
-    # paramparse.process_dict(params)
-
     processArguments(sys.argv[1:], params)
 
-    utorrent_mode = params['utorrent_mode']
     interface_name = params['interface_name']
-    restart_time = params['restart_time']
-    wait_time = params['wait_time']
-    post_wait_time = params['post_wait_time']
-    check_vpn_gap = params['check_vpn_gap']
-    vpn_path = params['vpn_path']
-    tor_path = params['tor_path']
-    settings_path = params['settings_path']
-    vpn_proc = params['vpn_proc']
-    tor_proc = params['tor_proc']
-    email_auth = params['email_auth']
-    max_vpn_wait_time = params['max_vpn_wait_time']
-    proc_kill_type = params['proc_kill_type']
-
-    global_start_t = time.time()
 
     hibernate_now = 0
 
@@ -122,3 +110,7 @@ if __name__ == '__main__':
     if hibernate_now:
         print("hibernating...")
         # os.system("shutdown /h")
+
+
+if __name__ == '__main__':
+    main()
