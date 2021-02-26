@@ -15,9 +15,9 @@ def is_connected(interface_name):
 
     lines = map(str, lines)
 
-    print('interface_name: {}'.format(interface_name))
+    # print('interface_name: {}'.format(interface_name))
 
-    print('output: {}'.format(output))
+    # print('output: {}'.format(output))
 
     name = None
 
@@ -25,18 +25,18 @@ def is_connected(interface_name):
 
         line = str(line.strip().lower())
 
-        print('line: {}'.format(line))
+        # print('line: {}'.format(line))
 
         is_interface_name = re.match(r'^[a-zA-Z0-9].*:$', line)
         # is_interface_name = line.startswith('ethernet adapter')
 
-        print('is_interface_name: {}'.format(is_interface_name))
+        # print('is_interface_name: {}'.format(is_interface_name))
 
         if is_interface_name:
             # name = line.replace('ethernet adapter', '').rstrip(':').strip()
             name = line.rstrip(':').strip()
 
-            print('\n\nname: {}'.format(name))
+            # print('\n\nname: {}'.format(name))
 
             continue
 
@@ -48,19 +48,19 @@ def is_connected(interface_name):
 
         is_media_state = line.startswith('media state')
 
-        print('is_media_state: {}'.format(is_media_state))
+        # print('is_media_state: {}'.format(is_media_state))
 
         if is_media_state:
             media_state = value
 
-            print('media_state: {}'.format(media_state))
+            # print('media_state: {}'.format(media_state))
             is_disconnected = media_state == 'media disconnected'
             is_target_interface = name == interface_name
 
-            print('is_disconnected: {}'.format(is_disconnected))
-            print('is_target_interface: {}'.format(is_target_interface))
-            print('name: {}'.format(name))
-            print('interface_name: {}'.format(interface_name))
+            # print('is_disconnected: {}'.format(is_disconnected))
+            # print('is_target_interface: {}'.format(is_target_interface))
+            # print('name: {}'.format(name))
+            # print('interface_name: {}'.format(interface_name))
 
             if is_disconnected and is_target_interface:
                 return False
@@ -103,7 +103,7 @@ def main():
             hibernate_now = 1
             break
         try:
-            time.sleep(1)
+            time.sleep(5)
         except KeyboardInterrupt:
             exit()
 
