@@ -103,7 +103,7 @@ def main():
         out_txt = field_sep.join(out_lines)
 
     out_txt = out_txt.rstrip()
-    
+
     print('out_txt:\n{}'.format(out_txt))
 
     try:
