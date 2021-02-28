@@ -149,6 +149,7 @@ def main():
             # app_win.type_keys("^{}".format(highlight_key))
             # app_win.type_keys("{LEFT}{RIGHT}~")
             # app_win.type_keys("^{}".format(default_fmy_key))
+            app_win.type_keys("~")
             app_win.type_keys("^s")
 
             mouse.move(coords=(x, y))
