@@ -137,7 +137,11 @@ def main():
             #     app_win.type_keys("^s")
             #     continue
 
-            app_win.type_keys("^+1")
+            app_win.type_keys("^t{VK_SPACE}::{VK_SPACE}1")
+            app_win.type_keys("^+a")
+            app_win.type_keys("^2")
+            # app_win.type_keys("^+1")
+            app_win.type_keys("{RIGHT}{LEFT}~")
             app_win.type_keys("^v")
             if mode == 1:
                 app_win.type_keys("{LEFT}{RIGHT}{VK_SPACE}to{VK_SPACE}%s" % scp_name)
