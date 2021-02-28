@@ -211,6 +211,8 @@ def main():
                             __line = __line.replace('python ', 'python -u ', 1)
                         elif __line.startswith('python3 '):
                             __line = __line.replace('python3 ', 'python3 -u ', 1)
+                        elif __line.startswith('python36 '):
+                            __line = __line.replace('python36 ', 'python36 -u ', 1)
                         elif __line.startswith('python2 '):
                             __line = __line.replace('python2 ', 'python2 -u ', 1)
                         pane_to_log[pane_id].append(log_fname)
