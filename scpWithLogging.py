@@ -137,14 +137,14 @@ def main():
             #     app_win.type_keys("^s")
             #     continue
 
-            app_win.type_keys("^t~")
+            app_win.type_keys("^+1")
             app_win.type_keys("^v")
             if mode == 1:
                 app_win.type_keys("{LEFT}{RIGHT}{VK_SPACE}to{VK_SPACE}%s" % scp_name)
-            app_win.type_keys("^+a")
-            app_win.type_keys("^{}".format(highlight_key))
-            app_win.type_keys("{LEFT}{RIGHT}~")
-            app_win.type_keys("^{}".format(default_fmy_key))
+            # app_win.type_keys("^+a")
+            # app_win.type_keys("^{}".format(highlight_key))
+            # app_win.type_keys("{LEFT}{RIGHT}~")
+            # app_win.type_keys("^{}".format(default_fmy_key))
             app_win.type_keys("^s")
 
             mouse.move(coords=(x, y))
