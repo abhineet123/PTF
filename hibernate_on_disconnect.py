@@ -75,7 +75,7 @@ def main():
     params = {
         'interface_name': 'ethernet adapter ethernet',
         'utorrent_mode': 1,
-        'restart_time': 86400,
+        'sleep_time': 10,
         'wait_time': 10800,
         'post_wait_time': 10,
         'check_vpn_gap': 30,
@@ -93,6 +93,7 @@ def main():
     processArguments(sys.argv[1:], params)
 
     interface_name = params['interface_name']
+    sleep_time = params['sleep_time']
 
     # hibernate_now = 0
 
@@ -104,7 +105,7 @@ def main():
             print("hibernating...")
             os.system("shutdown /h")
         try:
-            time.sleep(5)
+            time.sleep(sleep_time)
         except KeyboardInterrupt:
             exit()
 

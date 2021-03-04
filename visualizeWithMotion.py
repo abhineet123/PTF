@@ -1063,9 +1063,13 @@ def main(args, multi_exit_program=None,
             except:
                 src_files[_id].sort()
 
-            if not multi_mode and _id > 0:
-                total_frames[0] += total_frames[_id] * _counts[_id]
-                src_files[0] += src_files[_id] * _counts[_id]
+            if not multi_mode:
+                if _id == 0:
+                    total_frames[0] = total_frames[_id] * _counts[_id]
+                    src_files[0] = src_files[_id] * _counts[_id]
+                else:
+                    total_frames[0] += total_frames[_id] * _counts[_id]
+                    src_files[0] += src_files[_id] * _counts[_id]
 
             if random_mode:
                 src_files_rand[_id] = list(np.random.permutation(src_files[_id]))
@@ -1073,6 +1077,11 @@ def main(args, multi_exit_program=None,
             # print('img_fname: {}'.format(img_fname))
             # print('img_id: {}'.format(img_id))
             _total_frames = total_frames[_id]
+
+            print('_id: {}'.format(_id))
+            print('total_frames[_id]: {}'.format(total_frames[_id]))
+            print('_counts[_id]: {}'.format(_counts[_id]))
+            print('total_frames[0]: {}'.format(total_frames[0]))
 
             img_id[_id] = 0
 
