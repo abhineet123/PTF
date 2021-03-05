@@ -102,6 +102,8 @@ def main():
     interface_name = interface_name.lower()
 
     n_disconnects = 0
+    time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+    print("{} :: started".format(time_stamp))
 
     while True:
         if not is_connected(interface_name):
@@ -110,7 +112,7 @@ def main():
             print("{} :: disconnect {}".format(time_stamp, n_disconnects))
         else:
             n_disconnects = 0
-            
+
         if n_disconnects > max_disconnects:
             # hibernate_now = 1
             time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
