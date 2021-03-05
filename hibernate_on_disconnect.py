@@ -3,6 +3,7 @@ import time
 import sys
 import os
 import re
+from datetime import datetime
 
 from Misc import processArguments
 
@@ -80,7 +81,7 @@ def main():
         'post_wait_time': 10,
         'check_vpn_gap': 30,
         'max_vpn_wait_time': 600,
-        'proc_kill_type': 0,
+        'max_disconnects': 5,
         'vpn_path': 'C:/Users/Tommy/Desktop/purevpn.lnk',
         'tor_path': 'C:/Users/Tommy/Desktop/uTorrent.lnk',
         'settings_path': 'C:/Users/Tommy/AppData/Roaming/uTorrent/settings.dat',
@@ -94,15 +95,23 @@ def main():
 
     interface_name = params['interface_name']
     sleep_time = params['sleep_time']
+    max_disconnects = params['max_disconnects']
 
     # hibernate_now = 0
 
     interface_name = interface_name.lower()
 
+    n_disconnects = 0
+
     while True:
         if not is_connected(interface_name):
+            n_disconnects += 1
+        else:
+            n_disconnects = 0
+        if n_disconnects > max_disconnects:
             # hibernate_now = 1
-            print("hibernating...")
+            time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+            print("{} :: hibernating...".format(time_stamp))
             os.system("shutdown /h")
         try:
             time.sleep(sleep_time)

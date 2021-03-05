@@ -74,7 +74,7 @@ def main():
     script_filename = inspect.getframeinfo(inspect.currentframe()).filename
     script_path = os.path.dirname(os.path.abspath(script_filename))
 
-    prefix_file_names = None
+    prefix_file_paths = None
 
     if seq_start_id < 0:
         # extract seq_start_id from seq_prefix
@@ -83,23 +83,23 @@ def main():
             print(('Looking for sequence prefix in {}'.format(os.path.abspath(src_dir))))
             if recursive:
                 print('Searching recursively')
-                src_file_gen = [[f for f in filenames if f != 'Thumbs.db']
+                src_file_gen = [[os.path.join(dirpath, f) for f in filenames if f != 'Thumbs.db']
                                 for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)
                                 if dirpath != os.getcwd()]
-                prefix_file_names = [item for sublist in src_file_gen for item in sublist]
+                prefix_file_paths = [item for sublist in src_file_gen for item in sublist]
             else:
-                prefix_file_names = [f for f in os.listdir(src_dir) if
-                                  os.path.isfile(os.path.join(src_dir, f)) and f != 'Thumbs.db']
+                prefix_file_paths = [os.path.join(src_dir, f) for f in os.listdir(src_dir) if
+                                     os.path.isfile(os.path.join(src_dir, f)) and f != 'Thumbs.db']
 
             if seq_prefix_filter:
                 print(('Restricting search to files containing: {}'.format(seq_prefix_filter)))
-                prefix_file_names = [k for k in prefix_file_names if seq_prefix_filter in k]
+                prefix_file_paths = [k for k in prefix_file_paths if seq_prefix_filter in os.path.basename(k)]
 
             if seq_prefix_ext:
                 print(('Restricting search to files with extension: {}'.format(seq_prefix_ext)))
-                prefix_file_names = [k for k in prefix_file_names if k.endswith(seq_prefix_ext)]
+                prefix_file_paths = [k for k in prefix_file_paths if os.path.basename(k).endswith(seq_prefix_ext)]
 
-        #     seq_prefix = os.path.splitext(prefix_file_names[-1])[0]
+        #     seq_prefix = os.path.splitext(prefix_file_paths[-1])[0]
         #     print(('Found sequence prefix {}'.format(seq_prefix)))
         #
         # split_str = seq_prefix.split('_')
@@ -166,13 +166,26 @@ def main():
         all_src_file_names.append(src_file_names)
         all_src_file_names_flat += src_file_names
 
-    if prefix_file_names is not None:
+    if prefix_file_paths is not None:
         # exclude files to be renamed from files used to generate prefix
-        prefix_file_names = list(set(prefix_file_names).difference(set(all_src_file_names_flat)))
+        prefix_file_paths = list(set(prefix_file_paths).difference(set(all_src_file_names_flat)))
 
-        prefix_file_names.sort(key=sortKey)
-        # print 'prefix_file_names: {}'.format(prefix_file_names)
-        
+        prefix_file_names = [os.path.basename(k) for k in prefix_file_paths]
+
+        def argsort(seq):
+            # http://stackoverflow.com/questions/3071415/efficient-method-to-calculate-the-rank-vector-of-a-list-in
+            # -python
+            return sorted(range(len(seq)), key=lambda x: sortKey(seq[x]))
+
+        sort_idx = argsort(prefix_file_names)
+
+        prefix_file_names = [prefix_file_names[k] for k in sort_idx]
+        prefix_file_paths = [prefix_file_paths[k] for k in sort_idx]
+
+
+        # prefix_file_names.sort(key=sortKey)
+        # print 'prefix_file_paths: {}'.format(prefix_file_paths)
+
         seq_prefix = os.path.splitext(prefix_file_names[-1])[0]
         print(('Found sequence prefix {}'.format(seq_prefix)))
 
