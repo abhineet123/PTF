@@ -246,8 +246,9 @@ def main():
                         txt += ' with logging in {}'.format(zip_path)
 
                     write(txt)
+                    all_pane_ids .append(pane_id)
 
-            all_pane_ids += list(pane_to_commands.keys())
+            # all_pane_ids += list(pane_to_commands.keys())
 
         all_pane_ids_str = '__'.join(all_pane_ids).replace(':', '_')
         write('{}'.format(all_pane_ids_str))
