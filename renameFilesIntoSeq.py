@@ -74,6 +74,8 @@ def main():
     script_filename = inspect.getframeinfo(inspect.currentframe()).filename
     script_path = os.path.dirname(os.path.abspath(script_filename))
 
+    prefix_file_names = None
+
     if seq_start_id < 0:
         # extract seq_start_id from seq_prefix
         if os.path.isdir(seq_prefix):
@@ -84,34 +86,31 @@ def main():
                 src_file_gen = [[f for f in filenames if f != 'Thumbs.db']
                                 for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)
                                 if dirpath != os.getcwd()]
-                src_file_names = [item for sublist in src_file_gen for item in sublist]
+                prefix_file_names = [item for sublist in src_file_gen for item in sublist]
             else:
-                src_file_names = [f for f in os.listdir(src_dir) if
+                prefix_file_names = [f for f in os.listdir(src_dir) if
                                   os.path.isfile(os.path.join(src_dir, f)) and f != 'Thumbs.db']
 
             if seq_prefix_filter:
                 print(('Restricting search to files containing: {}'.format(seq_prefix_filter)))
-                src_file_names = [k for k in src_file_names if seq_prefix_filter in k]
+                prefix_file_names = [k for k in prefix_file_names if seq_prefix_filter in k]
 
             if seq_prefix_ext:
                 print(('Restricting search to files with extension: {}'.format(seq_prefix_ext)))
-                src_file_names = [k for k in src_file_names if k.endswith(seq_prefix_ext)]
+                prefix_file_names = [k for k in prefix_file_names if k.endswith(seq_prefix_ext)]
 
-            src_file_names.sort(key=sortKey)
-            # print 'src_file_names: {}'.format(src_file_names)
-
-            seq_prefix = os.path.splitext(src_file_names[-1])[0]
-            print(('Found sequence prefix {}'.format(seq_prefix)))
-
-        split_str = seq_prefix.split('_')
-        try:
-            seq_start_id = int(split_str[-1]) + 1
-        except ValueError:
-            seq_start_id = 1
-        else:
-            seq_prefix = '_'.join(split_str[:-1])
-        # for _str in split_str[1:-1]:
-        #     seq_prefix = '{}_{}'.format(seq_prefix, _str)
+        #     seq_prefix = os.path.splitext(prefix_file_names[-1])[0]
+        #     print(('Found sequence prefix {}'.format(seq_prefix)))
+        #
+        # split_str = seq_prefix.split('_')
+        # try:
+        #     seq_start_id = int(split_str[-1]) + 1
+        # except ValueError:
+        #     seq_start_id = 1
+        # else:
+        #     seq_prefix = '_'.join(split_str[:-1])
+        # # for _str in split_str[1:-1]:
+        # #     seq_prefix = '{}_{}'.format(seq_prefix, _str)
 
     print('seq_prefix: {:s}'.format(seq_prefix))
     print('seq_start_id: {:d}'.format(seq_start_id))
@@ -143,6 +142,8 @@ def main():
         print(('Saving log to {}'.format(log_file)))
         log_fid = open(log_file, 'w')
 
+    all_src_file_names = []
+    all_src_file_names_flat = []
     for seq_root_dir in seq_root_dirs:
         seq_root_dir = os.path.abspath(seq_root_dir)
 
@@ -162,6 +163,30 @@ def main():
         else:
             src_file_names.sort(key=sortKey)
 
+        all_src_file_names.append(src_file_names)
+        all_src_file_names_flat += src_file_names
+
+    if prefix_file_names is not None:
+        # exclude files to be renamed from files used to generate prefix
+        prefix_file_names = list(set(prefix_file_names).difference(set(all_src_file_names_flat)))
+
+        prefix_file_names.sort(key=sortKey)
+        # print 'prefix_file_names: {}'.format(prefix_file_names)
+        
+        seq_prefix = os.path.splitext(prefix_file_names[-1])[0]
+        print(('Found sequence prefix {}'.format(seq_prefix)))
+
+        split_str = seq_prefix.split('_')
+        try:
+            seq_start_id = int(split_str[-1]) + 1
+        except ValueError:
+            seq_start_id = 1
+        else:
+            seq_prefix = '_'.join(split_str[:-1])
+        # for _str in split_str[1:-1]:
+        #     seq_prefix = '{}_{}'.format(seq_prefix, _str)
+
+    for src_file_names in all_src_file_names:
         seq_id = seq_start_id
         file_count = 1
         n_files = len(src_file_names)
