@@ -15,6 +15,7 @@ def main():
         'horz': 1,
         'categories': 1,
         'category_sep': ' :: ',
+        'date_sep': ' – – ',
         'pairwise': 1,
         'first_and_last': 0,
         'add_date': 1,
@@ -24,6 +25,7 @@ def main():
     horz = _params['horz']
     categories = _params['categories']
     category_sep = _params['category_sep']
+    date_sep = _params['date_sep']
     first_and_last = _params['first_and_last']
     pairwise = _params['pairwise']
     add_date = _params['add_date']
@@ -44,20 +46,44 @@ def main():
         category = None
         if categories:
             if category_sep in line:
-                temp = line.split(category_sep)[:2]
+                temp = line.split(category_sep)
 
-                print('line: {}'.format(line))
-                print('temp: {}'.format(temp))
+                # print('line: {}'.format(line))
+                # print('temp: {}'.format(temp))
 
                 if len(temp) == 2:
                     line, category = temp
                     line = line.strip()
                     category = category.strip()
+
+        if date_sep in line:
+            temp = line.split(date_sep)
+
+            print('date_sep line: {}'.format(line))
+            print('date_sep temp: {}'.format(temp))
+
+            if len(temp) == 2:
+                line, _ = temp
+                line = line.strip()
+
+        time_found = 0
+
         try:
-            datetime.strptime(line, '%I:%M:%S %p')
+            date_obj = datetime.strptime(line, '%I:%M:%S %p')
         except ValueError:
-            pass
+            try:
+                date_obj = datetime.strptime(line, '%I:%M %p')
+            except ValueError:
+                pass
+            else:
+                temp2 = line.split(' ')
+                _time, _pm = temp2
+                line = '{}:00 {}'.format(_time, _pm)
+                time_found = 1
         else:
+            time_found = 1
+
+        if time_found:
             out_lines.append(line)
             if categories:
                 if category is None:

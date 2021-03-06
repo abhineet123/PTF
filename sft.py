@@ -83,9 +83,9 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
                 global_prev_win_handle = win32gui.FindWindow(None, global_prev_active_name)
                 # _prev_active_handle_now = win32gui.FindWindow(None, prev_active_called_name)
 
-                print('global_prev_win_handle: {}'.format(global_prev_win_handle))
-                print('prev_active_called_name: {}'.format(prev_active_called_name))
-                print('prev_active_called_handle: {}'.format(prev_active_called_handle))
+                # print('global_prev_win_handle: {}'.format(global_prev_win_handle))
+                # print('prev_active_called_name: {}'.format(prev_active_called_name))
+                # print('prev_active_called_handle: {}'.format(prev_active_called_handle))
 
                 # if not global_prev_win_handle or (
                         # xyplorer_id in global_prev_active_name and
