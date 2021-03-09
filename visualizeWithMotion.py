@@ -312,7 +312,7 @@ def main(args, multi_exit_program=None,
         orig_wp_fname_res = win_wallpaper_func(SPI_GETDESKWALLPAPER, 500, orig_wp_fname, 0)
         # print("orig_wp_fname_res: {}".format(orig_wp_fname_res))
         # print("orig_wp_fname raw: {}".format(orig_wp_fname.raw))
-        _print("orig_wp_fname value: {}".format(orig_wp_fname.value))
+        # _print("orig_wp_fname value: {}".format(orig_wp_fname.value))
         # print("orig_wp_fname: {}".format(orig_wp_fname))
 
         orig_wp_fname = orig_wp_fname.value.decode("utf-8")
@@ -2278,28 +2278,28 @@ def main(args, multi_exit_program=None,
             if not video_mode:
                 img_id[0] -= 2 * n_images
             interrupt_wait.set()
-        elif _type == 'ctrl+alt+w':
-            wallpaper_mode = 1 - wallpaper_mode
-            if wallpaper_mode:
-                set_wallpaper = 1
-                _print('wallpaper mode enabled')
-                cv2.destroyWindow(win_name)
-                # minimizeWindow()
-            else:
-                _print('wallpaper mode disabled')
-                createWindow()
-                # maximizeWindow()
-            interrupt_wait.set()
-        elif _type == 'ctrl+alt+shift+w':
-            wallpaper_mode = 1 - wallpaper_mode
-            if wallpaper_mode:
-                set_wallpaper = 2
-                _print('wallpaper mode enabled')
-                cv2.destroyWindow(win_name)
-            else:
-                _print('wallpaper mode disabled')
-                createWindow()
-            interrupt_wait.set()
+        # elif _type == 'ctrl+alt+w':
+        #     wallpaper_mode = 1 - wallpaper_mode
+        #     if wallpaper_mode:
+        #         set_wallpaper = 1
+        #         _print('wallpaper mode enabled')
+        #         cv2.destroyWindow(win_name)
+        #         # minimizeWindow()
+        #     else:
+        #         _print('wallpaper mode disabled')
+        #         createWindow()
+        #         # maximizeWindow()
+        #     interrupt_wait.set()
+        # elif _type == 'ctrl+alt+shift+w':
+        #     wallpaper_mode = 1 - wallpaper_mode
+        #     if wallpaper_mode:
+        #         set_wallpaper = 2
+        #         _print('wallpaper mode enabled')
+        #         cv2.destroyWindow(win_name)
+        #     else:
+        #         _print('wallpaper mode disabled')
+        #         createWindow()
+        #     interrupt_wait.set()
         elif _type == 'ctrl+alt+=':
             n_images += 1
             loadImage(1, 1)
@@ -3369,18 +3369,18 @@ def main(args, multi_exit_program=None,
                 _print('Setting transition interval to: {}'.format(transition_interval))
             elif k == ord('m') or k == ord('M'):
                 minimizeWindow()
-            elif k == ord('W'):
-                # width -= 10
-                set_wallpaper = 0 if set_wallpaper else 2
-                if set_wallpaper:
-                    minimizeWindow()
-                    loadImage()
-            elif k == ord('w'):
-                # width += 10
-                set_wallpaper = 0 if set_wallpaper else 1
-                if set_wallpaper:
-                    minimizeWindow()
-                    loadImage()
+            # elif k == ord('W'):
+            #     # width -= 10
+            #     set_wallpaper = 0 if set_wallpaper else 2
+            #     if set_wallpaper:
+            #         minimizeWindow()
+            #         loadImage()
+            # elif k == ord('w'):
+            #     # width += 10
+            #     set_wallpaper = 0 if set_wallpaper else 1
+            #     if set_wallpaper:
+            #         minimizeWindow()
+            #         loadImage()
             # elif k == ord('e') or k == ord('E'):
             #     wallpaper_mode = 1 - wallpaper_mode
             #     if wallpaper_mode:
@@ -3634,8 +3634,8 @@ def main(args, multi_exit_program=None,
                 _print('Moving {} to {}'.format(orig_file_path, sort_file_path))
                 shutil.move(orig_file_path, sort_file_path)
 
-    if set_wallpaper:
-        win_wallpaper_func(SPI_SETDESKWALLPAPER, 0, orig_wp_fname, 0)
+    # if set_wallpaper:
+    #     win_wallpaper_func(SPI_SETDESKWALLPAPER, 0, orig_wp_fname, 0)
 
 
 if __name__ == '__main__':

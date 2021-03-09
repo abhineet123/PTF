@@ -62,7 +62,10 @@ def main():
             print('date_sep line: {}'.format(line))
             print('date_sep temp: {}'.format(temp))
 
-            if len(temp) == 2:
+            if len(temp) == 3:
+                line, _, date_str = temp
+                line = line.strip()
+            elif len(temp) == 2:
                 line, _ = temp
                 line = line.strip()
 
