@@ -253,7 +253,7 @@ def main(args, multi_exit_program=None,
     else:
         _print = print
 
-    _print('args:\n{}'.format(pformat(args)))
+    # _print('args:\n{}'.format(pformat(args)))
 
     interrupt_wait = Event()
 
@@ -469,11 +469,11 @@ def main(args, multi_exit_program=None,
                     frg_win_handles.append(win_handles[_target_id])
                     frg_reversed_pos.append(_reversed_pos)
 
-                    _print(f'{frg_win_title} :: found window {frg_titles[-1]} with '
-                           f'handle {frg_win_handles[-1]} and '
-                           f'position: {frg_positions[-1]} '
-                           f'border: {frg_win_borders[-1]}'
-                           f'reversed_pos: {frg_reversed_pos[-1]}'
+                    _print(f'{frg_win_title} :: found window {frg_titles[-1]} with:\n'
+                           f'\thandle {frg_win_handles[-1]}\n'
+                           f'\tposition: {frg_positions[-1]}\n'
+                           f'\tborder: {frg_win_borders[-1]}\n'
+                           f'\treversed_pos: {frg_reversed_pos[-1]}\n'
                            )
 
             frg_win_id = 0
@@ -1078,10 +1078,10 @@ def main(args, multi_exit_program=None,
             # print('img_id: {}'.format(img_id))
             _total_frames = total_frames[_id]
 
-            print('_id: {}'.format(_id))
-            print('total_frames[_id]: {}'.format(total_frames[_id]))
-            print('_counts[_id]: {}'.format(_counts[_id]))
-            print('total_frames[0]: {}'.format(total_frames[0]))
+            # print('_id: {}'.format(_id))
+            # print('total_frames[_id]: {}'.format(total_frames[_id]))
+            # print('_counts[_id]: {}'.format(_counts[_id]))
+            # print('total_frames[0]: {}'.format(total_frames[0]))
 
             img_id[_id] = 0
 
@@ -2446,7 +2446,7 @@ def main(args, multi_exit_program=None,
     def moveWindow(_monitor_id, _win_name, _reversed_pos):
         nonlocal frg_positions
         if frg_win_titles:
-            cv2.moveWindow(_win_name, frg_positions[frg_win_id][0], frg_positions[frg_win_id][1])
+            cv2.moveWindow(_win_name, frg_positions[frg_win_id][0]-1, frg_positions[frg_win_id][1]-1)
             return
 
         if isinstance(_reversed_pos, int):
@@ -2710,11 +2710,17 @@ def main(args, multi_exit_program=None,
                 except:
                     pass
                 else:
-                    tup = win32gui.GetWindowPlacement(hwnd)
-                    if tup[1] == win32con.SW_SHOWMAXIMIZED:
-                        border = [abs(rect[0]) % 10, abs(rect[1]) % 10, abs(rect[2]) % 10, abs(rect[3]) % 10]
-                    else:
-                        border = [0, 0, 0, 0]
+                    # tup = win32gui.GetWindowPlacement(hwnd)
+                    # if tup[1] == win32con.SW_SHOWMAXIMIZED:
+                    #     border = [abs(rect[0]) % 10, abs(rect[1]) % 10, abs(rect[2]) % 10, abs(rect[3]) % 10]
+                    # else:
+                    #     border = [0, 0, 0, 0]
+
+                    # shifted_pos_rect = [rect[0] + 3840, rect[1] + 2160,
+                    #         rect[2] + 3840, rect[3] + 2160]
+                    #
+                    # shifted_border = [abs(shifted_pos_rect[0]) % 10, abs(shifted_pos_rect[1]) % 10,
+                    #           abs(shifted_pos_rect[2]) % 10, abs(shifted_pos_rect[3]) % 10]
 
                     if DwmGetWindowAttribute:
                         ext_rect = ctypes.wintypes.RECT()
@@ -2727,18 +2733,21 @@ def main(args, multi_exit_program=None,
                         )
                         # border = [0, 0, 0, 0]
 
-                        # border = [ext_rect.left - rect[0], ext_rect.top - rect[1],
-                        #           rect[2] - ext_rect.right, rect[3] - ext_rect.bottom]
+                        border = [ext_rect.left - rect[0], ext_rect.top - rect[1],
+                                  rect[2] - ext_rect.right, rect[3] - ext_rect.bottom]
 
                         # rect = [rect[0] - border[0], rect[1] - border[1],
                         #         rect[2] + border[0] + border[2], rect[3] + border[1] + border[3]]
 
+                        # orig_rect = rect
                         rect = [rect[0] + border[0], rect[1] + border[1],
                                 rect[2] - border[2], rect[3] - border[3]]
 
                         # print('frg_titles {}'.format(frg_titles[frg_win_id]))
-                        # print('border {}'.format(border))
+                        # print('orig_rect {}'.format(orig_rect))
                         # print('rect {}'.format(rect))
+                        # print('border {}'.format(border))
+                        # print('shifted_border {}'.format(shifted_border))
 
                     frg_positions[frg_win_id] = rect
                 x1, y1, x2, y2 = frg_positions[frg_win_id]
@@ -3639,5 +3648,5 @@ def main(args, multi_exit_program=None,
 
 
 if __name__ == '__main__':
-    print('sys.argv:\n{}'.format(pformat(sys.argv)))
+    # print('sys.argv:\n{}'.format(pformat(sys.argv)))
     main(sys.argv[1:])
