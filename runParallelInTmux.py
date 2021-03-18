@@ -119,7 +119,7 @@ def main():
             cmd_id = 0
             pane_id = ''
 
-            command_lines = [_line for _line in lines if not _line.startswith('## @ ') and not _line.startswith('# ')]
+            # command_lines = [_line for _line in lines if not _line.startswith('## @ ') and not _line.startswith('# ')]
 
             for line in lines:
                 _line = line.strip()

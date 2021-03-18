@@ -9,13 +9,33 @@ except ImportError:
 
 import pyperclip
 
+def is_time(line):
+    time_found = 0
+    time_obj = None
+    try:
+        time_obj = datetime.strptime(line, '%I:%M:%S %p')
+    except ValueError:
+        try:
+            time_obj = datetime.strptime(line, '%I:%M %p')
+        except ValueError:
+            pass
+        else:
+            temp2 = line.split(' ')
+            _time, _pm = temp2
+            line = '{}:00 {}'.format(_time, _pm)
+            time_found = 1
+    else:
+        time_found = 1
+
+    return line, time_found, time_obj
+
 
 def main():
     _params = {
         'horz': 1,
         'categories': 1,
         'category_sep': ' :: ',
-        'date_sep': ' – – ',
+        'date_sep': ' – ',
         'pairwise': 1,
         'first_and_last': 0,
         'add_date': 1,
@@ -59,32 +79,22 @@ def main():
         if date_sep in line:
             temp = line.split(date_sep)
 
-            print('date_sep line: {}'.format(line))
-            print('date_sep temp: {}'.format(temp))
+            _, time_found, _ = is_time(temp[0])
+            if time_found:
+                print('date_sep line: {}'.format(line))
+                print('date_sep temp: {}'.format(temp))
 
-            if len(temp) == 3:
-                line, _, date_str = temp
-                line = line.strip()
-            elif len(temp) == 2:
-                line, _ = temp
-                line = line.strip()
+                if len(temp) == 3:
+                    line, _, date_str = temp
+                    line = line.strip()
+                elif len(temp) == 2:
+                    line, possible_date = temp
+                    line = line.strip()
+                    _, time_found, _ = is_time(possible_date)
+                    if not time_found:
+                        date_str = possible_date
 
-        time_found = 0
-
-        try:
-            date_obj = datetime.strptime(line, '%I:%M:%S %p')
-        except ValueError:
-            try:
-                date_obj = datetime.strptime(line, '%I:%M %p')
-            except ValueError:
-                pass
-            else:
-                temp2 = line.split(' ')
-                _time, _pm = temp2
-                line = '{}:00 {}'.format(_time, _pm)
-                time_found = 1
-        else:
-            time_found = 1
+        line, time_found, _ = is_time(line)
 
         if time_found:
             out_lines.append(line)

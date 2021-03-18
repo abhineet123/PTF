@@ -185,6 +185,13 @@ col_rgb = {
     'magenta': (255, 0, 255)
 }
 
+def add_suffix(src_path, suffix):
+    # abs_src_path = os.path.abspath(src_path)
+    src_dir = os.path.dirname(src_path)
+    src_name, src_ext = os.path.splitext(os.path.basename(src_path))
+    dst_path = os.path.join(src_dir, src_name + '_' + suffix + src_ext)
+    return dst_path
+
 
 def getBinaryPtsImage2(img_shape, corners):
     img_shape = img_shape[0:2]
