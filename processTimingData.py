@@ -29,7 +29,7 @@ def foreach_window(hwnd, lParam):
     return True
 
 
-def procss(in_txt):
+def process(in_txt):
     lines = in_txt.split('\n')
     lines = [line for line in lines if line.strip()]
 
@@ -106,7 +106,7 @@ def main():
             out_txt = '\n'.join(sorted(out_lines))
         else:
             try:
-                out_txt = procss(in_txt)
+                out_txt = process(in_txt)
             except:
                 out_txt = ''
 
@@ -168,7 +168,7 @@ def main():
             print('BaseException: {}'.format(e))
 
         in_txt = Tk().clipboard_get()
-        out_txt = procss(in_txt)
+        out_txt = process(in_txt)
 
     print(out_txt)
     # with open(out_fname, 'w') as out_fid:

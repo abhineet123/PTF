@@ -1,5 +1,6 @@
 import os
 import sys
+import shutil
 import time
 import cv2
 import numpy as np
@@ -303,12 +304,12 @@ def addMask(in_img, params, augment=None, hed_net=None):
     :return:
     """
     disp_size = params.disp_size
-    border_size = params.border_size
+    # border_size = params.border_size
     del_thresh = params.del_thresh
     show_magnified_window = params.show_magnified_window
     mag_patch_size = params.mag_patch_size
     mag_win_size = params.mag_win_size
-    mag_thresh_t = params.mag_thresh_t
+    # mag_thresh_t = params.mag_thresh_t
     show_pts = params.show_pts
 
     xmin, ymin = 0, 0
@@ -327,6 +328,7 @@ def addMask(in_img, params, augment=None, hed_net=None):
     sel_pt_id = -1
     is_continuous = 0
     _exit_mask = 0
+    no_save = 0
     draw_mask = 0
     start_painting_mode = 0
     paint_mode = 0
@@ -457,12 +459,6 @@ def addMask(in_img, params, augment=None, hed_net=None):
 
     def showMagnifiedWindow(x, y, source_patch, draw_marker=1,
                             win_name='Magnified', marker_col=(0, 0, 255)):
-        nonlocal mag_prev_t, mag_thresh_t
-        # mag_t = time.time() - mag_prev_t
-        # print('mag_t: ', mag_t)
-        # if mag_t < mag_thresh_t:
-        #     return
-
         _h, _w = _shape_patch.shape[:2]
         min_x, max_x = max(0, x - mag_patch_size), min(_w - 1, x + mag_patch_size)
         min_y, max_y = max(0, y - mag_patch_size), min(_h - 1, y + mag_patch_size)
@@ -1015,6 +1011,7 @@ def addMask(in_img, params, augment=None, hed_net=None):
             clean_mask_pts = 2
         elif k == 27:
             _exit_mask = 1
+            discard_changes = 1
         elif k == ord('+') or k == ord('>'):
             del_thresh += 5
             print('del_thresh increased to {}'.format(del_thresh))
@@ -1098,12 +1095,19 @@ def addMask(in_img, params, augment=None, hed_net=None):
 
     else:
         print('Discarding changes ...')
+        return None
+
     # cv2.destroyWindow(draw_win_name)
     cv2.destroyAllWindows()
 
-
     mask_orig = [(xmin + x / scale_factor, ymin + y / scale_factor)
-            for (x, y, _) in mask_pts]
+                 for (x, y, _) in mask_pts]
+
+    mask_arr = np.asarray(mask_orig)
+
+    xmin, ymin = np.min(mask_arr, axis=0)
+    xmax, ymax = np.max(mask_arr, axis=0)
+
     mask_img_orig, blended_img_orig = contourPtsToMask(mask_orig, in_img)
 
     out_img = np.copy(in_img)
@@ -1111,6 +1115,10 @@ def addMask(in_img, params, augment=None, hed_net=None):
     mask_img_orig_inv = (255 - mask_img_orig).astype(np.bool)
 
     out_img[mask_img_orig_inv] = 0
+
+    xmin, ymin, xmax, ymax = map(int, [xmin, ymin, xmax, ymax])
+
+    out_img = out_img[ymin:ymax + 1, xmin:xmax + 1, ...]
 
     # cv2.imshow('mask_img', mask_img)
     cv2.imshow('mask_img_orig', mask_img_orig)
@@ -1124,8 +1132,11 @@ def addMask(in_img, params, augment=None, hed_net=None):
 
 class MaskParams:
     def __init__(self):
-        self.src_file_path = "C:/Users/Tommy/Pictures/Wallpapers/Pics/24/Amrita_Rao/#/Amrita_Rao_1268.jpg"
-        self.disp_size = (1000, 1000)
+        """
+
+        """
+        self.src_file_path = ''
+        self.disp_size = (900, 900)
         self.border_size = (10, 10)
         self.min_box_border = (1, 1)
         self.del_thresh = 15
@@ -1167,14 +1178,32 @@ def main():
 
     src_file_path = params.src_file_path
 
+    if not src_file_path:
+        try:
+            from Tkinter import Tk
+        except ImportError:
+            from tkinter import Tk
+        try:
+            src_file_path = Tk().clipboard_get()
+        except BaseException as e:
+            print('Tk().clipboard_get() failed: {}'.format(e))
+            return
+
+    src_file_path = src_file_path.replace(os.sep, "/").replace('"', '')
+
     assert os.path.exists(src_file_path), "src_file does not exist: {}".format(src_file_path)
 
     src_file = cv2.imread(src_file_path)
 
     out_img = addMask(src_file, params)
 
-    dst_file_path = add_suffix(src_file_path, "masked")
-    cv2.imwrite(dst_file_path, out_img)
+    if out_img is None:
+        return
+
+    dst_file_path = add_suffix(src_file_path, "backup")
+    shutil.move(src_file_path, dst_file_path)
+
+    cv2.imwrite(src_file_path, out_img)
 
 
 if __name__ == '__main__':
