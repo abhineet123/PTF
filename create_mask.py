@@ -247,7 +247,7 @@ def getContourPts(mask_pts=None, shape=None, show_img=0, verbose=1,
     return contour_pts
 
 
-def contourPtsToMask(contour_pts, patch_img, col=(255, 255, 255)):
+def contourPtsToMask(contour_pts, patch_img, col=(255, 255, 255), blend_ratio=0.5):
     # np.savetxt('contourPtsToMask_mask_pts.txt', contour_pts, fmt='%.6f')
 
     mask_img = np.zeros_like(patch_img, dtype=np.uint8)
@@ -255,9 +255,12 @@ def contourPtsToMask(contour_pts, patch_img, col=(255, 255, 255)):
     #     raise SystemError('contour_pts must be a list rather than {}'.format(type(contour_pts)))
     if len(contour_pts) > 0:
         mask_img = cv2.fillPoly(mask_img, np.array([contour_pts, ], dtype=np.int32), col)
-    blended_img = np.array(Image.blend(Image.fromarray(patch_img), Image.fromarray(mask_img), 0.5))
+    if blend_ratio >= 0:
+        blended_img = np.array(Image.blend(Image.fromarray(patch_img), Image.fromarray(mask_img), blend_ratio))
 
-    return mask_img, blended_img
+        return mask_img, blended_img
+
+    return mask_img
 
 
 def contourPtsFromMask(mask_img):
@@ -311,6 +314,7 @@ def addMask(in_img, params, augment=None, hed_net=None):
     mag_win_size = params.mag_win_size
     # mag_thresh_t = params.mag_thresh_t
     show_pts = params.show_pts
+    show_img = params.show_img
 
     xmin, ymin = 0, 0
 
@@ -1107,27 +1111,77 @@ def addMask(in_img, params, augment=None, hed_net=None):
 
     xmin, ymin = np.min(mask_arr, axis=0)
     xmax, ymax = np.max(mask_arr, axis=0)
-
-    mask_img_orig, blended_img_orig = contourPtsToMask(mask_orig, in_img)
-
-    out_img = np.copy(in_img)
-
-    mask_img_orig_inv = (255 - mask_img_orig).astype(np.bool)
-
-    out_img[mask_img_orig_inv] = 0
-
     xmin, ymin, xmax, ymax = map(int, [xmin, ymin, xmax, ymax])
 
+    mask_img_orig = contourPtsToMask(mask_orig, in_img, blend_ratio=-1)
+
+    out_img = np.copy(in_img)
+    mask_img_orig_inv = (255 - mask_img_orig).astype(np.bool)
+    out_img[mask_img_orig_inv] = 0
     out_img = out_img[ymin:ymax + 1, xmin:xmax + 1, ...]
 
-    # cv2.imshow('mask_img', mask_img)
-    cv2.imshow('mask_img_orig', mask_img_orig)
-    # cv2.imshow('mask_img_orig_inv', mask_img_orig_inv)
-    cv2.imshow('blended_img_orig', blended_img_orig)
-    cv2.imshow('out_img', out_img)
-    cv2.waitKey(100)
+    mask_img_orig_float = mask_img_orig.astype(np.float32) / 255.0
 
-    return out_img
+    # mask_img_gauss_3 = cv2.GaussianBlur(mask_img_orig_float, (3, 3), 0)
+    # mask_img_gauss_5 = cv2.GaussianBlur(mask_img_orig_float, (5, 5), 0)
+    # mask_img_gauss_7 = cv2.GaussianBlur(mask_img_orig_float, (7, 7), 0)
+    # mask_img_gauss_9 = cv2.GaussianBlur(mask_img_orig_float, (9, 9), 0)
+    #
+    # mask_img_gauss_25 = cv2.GaussianBlur(mask_img_orig_float, (25, 25), 0)
+    # mask_img_gauss_50 = cv2.GaussianBlur(mask_img_orig_float, (50, 50), 0)
+    # mask_img_gauss_100 = cv2.GaussianBlur(mask_img_orig_float, (100, 100), 0)
+    # mask_img_gauss_200 = cv2.GaussianBlur(mask_img_orig_float, (200, 200), 0)
+    # mask_img_gauss_300 = cv2.GaussianBlur(mask_img_orig_float, (300, 300), 0)
+    #
+    # out_img_gauss_3 = (in_img.astype(np.float32) * mask_img_gauss_3).astype(np.uint8)
+    # out_img_gauss_5 = (in_img.astype(np.float32) * mask_img_gauss_5).astype(np.uint8)
+    # out_img_gauss_7 = (in_img.astype(np.float32) * mask_img_gauss_7).astype(np.uint8)
+    # out_img_gauss_9 = (in_img.astype(np.float32) * mask_img_gauss_9).astype(np.uint8)
+
+    def get_gauss_image(k):
+        mask_img_gauss = cv2.GaussianBlur(mask_img_orig_float, (k, k), 0)
+        out_img_gauss = (in_img.astype(np.float32) * mask_img_gauss).astype(np.uint8)
+        out_img_gauss = out_img_gauss[ymin:ymax + 1, xmin:xmax + 1, ...]
+
+        if show_img:
+            cv2.imshow(f'out_img_gauss_{k}', out_img_gauss)
+        return k, out_img_gauss
+
+    # out_img_gauss_25 = (in_img.astype(np.float32) * mask_img_gauss_25).astype(np.uint8)
+    # out_img_gauss_50 = (in_img.astype(np.float32) * mask_img_gauss_50).astype(np.uint8)
+    # out_img_gauss_100 = (in_img.astype(np.float32) * mask_img_gauss_100).astype(np.uint8)
+    # out_img_gauss_200 = (in_img.astype(np.float32) * mask_img_gauss_200).astype(np.uint8)
+    # out_img_gauss_300 = (in_img.astype(np.float32) * mask_img_gauss_300).astype(np.uint8)
+
+    # out_img_gauss_3 = np.array(Image.blend(Image.fromarray(in_img), Image.fromarray(mask_img_gauss_3), 1))
+    # out_img_gauss_5 = np.array(Image.blend(Image.fromarray(in_img), Image.fromarray(mask_img_gauss_5), 1))
+    # out_img_gauss_7 = np.array(Image.blend(Image.fromarray(in_img), Image.fromarray(mask_img_gauss_7), 1))
+    # out_img_gauss_9 = np.array(Image.blend(Image.fromarray(in_img), Image.fromarray(mask_img_gauss_9), 1))
+
+    # cv2.imshow('mask_img', mask_img)
+
+    gauss_imgs = dict(
+        [
+            # get_gauss_image(25),
+            # get_gauss_image(51),
+            get_gauss_image(101),
+            get_gauss_image(201),
+            get_gauss_image(301),
+            get_gauss_image(401),
+        ]
+    )
+    if show_img:
+        cv2.imshow('mask_img_orig', mask_img_orig)
+        cv2.imshow('out_img', out_img)
+        cv2.waitKey(0)
+
+    # cv2.imshow('out_img_gauss_3', out_img_gauss_3)
+    # cv2.imshow('out_img_gauss_5', out_img_gauss_5)
+    # cv2.imshow('out_img_gauss_7', out_img_gauss_7)
+    # cv2.imshow('out_img_gauss_9', out_img_gauss_9)
+
+
+    return out_img, gauss_imgs
 
 
 class MaskParams:
@@ -1150,6 +1204,7 @@ class MaskParams:
         self.show_pts = 0
         self.save_test = 0
         self.save_raw = 0
+        self.show_img = 1
         self.hed_model_path = '../hed_cv/hed_model'
         self.help = {
             'disp_size': "Size of the window shown for drawing the mask",
@@ -1195,7 +1250,7 @@ def main():
 
     src_file = cv2.imread(src_file_path)
 
-    out_img = addMask(src_file, params)
+    out_img, gauss_imgs = addMask(src_file, params)
 
     if out_img is None:
         return
@@ -1205,6 +1260,9 @@ def main():
 
     cv2.imwrite(src_file_path, out_img)
 
+    for k in gauss_imgs:
+        out_file_path = add_suffix(src_file_path, f"gauss_{k}")
+        cv2.imwrite(out_file_path, gauss_imgs[k])
 
 if __name__ == '__main__':
     main()
