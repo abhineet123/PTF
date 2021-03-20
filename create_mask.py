@@ -880,8 +880,13 @@ def addMask(in_img, params, augment=None, hed_net=None):
                          # param=(mask_pts, shape_patch)
                          )
     draw_mask_kb = 0
+    invert_mask = 0
     while not _exit_mask:
+
         k = cv2.waitKeyEx(100)
+
+        # print('k: {}'.format(k))
+
         if not draw_mask_kb and k < 0:
             continue
         print('k: {}'.format(k))
@@ -1012,6 +1017,7 @@ def addMask(in_img, params, augment=None, hed_net=None):
             clean_mask_pts = 1
         elif k == 13:
             _exit_mask = 1
+            invert_mask = 1
             clean_mask_pts = 2
         elif k == 27:
             _exit_mask = 1
@@ -1099,24 +1105,31 @@ def addMask(in_img, params, augment=None, hed_net=None):
 
     else:
         print('Discarding changes ...')
-        return None
+        return None, None
 
     # cv2.destroyWindow(draw_win_name)
     cv2.destroyAllWindows()
 
     mask_orig = [(xmin + x / scale_factor, ymin + y / scale_factor)
                  for (x, y, _) in mask_pts]
-
     mask_arr = np.asarray(mask_orig)
+    mask_img_orig = contourPtsToMask(mask_orig, in_img, blend_ratio=-1)
+
+    out_img = np.copy(in_img)
+    if invert_mask:
+        print('inverting mask')
+        mask_img_orig = 255 - mask_img_orig
+
+        _, mask_pts = contourPtsFromMask(mask_img_orig)
+        mask_orig = [(x, y) for (x, y, _) in mask_pts]
+        mask_arr = np.asarray(mask_orig)
 
     xmin, ymin = np.min(mask_arr, axis=0)
     xmax, ymax = np.max(mask_arr, axis=0)
     xmin, ymin, xmax, ymax = map(int, [xmin, ymin, xmax, ymax])
 
-    mask_img_orig = contourPtsToMask(mask_orig, in_img, blend_ratio=-1)
-
-    out_img = np.copy(in_img)
     mask_img_orig_inv = (255 - mask_img_orig).astype(np.bool)
+
     out_img[mask_img_orig_inv] = 0
     out_img = out_img[ymin:ymax + 1, xmin:xmax + 1, ...]
 
@@ -1180,7 +1193,6 @@ def addMask(in_img, params, augment=None, hed_net=None):
     # cv2.imshow('out_img_gauss_7', out_img_gauss_7)
     # cv2.imshow('out_img_gauss_9', out_img_gauss_9)
 
-
     return out_img, gauss_imgs
 
 
@@ -1242,7 +1254,7 @@ def main():
             src_file_path = Tk().clipboard_get()
         except BaseException as e:
             print('Tk().clipboard_get() failed: {}'.format(e))
-            return
+            return None, None
 
     src_file_path = src_file_path.replace(os.sep, "/").replace('"', '')
 
@@ -1253,7 +1265,7 @@ def main():
     out_img, gauss_imgs = addMask(src_file, params)
 
     if out_img is None:
-        return
+        return None, None
 
     dst_file_path = add_suffix(src_file_path, "backup")
     shutil.move(src_file_path, dst_file_path)
@@ -1263,6 +1275,7 @@ def main():
     for k in gauss_imgs:
         out_file_path = add_suffix(src_file_path, f"gauss_{k}")
         cv2.imwrite(out_file_path, gauss_imgs[k])
+
 
 if __name__ == '__main__':
     main()
