@@ -778,6 +778,7 @@ def main(args, multi_exit_program=None,
     if auto_progress:
         _print('Auto progression enabled')
 
+    exclude_dir_pattern = []
     src_files = {}
     img_sequences = {}
     src_files_rand = {}
@@ -792,7 +793,14 @@ def main(args, multi_exit_program=None,
         # inc_src_dirs = [k for k in src_dirs if k[0] != '!']
         # exc_src_dirs = [k for k in src_dirs if k[0] == '!']
 
-        src_dirs = [os.path.join(src_root_dir, k) if k[0] != '!' else os.path.join('!' + src_root_dir, k[1:])
+        exclude_dir_pattern = [k for k in src_dirs if k.startswith('!!')]
+        if exclude_dir_pattern:
+            src_dirs = [k for k in src_dirs if k not in exclude_dir_pattern]
+            exclude_dir_pattern = [k.lstrip('!') for k in exclude_dir_pattern]
+            print(f'Excluding all directories containing any of {exclude_dir_pattern} in their path')
+
+        src_dirs = [os.path.join(src_root_dir, k) if not k.startswith('!') else
+                    os.path.join('!' + src_root_dir, k[1:])
                     for k in src_dirs]
 
         # if src_root_dir:
@@ -990,12 +998,12 @@ def main(args, multi_exit_program=None,
         # print(f'src_dirs:\n {pformat(src_dirs)}')
         excluded_src_files = []
         all_total = 0
+        excluded = 0
         for _id, src_dir in enumerate(src_dirs):
-
             if _samples[_id] < 0:
                 _samples[_id] = 1
 
-            if src_dir[0] == '!':
+            if src_dir.startswith('!'):
                 src_dir = src_dir[1:]
                 excluded = 1
             else:
@@ -1005,7 +1013,9 @@ def main(args, multi_exit_program=None,
 
             if recursive:
                 src_file_gen = [[os.path.join(dirpath, f) for f in filenames if
-                                 os.path.splitext(f.lower())[1] in img_exts]
+                                 os.path.splitext(f.lower())[1] in img_exts and
+                                 all(k not in dirpath.split(os.sep) for k in exclude_dir_pattern)
+                                 ]
                                 for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
                 _src_files = [item for sublist in src_file_gen for item in sublist]
 
@@ -1020,10 +1030,10 @@ def main(args, multi_exit_program=None,
             _src_files = [os.path.abspath(k) for k in _src_files]
 
             _n_src_files = len(_src_files)
-            if excluded:
+            if excluded == 1:
                 _print(f'Excluding {_n_src_files} images from: {src_dir}')
                 excluded_src_files += _src_files
-            else:
+            elif excluded == 0:
                 if excluded_src_files:
                     _src_files = [k for k in _src_files if k not in excluded_src_files]
                     _n_src_files = len(_src_files)
@@ -1207,11 +1217,15 @@ def main(args, multi_exit_program=None,
                                    win_offset_y + widescreen_monitor[1])
                 else:
                     if tall_position == 2:
-                        cv2.moveWindow(_win_name, win_offset_x + monitors[4][0], win_offset_y + monitors[4][1])
+                        cv2.moveWindow(_win_name, win_offset_x + monitors[4][0], win_offset_y + monitors[4][1] + 20)
                     elif tall_position == 1:
                         cv2.moveWindow(_win_name, win_offset_x + monitors[5][0], win_offset_y + monitors[5][1])
                     elif tall_position == 0:
-                        cv2.moveWindow(_win_name, win_offset_x + monitors[2][0], win_offset_y + monitors[2][1])
+                        cv2.moveWindow(_win_name, win_offset_x + monitors[2][0], win_offset_y + monitors[2][1] + 20)
+
+            # if fullscreen:
+            # cv2.namedWindow(_win_name, cv2.WND_PROP_FULLSCREEN)
+            # cv2.setWindowProperty(_win_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
         cv2.setMouseCallback(_win_name, mouseHandler)
 
@@ -1234,9 +1248,9 @@ def main(args, multi_exit_program=None,
             width = 1920
             mode = 1 - mode
             if mode == 0:
-                height = 1080
+                height = 1060
             else:
-                height = 2160
+                height = 2140
 
         _print('changeMode :: height: ', height)
         _print('changeMode :: width: ', width)
@@ -2446,7 +2460,7 @@ def main(args, multi_exit_program=None,
     def moveWindow(_monitor_id, _win_name, _reversed_pos):
         nonlocal frg_positions
         if frg_win_titles:
-            cv2.moveWindow(_win_name, frg_positions[frg_win_id][0]-1, frg_positions[frg_win_id][1]-1)
+            cv2.moveWindow(_win_name, frg_positions[frg_win_id][0] - 1, frg_positions[frg_win_id][1] - 1)
             return
 
         if isinstance(_reversed_pos, int):

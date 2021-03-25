@@ -18,13 +18,21 @@ def is_time(line):
         try:
             time_obj = datetime.strptime(line, '%I:%M %p')
         except ValueError:
-            pass
-        else:
-            temp2 = line.split(' ')
-            _time, _pm = temp2
-            line = '{}:00 {}'.format(_time, _pm)
-            time_found = 1
-    else:
+            try:
+                time_obj = datetime.strptime(line, '%H:%M:%S')
+            except ValueError:
+                pass
+            # else:
+        # else:
+        #     temp2 = line.split(' ')
+        #     _time, _pm = temp2
+        #     line = '{}:00 {}'.format(_time, _pm)
+        #     time_found = 1
+    # else:
+    #     time_found = 1
+
+    if time_obj is not None:
+        line = time_obj.strftime('%I:%M:%S %p')
         time_found = 1
 
     return line, time_found, time_obj

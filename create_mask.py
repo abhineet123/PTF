@@ -882,13 +882,12 @@ def addMask(in_img, params, augment=None, hed_net=None):
     draw_mask_kb = 0
     invert_mask = 0
     while not _exit_mask:
-
+        # while True:
         k = cv2.waitKeyEx(100)
-
-        # print('k: {}'.format(k))
 
         if not draw_mask_kb and k < 0:
             continue
+
         print('k: {}'.format(k))
 
         if k == ord('p'):
@@ -1015,9 +1014,9 @@ def addMask(in_img, params, augment=None, hed_net=None):
         elif k == 10:
             _exit_mask = 1
             clean_mask_pts = 1
+            invert_mask = 1
         elif k == 13:
             _exit_mask = 1
-            invert_mask = 1
             clean_mask_pts = 2
         elif k == 27:
             _exit_mask = 1
@@ -1176,11 +1175,11 @@ def addMask(in_img, params, augment=None, hed_net=None):
     gauss_imgs = dict(
         [
             # get_gauss_image(25),
-            # get_gauss_image(51),
+            get_gauss_image(51),
             get_gauss_image(101),
-            get_gauss_image(201),
-            get_gauss_image(301),
-            get_gauss_image(401),
+            # get_gauss_image(201),
+            # get_gauss_image(301),
+            # get_gauss_image(401),
         ]
     )
     if show_img:
