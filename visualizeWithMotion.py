@@ -30,6 +30,7 @@ from multiprocessing import Process
 import multiprocessing
 import imageio
 from PIL import Image
+from paramparse import process
 
 from Misc import processArguments, sortKey, stackImages, resizeAR, addBorder, trim
 import sft
@@ -79,147 +80,222 @@ def hideBorder(_win_name, on_top):
 #     print('Hotkeys cannot be registered: {}'.format(e))
 #     hotkeys_available = 0
 
+#
+# params = {
+#     'src_root_dir': '.',
+#     'src_path': '.',
+#     'src_dirs': '',
+#     'width': 0,
+#     'height': 0,
+#     'min_height_ratio': 0.40,
+#     'speed': 0.5,
+#     'show_img': 0,
+#     'quality': 3,
+#     'resize': 0,
+#     'mode': 0,
+#     'auto_progress': 0,
+#     'auto_progress_video': 0,
+#     'max_switches': 1,
+#     'transition_interval': 5,
+#     'random_mode': 0,
+#     'recursive': 1,
+#     'fullscreen': 0,
+#     'reversed_pos': 1,
+#     'dup_reversed_pos': [],
+#     'double_click_interval': 0.1,
+#     'n_images': 1,
+#     'borderless': 1,
+#     'preserve_order': 0,
+#     'set_wallpaper': 0,
+#     'n_wallpapers': 1000,
+#     'wallpaper_dir': '',
+#     'wallpaper_mode': 0,
+#     'widescreen_mode': 0,
+#     'multi_mode': 0,
+#     'trim_images': 1,
+#     'alpha': 1.0,
+#     'show_window': 1,
+#     'enable_hotkeys': 0,
+#     'check_images': 0,
+#     'tall_position': 0,
+#     'on_top': 1,
+#     'second_from_top': 0,
+#     'top_border': 0,
+#     'bottom_border': 0,
+#     'keep_borders': 0,
+#     'monitor_id': -1,
+#     'dup_monitor_ids': [],
+#     'win_offset_x': 0,
+#     'win_offset_y': 0,
+#     'duplicate_window': 0,
+#     'custom_grid_size': '',
+#     'reverse_video': 1,
+#     'images_as_video': 0,
+#     'frg_win_titles': [],
+#     'frg_monitor_ids': [],
+#     'only_maximized': 1,
+#     'video_mode': 0,
+#     'lazy_video_load': 1,
+#     'fps': 30,
+#     'win_name': '',
+#     'other_win_name': '',
+#     'log_color': '',
+#     'parallel_read': 4,
+#     'max_buffer_ram': 1e10,
+#     'smooth_blending': 1,
+# }
 
-params = {
-    'src_root_dir': '.',
-    'src_path': '.',
-    'src_dirs': '',
-    'width': 0,
-    'height': 0,
-    'min_height_ratio': 0.40,
-    'speed': 0.5,
-    'show_img': 0,
-    'quality': 3,
-    'resize': 0,
-    'mode': 0,
-    'auto_progress': 0,
-    'auto_progress_video': 0,
-    'max_switches': 1,
-    'transition_interval': 5,
-    'random_mode': 0,
-    'recursive': 1,
-    'fullscreen': 0,
-    'reversed_pos': 1,
-    'dup_reversed_pos': [],
-    'double_click_interval': 0.1,
-    'n_images': 1,
-    'borderless': 1,
-    'preserve_order': 0,
-    'set_wallpaper': 0,
-    'n_wallpapers': 1000,
-    'wallpaper_dir': '',
-    'wallpaper_mode': 0,
-    'widescreen_mode': 0,
-    'multi_mode': 0,
-    'trim_images': 1,
-    'alpha': 1.0,
-    'show_window': 1,
-    'enable_hotkeys': 0,
-    'check_images': 0,
-    'tall_position': 0,
-    'on_top': 1,
-    'second_from_top': 0,
-    'top_border': 0,
-    'bottom_border': 0,
-    'keep_borders': 0,
-    'monitor_id': -1,
-    'dup_monitor_ids': [],
-    'win_offset_x': 0,
-    'win_offset_y': 0,
-    'duplicate_window': 0,
-    'custom_grid_size': '',
-    'reverse_video': 1,
-    'images_as_video': 0,
-    'frg_win_titles': [],
-    'frg_monitor_ids': [],
-    'only_maximized': 1,
-    'video_mode': 0,
-    'lazy_video_load': 1,
-    'fps': 30,
-    'win_name': '',
-    'other_win_name': '',
-    'log_color': '',
-    'parallel_read': 4,
-    'max_buffer_ram': 1e10,
-}
+# paramparse.from_dict(params, to_clipboard=True)
+#
+# exit()
+
+
+class Params:
+    def __init__(self):
+        self.cfg = ('',)
+        self.alpha = 1.0
+        self.auto_progress = 0
+        self.auto_progress_video = 0
+        self.borderless = 1
+        self.bottom_border = 0
+        self.check_images = 0
+        self.custom_grid_size = ''
+        self.double_click_interval = 0.1
+        self.dup_monitor_ids = []
+        self.dup_reversed_pos = []
+        self.duplicate_window = 0
+        self.enable_hotkeys = 0
+        self.fps = 30
+        self.frg_monitor_ids = []
+        self.frg_win_titles = []
+        self.fullscreen = 0
+        self.height = 0
+        self.images_as_video = 0
+        self.keep_borders = 0
+        self.lazy_video_load = 1
+        self.log_color = ''
+        self.max_buffer_ram = 10000000000.0
+        self.max_switches = 1
+        self.min_height_ratio = 0.4
+        self.mode = 0
+        self.monitor_id = -1
+        self.multi_mode = 0
+        self.n_images = 1
+        self.n_wallpapers = 1000
+        self.on_top = 1
+        self.only_maximized = 1
+        self.other_win_name = ''
+        self.parallel_read = 4
+        self.preserve_order = 0
+        self.quality = 3
+        self.random_mode = 0
+        self.recursive = 1
+        self.resize = 0
+        self.reverse_video = 1
+        self.reversed_pos = 1
+        self.second_from_top = 0
+        self.set_wallpaper = 0
+        self.show_img = 0
+        self.show_window = 1
+        self.smooth_blending = 0
+        self.speed = 0.5
+        self.src_dirs = ''
+        self.src_path = '.'
+        self.src_root_dir = '.'
+        self.tall_position = 0
+        self.top_border = 0
+        self.transition_interval = 5
+        self.trim_images = 1
+        self.video_mode = 0
+        self.wallpaper_dir = ''
+        self.wallpaper_mode = 0
+        self.widescreen_mode = 0
+        self.width = 0
+        self.win_name = ''
+        self.win_offset_x = 0
+        self.win_offset_y = 0
 
 
 def main(args, multi_exit_program=None,
          # sft_vars=None
          ):
     # is_switching = 0
-
     p = psutil.Process(os.getpid())
     try:
         p.nice(psutil.BELOW_NORMAL_PRIORITY_CLASS)
     except AttributeError:
         os.nice(20)
 
-    processArguments(args, params)
-    src_root_dir = params['src_root_dir']
-    src_path = params['src_path']
-    src_dirs = params['src_dirs']
-    _width = params['width']
-    _height = params['height']
-    min_height_ratio = params['min_height_ratio']
-    speed = params['speed']
-    show_img = params['show_img']
-    quality = params['quality']
-    resize = params['resize']
-    mode = params['mode']
-    tall_position = params['tall_position']
-    widescreen_mode = params['widescreen_mode']
-    auto_progress = params['auto_progress']
-    auto_progress_video = params['auto_progress_video']
-    max_switches = params['max_switches']
-    transition_interval = params['transition_interval']
-    fps = params['fps']
-    random_mode = params['random_mode']
-    recursive = params['recursive']
-    fullscreen = params['fullscreen']
-    reversed_pos = params['reversed_pos']
+    params = Params()
+
+    process(params)
+    # processArguments(args, params)
+
+    src_root_dir = params.src_root_dir
+    src_path = params.src_path
+    src_dirs = params.src_dirs
+    _width = params.width
+    _height = params.height
+    min_height_ratio = params.min_height_ratio
+    speed = params.speed
+    show_img = params.show_img
+    quality = params.quality
+    resize = params.resize
+    mode = params.mode
+    tall_position = params.tall_position
+    widescreen_mode = params.widescreen_mode
+    auto_progress = params.auto_progress
+    auto_progress_video = params.auto_progress_video
+    max_switches = params.max_switches
+    transition_interval = params.transition_interval
+    fps = params.fps
+    random_mode = params.random_mode
+    recursive = params.recursive
+    fullscreen = params.fullscreen
+    reversed_pos = params.reversed_pos
 
     # if len(reversed_pos) == 1:
     #     reversed_pos = int(reversed_pos)
 
-    dup_reversed_pos = params['dup_reversed_pos']
-    double_click_interval = params['double_click_interval']
-    n_images = params['n_images']
-    borderless = params['borderless']
-    preserve_order = params['preserve_order']
-    set_wallpaper = params['set_wallpaper']
-    wallpaper_dir = params['wallpaper_dir']
-    wallpaper_mode = params['wallpaper_mode']
-    on_top = params['on_top']
-    second_from_top = params['second_from_top']
-    n_wallpapers = params['n_wallpapers']
-    multi_mode = params['multi_mode']
-    trim_images = params['trim_images']
-    alpha = params['alpha']
-    show_window = params['show_window']
-    enable_hotkeys = params['enable_hotkeys']
-    custom_grid_size = params['custom_grid_size']
-    check_images = params['check_images']
-    top_border = params['top_border']
-    keep_borders = params['keep_borders']
-    bottom_border = params['bottom_border']
-    monitor_id = params['monitor_id']
-    dup_monitor_ids = params['dup_monitor_ids']
-    win_offset_x = params['win_offset_x']
-    win_offset_y = params['win_offset_y']
-    duplicate_window = params['duplicate_window']
-    reverse_video = params['reverse_video']
-    images_as_video = params['images_as_video']
-    frg_win_titles = params['frg_win_titles']
-    frg_monitor_ids = params['frg_monitor_ids']
-    only_maximized = params['only_maximized']
-    video_mode = params['video_mode']
-    lazy_video_load = params['lazy_video_load']
-    win_name = params['win_name']
-    other_win_name = params['other_win_name']
-    log_color = params['log_color']
-    parallel_read = params['parallel_read']
-    max_buffer_ram = params['max_buffer_ram']
+    dup_reversed_pos = params.dup_reversed_pos
+    double_click_interval = params.double_click_interval
+    n_images = params.n_images
+    borderless = params.borderless
+    preserve_order = params.preserve_order
+    set_wallpaper = params.set_wallpaper
+    wallpaper_dir = params.wallpaper_dir
+    wallpaper_mode = params.wallpaper_mode
+    on_top = params.on_top
+    second_from_top = params.second_from_top
+    n_wallpapers = params.n_wallpapers
+    multi_mode = params.multi_mode
+    trim_images = params.trim_images
+    alpha = params.alpha
+    show_window = params.show_window
+    enable_hotkeys = params.enable_hotkeys
+    custom_grid_size = params.custom_grid_size
+    check_images = params.check_images
+    top_border = params.top_border
+    keep_borders = params.keep_borders
+    bottom_border = params.bottom_border
+    monitor_id = params.monitor_id
+    dup_monitor_ids = params.dup_monitor_ids
+    win_offset_x = params.win_offset_x
+    win_offset_y = params.win_offset_y
+    duplicate_window = params.duplicate_window
+    reverse_video = params.reverse_video
+    images_as_video = params.images_as_video
+    frg_win_titles = params.frg_win_titles
+    frg_monitor_ids = params.frg_monitor_ids
+    only_maximized = params.only_maximized
+    video_mode = params.video_mode
+    lazy_video_load = params.lazy_video_load
+    win_name = params.win_name
+    other_win_name = params.other_win_name
+    log_color = params.log_color
+    parallel_read = params.parallel_read
+    max_buffer_ram = params.max_buffer_ram
+    smooth_blending = params.smooth_blending
 
     if log_color:
         from colorlog import ColoredFormatter
@@ -999,6 +1075,7 @@ def main(args, multi_exit_program=None,
         excluded_src_files = []
         all_total = 0
         excluded = 0
+        processed_dirs = []
         for _id, src_dir in enumerate(src_dirs):
             if _samples[_id] < 0:
                 _samples[_id] = 1
@@ -1015,6 +1092,7 @@ def main(args, multi_exit_program=None,
                 src_file_gen = [[os.path.join(dirpath, f) for f in filenames if
                                  os.path.splitext(f.lower())[1] in img_exts and
                                  all(k not in dirpath.split(os.sep) for k in exclude_dir_pattern)
+                                 and os.path.abspath(dirpath) not in processed_dirs
                                  ]
                                 for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
                 _src_files = [item for sublist in src_file_gen for item in sublist]
@@ -1030,6 +1108,9 @@ def main(args, multi_exit_program=None,
             _src_files = [os.path.abspath(k) for k in _src_files]
 
             _n_src_files = len(_src_files)
+
+            processed_dirs.append(os.path.abspath(src_dir))
+
             if excluded == 1:
                 _print(f'Excluding {_n_src_files} images from: {src_dir}')
                 excluded_src_files += _src_files
@@ -1056,6 +1137,7 @@ def main(args, multi_exit_program=None,
             #     print('filenames', filenames)
             #     print('dirnames', dirnames)
             #     print()
+
         n_unique_frames = 0
         for _id in src_files:
             # if excluded_src_files:
@@ -1580,6 +1662,20 @@ def main(args, multi_exit_program=None,
         src_start_col = start_col
         src_end_row = start_row + src_height
         src_end_col = start_col + src_width
+
+        if smooth_blending and src_width < dst_width:
+            left_border = right_border = 0
+            if reversed_pos == 0:
+                right_border = smooth_blending
+            elif reversed_pos == 1:
+                left_border = right_border = smooth_blending
+            elif reversed_pos == 2:
+                start_row = int(dst_height - src_height)
+                left_border = smooth_blending
+
+            src_img_bordered = cv2.copyMakeBorder(src_img, top=0, bottom=0, left=left_border, right=right_border,
+                                                  borderType=cv2.BORDER_CONSTANT, value=())
+            src_end_col += left_border + right_border
 
         src_img_ar = np.zeros((dst_height, dst_width, n_channels), dtype=np.uint8)
         src_img_ar[int(src_start_row):int(src_end_row), int(src_start_col):int(src_end_col), :] = src_img
