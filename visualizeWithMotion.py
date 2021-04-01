@@ -198,6 +198,9 @@ class Params:
         self.show_img = 0
         self.show_window = 1
         self.smooth_blending = 0
+        self.min_aspect_ratio = 0
+        self.max_aspect_ratio = 1.5
+        self.magnified_height_ratio = 2.0
         self.speed = 0.5
         self.src_dirs = ''
         self.src_path = '.'
@@ -296,6 +299,9 @@ def main(args, multi_exit_program=None,
     parallel_read = params.parallel_read
     max_buffer_ram = params.max_buffer_ram
     smooth_blending = params.smooth_blending
+    min_aspect_ratio = params.min_aspect_ratio
+    max_aspect_ratio = params.max_aspect_ratio
+    magnified_height_ratio = params.magnified_height_ratio
 
     if log_color:
         from colorlog import ColoredFormatter
@@ -1617,6 +1623,34 @@ def main(args, multi_exit_program=None,
 
         # prev_start_row, prev_start_col = start_row, start_col
 
+        # print('src_aspect_ratio: {}'.format(src_aspect_ratio))
+        # print('min_aspect_ratio: {}'.format(min_aspect_ratio))
+        # print('max_aspect_ratio: {}'.format(max_aspect_ratio))
+
+        if min_aspect_ratio > 0 and src_aspect_ratio < min_aspect_ratio:
+            magnified_patch = src_img[:int(src_height / magnified_height_ratio), ...]
+
+            """magnify top half and append"""
+            stacked_aspect_ratio = min(max_aspect_ratio, src_aspect_ratio * (1 + magnified_height_ratio))
+            # print('stacked_aspect_ratio: {}'.format(stacked_aspect_ratio))
+
+            magnified_patch_width = int((stacked_aspect_ratio - src_aspect_ratio) * src_height)
+
+            magnified_patch_res = resizeAR(magnified_patch, width=magnified_patch_width, height=src_height,
+                                           placement_type=reversed_pos)
+
+            if reversed_pos == 0:
+                src_img_list = [src_img, magnified_patch_res]
+            elif reversed_pos == 1:
+                src_img_list = [src_img, magnified_patch_res]
+            elif reversed_pos == 2:
+                src_img_list = [magnified_patch_res, src_img]
+
+            src_img = stackImages(src_img_list, grid_size=(1, 2), preserve_order=1)
+
+            src_height, src_width, n_channels = src_img.shape
+            src_aspect_ratio = float(src_width) / float(src_height)
+
         if src_aspect_ratio == aspect_ratio:
             dst_width = src_width
             dst_height = src_height
@@ -1663,19 +1697,19 @@ def main(args, multi_exit_program=None,
         src_end_row = start_row + src_height
         src_end_col = start_col + src_width
 
-        if smooth_blending and src_width < dst_width:
-            left_border = right_border = 0
-            if reversed_pos == 0:
-                right_border = smooth_blending
-            elif reversed_pos == 1:
-                left_border = right_border = smooth_blending
-            elif reversed_pos == 2:
-                start_row = int(dst_height - src_height)
-                left_border = smooth_blending
-
-            src_img_bordered = cv2.copyMakeBorder(src_img, top=0, bottom=0, left=left_border, right=right_border,
-                                                  borderType=cv2.BORDER_CONSTANT, value=())
-            src_end_col += left_border + right_border
+        # if smooth_blending and src_width < dst_width:
+        #     left_border = right_border = 0
+        #     if reversed_pos == 0:
+        #         right_border = smooth_blending
+        #     elif reversed_pos == 1:
+        #         left_border = right_border = smooth_blending
+        #     elif reversed_pos == 2:
+        #         start_row = int(dst_height - src_height)
+        #         left_border = smooth_blending
+        #
+        #     src_img_bordered = cv2.copyMakeBorder(src_img, top=0, bottom=0, left=left_border, right=right_border,
+        #                                           borderType=cv2.BORDER_CONSTANT, value=())
+        #     src_end_col += left_border + right_border
 
         src_img_ar = np.zeros((dst_height, dst_width, n_channels), dtype=np.uint8)
         src_img_ar[int(src_start_row):int(src_end_row), int(src_start_col):int(src_end_col), :] = src_img
