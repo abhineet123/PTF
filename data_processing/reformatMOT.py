@@ -4,9 +4,7 @@ import shutil
 import sys
 import glob
 
-from Misc import processArguments
-from Misc import getParamDict
-
+import paramparse
 _params = {
     'start_out_id': 0,
     # 'start_out_id': 47,
@@ -25,7 +23,7 @@ _params = {
     'process_tra': 1,
 }
 
-processArguments(sys.argv[1:], _params)
+paramparse.process_dict(_params)
 
 root_dir = _params['root_dir']
 db_dir = _params['db_dir']
