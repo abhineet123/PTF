@@ -80,76 +80,6 @@ def hideBorder(_win_name, on_top):
 #     print('Hotkeys cannot be registered: {}'.format(e))
 #     hotkeys_available = 0
 
-#
-# params = {
-#     'src_root_dir': '.',
-#     'src_path': '.',
-#     'src_dirs': '',
-#     'width': 0,
-#     'height': 0,
-#     'min_height_ratio': 0.40,
-#     'speed': 0.5,
-#     'show_img': 0,
-#     'quality': 3,
-#     'resize': 0,
-#     'mode': 0,
-#     'auto_progress': 0,
-#     'auto_progress_video': 0,
-#     'max_switches': 1,
-#     'transition_interval': 5,
-#     'random_mode': 0,
-#     'recursive': 1,
-#     'fullscreen': 0,
-#     'reversed_pos': 1,
-#     'dup_reversed_pos': [],
-#     'double_click_interval': 0.1,
-#     'n_images': 1,
-#     'borderless': 1,
-#     'preserve_order': 0,
-#     'set_wallpaper': 0,
-#     'n_wallpapers': 1000,
-#     'wallpaper_dir': '',
-#     'wallpaper_mode': 0,
-#     'widescreen_mode': 0,
-#     'multi_mode': 0,
-#     'trim_images': 1,
-#     'alpha': 1.0,
-#     'show_window': 1,
-#     'enable_hotkeys': 0,
-#     'check_images': 0,
-#     'tall_position': 0,
-#     'on_top': 1,
-#     'second_from_top': 0,
-#     'top_border': 0,
-#     'bottom_border': 0,
-#     'keep_borders': 0,
-#     'monitor_id': -1,
-#     'dup_monitor_ids': [],
-#     'win_offset_x': 0,
-#     'win_offset_y': 0,
-#     'duplicate_window': 0,
-#     'custom_grid_size': '',
-#     'reverse_video': 1,
-#     'images_as_video': 0,
-#     'frg_win_titles': [],
-#     'frg_monitor_ids': [],
-#     'only_maximized': 1,
-#     'video_mode': 0,
-#     'lazy_video_load': 1,
-#     'fps': 30,
-#     'win_name': '',
-#     'other_win_name': '',
-#     'log_color': '',
-#     'parallel_read': 4,
-#     'max_buffer_ram': 1e10,
-#     'smooth_blending': 1,
-# }
-
-# paramparse.from_dict(params, to_clipboard=True)
-#
-# exit()
-
-
 class Params:
     def __init__(self):
         self.cfg = ('',)
@@ -186,7 +116,7 @@ class Params:
         self.only_maximized = 1
         self.other_win_name = ''
         self.parallel_read = 4
-        self.preserve_order = 0
+        self.preserve_order = 1
         self.quality = 3
         self.random_mode = 0
         self.recursive = 1
@@ -417,12 +347,12 @@ def main(args, multi_exit_program=None,
         speed = 0
         is_paused = 1
         monitors = [
-            [0, 0],
-            [-1920, 0],
-            [0, -1080],
             [1920, 0],
+            [0, 0],
             [1920, -1080],
-            [-1920, -1080],
+            [3840, 0],
+            [3840, -1080],
+            [0, -1080],
         ]
 
         def get_monitor_id(x, y):
@@ -1305,11 +1235,13 @@ def main(args, multi_exit_program=None,
                                    win_offset_y + widescreen_monitor[1])
                 else:
                     if tall_position == 2:
-                        cv2.moveWindow(_win_name, win_offset_x + monitors[4][0], win_offset_y + monitors[4][1] + 20)
+                        # cv2.moveWindow(_win_name, win_offset_x + monitors[4][0], win_offset_y + monitors[4][1] + 20)
+                        cv2.moveWindow(_win_name, win_offset_x + monitors[4][0], win_offset_y + monitors[4][1])
                     elif tall_position == 1:
                         cv2.moveWindow(_win_name, win_offset_x + monitors[5][0], win_offset_y + monitors[5][1])
                     elif tall_position == 0:
-                        cv2.moveWindow(_win_name, win_offset_x + monitors[2][0], win_offset_y + monitors[2][1] + 20)
+                        # cv2.moveWindow(_win_name, win_offset_x + monitors[2][0], win_offset_y + monitors[2][1] + 20)
+                        cv2.moveWindow(_win_name, win_offset_x + monitors[2][0], win_offset_y + monitors[2][1])
 
             # if fullscreen:
             # cv2.namedWindow(_win_name, cv2.WND_PROP_FULLSCREEN)
@@ -1338,7 +1270,7 @@ def main(args, multi_exit_program=None,
             if mode == 0:
                 height = 1060
             else:
-                height = 2140
+                height = 2160
 
         _print('changeMode :: height: ', height)
         _print('changeMode :: width: ', width)
