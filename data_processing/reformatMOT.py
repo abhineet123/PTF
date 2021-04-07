@@ -39,15 +39,15 @@ _params = Params()
 
 paramparse.process(_params)
 
-root_dir = _params['root_dir']
-db_dir = _params['db_dir']
-db_type = _params['db_type']
-det_type = _params['det_type']
-ignore_img = _params['ignore_img']
-ignore_det = _params['ignore_det']
-no_move = _params['no_move']
-start_out_id = _params['start_out_id']
-process_tra = _params['process_tra']
+root_dir = _params.root_dir
+db_dir = _params.db_dir
+db_type = _params.db_type
+det_type = _params.det_type
+ignore_img = _params.ignore_img
+ignore_det = _params.ignore_det
+no_move = _params.no_move
+start_out_id = _params.start_out_id
+process_tra = _params.process_tra
 
 # actor_id = _params['actor_id']
 # start_id = _params['start_id']
