@@ -2,25 +2,42 @@ import os
 import shutil
 
 import paramparse
-_params = {
-    'start_out_id': 0,
-    # 'start_out_id': 47,
-    # 'root_dir': 'G:/Datasets/MOT2015',
-    # 'root_dir': 'G:/Datasets/MOT2017',
-    'root_dir': '/data/CTMC',
-    # 'db_dir': '2DMOT2015',
-    'db_dir': '',
-    'db_type': 'train',
-    # 'db_type': 'test',
-    'det_type': '',
-    # 'det_type': 'FRCNN',
-    'ignore_img': 0,
-    'ignore_det': 1,
-    'no_move': 0,
-    'process_tra': 1,
-}
 
-paramparse.process_dict(_params)
+# _params = {
+#     'start_out_id': 0,
+#     # 'start_out_id': 47,
+#     # 'root_dir': 'G:/Datasets/MOT2015',
+#     # 'root_dir': 'G:/Datasets/MOT2017',
+#     'root_dir': '/data/CTMC',
+#     # 'db_dir': '2DMOT2015',
+#     'db_dir': '',
+#     'db_type': 'train',
+#     # 'db_type': 'test',
+#     'det_type': '',
+#     # 'det_type': 'FRCNN',
+#     'ignore_img': 0,
+#     'ignore_det': 1,
+#     'no_move': 0,
+#     'process_tra': 1,
+# }
+
+
+class Params:
+    def __init__(self):
+        self.cfg = ('',)
+        self.db_dir = ''
+        self.db_type = 'train'
+        self.det_type = ''
+        self.ignore_det = 1
+        self.ignore_img = 0
+        self.no_move = 0
+        self.process_tra = 1
+        self.root_dir = '/data/CTMC'
+        self.start_out_id = 0
+
+_params = Params()
+
+paramparse.process(_params)
 
 root_dir = _params['root_dir']
 db_dir = _params['db_dir']
