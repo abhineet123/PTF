@@ -1,8 +1,5 @@
-import xml.etree.cElementTree as ET
 import os
 import shutil
-import sys
-import glob
 
 import paramparse
 _params = {
