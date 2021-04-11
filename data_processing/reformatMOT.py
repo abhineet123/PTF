@@ -3,6 +3,7 @@ import shutil
 
 import paramparse
 
+
 # _params = {
 #     'start_out_id': 0,
 #     # 'start_out_id': 47,
@@ -34,6 +35,7 @@ class Params:
         self.process_tra = 1
         self.root_dir = '/data/CTMC'
         self.start_out_id = 0
+
 
 _params = Params()
 

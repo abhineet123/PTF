@@ -16,7 +16,7 @@ if __name__ == '__main__':
     overwrite = params['overwrite']
     file_mode = params['file_mode']
 
-    src_fname = os.path.realpath(src_fname)
+    # src_fname = os.path.realpath(src_fname)
     src_fname_abs = os.path.abspath(src_fname)
 
     src_fname_no_ext, src_fname_ext = os.path.splitext(os.path.basename(src_fname))
