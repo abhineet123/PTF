@@ -1425,9 +1425,9 @@ def main(args, multi_exit_program=None,
                                         break
                             else:
                                 if not os.path.isfile(img_fname):
-                                    # _exit_neatly()
                                     _print('Video frame does not exist: {}'.format(img_fname))
-                                    return
+                                    _exit_neatly()
+                                    return False
                                 try:
                                     src_img = img_sequences[_load_id][img_fname]
                                 except KeyError:
@@ -1451,9 +1451,9 @@ def main(args, multi_exit_program=None,
                     # print('img_fname: {}'.format(img_fname))
                     src_img_fname = img_fname
                     if not os.path.isfile(src_img_fname):
-                        # _exit_neatly()
                         _print('Source image does not exist: {}'.format(src_img_fname))
-                        return
+                        _exit_neatly()
+                        return False
                     try:
                         src_img = cv2.imread(src_img_fname)
                     except cv2.error:
@@ -1669,6 +1669,8 @@ def main(args, multi_exit_program=None,
         #     keyboard.send('y')
 
         start_time = time.time()
+
+        return True
 
         # print('height: ', height)
         # print('dst_height: ', dst_height)
@@ -2564,6 +2566,7 @@ def main(args, multi_exit_program=None,
         2359296: '3',
         2162688: '4',
     }
+    images_to_del = []
     images_to_sort = {}
     images_to_sort_inv = {}
 
@@ -2959,8 +2962,11 @@ def main(args, multi_exit_program=None,
             auto_progress_type = 1
         else:
             # print('k: {}'.format(k))
-            if k == 27 or end_exec:
+            if k == 96:
+                _exit_neatly()
                 exit_program = 1
+                break
+            if k == 27 or end_exec:
                 _exit_neatly()
                 break
             elif k == 13:
@@ -3627,6 +3633,28 @@ def main(args, multi_exit_program=None,
                         auto_progress_type = -1
                     else:
                         loadImage(-1)
+            elif k == 3014656:
+                _print('marking for deletion:')
+                if n_images == 1:
+                    img_fpath = os.path.abspath(img_fname)
+                    _txt = '"' + img_fpath + '"'
+                    _print(_txt)
+                    images_to_del.append(img_fpath)
+                else:
+                    _txt = ''
+                    for _idx in stack_idx:
+                        if not video_mode:
+                            img_fpath = os.path.abspath(img_fnames[_idx])
+                            _txt += '"' + img_fpath + '"' + '\n'
+                            images_to_del.append(img_fpath)
+                        _print(_txt)
+                try:
+                    import pyperclip
+
+                    pyperclip.copy(_txt)
+                    _ = pyperclip.paste()
+                except BaseException as e:
+                    print('Copying to clipboard failed: {}'.format(e))
             elif k == ord('F') or k == ord('0'):
                 if n_images == 1:
                     _txt = '"' + os.path.abspath(img_fname) + '"'
@@ -3643,7 +3671,7 @@ def main(args, multi_exit_program=None,
                     import pyperclip
 
                     pyperclip.copy(_txt)
-                    spam = pyperclip.paste()
+                    _ = pyperclip.paste()
                 except BaseException as e:
                     print('Copying to clipboard failed: {}'.format(e))
 
@@ -3682,7 +3710,8 @@ def main(args, multi_exit_program=None,
                 pass
             else:
                 # time.sleep(transition_interval)
-                loadImage(auto_progress_type)
+                if not loadImage(auto_progress_type):
+                    break
                 # end_time = time.time()
                 # if end_time - start_time >= transition_interval:
                 #     loadImage(1)
@@ -3704,6 +3733,12 @@ def main(args, multi_exit_program=None,
     #     second_from_top_thread.terminate()
     #     sys.stdout.write('done\n')
 
+    if images_to_del:
+        _print('deleting images:\n')
+        for del_image_path in images_to_del:
+            _print(del_image_path)
+            os.remove(del_image_path)
+
     if images_to_sort:
         for k in images_to_sort.keys():
             _print('k: ', k)
@@ -3718,6 +3753,7 @@ def main(args, multi_exit_program=None,
                 sort_file_path = os.path.join(sort_dir, os.path.basename(orig_file_path))
                 _print('Moving {} to {}'.format(orig_file_path, sort_file_path))
                 shutil.move(orig_file_path, sort_file_path)
+    return exit_program
 
     # if set_wallpaper:
     #     win_wallpaper_func(SPI_SETDESKWALLPAPER, 0, orig_wp_fname, 0)
@@ -3725,4 +3761,11 @@ def main(args, multi_exit_program=None,
 
 if __name__ == '__main__':
     # print('sys.argv:\n{}'.format(pformat(sys.argv)))
-    main(sys.argv[1:])
+    while True:
+        try:
+            exit_program = main(sys.argv[1:])
+        except KeyboardInterrupt:
+            break
+
+        if exit_program:
+            break
