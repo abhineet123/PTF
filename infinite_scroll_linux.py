@@ -15,10 +15,12 @@ def main():
 
     params = {
         'mode': 0,
+        'sleep_t': 0,
         'switch_t': 3,
         'max_t': 120,
     }
     paramparse.process_dict(params)
+    sleep_t = params['sleep_t']
     max_t = params['max_t']
     switch_t = params['switch_t']
     mode = params['mode']
@@ -45,6 +47,9 @@ def main():
         if time_elapsed > max_t:
             break
         print(time_elapsed)
+
+        if sleep_t:
+            time.sleep(sleep_t)
 
 
 if __name__ == '__main__':

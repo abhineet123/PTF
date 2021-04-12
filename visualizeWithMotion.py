@@ -3634,7 +3634,7 @@ def main(args, multi_exit_program=None,
                     else:
                         loadImage(-1)
             elif k == 3014656:
-                _print('marking for deletion:')
+                _print('marking image {} for deletion:'.format(len(images_to_del) + 1))
                 if n_images == 1:
                     img_fpath = os.path.abspath(img_fname)
                     _txt = '"' + img_fpath + '"'
@@ -3734,7 +3734,7 @@ def main(args, multi_exit_program=None,
     #     sys.stdout.write('done\n')
 
     if images_to_del:
-        _print('deleting images:\n')
+        _print('deleting {} images:'.format(len(images_to_del)))
         for del_image_path in images_to_del:
             _print(del_image_path)
             os.remove(del_image_path)
