@@ -1010,6 +1010,7 @@ def main(args, multi_exit_program=None,
         # print(f'src_dirs:\n {pformat(src_dirs)}')
         excluded_src_files = []
         all_total = 0
+        all_total_unique = 0
         excluded = 0
         processed_dirs = []
         for _id, src_dir in enumerate(src_dirs):
@@ -1044,6 +1045,7 @@ def main(args, multi_exit_program=None,
             _src_files = [os.path.abspath(k) for k in _src_files]
 
             _n_src_files = len(_src_files)
+            all_total_unique += _n_src_files
 
             processed_dirs.append(os.path.abspath(src_dir))
 
@@ -1059,7 +1061,9 @@ def main(args, multi_exit_program=None,
                 all_total += _total
                 _print(f'Adding {_n_src_files} images from: {src_dir} '
                        f'with sample: {_samples[_id]} and multiplicity {_counts[_id]} '
-                       f'for total: {_total} / {all_total}')
+                       f'for total: {_total} / {all_total}'
+                       f'(unique: {_n_src_files} / {all_total_unique})'
+                       )
                 src_files[_id] = _src_files
 
             # src_file_list = [list(x) for x in src_file_list]
