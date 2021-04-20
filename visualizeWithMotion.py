@@ -108,6 +108,8 @@ class Params:
         self.max_switches = 1
         self.min_height_ratio = 0.4
         self.mode = 0
+        self.top_offset = 0
+        self.bottom_offset = 0
         self.monitor_id = -1
         self.multi_mode = 0
         self.n_images = 1
@@ -130,7 +132,8 @@ class Params:
         self.smooth_blending = 0
         self.min_aspect_ratio = 0
         self.max_aspect_ratio = 1.5
-        self.magnified_height_ratio = 2.0
+        self.magnified_height_ratio = 0
+        self.max_magnified_height_ratio = 3
         self.speed = 0.5
         self.src_dirs = ''
         self.src_path = '.'
@@ -175,6 +178,8 @@ def main(args, multi_exit_program=None,
     quality = params.quality
     resize = params.resize
     mode = params.mode
+    top_offset = params.top_offset
+    bottom_offset = params.bottom_offset
     tall_position = params.tall_position
     widescreen_mode = params.widescreen_mode
     auto_progress = params.auto_progress
@@ -228,10 +233,9 @@ def main(args, multi_exit_program=None,
     log_color = params.log_color
     parallel_read = params.parallel_read
     max_buffer_ram = params.max_buffer_ram
-    smooth_blending = params.smooth_blending
+    # smooth_blending = params.smooth_blending
     min_aspect_ratio = params.min_aspect_ratio
     max_aspect_ratio = params.max_aspect_ratio
-    magnified_height_ratio = params.magnified_height_ratio
 
     if log_color:
         from colorlog import ColoredFormatter
@@ -1240,12 +1244,14 @@ def main(args, multi_exit_program=None,
                 else:
                     if tall_position == 2:
                         # cv2.moveWindow(_win_name, win_offset_x + monitors[4][0], win_offset_y + monitors[4][1] + 20)
-                        cv2.moveWindow(_win_name, win_offset_x + monitors[4][0], win_offset_y + monitors[4][1])
+                        cv2.moveWindow(_win_name, win_offset_x + monitors[4][0],
+                                       win_offset_y + monitors[4][1] + top_offset)
                     elif tall_position == 1:
                         cv2.moveWindow(_win_name, win_offset_x + monitors[5][0], win_offset_y + monitors[5][1])
                     elif tall_position == 0:
                         # cv2.moveWindow(_win_name, win_offset_x + monitors[2][0], win_offset_y + monitors[2][1] + 20)
-                        cv2.moveWindow(_win_name, win_offset_x + monitors[2][0], win_offset_y + monitors[2][1])
+                        cv2.moveWindow(_win_name, win_offset_x + monitors[2][0],
+                                       win_offset_y + monitors[2][1] + top_offset)
 
             # if fullscreen:
             # cv2.namedWindow(_win_name, cv2.WND_PROP_FULLSCREEN)
@@ -1274,7 +1280,7 @@ def main(args, multi_exit_program=None,
             if mode == 0:
                 height = 1060
             else:
-                height = 2160
+                height = 2160 - top_offset - bottom_offset
 
         _print('changeMode :: height: ', height)
         _print('changeMode :: width: ', width)
@@ -1564,6 +1570,9 @@ def main(args, multi_exit_program=None,
         # print('max_aspect_ratio: {}'.format(max_aspect_ratio))
 
         if min_aspect_ratio > 0 and src_aspect_ratio < min_aspect_ratio:
+            magnified_height_ratio = params.magnified_height_ratio
+            if magnified_height_ratio == 0:
+                magnified_height_ratio = min(max_aspect_ratio / src_aspect_ratio - 1, params.max_magnified_height_ratio)
             magnified_patch = src_img[:int(src_height / magnified_height_ratio), ...]
 
             """magnify top half and append"""
@@ -2569,6 +2578,7 @@ def main(args, multi_exit_program=None,
         2228224: '2',
         2359296: '3',
         2162688: '4',
+        2949120: '5',
     }
     images_to_del = []
     images_to_sort = {}
@@ -2968,10 +2978,10 @@ def main(args, multi_exit_program=None,
             # print('k: {}'.format(k))
             if k == 96:
                 _exit_neatly()
-                exit_program = 1
                 break
             if k == 27 or end_exec:
                 _exit_neatly()
+                exit_program = 1
                 break
             elif k == 13:
                 changeMode()
@@ -3652,6 +3662,8 @@ def main(args, multi_exit_program=None,
                             _txt += '"' + img_fpath + '"' + '\n'
                             images_to_del.append(img_fpath)
                         _print(_txt)
+                if n_images == 1:
+                    loadImage(1)
                 try:
                     import pyperclip
 
@@ -3738,25 +3750,46 @@ def main(args, multi_exit_program=None,
     #     sys.stdout.write('done\n')
 
     if images_to_del:
+        print('\n')
         _print('deleting {} images:'.format(len(images_to_del)))
-        for del_image_path in images_to_del:
-            _print(del_image_path)
-            os.remove(del_image_path)
+        print('\n')
+        with open('vwm_del.txt', 'a') as log_fid:
+            time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+            log_fid.write("\n" + time_stamp + "\n")
+            for del_image_path in images_to_del:
+                _print(del_image_path)
+                os.remove(del_image_path)
+                log_fid.write(del_image_path + "\n")
 
     if images_to_sort:
-        for k in images_to_sort.keys():
-            _print('k: ', k)
-            for orig_file_path in images_to_sort[k]:
-                if not os.path.isfile(orig_file_path):
-                    continue
-                _print('orig_file_path: ', orig_file_path)
-                orig_file_path = os.path.abspath(orig_file_path)
-                sort_dir = os.path.join(os.path.dirname(orig_file_path), k)
-                if not os.path.isdir(sort_dir):
-                    os.makedirs(sort_dir)
-                sort_file_path = os.path.join(sort_dir, os.path.basename(orig_file_path))
-                _print('Moving {} to {}'.format(orig_file_path, sort_file_path))
-                shutil.move(orig_file_path, sort_file_path)
+        if os.path.isfile('vwm_sort.txt'):
+            with open('vwm_sort.txt', 'r') as log_fid:
+                already_sorted = [line.strip() for line in log_fid.readlines() if os.path.isfile(line.strip())]
+        else:
+            already_sorted = []
+
+        print('\n')
+        with open('vwm_sort.txt', 'a') as log_fid:
+            time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+            log_fid.write("\n" + time_stamp + "\n")
+            for k in images_to_sort.keys():
+                _print('k: ', k)
+                for orig_file_path in images_to_sort[k]:
+                    if not os.path.isfile(orig_file_path):
+                        continue
+                    if orig_file_path in already_sorted:
+                        _print('skipping already_sorted: ', orig_file_path)
+                        continue
+                    orig_file_path = os.path.abspath(orig_file_path)
+                    sort_dir = os.path.join(os.path.dirname(orig_file_path), k)
+                    if not os.path.isdir(sort_dir):
+                        os.makedirs(sort_dir)
+                    sort_file_path = os.path.join(sort_dir, os.path.basename(orig_file_path))
+                    _print('Moving {} to {}'.format(orig_file_path, sort_file_path))
+                    shutil.move(orig_file_path, sort_file_path)
+                    log_fid.write(sort_file_path + "\n")
+        print('\n')
+
     return exit_program
 
     # if set_wallpaper:
@@ -3767,9 +3800,9 @@ if __name__ == '__main__':
     # print('sys.argv:\n{}'.format(pformat(sys.argv)))
     while True:
         try:
-            exit_program = main(sys.argv[1:])
+            _exit_program = main(sys.argv[1:])
         except KeyboardInterrupt:
             break
 
-        if exit_program:
+        if _exit_program:
             break
