@@ -3878,6 +3878,8 @@ def putTextWithBackground(img, text, fmt=None):
         cv2.rectangle(img, box_coords[0], box_coords[1], bgr_col, cv2.FILLED)
     cv2.putText(img, text, loc, font, size, col, thickness)
 
+def linux_path(*args, **kwargs):
+    return os.path.join(*args, **kwargs).replace(os.sep, '/')
 
 # import gmpy
 def stackImages(img_list, grid_size=None, stack_order=0, borderless=1,

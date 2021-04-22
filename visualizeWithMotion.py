@@ -2578,7 +2578,7 @@ def main(args, multi_exit_program=None,
         2228224: '2',
         2359296: '3',
         2162688: '4',
-        2949120: '5',
+        2949120: '#bad',
     }
     images_to_del = []
     images_to_sort = {}
@@ -3753,12 +3753,17 @@ def main(args, multi_exit_program=None,
         print('\n')
         _print('deleting {} images:'.format(len(images_to_del)))
         print('\n')
+        del_dir = os.path.join(log_dir, 'vwm_del')
+        os.makedirs(del_dir, exist_ok=True)
+        _print('moving deleted files to {}'.format(del_dir))
         with open('vwm_del.txt', 'a') as log_fid:
             time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
             log_fid.write("\n" + time_stamp + "\n")
             for del_image_path in images_to_del:
                 _print(del_image_path)
-                os.remove(del_image_path)
+                dst_file_path = os.path.join(del_dir, os.path.basename(del_image_path))
+                shutil.move(del_image_path, dst_file_path)
+                # os.remove(del_image_path)
                 log_fid.write(del_image_path + "\n")
 
     if images_to_sort:
@@ -3769,11 +3774,15 @@ def main(args, multi_exit_program=None,
             already_sorted = []
 
         print('\n')
+        _print('sorting images...')
+
         with open('vwm_sort.txt', 'a') as log_fid:
             time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
             log_fid.write("\n" + time_stamp + "\n")
             for k in images_to_sort.keys():
                 _print('k: ', k)
+                log_fid.write("\n" + k + "\n")
+                images_to_sort[k].sort(key=img_sortKey)
                 for orig_file_path in images_to_sort[k]:
                     if not os.path.isfile(orig_file_path):
                         continue
@@ -3785,7 +3794,7 @@ def main(args, multi_exit_program=None,
                     if not os.path.isdir(sort_dir):
                         os.makedirs(sort_dir)
                     sort_file_path = os.path.join(sort_dir, os.path.basename(orig_file_path))
-                    _print('Moving {} to {}'.format(orig_file_path, sort_file_path))
+                    _print('{} --> {}'.format(orig_file_path, sort_file_path))
                     shutil.move(orig_file_path, sort_file_path)
                     log_fid.write(sort_file_path + "\n")
         print('\n')

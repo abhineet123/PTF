@@ -31,14 +31,20 @@ def main():
     params = {
         'root_dir': '.',
         'folder_prefix': '',
+        'start_id': 0,
+        'end_id': -1,
         'folder_start_id': 1,
         'folder_end_id': 100,
         'search_str': '',
         'find_unique_names': 1,
         'recursive': 0,
         'collage': 0,
+        'move_into_subdirs': 0,
         'excluded': [],
+        'src_folders': [],
     }
+
+    argv = sys.argv
 
     paramparse.process_dict(params)
 
@@ -51,22 +57,36 @@ def main():
     recursive = params['recursive']
     collage = params['collage']
     excluded = params['excluded']
+    start_id = params['start_id']
+    end_id = params['end_id']
+    move_into_subdirs = params['move_into_subdirs']
+    src_folders = params['src_folders']
 
     exclusions = ['Thumbs.db', 'sync.ffs_db']
-    img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff')
+    img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff', '.webp', '.gif')
 
     excluded = [str(k) for k in excluded]
 
-    if folder_prefix:
-        print('Looking for {:s} in folders beginning with {:s} and IDs going from {:d} to {:d}'.format(
-            search_str, folder_prefix, folder_start_id, folder_end_id))
-        src_folders = ['{:s} {:d}'.format(folder_prefix, folder_id) for folder_id in
-                       range(folder_start_id, folder_end_id + 1)]
+    if not src_folders:
+        if folder_prefix:
+            print('Looking for {:s} in folders beginning with {:s} and IDs going from {:d} to {:d}'.format(
+                search_str, folder_prefix, folder_start_id, folder_end_id))
+            src_folders = ['{:s} {:d}'.format(folder_prefix, folder_id) for folder_id in
+                           range(folder_start_id, folder_end_id + 1)]
+        else:
+            src_folders = [os.path.join(root_dir, k) for k in os.listdir(root_dir)
+                           if k not in excluded and os.path.isdir(os.path.join(root_dir, k))]
     else:
-        src_folders = [os.path.join(root_dir, k) for k in os.listdir(root_dir)
-                       if k not in excluded and os.path.isdir(os.path.join(root_dir, k))]
+        src_folders = [str(k) for k in src_folders]
+        if root_dir:
+            src_folders = [os.path.join(root_dir, k) for k in src_folders]
 
     src_folders = sorted(src_folders, key=sortKey)
+
+    if end_id <= start_id:
+        end_id = len(src_folders) - 1
+
+    src_folders = src_folders[start_id:end_id + 1]
 
     print('excluded:\n{}'.format(pformat(excluded)))
     print('src_folders:\n{}'.format(pformat(src_folders)))
@@ -86,6 +106,8 @@ def main():
         counts_collage_path = os.path.join(collage_path, 'counts')
         if not os.path.isdir(counts_collage_path):
             os.makedirs(counts_collage_path)
+
+    move_txt_file = 'ffif_move.txt'
 
     for src_folder in src_folders:
         src_folder = os.path.abspath(src_folder)
@@ -158,7 +180,28 @@ def main():
                                                                   src_folder_name, _ext)
                         shutil.copy(src_paths[first_idx], os.path.join(counts_collage_path,
                                                                        counts_dst_file))
+
                         # collage_images.append(cv2.imread(src_paths[first_idx]))
+
+                if move_into_subdirs:
+                    with open(move_txt_file, 'a') as fid:
+                        for unique_name in unique_names:
+                            matching_src_files = [(f, src_paths[i]) for i, f in enumerate(src_files)
+                                                  if f.startswith(unique_name)]
+
+                            for matching_src_file, matching_src_path in matching_src_files:
+                                dst_dir = os.path.join(src_folder, unique_name)
+                                os.makedirs(dst_dir, exist_ok=True)
+
+                                dst_path = os.path.join(dst_dir, matching_src_file)
+
+                                txt = '{}\t{}'.format(matching_src_path, dst_path)
+
+                                fid.write(txt)
+
+                                # print(txt)
+
+                                shutil.move(matching_src_path, dst_path)
 
                 # unique_names.append(src_files_no_ext[0])
                 # if collage:
