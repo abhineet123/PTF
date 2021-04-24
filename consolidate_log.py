@@ -40,6 +40,7 @@ class Params:
         show_output = 0
         enable_zipping = 1
         remove_zip = 1
+        rename_src = 1
 
         def read_auth(self):
             if not self.auth_path:
@@ -107,6 +108,13 @@ def run_scp(params, server_name, log_dir, log_fname, out_dir, is_file, timestamp
         for line in stdout:
             print(line.strip('\n'))
 
+    if params.rename_src:
+        src_abs_path = linux_path(src_root_path, zip_path)
+        dst_abs_path = src_abs_path + '.' + timestamp
+        rename_cmd = 'mv {} {}'.format(src_abs_path, dst_abs_path)
+        print('renaming source to {}'.format(dst_abs_path))
+        client.exec_command(rename_cmd)
+
     client.close()
 
     scp_cmd = "pscp -pw {} -r -P 22 {}@{}:{} ./".format(params.pwd, params.user, params.url, zip_path)
@@ -120,6 +128,7 @@ def run_scp(params, server_name, log_dir, log_fname, out_dir, is_file, timestamp
 
     if params.remove_zip:
         subprocess.check_call(['rm', zip_fname])
+
 
     out_path = linux_path(out_dir, add_suffix(log_fname, '{}_{}'.format(server_name, timestamp)))
 
