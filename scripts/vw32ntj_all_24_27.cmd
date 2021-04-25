@@ -1,5 +1,5 @@
 @echo off
-python3 "%~dp0\..\visualizeWithMotion.py" on_top=0 top_border=0 keep_borders=1 n_images=1 random_mode=1 auto_progress=1 transition_interval=15 monitor_id=0  duplicate_window=0 second_from_top=1 win_offset_y=0 width=1920 height=1050 src_dirs=!!#,!!##,!!#bad,24/4*2,24/1*4,24/2*6,24*8,25*6,26*4,27*2,18,19,21,28 frg_win_titles="The Journal 8","!dummy.log - Visual Studio Code" frg_monitor_ids=0,1,2,4,5 only_maximized=0 reversed_pos=2 min_aspect_ratio=0.8 max_aspect_ratio=1.8 max_magnified_height_ratio=2 src_dirs=%1 n_images=%2
+python3 "%~dp0\..\visualizeWithMotion.py" on_top=0 top_border=0 keep_borders=1 n_images=1 random_mode=1 auto_progress=1 transition_interval=15 monitor_id=0  duplicate_window=0 second_from_top=1 win_offset_y=0 width=1920 height=1050 src_dirs=!!#,!!##,!!#bad,!!#proc,24/4*2,24/1*4,24/2*6,24*8,25*6,26*4,27*2,18,19,21,28,17/2,17/3///2,17/4,20/1/1_4,20/1/1_5,20/2 frg_win_titles="The Journal 8","!dummy.log - Visual Studio Code" frg_monitor_ids=0,1,2,4,5 only_maximized=0 reversed_pos=2 min_aspect_ratio=0.8 max_aspect_ratio=1.8 max_magnified_height_ratio=2 src_dirs=%1 n_images=%2
 
 REM "x99","grs","orca","x992","grs2","orca2","f","t"
 REM frg_win_titles="The Journal 8","!!!XYplorer 20.10"
@@ -8,4 +8,4 @@ REM ,"!dummy.log - Visual Studio Code"
 REM ,"!Visual Studio Code"
 REM ,landscape*20
 REM vids/20/2/13**20,vids/20/2_patches**20
-
+REM ,20/1/1_4,20/1/1_5,20/2,17/2,17/3//2,17/4//2

@@ -833,19 +833,19 @@ def main(args, multi_exit_program=None,
 
     # Process optional counts
     default_count = 1
+    default_denominator = 1
     _numerators = []
     _denominators = []
     _src_dirs = []
     _samples = []
     for _id, src_dir in enumerate(src_dirs):
         _numerator = default_count
-        _denominator = 1
+        _denominator = default_denominator
         _sample = -1
         if '***' in src_dir:
             _src_dir, _count = src_dir.split('***')
             src_dir = _src_dir
             _numerator = default_count = int(_count)
-
         if '**' in src_dir:
             _src_dir, _sample = src_dir.split('**')
             src_dir = _src_dir
@@ -855,6 +855,10 @@ def main(args, multi_exit_program=None,
             _src_dir, _count = src_dir.split('*')
             src_dir = _src_dir
             _numerator = int(_count)
+        elif '///' in src_dir:
+            _src_dir, _count = src_dir.split('///')
+            _denominator = default_denominator = int(_count)
+            src_dir = _src_dir
         elif '//' in src_dir:
             _src_dir, _count = src_dir.split('//')
             _denominator = int(_count)
@@ -2577,7 +2581,7 @@ def main(args, multi_exit_program=None,
         2293760: '1',
         2228224: '2',
         2359296: '3',
-        2162688: '4',
+        2162688: '#proc',
         2949120: '#bad',
     }
     images_to_del = []

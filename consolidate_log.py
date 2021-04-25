@@ -109,7 +109,7 @@ def run_scp(params, server_name, log_dir, log_fname, out_dir, is_file, timestamp
             print(line.strip('\n'))
 
     if params.rename_src:
-        src_abs_path = linux_path(src_root_path, zip_path)
+        src_abs_path = linux_path(src_root_path, log_fname)
         dst_abs_path = src_abs_path + '.' + timestamp
         rename_cmd = 'mv {} {}'.format(src_abs_path, dst_abs_path)
         print('renaming source to {}'.format(dst_abs_path))
