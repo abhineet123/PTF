@@ -51,10 +51,12 @@ class Params:
             auth_data = [k.strip() for k in auth_data]
             self.url, self.user, self.pwd = auth_data[0].split(' ')
 
+    working_dir = ''
     log_dir = 'log'
     log_fname = 'mot_metrics_accumulative_hota.log'
 
-    servers = ['grs', 'x99', 'orca']
+    # servers = ['grs', 'x99', 'orca']
+    servers = ['x99', 'orca']
     cmd_in_file = linux_path('log', 'multi_vis_cmd.txt')
     force_download = 0
     remove_header = 1
@@ -80,6 +82,8 @@ def run_scp(params, server_name, log_dir, log_fname, out_dir, is_file, timestamp
 
     assert params.pwd and params.user and params.url, "auth data not provided"
 
+    print('\n' + server_name)
+
     if server_name == 'grs':
         server_home = params.home_dir
     elif server_name == 'x99':
@@ -94,32 +98,52 @@ def run_scp(params, server_name, log_dir, log_fname, out_dir, is_file, timestamp
     zip_fname = "consolidate_log_{}_{}.zip".format(server_name, timestamp)
     zip_path = linux_path(params.home_dir, zip_fname)
 
-    zip_cmd = "cd {} && zip -r {} {}".format(src_root_path, zip_path, log_fname)
-    if params.show_output:
-        print('Running {}'.format(zip_cmd))
+    remote_cmd = "cd {} && zip -r {} {}".format(src_root_path, zip_path, log_fname)
+
+    if params.rename_src:
+        # log_fname_abs = linux_path(params.home_dir, params.code_path, log_fname)
+        # dst_fname_abs = log_fname_abs + '.' + timestamp
+        # rename_cmd_abs = 'mv {} {}'.format(log_fname_abs, dst_fname_abs)
+        # print('\n' + rename_cmd_abs + '\n')
+
+        log_fname_rel = linux_path(log_dir, log_fname)
+        dst_fname_rel = log_fname_rel + '.' + timestamp
+        rename_cmd_abs = 'mv {} {}'.format(log_fname_rel, dst_fname_rel)
+        print('\n' + rename_cmd_abs + '\n')
+
+        # dst_log_fname = log_fname + '.' + timestamp
+        # rename_cmd = 'mv {} {}'.format(log_fname, dst_log_fname)
+        # print('\n' + rename_cmd + '\n')
+
+        # print('renaming source to {}'.format(dst_zip_path))
+        # remote_cmd = '{} && {}'.format(remote_cmd, rename_cmd)
+
+    if params.show_output == 2:
+        print('running {}'.format(remote_cmd))
 
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     client.connect(params.url, username=params.user, password=params.pwd)
 
-    stdin, stdout, stderr = client.exec_command(zip_cmd)
+    stdin, stdout, stderr = client.exec_command(remote_cmd)
+    stdout = list(stdout)
+    stderr = list(stderr)
+
+    if stderr:
+        # for line in stderr:
+        #     print(line.strip('\n'))
+        raise AssertionError('remote command did not work' + '\n' + '\n'.join(stderr))
 
     if params.show_output:
         for line in stdout:
             print(line.strip('\n'))
 
-    if params.rename_src:
-        src_abs_path = linux_path(src_root_path, log_fname)
-        dst_abs_path = src_abs_path + '.' + timestamp
-        rename_cmd = 'mv {} {}'.format(src_abs_path, dst_abs_path)
-        print('renaming source to {}'.format(dst_abs_path))
-        client.exec_command(rename_cmd)
-
     client.close()
 
     scp_cmd = "pscp -pw {} -r -P 22 {}@{}:{} ./".format(params.pwd, params.user, params.url, zip_path)
-    if params.show_output:
+    if params.show_output == 2:
         print('Running {}'.format(scp_cmd))
+
     scp_cmd_list = scp_cmd.split(' ')
     subprocess.check_call(scp_cmd_list)
 
@@ -128,7 +152,6 @@ def run_scp(params, server_name, log_dir, log_fname, out_dir, is_file, timestamp
 
     if params.remove_zip:
         subprocess.check_call(['rm', zip_fname])
-
 
     out_path = linux_path(out_dir, add_suffix(log_fname, '{}_{}'.format(server_name, timestamp)))
 
@@ -147,6 +170,9 @@ def main():
     paramparse.process(params, allow_unknown=1)
 
     params.scp.read_auth()
+
+    if params.working_dir:
+        os.chdir(params.working_dir)
 
     timestamp = datetime.now().strftime("%y%m%d_%H%M%S_%f")
 
@@ -172,7 +198,7 @@ def main():
     out_fname = add_suffix(params.log_fname, '{}'.format(timestamp))
     out_path = linux_path(out_dir, out_fname)
 
-    print('writing consolidated the log to {}'.format(out_path))
+    print('writing consolidated log to {}'.format(out_path))
     os.makedirs(params.log_dir, exist_ok=True)
     with open(out_path, 'w') as fid:
         fid.write(''.join(log_data_all))

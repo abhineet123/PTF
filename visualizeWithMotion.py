@@ -150,6 +150,9 @@ class Params:
         self.win_name = ''
         self.win_offset_x = 0
         self.win_offset_y = 0
+        self.log_file = 'vwm.log'
+        self.sort_log_file = 'vwm_sort.log'
+        self.del_log_file = 'vwm_sort.log'
 
 
 def main(args, multi_exit_program=None,
@@ -1172,8 +1175,8 @@ def main(args, multi_exit_program=None,
     log_dir = os.path.join(script_path, 'log')
     if not os.path.isdir(log_dir):
         os.makedirs(log_dir)
-    log_file = os.path.join(log_dir, 'vwm_log.txt')
-    _print('Saving log to {}'.format(log_file))
+    log_path = os.path.join(log_dir, params.log_file)
+    _print('Saving log to {}'.format(log_path))
 
     if not wallpaper_dir:
         wallpaper_dir = os.path.join(log_dir, 'vwm')
@@ -2164,7 +2167,7 @@ def main(args, multi_exit_program=None,
 
                                     fname = '"' + clicked_img_fname + '"'
                                     time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
-                                    open(log_file, 'a').write(time_stamp + "\n" + fname + '\n')
+                                    open(log_path, 'a').write(time_stamp + "\n" + fname + '\n')
 
                                     if flags == 25:
                                         # ctrl + shift
@@ -2207,7 +2210,7 @@ def main(args, multi_exit_program=None,
                         elif n_images == 1:
                             vid_name = video_files_list[vid_id]
                             time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
-                            open(log_file, 'a').write(time_stamp + "\n" + vid_name + '\n')
+                            open(log_path, 'a').write(time_stamp + "\n" + vid_name + '\n')
                             try:
                                 import pyperclip
 
@@ -2238,7 +2241,7 @@ def main(args, multi_exit_program=None,
     for _i, _ in enumerate(dup_monitor_ids):
         dup_win_names.append('{} {}'.format(win_name, _i))
 
-    # win_names_file = os.path.join(log_dir, 'vwm_win_names.txt')
+    # win_names_file = os.path.join(log_dir, 'vwm_win_names.log')
     # print('Writing win_names to {}'.format(log_file))
     #
     # with open(win_names_file, 'w') as fid:
@@ -3760,7 +3763,7 @@ def main(args, multi_exit_program=None,
         del_dir = os.path.join(log_dir, 'vwm_del')
         os.makedirs(del_dir, exist_ok=True)
         _print('moving deleted files to {}'.format(del_dir))
-        with open('vwm_del.txt', 'a') as log_fid:
+        with open(params.del_log_file, 'a') as log_fid:
             time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
             log_fid.write("\n" + time_stamp + "\n")
             for del_image_path in images_to_del:
@@ -3771,8 +3774,8 @@ def main(args, multi_exit_program=None,
                 log_fid.write(del_image_path + "\n")
 
     if images_to_sort:
-        if os.path.isfile('vwm_sort.txt'):
-            with open('vwm_sort.txt', 'r') as log_fid:
+        if os.path.isfile(params.sort_log_file):
+            with open(params.sort_log_file, 'r') as log_fid:
                 already_sorted = [line.strip() for line in log_fid.readlines() if os.path.isfile(line.strip())]
         else:
             already_sorted = []
@@ -3780,7 +3783,7 @@ def main(args, multi_exit_program=None,
         print('\n')
         _print('sorting images...')
 
-        with open('vwm_sort.txt', 'a') as log_fid:
+        with open(params.sort_log_file, 'a') as log_fid:
             time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
             log_fid.write("\n" + time_stamp + "\n")
             for k in images_to_sort.keys():
