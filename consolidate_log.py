@@ -55,8 +55,8 @@ class Params:
     log_dir = 'log'
     log_fname = 'mot_metrics_accumulative_hota.log'
 
-    # servers = ['grs', 'x99', 'orca']
-    servers = ['x99', 'orca']
+    servers = ['grs', 'x99', 'orca']
+    # servers = ['x99', 'orca']
     cmd_in_file = linux_path('log', 'multi_vis_cmd.txt')
     force_download = 0
     remove_header = 1
@@ -153,7 +153,9 @@ def run_scp(params, server_name, log_dir, log_fname, out_dir, is_file, timestamp
     if params.remove_zip:
         subprocess.check_call(['rm', zip_fname])
 
-    out_path = linux_path(out_dir, add_suffix(log_fname, '{}_{}'.format(server_name, timestamp)))
+    server_out_dir = linux_path(out_dir, 'servers')
+    os.makedirs(server_out_dir, exist_ok=True)
+    out_path = linux_path(server_out_dir, add_suffix(log_fname, '{}_{}'.format(server_name, timestamp)))
 
     # if not is_file:
     #     os.makedirs(out_path, exist_ok=True)
@@ -195,7 +197,8 @@ def main():
 
         log_data_dict[server_name] = log_data
 
-    out_fname = add_suffix(params.log_fname, '{}'.format(timestamp))
+    # out_fname = add_suffix(params.log_fname, '{}'.format(timestamp))
+    out_fname = 'consolidated_{}.log'.format(timestamp)
     out_path = linux_path(out_dir, out_fname)
 
     print('writing consolidated log to {}'.format(out_path))

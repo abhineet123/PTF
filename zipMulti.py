@@ -25,7 +25,7 @@ if __name__ == '__main__':
     exclusions = params['exclusions']
     exclude_ext = params['exclude_ext']
     include_ext = params['include_ext']
-    out_name = params['out_name']
+    _out_name = params['out_name']
     postfix = params['postfix']
     switches = params['switches']
     scp_dst = params['scp_dst']
@@ -70,9 +70,9 @@ if __name__ == '__main__':
         shutil.copy(zip_path, out_path)
     else:
         out_start_id = 0
-        if out_name:
+        if _out_name:
             try:
-                out_start_id = int(out_name)
+                out_start_id = int(_out_name)
             except ValueError:
                 pass
             else:
@@ -104,6 +104,9 @@ if __name__ == '__main__':
             zip_file = os.path.basename(zip_path)
         else:
             raise IOError('zip_path is neither a folder nor a file')
+
+        if _out_name:
+            out_name = _out_name
 
         if relative:
             zip_cmd = 'cd {} && zip {} {} {}'.format(zip_root_path, switches, out_name, zip_file)
