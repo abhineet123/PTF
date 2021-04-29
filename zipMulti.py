@@ -88,7 +88,7 @@ if __name__ == '__main__':
         #     out_name = os.path.splitext(out_name)[0]
 
         out_name = ''
-        
+
         for _dir in dir_names[out_start_id:]:
             out_name = '{}_{}'.format(out_name, _dir) if out_name else _dir
 

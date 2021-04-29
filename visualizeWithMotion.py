@@ -1024,6 +1024,7 @@ def main(args, multi_exit_program=None,
         all_total_unique = 0
         excluded = 0
         processed_dirs = []
+        totals = {}
         for _id, src_dir in enumerate(src_dirs):
             if _samples[_id] < 0:
                 _samples[_id] = 1
@@ -1076,6 +1077,8 @@ def main(args, multi_exit_program=None,
                        f'(unique: {_n_src_files} / {all_total_unique})'
                        )
                 src_files[_id] = _src_files
+                totals[_id] = (_total, all_total, src_dir)
+
 
             # src_file_list = [list(x) for x in src_file_list]
             # src_file_list = [x for x in src_file_list]
@@ -1133,6 +1136,12 @@ def main(args, multi_exit_program=None,
             # print('Found {} frames'.format(_total_frames))
 
         if not multi_mode:
+            _print('odds:')
+            for _id in totals:
+                odds = total_frames[0] / totals[_id][0]
+                accum_odds = total_frames[0] / totals[_id][1]
+                _print('{} :: {:.1f} ({:.1f})'.format(totals[_id][2], odds, accum_odds))
+
             _print(f'total_frames: {total_frames[0]}  (unique: {n_unique_frames})')
 
         if not multi_mode and random_mode:
