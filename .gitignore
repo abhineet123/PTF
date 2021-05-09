@@ -48,4 +48,8 @@ cython_trackers_old/
 *.avi
 *.wmv
 *.mkv
+*.jpg
+*.JPG
+*.png
+*.PNG
 C++/
