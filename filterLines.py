@@ -1,6 +1,6 @@
 import sys
 import os
-from .Misc import processArguments
+from Misc import processArguments
 
 params = {
     'filter_strings': ['magnet'],

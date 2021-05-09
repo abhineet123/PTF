@@ -1,2 +1,2 @@
 @echo off
-python2 "%~dp0\..\filterLines.py" filter_strings=%1 filter_type=%2 retain_filtered=%3 in_fname=%4 out_fname=%5
+python2 "%~dp0\..\filterLines.py" in_fname=%1 filter_strings=%2 filter_type=%3 retain_filtered=%4  out_fname=%5

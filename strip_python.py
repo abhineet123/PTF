@@ -14,7 +14,7 @@ import pyautogui
 
 def main():
     _params = {
-        'field_id': 2,
+        'field_id': -1,
         'field_sep': ' ',
 
     }
@@ -30,6 +30,14 @@ def main():
 
     in_txt = in_txt.lstrip('#')
     tokens = in_txt.strip().split(field_sep)
+
+    if field_id < 0:
+        if tokens[0].startswith('python'):
+            field_id = 2
+        elif tokens[0].endswith('.py'):
+            field_id = 1
+        else:
+            field_id = 0
 
     print('tokens: {}'.format(tokens))
     out_tokens = tokens[field_id:]
