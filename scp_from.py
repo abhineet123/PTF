@@ -40,10 +40,10 @@ if __name__ == '__main__':
     print('src_fname_rel: {}'.format(src_fname_rel))
     print('scp_fname: {}'.format(scp_fname))
 
-    src_dir = os.path.dirname(src_fname)
-    if not os.path.isdir(src_dir):
+    src_dir = os.path.dirname(src_fname_abs)
+    if src_dir and not os.path.isdir(src_dir):
         print('Creating folder: {}'.format(src_dir))
-        os.makedirs(src_dir)
+        os.makedirs(src_dir, exist_ok=1)
 
     switches = '-r -v --progress'
     if not overwrite:
