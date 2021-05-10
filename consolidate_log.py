@@ -37,7 +37,7 @@ class Params:
         home_dir = "/home/abhineet"
         code_path = 'deep_mdp/tracking_module'
 
-        show_output = 0
+        show_output = 1
         enable_zipping = 1
         remove_zip = 1
         rename_src = 1
