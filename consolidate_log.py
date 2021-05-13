@@ -181,7 +181,6 @@ def main():
     log_data_all = []
     log_data_dict = {}
     out_dir = linux_path(params.log_dir, 'consolidate_log')
-
     os.makedirs(out_dir, exist_ok=True)
 
     for server_id, server_name in enumerate(params.servers):
@@ -206,6 +205,10 @@ def main():
     with open(out_path, 'w') as fid:
         fid.write(''.join(log_data_all))
 
+    open_cmd = "start {}".format(out_path)
+    os.system(open_cmd)
+
+    _ = input('press enter to exit')
 
 if __name__ == '__main__':
     main()

@@ -185,6 +185,7 @@ col_rgb = {
     'magenta': (255, 0, 255)
 }
 
+
 def getBinaryPtsImage2(img_shape, corners):
     img_shape = img_shape[0:2]
     corners = corners.transpose().astype(np.int32)
@@ -357,6 +358,7 @@ def processArguments(args, params):
 def resizeAR(src_img, width=0, height=0, return_factors=False,
              placement_type=0, resize_factor=0):
     src_height, src_width, n_channels = src_img.shape
+
     src_aspect_ratio = float(src_width) / float(src_height)
 
     if isinstance(placement_type, int):
@@ -2143,7 +2145,7 @@ def getJaccardError(tracker_pos, gt_pos, show_img=0, border_size=100, min_thresh
     if min_x > max_x or min_y > max_y:
         print('tracker_pos: ', tracker_pos)
         print('gt_pos: ', gt_pos)
-        raise StandardError('Invalid Tracker and/or GT position')
+        raise SystemError('Invalid Tracker and/or GT position')
 
     img_size = (max_y - min_y + 2 * border_size + 1, max_x - min_x + 2 * border_size + 1)
 
@@ -2267,7 +2269,8 @@ def getTrackingErrors(tracker_path_orig, gt_path, _arch_fid=None, _reinit_from_g
                 reinit_start_id = frame_num - 2
                 if failure_frame_id >= 0 and reinit_start_id != failure_frame_id + _reinit_frame_skip:
                     print(
-                        'Tracker was reinitialized in frame {:d} rather than {:d} where it should have been with {:d} frames being skipped'.format(
+                        'Tracker was reinitialized in frame {:d} rather than {:d} where it should have been with {:d} '
+                        'frames being skipped'.format(
                             reinit_start_id + 1, failure_frame_id + _reinit_frame_skip + 1, _reinit_frame_skip
                         ))
                     return None, None
@@ -2475,7 +2478,7 @@ def getDateTime():
     return time.strftime("%y%m%d_%H%M", time.localtime())
 
 
-def getParamDict():
+class ParamDict:
     tracker_types = {0: 'gt',
                      1: 'esm',
                      2: 'ic',
@@ -3451,25 +3454,25 @@ def getParamDict():
         16: 'Synthetic',
         17: 'Live'
     }
-    sequences = dict(zip([actors[i] for i in range(len(actors))],
-                         [sequences_tmt,
-                          sequences_ucsb,
-                          sequences_lintrack,
-                          sequences_pami,
-                          sequences_tfmt,
-                          sequences_ptw,
-                          sequences_metaio,
-                          sequences_cmt,
-                          sequences_vot,
-                          sequences_vot16,
-                          sequences_vtb,
-                          sequences_vivid,
-                          sequences_trakmark,
-                          sequences_lintrack_short,
-                          sequences_mosaic,
-                          sequences_misc,
-                          sequences_synthetic,
-                          sequences_live]))
+    # sequences = dict(zip([actors[i] for i in range(len(actors))],
+    #                      [sequences_tmt,
+    #                       sequences_ucsb,
+    #                       sequences_lintrack,
+    #                       sequences_pami,
+    #                       sequences_tfmt,
+    #                       sequences_ptw,
+    #                       sequences_metaio,
+    #                       sequences_cmt,
+    #                       sequences_vot,
+    #                       sequences_vot16,
+    #                       sequences_vtb,
+    #                       sequences_vivid,
+    #                       sequences_trakmark,
+    #                       sequences_lintrack_short,
+    #                       sequences_mosaic,
+    #                       sequences_misc,
+    #                       sequences_synthetic,
+    #                       sequences_live]))
 
     sequences_mot2015_train = {
         0: 'TUD-Stadtmitte',
@@ -3710,17 +3713,23 @@ def getParamDict():
         3: 'GRAM',
         4: 'IDOT',
         5: 'DETRAC',
+        6: 'CTC',
         # 6: 'DETRAC_Test',
     }
-    mot_sequences = dict(zip([mot_actors[i] for i in range(len(mot_actors))], [
-        [sequences_mot2015_train, sequences_mot2015_test],
-        [sequences_mot2017_train, sequences_mot2017_test],
-        [sequences_kitti_train, sequences_kitti_test],
-        sequences_gram,
-        sequences_idot,
-        sequences_detrac,
-        # sequences_detrac_test,
-    ]))
+
+    sequences_ctc = [
+        'dummy_01',
+    ]
+    # mot_sequences = dict(zip([mot_actors[i] for i in range(len(mot_actors))], [
+    #     [sequences_mot2015_train, sequences_mot2015_test],
+    #     [sequences_mot2017_train, sequences_mot2017_test],
+    #     [sequences_kitti_train, sequences_kitti_test],
+    #     sequences_gram,
+    #     sequences_idot,
+    #     sequences_detrac,
+    #     sequences_ctc,
+    #     # sequences_detrac_test,
+    # ]))
 
     challenges = {0: 'angle',
                   1: 'fast_close',
@@ -3775,23 +3784,23 @@ def getParamDict():
         9: 'COBYLA',
         10: 'SLSQP'
     }
-    params_dict = {'actors': actors,
-                   'sequences': sequences,
-                   'mot_actors': mot_actors,
-                   'mot_sequences': mot_sequences,
-                   'tracker_types': tracker_types,
-                   'grid_types': grid_types,
-                   'filter_types': filter_types,
-                   'inc_types': inc_types,
-                   'appearance_models': appearance_models,
-                   'opt_types': opt_types,
-                   'challenges': challenges,
-                   'mtf_sms': mtf_sms,
-                   'mtf_ams': mtf_ams,
-                   'mtf_ssms': mtf_ssms,
-                   'opt_methods': opt_methods
-                   }
-    return params_dict
+    # params_dict = {'actors': actors,
+    #                'sequences': sequences,
+    #                'mot_actors': mot_actors,
+    #                'mot_sequences': mot_sequences,
+    #                'tracker_types': tracker_types,
+    #                'grid_types': grid_types,
+    #                'filter_types': filter_types,
+    #                'inc_types': inc_types,
+    #                'appearance_models': appearance_models,
+    #                'opt_types': opt_types,
+    #                'challenges': challenges,
+    #                'mtf_sms': mtf_sms,
+    #                'mtf_ams': mtf_ams,
+    #                'mtf_ssms': mtf_ssms,
+    #                'opt_methods': opt_methods
+    #                }
+    # return params_dict
 
 
 def is_square(apositiveint):
@@ -3878,18 +3887,27 @@ def putTextWithBackground(img, text, fmt=None):
         cv2.rectangle(img, box_coords[0], box_coords[1], bgr_col, cv2.FILLED)
     cv2.putText(img, text, loc, font, size, col, thickness)
 
+
 def linux_path(*args, **kwargs):
     return os.path.join(*args, **kwargs).replace(os.sep, '/')
+
 
 # import gmpy
 def stackImages(img_list, grid_size=None, stack_order=0, borderless=1,
                 preserve_order=0, return_idx=0, annotations=None,
                 ann_fmt=(0, 5, 15, 1, 1, 255, 255, 255, 0, 0, 0), only_height=0):
+    for img_id, img in enumerate(img_list):
+        if len(img.shape) == 2:
+            img_list[img_id] = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+
     n_images = len(img_list)
     # print('grid_size: {}'.format(grid_size))
 
     if grid_size is None:
-        n_cols = n_rows = int(np.ceil(np.sqrt(n_images)))
+        if n_images < 4:
+            n_cols, n_rows = n_images, 1
+        else:
+            n_cols = n_rows = int(np.ceil(np.sqrt(n_images)))
     else:
         n_rows, n_cols = grid_size
     target_ar = 1920.0 / 1080.0
