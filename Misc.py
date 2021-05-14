@@ -3717,9 +3717,28 @@ class ParamDict:
         # 6: 'DETRAC_Test',
     }
 
-    sequences_ctc = [
-        'dummy_01',
-    ]
+    from collections import OrderedDict
+
+    sequences_ctc = OrderedDict({
+        # 'dummy_01': 40,
+        'BF-C2DL-HSC_01': 40,
+        'BF-C2DL-HSC_02': 40,
+        'BF-C2DL-MuSC_01': 40,
+        'BF-C2DL-MuSC_02': 40,
+        'DIC-C2DH-HeLa_01': 40,
+        'DIC-C2DH-HeLa_02': 40,
+        'Fluo-C2DL-Huh7_01': 40,
+        'Fluo-C2DL-Huh7_02': 40,
+        'Fluo-C2DL-MSC_01': 40,
+        'Fluo-C2DL-MSC_02': 40,
+        'Fluo-N2DH-GOWT1_01': 40,
+        'Fluo-N2DH-GOWT1_02': 40,
+        'Fluo-N2DL-HeLa_01': 40,
+        'Fluo-N2DL-HeLa_02': 40,
+        'PhC-C2DH-U373_01': 40,
+        'PhC-C2DH-U373_02': 40
+    }
+    )
     # mot_sequences = dict(zip([mot_actors[i] for i in range(len(mot_actors))], [
     #     [sequences_mot2015_train, sequences_mot2015_test],
     #     [sequences_mot2017_train, sequences_mot2017_test],

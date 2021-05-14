@@ -9,7 +9,7 @@ from pprint import pprint
 
 import paramparse
 
-from Misc import getParamDict, drawBox, resizeAR, imshow
+from Misc import ParamDict, drawBox, resizeAR, imshow
 
 
 def main():
@@ -38,7 +38,7 @@ def main():
     end_id = _params['end_id']
     show_img = _params['show_img']
 
-    params = getParamDict()
+    params = ParamDict().__dict__
     actors = params['mot_actors']
     sequences = params['mot_sequences']
 

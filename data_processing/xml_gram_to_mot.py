@@ -13,7 +13,7 @@ for frame_id in range(n_frames):
     tree = ET.parse(fname)
     root = tree.getroot()
     if (frame_id + 1) % 100 == 0:
-        print 'frame {:d}/{:d}'.format(frame_id + 1, n_frames)
+        print('frame {:d}/{:d}'.format(frame_id + 1, n_frames))
     for obj in tree.iter('object'):
         obj_id = int(obj.find('ID').text)
         occluded = int(obj.find('occluded').text)
