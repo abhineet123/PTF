@@ -136,7 +136,7 @@ def main():
         if seg_available:
             seq_seq_src_files = [k for k in os.listdir(seq_seg_path) if
                                 os.path.splitext(k.lower())[1] in img_exts]
-            
+
 
 
 
