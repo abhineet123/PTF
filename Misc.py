@@ -3720,6 +3720,7 @@ class ParamDict:
     from collections import OrderedDict
 
     sequences_ctc = OrderedDict({
+        # train
         # 'dummy_01': 40,
         'BF-C2DL-HSC_01': 40,
         'BF-C2DL-HSC_02': 40,
@@ -3736,7 +3737,24 @@ class ParamDict:
         'Fluo-N2DL-HeLa_01': 40,
         'Fluo-N2DL-HeLa_02': 40,
         'PhC-C2DH-U373_01': 40,
-        'PhC-C2DH-U373_02': 40
+        'PhC-C2DH-U373_02': 40,
+        # test
+        'BF-C2DL-HSC_01_Test': 40,
+        'BF-C2DL-HSC_02_Test': 40,
+        'BF-C2DL-MuSC_01_Test': 40,
+        'BF-C2DL-MuSC_02_Test': 40,
+        'DIC-C2DH-HeLa_01_Test': 40,
+        'DIC-C2DH-HeLa_02_Test': 40,
+        'Fluo-C2DL-Huh7_01_Test': 40,
+        'Fluo-C2DL-Huh7_02_Test': 40,
+        'Fluo-C2DL-MSC_01_Test': 40,
+        'Fluo-C2DL-MSC_02_Test': 40,
+        'Fluo-N2DH-GOWT1_01_Test': 40,
+        'Fluo-N2DH-GOWT1_02_Test': 40,
+        'Fluo-N2DL-HeLa_01_Test': 40,
+        'Fluo-N2DL-HeLa_02_Test': 40,
+        'PhC-C2DH-U373_01_Test': 40,
+        'PhC-C2DH-U373_02_Test': 40,
     }
     )
     # mot_sequences = dict(zip([mot_actors[i] for i in range(len(mot_actors))], [
