@@ -168,6 +168,8 @@ def main():
         file_id_to_seg = OrderedDict()
         obj_id_to_seg_sizes = OrderedDict()
         obj_id_to_seg_bboxes = OrderedDict()
+        obj_id_to_mean_seg_sizes = OrderedDict()
+        obj_id_to_max_seg_sizes = OrderedDict()
         all_seg_sizes = []
         mean_seg_sizes = None
 
@@ -204,6 +206,9 @@ def main():
                     obj_id_to_seg_bboxes[obj_id].append([seq_seq_src_file, min_x, min_y, max_x, max_y])
                     obj_id_to_seg_sizes[obj_id].append([size_x, size_y])
                     all_seg_sizes.append([size_x, size_y])
+
+                obj_id_to_mean_seg_sizes = OrderedDict({k: np.mean(v, axis=0) for k, v in obj_id_to_seg_sizes.items()})
+                obj_id_to_max_seg_sizes = OrderedDict({k: np.amax(v, axis=0) for k, v in obj_id_to_seg_sizes.items()})
 
             print('segmentations found for {} files:\n{}'.format(len(file_id_to_seg), '\n'.join(file_id_to_seg.keys())))
 
@@ -266,7 +271,7 @@ def main():
                     xmin, ymin, xmax, ymax = file_seg[obj_id][1]
                 else:
                     try:
-                        size_x, size_y = obj_id_to_seg_bboxes[obj_id][-1]
+                        size_x, size_y = obj_id_to_max_seg_sizes[obj_id]
                     except KeyError:
                         if mean_seg_sizes is not None:
                             size_x, size_y = mean_seg_sizes
