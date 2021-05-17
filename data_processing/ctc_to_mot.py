@@ -27,7 +27,8 @@ class Params:
         self.quality = 3
         self.resize = 0
         self.root_dir = '/data'
-        self.show_img = 0
+        self.save_img = 1
+        self.show_img = 1
         self.speed = 0.5
         self.start_id = 0
         self.write_img = 1
@@ -42,10 +43,18 @@ def main():
     start_id = _params.start_id
     end_id = _params.end_id
     write_img = _params.write_img
+    save_img = _params.save_img
     show_img = _params.show_img
     # obj_size = _params.obj_size
     ignore_missing_gt = _params.ignore_missing_gt
     ignore_missing_seg = _params.ignore_missing_seg
+
+    if save_img:
+        if not show_img:
+            show_img += 2
+    else:
+        if show_img > 1:
+            save_img = 1
 
     params = ParamDict()
 
@@ -74,6 +83,10 @@ def main():
 
     out_img_root_path = linux_path(root_dir, actor, 'Images')
     os.makedirs(out_img_root_path, exist_ok=True)
+
+    if save_img:
+        out_vis_root_path = linux_path(root_dir, actor, 'Visualizations')
+        os.makedirs(out_vis_root_path, exist_ok=True)
 
     out_gt_root_path = linux_path(root_dir, actor, 'Annotations')
     os.makedirs(out_gt_root_path, exist_ok=True)
@@ -133,16 +146,6 @@ def main():
             out_gt_path = linux_path(out_gt_root_path, seq_name + '.txt')
             out_gt_fid = open(out_gt_path, 'w')
 
-        if seg_available:
-            seq_seq_src_files = [k for k in os.listdir(seq_seg_path) if
-                                os.path.splitext(k.lower())[1] in img_exts]
-
-
-
-
-        out_img_dir_path = linux_path(out_img_root_path, seq_name)
-        os.makedirs(out_img_dir_path, exist_ok=True)
-
         n_frames = len(seq_img_src_files)
 
         print('seq {} / {}\t{}\t{} frames'.format(seq_id + start_id + 1, end_id + 1, seq_name, n_frames))
@@ -151,13 +154,68 @@ def main():
 
         n_frames_list.append(n_frames)
 
+        if write_img:
+            out_img_dir_path = linux_path(out_img_root_path, seq_name)
+            os.makedirs(out_img_dir_path, exist_ok=True)
+            print('Saving images to {}'.format(out_img_dir_path))
+
+        if save_img:
+            out_vis_dir_path = linux_path(out_vis_root_path, seq_name)
+            os.makedirs(out_vis_dir_path, exist_ok=True)
+            print('Saving visualizations to {}'.format(out_vis_dir_path))
+
+        from collections import OrderedDict
+        file_id_to_seg = OrderedDict()
+        obj_id_to_seg_sizes = OrderedDict()
+        obj_id_to_seg_bboxes = OrderedDict()
+        all_seg_sizes = []
+        mean_seg_sizes = None
+
+        if seg_available:
+            seq_seq_src_files = [k for k in os.listdir(seq_seg_path) if
+                                 os.path.splitext(k.lower())[1] in img_exts]
+            for seq_seq_src_file in seq_seq_src_files:
+
+                seq_seq_src_file_id = ''.join(k for k in seq_seq_src_file if k.isdigit())
+
+                file_id_to_seg[seq_seq_src_file_id] = {}
+
+                seq_seq_src_path = os.path.join(seq_seg_path, seq_seq_src_file)
+                seq_seg_pil = Image.open(seq_seq_src_path)
+                seq_seg = np.array(seq_seg_pil)
+                unique_labels, counts = np.unique(seq_seg, return_counts=True)
+                for obj_id in unique_labels:
+                    if obj_id == 0:
+                        continue
+
+                    obj_id_locations = np.nonzero(seq_seg == obj_id)
+
+                    min_y, min_x = [np.amin(k) for k in obj_id_locations]
+                    max_y, max_x = [np.amax(k) for k in obj_id_locations]
+
+                    if obj_id not in obj_id_to_seg_sizes:
+                        obj_id_to_seg_bboxes[obj_id] = []
+                        obj_id_to_seg_sizes[obj_id] = []
+
+                    size_x, size_y = max_x - min_x, max_y - min_y
+
+                    file_id_to_seg[seq_seq_src_file_id][obj_id] = (obj_id_locations, [min_x, min_y, max_x, max_y])
+
+                    obj_id_to_seg_bboxes[obj_id].append([seq_seq_src_file, min_x, min_y, max_x, max_y])
+                    obj_id_to_seg_sizes[obj_id].append([size_x, size_y])
+                    all_seg_sizes.append([size_x, size_y])
+
+            print('segmentations found for {} files:\n{}'.format(len(file_id_to_seg), '\n'.join(file_id_to_seg.keys())))
+
+            mean_seg_sizes = np.mean(all_seg_sizes, axis=0)
+
         for frame_id in tqdm(range(n_frames)):
             seq_img_src_file = seq_img_src_files[frame_id]
 
             # assert seq_img_src_file in seq_gt_src_file, \
             #     "mismatch between seq_img_src_file and seq_gt_src_file"
 
-            seq_img_src_file_id = int(''.join(k for k in seq_img_src_file if k.isdigit()))
+            seq_img_src_file_id = ''.join(k for k in seq_img_src_file if k.isdigit())
 
             seq_img_src_path = os.path.join(seq_img_path, seq_img_src_file)
 
@@ -173,8 +231,12 @@ def main():
             if not gt_available:
                 continue
 
+            file_seg = {}
+            if seq_img_src_file_id in file_id_to_seg:
+                file_seg = file_id_to_seg[seq_img_src_file_id]
+
             seq_gt_src_file = seq_gt_src_files[frame_id]
-            seq_gt_src_file_id = int(''.join(k for k in seq_gt_src_file if k.isdigit()))
+            seq_gt_src_file_id = ''.join(k for k in seq_gt_src_file if k.isdigit())
 
             assert seq_gt_src_file_id == seq_img_src_file_id, \
                 "Mismatch between seq_gt_src_file_id and seq_img_src_file_id"
@@ -191,49 +253,78 @@ def main():
 
                 seq_img_col2 = seq_img_col.copy()
 
-            size_x, size_y = obj_size, obj_size
+                if file_seg:
+                    seq_img_col3 = seq_img_col.copy()
 
-            for label in unique_labels:
-                if label == 0:
+            for obj_id in unique_labels:
+                if obj_id == 0:
                     continue
-                label_locations = np.nonzero(seq_gt == label)
-
+                label_locations = np.nonzero(seq_gt == obj_id)
                 centroid_y, centroid_x = [np.mean(k) for k in label_locations]
 
-                ymin, xmin = centroid_y - size_y / 2.0, centroid_x - size_x / 2.0
-                ymax, xmax = centroid_y + size_y / 2.0, centroid_x + size_x / 2.0
+                if file_seg:
+                    xmin, ymin, xmax, ymax = file_seg[obj_id][1]
+                else:
+                    try:
+                        size_x, size_y = obj_id_to_seg_bboxes[obj_id][-1]
+                    except KeyError:
+                        if mean_seg_sizes is not None:
+                            size_x, size_y = mean_seg_sizes
+                        else:
+                            size_x, size_y = obj_size, obj_size
+
+                    ymin, xmin = centroid_y - size_y / 2.0, centroid_x - size_x / 2.0
+                    ymax, xmax = centroid_y + size_y / 2.0, centroid_x + size_x / 2.0
 
                 width = int(xmax - xmin)
                 height = int(ymax - ymin)
 
                 if show_img:
-                    col_id = (label - 1) % len(ann_cols)
+                    col_id = (obj_id - 1) % len(ann_cols)
 
                     col = col_rgb[ann_cols[col_id]]
-                    drawBox(seq_img_col, xmin, ymin, xmax, ymax, label=str(label), box_color=col)
+                    drawBox(seq_img_col, xmin, ymin, xmax, ymax, label=str(obj_id), box_color=col)
                     seq_img_col2[label_locations] = col
 
+                    if file_seg:
+                        seq_img_col3[file_seg[obj_id][0]] = col
+                        min_x, min_y, max_x, max_y = file_seg[obj_id][1]
+                        drawBox(seq_img_col3, min_x, min_y, max_x, max_y, label=str(obj_id), box_color=col)
+
                 out_gt_fid.write('{:d},{:d},{:.3f},{:.3f},{:d},{:d},1,-1,-1,-1\n'.format(
-                    frame_id + 1, label, xmin, ymin, width, height))
+                    frame_id + 1, obj_id, xmin, ymin, width, height))
 
                 # print()
 
             skip_seq = 0
 
             if show_img:
-                seq_img_disp = stackImages([seq_img_col, seq_img_col2])
+                images_to_stack = [seq_img_col, seq_img_col2]
+                if file_seg:
+                    images_to_stack.append(seq_img_col3)
 
-                seq_img_disp = resizeAR(seq_img_disp, height=1050, width=1900)
+                seq_img_vis = stackImages(images_to_stack)
 
-                cv2.imshow('seq_img_disp', seq_img_disp)
-                k = cv2.waitKey(1 - _pause)
-                if k == 32:
-                    _pause = 1 - _pause
-                elif k == 27:
-                    skip_seq = 1
-                    break
-                elif k == ord('q'):
-                    break
+                seq_img_vis = resizeAR(seq_img_vis, height=1050, width=1900)
+
+                cv2.putText(seq_img_vis, '{}: {}'.format(frame_id, seq_img_src_file_id), (40, 40),
+                            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+
+                if show_img != 2:
+                    cv2.imshow('seq_img_vis', seq_img_vis)
+                    k = cv2.waitKey(1 - _pause)
+                    if k == 32:
+                        _pause = 1 - _pause
+                    elif k == 27:
+                        skip_seq = 1
+                        break
+                    elif k == ord('q'):
+                        break
+
+                if save_img:
+                    out_vis_file = os.path.splitext(seq_img_src_file)[0] + '.jpg'
+                    out_vis_file_path = linux_path(out_vis_dir_path, out_vis_file)
+                    cv2.imwrite(out_vis_file_path, seq_img_vis)
 
             if skip_seq or _exit:
                 break

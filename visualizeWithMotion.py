@@ -657,7 +657,8 @@ def main(args, multi_exit_program=None,
             _img_sequences[_load_id][_file] = img
 
     def loadVideo(_load_id):
-        nonlocal src_files, total_frames, img_id, img_sequences, _lazy_video_load
+        nonlocal src_files, tota
+        l_frames, img_id, img_sequences, _lazy_video_load
 
         _lazy_video_load = lazy_video_load
         if os.path.isdir(src_path):
