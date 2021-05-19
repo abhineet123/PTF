@@ -30,13 +30,13 @@ class Params:
 
         self.speed = 0.5
 
-        self.start_id = 0
-        self.end_id = -1
+        self.start_id = 16
+        self.end_id = 19
 
         self.save_img = 1
-        self.show_img = 0
-        self.write_gt = 0
-        self.write_img = 0
+        self.show_img = 1
+        self.write_gt = 1
+        self.write_img = 1
         self.tra_only = 0
         self.save_vid = 1
         self.codec = 'H264'
@@ -145,10 +145,9 @@ def main():
                 else:
                     print('skipping existing {}'.format(out_tra_file))
             else:
-                msg = "seq_gt_tra_file does not exist"
+                msg = "\nseq_gt_tra_file does not exist: {}".format(seq_gt_tra_file)
                 if ignore_missing_gt:
                     print(msg)
-                    gt_available = 0
                 else:
                     raise AssertionError(msg)
 
@@ -158,12 +157,15 @@ def main():
         seg_available = 1
         seq_seg_path = linux_path(tif_root_dir, seq_name + '_ST', 'SEG')
         if not os.path.exists(seq_seg_path):
-            msg = "seq_seg_path does not exist"
-            if ignore_missing_seg:
-                print(msg)
-                seg_available = 0
-            else:
-                raise AssertionError(msg)
+            print("ST seq_seg_path does not exist")
+            seq_seg_path = linux_path(tif_root_dir, seq_name + '_GT', 'SEG')
+            if not os.path.exists(seq_seg_path):
+                msg = "GT seq_seg_path does not exist"
+                if ignore_missing_seg:
+                    print(msg)
+                    seg_available = 0
+                else:
+                    raise AssertionError(msg)
 
         seq_img_src_files = [k for k in os.listdir(seq_img_path) if
                              os.path.splitext(k.lower())[1] in img_exts]
@@ -269,7 +271,7 @@ def main():
                 _gt_obj_ids = list(file_gt.keys())
 
                 if len(_gt_obj_ids) != len(seg_obj_ids):
-                    print("mismatch between the number of objects in segmentation: {} and GT: {} in {}".format(
+                    print("\nmismatch between the number of objects in segmentation: {} and GT: {} in {}".format(
                         len(seg_obj_ids), len(_gt_obj_ids), seq_seq_src_file
                     ))
 
@@ -476,11 +478,10 @@ def main():
 
                 seq_img_vis = stackImages(images_to_stack)
 
-
                 seq_img_vis = resizeAR(seq_img_vis, height=vis_height, width=vis_width)
 
-                cv2.putText(seq_img_vis, '{}: {}'.format(frame_id, seq_img_src_file_id), (40, 40),
-                            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+                cv2.putText(seq_img_vis, '{}: {}'.format(seq_name, seq_img_src_file_id), (20, 20),
+                            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
                 if show_img != 2:
                     cv2.imshow('seq_img_vis', seq_img_vis)
@@ -495,7 +496,7 @@ def main():
 
                 if save_img:
                     if vid_out is not None:
-                        vid_out.write(out_vis_file)
+                        vid_out.write(seq_img_vis)
                     else:
                         out_vis_file = os.path.splitext(seq_img_src_file)[0] + '.jpg'
                         out_vis_file_path = linux_path(out_vis_path, out_vis_file)

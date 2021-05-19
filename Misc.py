@@ -3738,6 +3738,12 @@ class ParamDict:
         'Fluo-N2DL-HeLa_02': 40,
         'PhC-C2DH-U373_01': 40,
         'PhC-C2DH-U373_02': 40,
+
+        'PhC-C2DL-PSC_01': 40,
+        'PhC-C2DL-PSC_02': 40,
+        'Fluo-N2DH-SIM_01': 40,
+        'Fluo-N2DH-SIM_02': 40,
+
         # test
         'BF-C2DL-HSC_01_Test': 40,
         'BF-C2DL-HSC_02_Test': 40,
