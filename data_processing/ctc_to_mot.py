@@ -200,6 +200,8 @@ def main():
         obj_id_to_gt_file_ids = OrderedDict()
 
         if gt_available:
+            print('reading GT from {}...'.format(seq_gt_path))
+
             seq_gt_src_files = [k for k in os.listdir(seq_gt_path) if
                                 os.path.splitext(k.lower())[1] in img_exts]
             seq_gt_src_files.sort()
@@ -207,7 +209,6 @@ def main():
             assert len(seq_img_src_files) == len(
                 seq_gt_src_files), "mismatch between the lengths of seq_img_src_files and seq_gt_src_files"
 
-            print('reading GT...')
             for seq_gt_src_file in tqdm(seq_gt_src_files):
                 seq_gt_src_file_id = ''.join(k for k in seq_gt_src_file if k.isdigit())
 
@@ -248,8 +249,7 @@ def main():
         max_seg_sizes = None
 
         if seg_available:
-            print('reading segmentations and consolidating with GT...')
-
+            print('reading segmentations from {}...'.format(seq_seg_path))
             seq_seq_src_files = [k for k in os.listdir(seq_seg_path) if
                                  os.path.splitext(k.lower())[1] in img_exts]
             for seq_seq_src_file in tqdm(seq_seq_src_files):
@@ -344,10 +344,13 @@ def main():
             obj_id_to_mean_seg_sizes = OrderedDict({k: np.mean(v, axis=0) for k, v in obj_id_to_seg_sizes.items()})
             obj_id_to_max_seg_sizes = OrderedDict({k: np.amax(v, axis=0) for k, v in obj_id_to_seg_sizes.items()})
 
-            print('segmentations found for {} files:\n{}'.format
-                  (len(file_id_to_seg), '\n'.join(file_id_to_seg.keys())))
+            print('segmentations found for {} files'.format
+                  (len(file_id_to_seg),
+                   # '\n'.join(file_id_to_seg.keys())
+                   )
+                  )
             print('segmentations include {} objects:\n{}'.format(
-                len(obj_id_to_seg_bboxes), '\n'.join(str(k) for k in obj_id_to_seg_bboxes.keys())))
+                len(obj_id_to_seg_bboxes), ', '.join(str(k) for k in obj_id_to_seg_bboxes.keys())))
 
             mean_seg_sizes = np.mean(all_seg_sizes, axis=0)
             max_seg_sizes = np.amax(all_seg_sizes, axis=0)
