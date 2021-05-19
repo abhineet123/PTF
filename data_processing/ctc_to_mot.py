@@ -1,6 +1,7 @@
 import xml.etree.cElementTree as ET
 import sys
 import os
+import shutil
 import glob
 import numpy as np
 import cv2
@@ -18,7 +19,6 @@ from Misc import ParamDict, drawBox, col_rgb, resizeAR, linux_path, stackImages
 class Params:
     def __init__(self):
         self.cfg = ('',)
-        self.end_id = -1
         self.ignore_missing_gt = 1
         self.ignore_missing_seg = 1
         self.ignored_region_only = 0
@@ -27,11 +27,22 @@ class Params:
         self.quality = 3
         self.resize = 0
         self.root_dir = '/data'
-        self.save_img = 1
-        self.show_img = 1
+
         self.speed = 0.5
+
         self.start_id = 0
-        self.write_img = 1
+        self.end_id = -1
+
+        self.save_img = 1
+        self.show_img = 0
+        self.write_gt = 0
+        self.write_img = 0
+        self.tra_only = 0
+        self.save_vid = 1
+        self.codec = 'H264'
+
+        self.vis_height = 1050
+        self.vis_width = 1900
 
 
 def main():
@@ -42,10 +53,16 @@ def main():
     root_dir = _params.root_dir
     start_id = _params.start_id
     end_id = _params.end_id
+
     write_img = _params.write_img
+    write_gt = _params.write_gt
     save_img = _params.save_img
+    save_vid = _params.save_vid
+    codec = _params.codec
     show_img = _params.show_img
-    # obj_size = _params.obj_size
+    vis_height = _params.vis_height
+    vis_width = _params.vis_width
+    # default_obj_size = _params.default_obj_size
     ignore_missing_gt = _params.ignore_missing_gt
     ignore_missing_seg = _params.ignore_missing_seg
 
@@ -104,7 +121,7 @@ def main():
 
         seq_name = actor_sequences[seq_id]
 
-        obj_size = actor_sequences_dict[seq_name]
+        default_obj_size = actor_sequences_dict[seq_name]
 
         seq_img_path = linux_path(tif_root_dir, seq_name)
         assert os.path.exists(seq_img_path), "seq_img_path does not exist"
@@ -118,9 +135,28 @@ def main():
                 gt_available = 0
             else:
                 raise AssertionError(msg)
+        else:
+            seq_gt_tra_file = linux_path(seq_gt_path, "man_track.txt")
+            if os.path.exists(seq_gt_tra_file):
+                out_tra_file = linux_path(out_gt_root_path, seq_name + '.tra')
+                print('{} --> {}'.format(seq_gt_tra_file, out_tra_file))
+                if not os.path.exists(out_tra_file):
+                    shutil.copy(seq_gt_tra_file, out_tra_file)
+                else:
+                    print('skipping existing {}'.format(out_tra_file))
+            else:
+                msg = "seq_gt_tra_file does not exist"
+                if ignore_missing_gt:
+                    print(msg)
+                    gt_available = 0
+                else:
+                    raise AssertionError(msg)
+
+        if _params.tra_only:
+            continue
 
         seg_available = 1
-        seq_seg_path = linux_path(tif_root_dir, seq_name + '_GT', 'SEG')
+        seq_seg_path = linux_path(tif_root_dir, seq_name + '_ST', 'SEG')
         if not os.path.exists(seq_seg_path):
             msg = "seq_seg_path does not exist"
             if ignore_missing_seg:
@@ -135,17 +171,6 @@ def main():
 
         out_gt_fid = None
 
-        if gt_available:
-            seq_gt_src_files = [k for k in os.listdir(seq_gt_path) if
-                                os.path.splitext(k.lower())[1] in img_exts]
-            seq_gt_src_files.sort()
-
-            assert len(seq_img_src_files) == len(
-                seq_gt_src_files), "mismatch between the lengths of seq_img_src_files and seq_gt_src_files"
-
-            out_gt_path = linux_path(out_gt_root_path, seq_name + '.txt')
-            out_gt_fid = open(out_gt_path, 'w')
-
         n_frames = len(seq_img_src_files)
 
         print('seq {} / {}\t{}\t{} frames'.format(seq_id + start_id + 1, end_id + 1, seq_name, n_frames))
@@ -159,60 +184,189 @@ def main():
             os.makedirs(out_img_dir_path, exist_ok=True)
             print('Saving images to {}'.format(out_img_dir_path))
 
+        vid_out = None
         if save_img:
-            out_vis_dir_path = linux_path(out_vis_root_path, seq_name)
-            os.makedirs(out_vis_dir_path, exist_ok=True)
-            print('Saving visualizations to {}'.format(out_vis_dir_path))
+            if save_vid:
+                out_vis_path = linux_path(out_vis_root_path, seq_name + '.mkv')
+                vid_out = cv2.VideoWriter(out_vis_path,  cv2.VideoWriter_fourcc(*codec), 30, (vis_width, vis_height))
+            else:
+                out_vis_path = linux_path(out_vis_root_path, seq_name)
+                os.makedirs(out_vis_path, exist_ok=True)
+            print('Saving visualizations to {}'.format(out_vis_path))
 
         from collections import OrderedDict
+
+        file_id_to_gt = OrderedDict()
+        obj_id_to_gt_file_ids = OrderedDict()
+
+        if gt_available:
+            seq_gt_src_files = [k for k in os.listdir(seq_gt_path) if
+                                os.path.splitext(k.lower())[1] in img_exts]
+            seq_gt_src_files.sort()
+
+            assert len(seq_img_src_files) == len(
+                seq_gt_src_files), "mismatch between the lengths of seq_img_src_files and seq_gt_src_files"
+
+            print('reading GT...')
+            for seq_gt_src_file in tqdm(seq_gt_src_files):
+                seq_gt_src_file_id = ''.join(k for k in seq_gt_src_file if k.isdigit())
+
+                file_id_to_gt[seq_gt_src_file_id] = OrderedDict()
+
+                seq_gt_src_path = os.path.join(seq_gt_path, seq_gt_src_file)
+                seq_gt_pil = Image.open(seq_gt_src_path)
+                seq_gt_np = np.array(seq_gt_pil)
+
+                gt_obj_ids = list(np.unique(seq_gt_np, return_counts=False))
+                gt_obj_ids.remove(0)
+
+                for obj_id in gt_obj_ids:
+                    obj_locations = np.nonzero(seq_gt_np == obj_id)
+                    centroid_y, centroid_x = [np.mean(k) for k in obj_locations]
+
+                    file_id_to_gt[seq_gt_src_file_id][obj_id] = [obj_locations, centroid_y, centroid_x]
+
+                    if obj_id not in obj_id_to_gt_file_ids:
+                        obj_id_to_gt_file_ids[obj_id] = []
+
+                    obj_id_to_gt_file_ids[obj_id].append(seq_gt_src_file_id)
+
+            if write_gt:
+                out_gt_path = linux_path(out_gt_root_path, seq_name + '.txt')
+                out_gt_fid = open(out_gt_path, 'w')
+
         file_id_to_seg = OrderedDict()
+        file_id_to_nearest_seg = OrderedDict()
+
+        obj_id_to_seg_file_ids = OrderedDict()
         obj_id_to_seg_sizes = OrderedDict()
         obj_id_to_seg_bboxes = OrderedDict()
         obj_id_to_mean_seg_sizes = OrderedDict()
         obj_id_to_max_seg_sizes = OrderedDict()
         all_seg_sizes = []
         mean_seg_sizes = None
+        max_seg_sizes = None
 
         if seg_available:
+            print('reading segmentations and consolidating with GT...')
+
             seq_seq_src_files = [k for k in os.listdir(seq_seg_path) if
                                  os.path.splitext(k.lower())[1] in img_exts]
-            for seq_seq_src_file in seq_seq_src_files:
+            for seq_seq_src_file in tqdm(seq_seq_src_files):
 
                 seq_seq_src_file_id = ''.join(k for k in seq_seq_src_file if k.isdigit())
+                file_gt = file_id_to_gt[seq_seq_src_file_id]
 
-                file_id_to_seg[seq_seq_src_file_id] = {}
+                file_id_to_seg[seq_seq_src_file_id] = OrderedDict()
 
                 seq_seq_src_path = os.path.join(seq_seg_path, seq_seq_src_file)
                 seq_seg_pil = Image.open(seq_seq_src_path)
-                seq_seg = np.array(seq_seg_pil)
-                unique_labels, counts = np.unique(seq_seg, return_counts=True)
-                for obj_id in unique_labels:
-                    if obj_id == 0:
-                        continue
+                seq_seg_np = np.array(seq_seg_pil)
 
-                    obj_id_locations = np.nonzero(seq_seg == obj_id)
+                seg_obj_ids = list(np.unique(seq_seg_np, return_counts=False))
+                seg_obj_ids.remove(0)
 
-                    min_y, min_x = [np.amin(k) for k in obj_id_locations]
-                    max_y, max_x = [np.amax(k) for k in obj_id_locations]
+                _gt_obj_ids = list(file_gt.keys())
 
-                    if obj_id not in obj_id_to_seg_sizes:
-                        obj_id_to_seg_bboxes[obj_id] = []
-                        obj_id_to_seg_sizes[obj_id] = []
+                if len(_gt_obj_ids) != len(seg_obj_ids):
+                    print("mismatch between the number of objects in segmentation: {} and GT: {} in {}".format(
+                        len(seg_obj_ids), len(_gt_obj_ids), seq_seq_src_file
+                    ))
+
+                from scipy.spatial import distance_matrix
+
+                seg_centroids = []
+                seg_id_to_locations = {}
+
+                for seg_obj_id in seg_obj_ids:
+                    # obj_id = gt_obj_ids[seg_obj_id - 1]
+
+                    seg_obj_locations = np.nonzero(seq_seg_np == seg_obj_id)
+                    seg_centroid_y, seg_centroid_x = [np.mean(k) for k in seg_obj_locations]
+
+                    seg_centroids.append([seg_centroid_y, seg_centroid_x])
+
+                    seg_id_to_locations[seg_obj_id] = seg_obj_locations
+
+                gt_centroids = [[k[1], k[2]] for k in file_gt.values()]
+                gt_centroids = np.asarray(gt_centroids)
+                seg_centroids = np.asarray(seg_centroids)
+
+                gt_to_seg_dists = distance_matrix(seg_centroids, gt_centroids)
+
+                # seg_min_dist_ids = np.argmin(gt_to_seg_dists, axis=1)
+                # gt_min_dist_ids = np.argmin(gt_to_seg_dists, axis=0)
+                # unique_min_dist_ids = np.unique(seg_min_dist_ids)                #
+                #
+                # assert len(unique_min_dist_ids) == len(seg_min_dist_ids), \
+                #     "duplicate matches found between segmentation and GT objects"
+
+                # seg_to_gt_obj_ids = {
+                #     seg_obj_id:  _gt_obj_ids[seg_min_dist_ids[_id]] for _id, seg_obj_id in enumerate(seg_obj_ids)
+                # }
+
+                from scipy.optimize import linear_sum_assignment
+
+                seg_inds, gt_inds = linear_sum_assignment(gt_to_seg_dists)
+
+                if len(seg_inds) != len(seg_obj_ids):
+                    print("only {} / {} segmentation objects assigned to GT objects".format(len(seg_inds), len(seg_obj_ids)))
+
+                seg_to_gt_obj_ids = {
+                    seg_obj_ids[seg_inds[i]]:  _gt_obj_ids[gt_inds[i]] for i in range(len(seg_inds))
+                }
+
+                # print()
+
+                for seg_obj_id in seg_obj_ids:
+                    seg_obj_locations = seg_id_to_locations[seg_obj_id]
+                    _gt_obj_id = seg_to_gt_obj_ids[seg_obj_id]
+
+                    min_y, min_x = [np.amin(k) for k in seg_obj_locations]
+                    max_y, max_x = [np.amax(k) for k in seg_obj_locations]
 
                     size_x, size_y = max_x - min_x, max_y - min_y
 
-                    file_id_to_seg[seq_seq_src_file_id][obj_id] = (obj_id_locations, [min_x, min_y, max_x, max_y])
+                    if _gt_obj_id not in obj_id_to_seg_sizes:
+                        obj_id_to_seg_bboxes[_gt_obj_id] = []
+                        obj_id_to_seg_sizes[_gt_obj_id] = []
+                        obj_id_to_seg_file_ids[_gt_obj_id] = []
 
-                    obj_id_to_seg_bboxes[obj_id].append([seq_seq_src_file, min_x, min_y, max_x, max_y])
-                    obj_id_to_seg_sizes[obj_id].append([size_x, size_y])
+                    obj_id_to_seg_file_ids[_gt_obj_id].append(seq_seq_src_file_id)
+
+                    file_id_to_seg[seq_seq_src_file_id][_gt_obj_id] = (seg_obj_locations, [min_x, min_y, max_x, max_y])
+
+                    obj_id_to_seg_bboxes[_gt_obj_id].append([seq_seq_src_file, min_x, min_y, max_x, max_y])
+                    obj_id_to_seg_sizes[_gt_obj_id].append([size_x, size_y])
+
                     all_seg_sizes.append([size_x, size_y])
 
-                obj_id_to_mean_seg_sizes = OrderedDict({k: np.mean(v, axis=0) for k, v in obj_id_to_seg_sizes.items()})
-                obj_id_to_max_seg_sizes = OrderedDict({k: np.amax(v, axis=0) for k, v in obj_id_to_seg_sizes.items()})
+            obj_id_to_mean_seg_sizes = OrderedDict({k: np.mean(v, axis=0) for k, v in obj_id_to_seg_sizes.items()})
+            obj_id_to_max_seg_sizes = OrderedDict({k: np.amax(v, axis=0) for k, v in obj_id_to_seg_sizes.items()})
 
-            print('segmentations found for {} files:\n{}'.format(len(file_id_to_seg), '\n'.join(file_id_to_seg.keys())))
+            print('segmentations found for {} files:\n{}'.format
+                  (len(file_id_to_seg), '\n'.join(file_id_to_seg.keys())))
+            print('segmentations include {} objects:\n{}'.format(
+                len(obj_id_to_seg_bboxes), '\n'.join(str(k) for k in obj_id_to_seg_bboxes.keys())))
 
             mean_seg_sizes = np.mean(all_seg_sizes, axis=0)
+            max_seg_sizes = np.amax(all_seg_sizes, axis=0)
+
+            for obj_id in obj_id_to_seg_file_ids:
+                seg_file_ids = obj_id_to_seg_file_ids[obj_id]
+                seg_file_ids_num = np.asarray(list(int(k) for k in seg_file_ids))
+                gt_file_ids = obj_id_to_gt_file_ids[obj_id]
+                # gt_file_ids_num = np.asarray(list(int(k) for k in gt_file_ids))
+                gt_seg_file_ids_dist = {
+                    gt_file_id: np.abs(int(gt_file_id) - seg_file_ids_num)
+                    for gt_file_id in gt_file_ids
+                }
+                file_id_to_nearest_seg[obj_id] = {
+                    gt_file_id: seg_file_ids[np.argmin(_dist).item()]
+                    for gt_file_id, _dist in gt_seg_file_ids_dist.items()
+                }
+
+        nearest_seg_size = OrderedDict()
 
         for frame_id in tqdm(range(n_frames)):
             seq_img_src_file = seq_img_src_files[frame_id]
@@ -236,20 +390,11 @@ def main():
             if not gt_available:
                 continue
 
-            file_seg = {}
-            if seq_img_src_file_id in file_id_to_seg:
-                file_seg = file_id_to_seg[seq_img_src_file_id]
+            file_gt = file_id_to_gt[seq_img_src_file_id]
 
-            seq_gt_src_file = seq_gt_src_files[frame_id]
-            seq_gt_src_file_id = ''.join(k for k in seq_gt_src_file if k.isdigit())
-
-            assert seq_gt_src_file_id == seq_img_src_file_id, \
-                "Mismatch between seq_gt_src_file_id and seq_img_src_file_id"
-
-            seq_gt_src_path = os.path.join(seq_gt_path, seq_gt_src_file)
-            seq_gt_pil = Image.open(seq_gt_src_path)
-            seq_gt = np.array(seq_gt_pil)
-            unique_labels, counts = np.unique(seq_gt, return_counts=True)
+            # seq_gt_src_file = seq_gt_src_files[frame_id]
+            # assert seq_gt_src_file_id == seq_img_src_file_id, \
+            #     "Mismatch between seq_gt_src_file_id and seq_img_src_file_id"
 
             if show_img:
                 seq_img_col = seq_img.copy()
@@ -258,25 +403,37 @@ def main():
 
                 seq_img_col2 = seq_img_col.copy()
 
-                if file_seg:
-                    seq_img_col3 = seq_img_col.copy()
+                seq_img_col3 = seq_img_col.copy()
 
-            for obj_id in unique_labels:
-                if obj_id == 0:
-                    continue
-                label_locations = np.nonzero(seq_gt == obj_id)
-                centroid_y, centroid_x = [np.mean(k) for k in label_locations]
+            gt_obj_ids = list(file_gt.keys())
+            for obj_id in gt_obj_ids:
+                assert obj_id != 0, "invalid object ID"
+
+                try:
+                    nearest_seg_file_ids = file_id_to_nearest_seg[obj_id]
+                except KeyError:
+                    file_seg = {}
+                else:
+                    nearest_seg_file_id = nearest_seg_file_ids[seq_img_src_file_id]
+                    file_seg = file_id_to_seg[nearest_seg_file_id]
+
+                obj_locations, centroid_y, centroid_x = file_gt[obj_id]
 
                 if file_seg:
                     xmin, ymin, xmax, ymax = file_seg[obj_id][1]
+                    size_x, size_y = xmax - xmin, ymax - ymin
+                    nearest_seg_size[obj_id] = (size_x, size_y)
                 else:
                     try:
-                        size_x, size_y = obj_id_to_max_seg_sizes[obj_id]
+                        size_x, size_y = nearest_seg_size[obj_id]
                     except KeyError:
-                        if mean_seg_sizes is not None:
-                            size_x, size_y = mean_seg_sizes
-                        else:
-                            size_x, size_y = obj_size, obj_size
+                        try:
+                            size_x, size_y = obj_id_to_mean_seg_sizes[obj_id]
+                        except KeyError:
+                            if mean_seg_sizes is not None:
+                                size_x, size_y = mean_seg_sizes
+                            else:
+                                size_x, size_y = default_obj_size, default_obj_size
 
                     ymin, xmin = centroid_y - size_y / 2.0, centroid_x - size_x / 2.0
                     ymax, xmax = centroid_y + size_y / 2.0, centroid_x + size_x / 2.0
@@ -289,35 +446,42 @@ def main():
 
                     col = col_rgb[ann_cols[col_id]]
                     drawBox(seq_img_col, xmin, ymin, xmax, ymax, label=str(obj_id), box_color=col)
-                    seq_img_col2[label_locations] = col
+                    seq_img_col2[obj_locations] = col
 
                     if file_seg:
-                        seq_img_col3[file_seg[obj_id][0]] = col
-                        min_x, min_y, max_x, max_y = file_seg[obj_id][1]
-                        drawBox(seq_img_col3, min_x, min_y, max_x, max_y, label=str(obj_id), box_color=col)
+                        try:
+                            seq_img_col3[file_seg[obj_id][0]] = col
+                        except KeyError:
+                            print('weird stuff going on here')
+                        else:
+                            min_x, min_y, max_x, max_y = file_seg[obj_id][1]
+                            drawBox(seq_img_col3, min_x, min_y, max_x, max_y, label=str(obj_id), box_color=col)
 
-                out_gt_fid.write('{:d},{:d},{:.3f},{:.3f},{:d},{:d},1,-1,-1,-1\n'.format(
-                    frame_id + 1, obj_id, xmin, ymin, width, height))
-
+                if write_gt:
+                    out_gt_fid.write('{:d},{:d},{:.3f},{:.3f},{:d},{:d},1,-1,-1,-1\n'.format(
+                        frame_id + 1, obj_id, xmin, ymin, width, height))
                 # print()
-
             skip_seq = 0
 
             if show_img:
                 images_to_stack = [seq_img_col, seq_img_col2]
                 if file_seg:
                     images_to_stack.append(seq_img_col3)
+                    __pause = _pause
+                else:
+                    __pause = _pause
 
                 seq_img_vis = stackImages(images_to_stack)
 
-                seq_img_vis = resizeAR(seq_img_vis, height=1050, width=1900)
+
+                seq_img_vis = resizeAR(seq_img_vis, height=vis_height, width=vis_width)
 
                 cv2.putText(seq_img_vis, '{}: {}'.format(frame_id, seq_img_src_file_id), (40, 40),
                             cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
 
                 if show_img != 2:
                     cv2.imshow('seq_img_vis', seq_img_vis)
-                    k = cv2.waitKey(1 - _pause)
+                    k = cv2.waitKey(1 - __pause)
                     if k == 32:
                         _pause = 1 - _pause
                     elif k == 27:
@@ -327,12 +491,17 @@ def main():
                         break
 
                 if save_img:
-                    out_vis_file = os.path.splitext(seq_img_src_file)[0] + '.jpg'
-                    out_vis_file_path = linux_path(out_vis_dir_path, out_vis_file)
-                    cv2.imwrite(out_vis_file_path, seq_img_vis)
+                    if vid_out is not None:
+                        vid_out.write(out_vis_file)
+                    else:
+                        out_vis_file = os.path.splitext(seq_img_src_file)[0] + '.jpg'
+                        out_vis_file_path = linux_path(out_vis_path, out_vis_file)
+                        cv2.imwrite(out_vis_file_path, seq_img_vis)
 
             if skip_seq or _exit:
                 break
+        if vid_out is not None:
+            vid_out.release()
 
         if out_gt_fid is not None:
             out_gt_fid.close()
