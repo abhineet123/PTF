@@ -30,15 +30,17 @@ class Params:
 
         self.speed = 0.5
 
-        self.start_id = 16
-        self.end_id = 19
+        self.start_id = 0
+        self.end_id = -1
 
-        self.save_img = 1
-        self.show_img = 1
+        self.save_img = 0
+        self.show_img = 0
         self.write_gt = 1
         self.write_img = 1
+        self.raad_gt = 0
         self.tra_only = 0
-        self.save_vid = 1
+        self.save_vid = 0
+        self.disable_tqdm = 0
         self.codec = 'H264'
 
         self.vis_height = 1050
@@ -65,6 +67,7 @@ def main():
     # default_obj_size = _params.default_obj_size
     ignore_missing_gt = _params.ignore_missing_gt
     ignore_missing_seg = _params.ignore_missing_seg
+    raad_gt = _params.raad_gt
 
     if save_img:
         if not show_img:
@@ -101,6 +104,9 @@ def main():
     out_img_root_path = linux_path(root_dir, actor, 'Images')
     os.makedirs(out_img_root_path, exist_ok=True)
 
+    out_img_jpg_root_path = linux_path(root_dir, actor, 'Images_JPG')
+    os.makedirs(out_img_jpg_root_path, exist_ok=True)
+
     if save_img:
         out_vis_root_path = linux_path(root_dir, actor, 'Visualizations')
         os.makedirs(out_vis_root_path, exist_ok=True)
@@ -126,47 +132,6 @@ def main():
         seq_img_path = linux_path(tif_root_dir, seq_name)
         assert os.path.exists(seq_img_path), "seq_img_path does not exist"
 
-        gt_available = 1
-        seq_gt_path = linux_path(tif_root_dir, seq_name + '_GT', 'TRA')
-        if not os.path.exists(seq_gt_path):
-            msg = "seq_gt_path does not exist"
-            if ignore_missing_gt:
-                print(msg)
-                gt_available = 0
-            else:
-                raise AssertionError(msg)
-        else:
-            seq_gt_tra_file = linux_path(seq_gt_path, "man_track.txt")
-            if os.path.exists(seq_gt_tra_file):
-                out_tra_file = linux_path(out_gt_root_path, seq_name + '.tra')
-                print('{} --> {}'.format(seq_gt_tra_file, out_tra_file))
-                if not os.path.exists(out_tra_file):
-                    shutil.copy(seq_gt_tra_file, out_tra_file)
-                else:
-                    print('skipping existing {}'.format(out_tra_file))
-            else:
-                msg = "\nseq_gt_tra_file does not exist: {}".format(seq_gt_tra_file)
-                if ignore_missing_gt:
-                    print(msg)
-                else:
-                    raise AssertionError(msg)
-
-        if _params.tra_only:
-            continue
-
-        seg_available = 1
-        seq_seg_path = linux_path(tif_root_dir, seq_name + '_ST', 'SEG')
-        if not os.path.exists(seq_seg_path):
-            print("ST seq_seg_path does not exist")
-            seq_seg_path = linux_path(tif_root_dir, seq_name + '_GT', 'SEG')
-            if not os.path.exists(seq_seg_path):
-                msg = "GT seq_seg_path does not exist"
-                if ignore_missing_seg:
-                    print(msg)
-                    seg_available = 0
-                else:
-                    raise AssertionError(msg)
-
         seq_img_src_files = [k for k in os.listdir(seq_img_path) if
                              os.path.splitext(k.lower())[1] in img_exts]
         seq_img_src_files.sort()
@@ -181,16 +146,67 @@ def main():
 
         n_frames_list.append(n_frames)
 
+        gt_available = 0
+        if not raad_gt:
+            print('skipping GT reading')
+        else:
+            seq_gt_path = linux_path(tif_root_dir, seq_name + '_GT', 'TRA')
+            if not os.path.exists(seq_gt_path):
+                msg = "seq_gt_path does not exist"
+                if ignore_missing_gt:
+                    print(msg)
+                else:
+                    raise AssertionError(msg)
+            else:
+                gt_available = 1
+                seq_gt_tra_file = linux_path(seq_gt_path, "man_track.txt")
+                if os.path.exists(seq_gt_tra_file):
+                    out_tra_file = linux_path(out_gt_root_path, seq_name + '.tra')
+                    print('{} --> {}'.format(seq_gt_tra_file, out_tra_file))
+                    if not os.path.exists(out_tra_file):
+                        shutil.copy(seq_gt_tra_file, out_tra_file)
+                    else:
+                        print('skipping existing {}'.format(out_tra_file))
+                else:
+                    msg = "\nseq_gt_tra_file does not exist: {}".format(seq_gt_tra_file)
+                    if ignore_missing_gt:
+                        print(msg)
+                    else:
+                        raise AssertionError(msg)
+
+        if _params.tra_only:
+            continue
+
+        seg_available = 0
+        if not raad_gt:
+            print('skipping segmentation reading')
+        else:
+            seq_seg_path = linux_path(tif_root_dir, seq_name + '_ST', 'SEG')
+            if not os.path.exists(seq_seg_path):
+                print("ST seq_seg_path does not exist")
+                seq_seg_path = linux_path(tif_root_dir, seq_name + '_GT', 'SEG')
+                if not os.path.exists(seq_seg_path):
+                    msg = "GT seq_seg_path does not exist"
+                    if ignore_missing_seg:
+                        print(msg)
+                    else:
+                        raise AssertionError(msg)
+            else:
+                seg_available = 1
+
         if write_img:
             out_img_dir_path = linux_path(out_img_root_path, seq_name)
             os.makedirs(out_img_dir_path, exist_ok=True)
-            print('Saving images to {}'.format(out_img_dir_path))
+
+            out_img_jpg_dir_path = linux_path(out_img_jpg_root_path, seq_name)
+            os.makedirs(out_img_jpg_dir_path, exist_ok=True)
+            print('Saving jPG images to {}'.format(out_img_jpg_dir_path))
 
         vid_out = None
         if save_img:
             if save_vid:
                 out_vis_path = linux_path(out_vis_root_path, seq_name + '.mkv')
-                vid_out = cv2.VideoWriter(out_vis_path,  cv2.VideoWriter_fourcc(*codec), 30, (vis_width, vis_height))
+                vid_out = cv2.VideoWriter(out_vis_path, cv2.VideoWriter_fourcc(*codec), 30, (vis_width, vis_height))
             else:
                 out_vis_path = linux_path(out_vis_root_path, seq_name)
                 os.makedirs(out_vis_path, exist_ok=True)
@@ -211,7 +227,7 @@ def main():
             assert len(seq_img_src_files) == len(
                 seq_gt_src_files), "mismatch between the lengths of seq_img_src_files and seq_gt_src_files"
 
-            for seq_gt_src_file in tqdm(seq_gt_src_files):
+            for seq_gt_src_file in tqdm(seq_gt_src_files, disable=_params.disable_tqdm):
                 seq_gt_src_file_id = ''.join(k for k in seq_gt_src_file if k.isdigit())
 
                 file_id_to_gt[seq_gt_src_file_id] = OrderedDict()
@@ -254,7 +270,7 @@ def main():
             print('reading segmentations from {}...'.format(seq_seg_path))
             seq_seq_src_files = [k for k in os.listdir(seq_seg_path) if
                                  os.path.splitext(k.lower())[1] in img_exts]
-            for seq_seq_src_file in tqdm(seq_seq_src_files):
+            for seq_seq_src_file in tqdm(seq_seq_src_files, disable=_params.disable_tqdm):
 
                 seq_seq_src_file_id = ''.join(k for k in seq_seq_src_file if k.isdigit())
                 file_gt = file_id_to_gt[seq_seq_src_file_id]
@@ -312,10 +328,11 @@ def main():
                 seg_inds, gt_inds = linear_sum_assignment(gt_to_seg_dists)
 
                 if len(seg_inds) != len(seg_obj_ids):
-                    print("only {} / {} segmentation objects assigned to GT objects".format(len(seg_inds), len(seg_obj_ids)))
+                    print("only {} / {} segmentation objects assigned to GT objects".format(len(seg_inds),
+                                                                                            len(seg_obj_ids)))
 
                 seg_to_gt_obj_ids = {
-                    seg_obj_ids[seg_inds[i]]:  _gt_obj_ids[gt_inds[i]] for i in range(len(seg_inds))
+                    seg_obj_ids[seg_inds[i]]: _gt_obj_ids[gt_inds[i]] for i in range(len(seg_inds))
                 }
 
                 # print()
@@ -373,7 +390,7 @@ def main():
 
         nearest_seg_size = OrderedDict()
 
-        for frame_id in tqdm(range(n_frames)):
+        for frame_id in tqdm(range(n_frames), disable=_params.disable_tqdm):
             seq_img_src_file = seq_img_src_files[frame_id]
 
             # assert seq_img_src_file in seq_gt_src_file, \
@@ -383,16 +400,67 @@ def main():
 
             seq_img_src_path = os.path.join(seq_img_path, seq_img_src_file)
 
-            seq_img_pil = Image.open(seq_img_src_path)
+            # seq_img_pil = Image.open(seq_img_src_path)
+            # seq_img = np.array(seq_img_pil)
 
-            seq_img = np.array(seq_img_pil)
+            seq_img = cv2.imread(seq_img_src_path, cv2.IMREAD_UNCHANGED)
+            # assert (seq_img == seq_img_cv).all(), "mismatch between PIL and cv2 arrays"
+            # seq_img_cv_unique = np.unique(seq_img_cv)
+            # n_seq_img_unique_cv = len(seq_img_cv_unique)
+
+            # seq_img_float = seq_img.astype(np.float32) / 65535.
+
+            max_pix, min_pix = np.amax(seq_img), np.amin(seq_img)
+
+            seq_img_float_norm = (seq_img.astype(np.float32) - min_pix) / (max_pix - min_pix)
+            seq_img_uint8 = (seq_img_float_norm * 255.).astype(np.uint8)
+            # seq_img_uint8 = (seq_img / 256.).astype(np.uint8)
+            max_pix_uint8, min_pix_uint8 = np.amax(seq_img_uint8), np.amin(seq_img_uint8)
+
+            seq_img_unique = np.unique(seq_img)
+            seq_img_unique_uint8 = np.unique(seq_img_uint8)
+
+            n_seq_img_unique = len(seq_img_unique)
+            n_seq_img_unique_uint8 = len(seq_img_unique_uint8)
+
+            if n_seq_img_unique > n_seq_img_unique_uint8:
+                print('{} :: drop in number of unique values from {} ({}, {}) to {} ({}, {})'.format(
+                    seq_img_src_file, n_seq_img_unique, max_pix, min_pix,
+                    n_seq_img_unique_uint8, max_pix_uint8, min_pix_uint8))
+                print()
 
             if write_img:
-                out_img_file = os.path.splitext(seq_img_src_file)[0] + '.jpg'
-                out_img_file_path = linux_path(out_img_dir_path, out_img_file)
-                cv2.imwrite(out_img_file_path, seq_img)
+                # out_img_file = os.path.splitext(seq_img_src_file)[0] + '.png'
+                # out_img_file_path = linux_path(out_img_dir_path, out_img_file)
+
+                out_img_file_tif = os.path.splitext(seq_img_src_file)[0] + '.tif'
+                out_img_file_path_tif = linux_path(out_img_dir_path, out_img_file_tif)
+
+                out_img_file_uint8 = os.path.splitext(seq_img_src_file)[0] + '.jpg'
+                out_img_file_path_uint8 = linux_path(out_img_jpg_dir_path, out_img_file_uint8)
+
+                if not os.path.exists(out_img_file_path_uint8):
+                    # cv2.imwrite(out_img_file_path, seq_img)
+                    cv2.imwrite(out_img_file_path_uint8, seq_img_uint8)
+
+                if not os.path.exists(out_img_file_path_tif):
+                    # print('{} --> {}'.format(seq_img_src_path, out_img_file_path_tif))
+                    shutil.copyfile(seq_img_src_path, out_img_file_path_tif)
+
+            if show_img:
+                seq_img_col = seq_img_uint8.copy()
+                if len(seq_img_col.shape) == 2:
+                    seq_img_col = cv2.cvtColor(seq_img_col, cv2.COLOR_GRAY2BGR)
+
+                seq_img_col2 = seq_img_col.copy()
+
+                seq_img_col3 = seq_img_col.copy()
 
             if not gt_available:
+
+                if save_img:
+                    if vid_out is not None:
+                        vid_out.write(seq_img_col)
                 continue
 
             file_gt = file_id_to_gt[seq_img_src_file_id]
@@ -400,15 +468,6 @@ def main():
             # seq_gt_src_file = seq_gt_src_files[frame_id]
             # assert seq_gt_src_file_id == seq_img_src_file_id, \
             #     "Mismatch between seq_gt_src_file_id and seq_img_src_file_id"
-
-            if show_img:
-                seq_img_col = seq_img.copy()
-                if len(seq_img_col.shape) == 2:
-                    seq_img_col = cv2.cvtColor(seq_img_col, cv2.COLOR_GRAY2BGR)
-
-                seq_img_col2 = seq_img_col.copy()
-
-                seq_img_col3 = seq_img_col.copy()
 
             gt_obj_ids = list(file_gt.keys())
             for obj_id in gt_obj_ids:
@@ -481,7 +540,7 @@ def main():
                 seq_img_vis = resizeAR(seq_img_vis, height=vis_height, width=vis_width)
 
                 cv2.putText(seq_img_vis, '{}: {}'.format(seq_name, seq_img_src_file_id), (20, 20),
-                            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
 
                 if show_img != 2:
                     cv2.imshow('seq_img_vis', seq_img_vis)

@@ -10,7 +10,7 @@ from PIL import Image, ImageDraw
 
 import paramparse
 
-from Misc import col_rgb, add_suffix
+from Misc import col_rgb, add_suffix, linux_path
 
 cols = {
     1: 'white',
@@ -45,8 +45,8 @@ mask_help = {
     'ctrl+shift+middle_button / esc': 'exit and apply changes',
     'wheel': 'change the drawing window size',
     'shift+wheel / +, - / >, <': 'change the mask deletion radius',
-    'ctrl+shift+wheel': 'change the magnified patch area without changing the magnified window size',
-    'ctrl+alt+shift+wheel': 'change the magnified window size without changing the magnified patch area',
+    'ctrl+shift+wheel': 'change the magnified patch area without changing the magnified window size (zoom out)',
+    'ctrl+alt+shift+wheel': 'change the magnified window size without changing the magnified patch area (zoom in)',
     'm': 'toggle the magnified window visibility',
 }
 
@@ -76,8 +76,8 @@ def runHED(shape_patch, hed_net):
         _, hed_binary = cv2.threshold(hed_img, threshold, 255, cv2.THRESH_BINARY)
         cv2.imshow('hed_binary', hed_binary)
 
-        hed_pts, _ = contourPtsFromMask(hed_binary)
-        hed_mask, _ = contourPtsToMask(hed_pts, shape_patch)
+        hed_pts, _ = contour_pts_from_mask(hed_binary)
+        hed_mask, _ = contour_pts_to_mask(hed_pts, shape_patch)
         cv2.imshow('hed_mask', hed_mask)
 
     update_threshold(threshold)
@@ -97,12 +97,10 @@ def runHED(shape_patch, hed_net):
     return hed_mask
 
 
-def getContourPts(mask_pts=None, shape=None, show_img=0, verbose=1,
+def getContourPts(mask_pts, shape=None, show_img=0, verbose=1,
                   patch_img=None, mag_patch_size=50, mag_win_size=800, show_magnified_window=1):
-    if shape is None:
-        show_img = 0
-    else:
-        height, width = shape
+
+    height, width = shape
 
     n_cols = len(cols)
 
@@ -156,6 +154,7 @@ def getContourPts(mask_pts=None, shape=None, show_img=0, verbose=1,
     # to_remove = mask_segments[0][1] - 1
     min_seg_id = 0
     _id = 0
+    bin_img = None
     while True:
         # try:
         #     free_end_pts.remove(to_remove)
@@ -220,6 +219,7 @@ def getContourPts(mask_pts=None, shape=None, show_img=0, verbose=1,
         print('Found {} contour_pts'.format(n_contour_pts))
 
     if show_img:
+
         bin_img = np.zeros((height, width, 3), dtype=np.uint8)
         for i in range(n_contour_pts - 1):
             pt1, pt2 = contour_pts[i], contour_pts[i + 1]
@@ -231,7 +231,6 @@ def getContourPts(mask_pts=None, shape=None, show_img=0, verbose=1,
             # col = (255, 255, 255)
 
             bin_img = cv2.line(bin_img, pt1, pt2, col, thickness=2)
-
         cv2.imshow('mask segments', bin_img)
 
     # bin_img_gs = cv2.cvtColor(bin_img, cv2.COLOR_BGR2GRAY).astype(np.uint8)
@@ -246,8 +245,22 @@ def getContourPts(mask_pts=None, shape=None, show_img=0, verbose=1,
 
     return contour_pts
 
+def get_contour_pts_image(contour_pts, n_contour_pts,  height, width):
+    contour_pts_img = np.zeros((height, width, 3), dtype=np.uint8)
+    for i in range(n_contour_pts - 1):
+        pt1, pt2 = contour_pts[i], contour_pts[i + 1]
+        pt1 = (int(pt1[0]), int(pt1[1]))
+        pt2 = (int(pt2[0]), int(pt2[1]))
 
-def contourPtsToMask(contour_pts, patch_img, col=(255, 255, 255), blend_ratio=0.5):
+        # col_id = pt2[2]
+        # col = col_rgb[cols[col_id]]
+        col = (255, 255, 255)
+
+        contour_pts_img = cv2.line(contour_pts_img, pt1, pt2, col, thickness=2)
+
+    return contour_pts_img
+
+def contour_pts_to_mask(contour_pts, patch_img, col=(255, 255, 255), blend_ratio=0.5):
     # np.savetxt('contourPtsToMask_mask_pts.txt', contour_pts, fmt='%.6f')
 
     mask_img = np.zeros_like(patch_img, dtype=np.uint8)
@@ -263,7 +276,7 @@ def contourPtsToMask(contour_pts, patch_img, col=(255, 255, 255), blend_ratio=0.
     return mask_img
 
 
-def contourPtsFromMask(mask_img):
+def contour_pts_from_mask(mask_img):
     # print('Getting contour pts from mask...')
     if len(mask_img.shape) == 3:
         mask_img_gs = np.squeeze(mask_img[:, :, 0]).copy()
@@ -297,7 +310,7 @@ def contourPtsFromMask(mask_img):
     return contour_pts, mask_pts
 
 
-def addMask(in_img, params, augment=None, hed_net=None):
+def addMask(in_img, params, mask_img=None, augment=None, hed_net=None):
     """
 
     :param in_img:
@@ -307,6 +320,9 @@ def addMask(in_img, params, augment=None, hed_net=None):
     :return:
     """
     disp_size = params.disp_size
+    max_disp_size = params.max_disp_size
+    min_disp_size = params.min_disp_size
+
     # border_size = params.border_size
     del_thresh = params.del_thresh
     show_magnified_window = params.show_magnified_window
@@ -319,6 +335,9 @@ def addMask(in_img, params, augment=None, hed_net=None):
     xmin, ymin = 0, 0
 
     h, w = in_img.shape[:2]
+
+    disp_size_diff = max(h/50, w/50)
+
     scale_x, scale_y = disp_size[0] / w, disp_size[1] / h
     scale_factor = min(scale_x, scale_y)
     shape_patch = cv2.resize(in_img, (0, 0), fx=scale_factor, fy=scale_factor)
@@ -344,7 +363,13 @@ def addMask(in_img, params, augment=None, hed_net=None):
     end_pts = []
     start_id = 0
     mag_prev_t = 0
-    blended_img = mask_img = disp_img = None
+    blended_img = disp_img = None
+
+    if mask_img is not None:
+        contour_pts, mask_pts = contour_pts_from_mask(mask_img)
+
+        contour_pts = [[x * scale_factor, y * scale_factor] for x, y in contour_pts]
+        mask_pts = [[x * scale_factor, y * scale_factor, f] for x, y, f in mask_pts]
 
     max_dist = del_thresh * del_thresh
 
@@ -558,7 +583,7 @@ def addMask(in_img, params, augment=None, hed_net=None):
             # print('flags: {}'.format(flags))
             pass
         elif event == cv2.EVENT_MBUTTONDOWN:
-            contour_pts, mask_pts = contourPtsFromMask(mask_img)
+            contour_pts, mask_pts = contour_pts_from_mask(mask_img)
             draw_mask_kb = 1
             # print('flags: {}'.format(flags))
         elif event == cv2.EVENT_MOUSEWHEEL:
@@ -724,7 +749,7 @@ def addMask(in_img, params, augment=None, hed_net=None):
             print('flags: {}'.format(flags))
             if flags == 24:
                 # ctrl + shift
-                _contour_pts = getContourPts(mask_pts)
+                _contour_pts = getContourPts(mask_pts, shape_patch.shape[:2])
                 print('Cleaning up the mask points...')
                 mask_pts = [[x, y, 1] for x, y in _contour_pts]
                 draw_mask = 1
@@ -742,7 +767,7 @@ def addMask(in_img, params, augment=None, hed_net=None):
             else:
                 # if not delete_mode:
                 _contour_pts = getContourPts(mask_pts, shape_patch.shape[:2], show_img=1)
-                mask_img, blended_img = contourPtsToMask(_contour_pts, shape_patch)
+                mask_img, blended_img = contour_pts_to_mask(_contour_pts, shape_patch)
                 start_painting_mode = 1
         elif event == cv2.EVENT_MBUTTONDOWN:
             print('flags: {}'.format(flags))
@@ -780,7 +805,7 @@ def addMask(in_img, params, augment=None, hed_net=None):
                     # delete_mode = 1
                     draw_mask = 3
                 elif flags == mouse_whl_keys_to_flags['none'][0]:
-                    _disp_size = tuple([min(2000, x + 10) for x in disp_size])
+                    _disp_size = tuple([min(max_disp_size, x + disp_size_diff) for x in disp_size])
             else:
                 if flags == mouse_whl_keys_to_flags['ctrl+alt+shift'][1]:
                     mag_win_size -= 10
@@ -803,7 +828,7 @@ def addMask(in_img, params, augment=None, hed_net=None):
                     # delete_mode = 1
                     draw_mask = 3
                 elif flags == mouse_whl_keys_to_flags['none'][1]:
-                    _disp_size = tuple([max(200, x - 10) for x in disp_size])
+                    _disp_size = tuple([max(min_disp_size, x - disp_size_diff) for x in disp_size])
             if disp_size != _disp_size:
                 scale_x, scale_y = _disp_size[0] / w, _disp_size[1] / h
                 _scale_factor = min(scale_x, scale_y)
@@ -985,7 +1010,7 @@ def addMask(in_img, params, augment=None, hed_net=None):
             if hed_net is not None:
                 hed_mask = runHED(shape_patch, hed_net)
                 if hed_mask is not None:
-                    _, _mask_pts = contourPtsFromMask(hed_mask)
+                    _, _mask_pts = contour_pts_from_mask(hed_mask)
                     mask_pts = [[x, y, 1] for x, y in _mask_pts]
                     mask = [(xmin + x / scale_factor, ymin + y / scale_factor, f)
                             for (x, y, f) in _mask_pts]
@@ -997,7 +1022,7 @@ def addMask(in_img, params, augment=None, hed_net=None):
                 cv2.destroyWindow('Magnified')
         elif k == ord('c'):
             print('Cleaning up the mask points...')
-            contour_pts = getContourPts(mask_pts)
+            contour_pts = getContourPts(mask_pts, shape_patch.shape[:2])
             mask_pts = [[x, y, 1] for x, y in contour_pts]
             draw_mask_kb = 1
         elif k == ord('a'):
@@ -1006,7 +1031,7 @@ def addMask(in_img, params, augment=None, hed_net=None):
             run_augmentation(use_prev=0)
         elif k == ord('b'):
             _contour_pts = getContourPts(mask_pts, shape_patch.shape[:2], show_img=1)
-            mask_img, blended_img = contourPtsToMask(_contour_pts, shape_patch)
+            mask_img, blended_img = contour_pts_to_mask(_contour_pts, shape_patch)
             start_painting_mode = 1
         elif k == ord('q'):
             discard_changes = 1
@@ -1075,11 +1100,12 @@ def addMask(in_img, params, augment=None, hed_net=None):
 
     if clean_mask_pts:
         print('Cleaning up the mask points...')
-        contour_pts = getContourPts(mask_pts)
+        contour_pts = getContourPts(mask_pts, shape_patch.shape[:2])
         mask_pts = [[x, y, 1] for x, y in contour_pts]
+
     if not discard_changes:
         if paint_mode:
-            contour_pts, mask_pts = contourPtsFromMask(mask_img)
+            contour_pts, mask_pts = contour_pts_from_mask(mask_img)
 
         # mask = [(xmin + x / scale_factor, ymin + y / scale_factor, f)
         #         for (x, y, f) in mask_pts]
@@ -1104,7 +1130,7 @@ def addMask(in_img, params, augment=None, hed_net=None):
 
     else:
         print('Discarding changes ...')
-        return None, None
+        return None, None, None, None
 
     # cv2.destroyWindow(draw_win_name)
     cv2.destroyAllWindows()
@@ -1112,14 +1138,16 @@ def addMask(in_img, params, augment=None, hed_net=None):
     mask_orig = [(xmin + x / scale_factor, ymin + y / scale_factor)
                  for (x, y, _) in mask_pts]
     mask_arr = np.asarray(mask_orig)
-    mask_img_orig = contourPtsToMask(mask_orig, in_img, blend_ratio=-1)
+    mask_img_orig = contour_pts_to_mask(mask_orig, in_img, blend_ratio=-1)
+
+    contour_pts_img = get_contour_pts_image(mask_orig, len(mask_orig), h, w)
 
     out_img = np.copy(in_img)
     if invert_mask:
         print('inverting mask')
         mask_img_orig = 255 - mask_img_orig
 
-        _, mask_pts = contourPtsFromMask(mask_img_orig)
+        _, mask_pts = contour_pts_from_mask(mask_img_orig)
         mask_orig = [(x, y) for (x, y, _) in mask_pts]
         mask_arr = np.asarray(mask_orig)
 
@@ -1133,22 +1161,6 @@ def addMask(in_img, params, augment=None, hed_net=None):
     out_img = out_img[ymin:ymax + 1, xmin:xmax + 1, ...]
 
     mask_img_orig_float = mask_img_orig.astype(np.float32) / 255.0
-
-    # mask_img_gauss_3 = cv2.GaussianBlur(mask_img_orig_float, (3, 3), 0)
-    # mask_img_gauss_5 = cv2.GaussianBlur(mask_img_orig_float, (5, 5), 0)
-    # mask_img_gauss_7 = cv2.GaussianBlur(mask_img_orig_float, (7, 7), 0)
-    # mask_img_gauss_9 = cv2.GaussianBlur(mask_img_orig_float, (9, 9), 0)
-    #
-    # mask_img_gauss_25 = cv2.GaussianBlur(mask_img_orig_float, (25, 25), 0)
-    # mask_img_gauss_50 = cv2.GaussianBlur(mask_img_orig_float, (50, 50), 0)
-    # mask_img_gauss_100 = cv2.GaussianBlur(mask_img_orig_float, (100, 100), 0)
-    # mask_img_gauss_200 = cv2.GaussianBlur(mask_img_orig_float, (200, 200), 0)
-    # mask_img_gauss_300 = cv2.GaussianBlur(mask_img_orig_float, (300, 300), 0)
-    #
-    # out_img_gauss_3 = (in_img.astype(np.float32) * mask_img_gauss_3).astype(np.uint8)
-    # out_img_gauss_5 = (in_img.astype(np.float32) * mask_img_gauss_5).astype(np.uint8)
-    # out_img_gauss_7 = (in_img.astype(np.float32) * mask_img_gauss_7).astype(np.uint8)
-    # out_img_gauss_9 = (in_img.astype(np.float32) * mask_img_gauss_9).astype(np.uint8)
 
     def get_gauss_image(k):
         mask_img_gauss = cv2.GaussianBlur(mask_img_orig_float, (k, k), 0)
@@ -1192,7 +1204,7 @@ def addMask(in_img, params, augment=None, hed_net=None):
     # cv2.imshow('out_img_gauss_7', out_img_gauss_7)
     # cv2.imshow('out_img_gauss_9', out_img_gauss_9)
 
-    return out_img, gauss_imgs
+    return out_img, gauss_imgs, mask_img_orig, contour_pts_img
 
 
 class MaskParams:
@@ -1201,7 +1213,9 @@ class MaskParams:
 
         """
         self.src_file_path = ''
-        self.disp_size = (900, 900)
+        self.disp_size = (1900, 1000)
+        self.max_disp_size = 4000
+        self.min_disp_size = 200
         self.border_size = (10, 10)
         self.min_box_border = (1, 1)
         self.del_thresh = 15
@@ -1261,19 +1275,41 @@ def main():
 
     src_file = cv2.imread(src_file_path)
 
-    out_img, gauss_imgs = addMask(src_file, params)
+    src_dir = os.path.dirname(src_file_path)
+    src_fname = os.path.basename(src_file_path)
+    mask_out_dir = linux_path(src_dir, '#masks')
+    mask_out_path = linux_path(mask_out_dir, src_fname)
+
+    if os.path.exists(mask_out_path):
+        print('Loading existing mask from {}'.format(mask_out_path))
+        mask_img = cv2.imread(mask_out_path)
+    else:
+        mask_img = None
+
+    out_img, gauss_imgs, mask_img, contour_pts_img = addMask(src_file, params, mask_img=mask_img)
 
     if out_img is None:
         return None, None
 
-    dst_file_path = add_suffix(src_file_path, "backup")
-    shutil.move(src_file_path, dst_file_path)
-
-    cv2.imwrite(src_file_path, out_img)
+    dst_file_path = add_suffix(src_file_path, "mask")
+    # shutil.move(src_file_path, dst_file_path)
+    cv2.imwrite(dst_file_path, out_img)
 
     for k in gauss_imgs:
-        out_file_path = add_suffix(src_file_path, f"gauss_{k}")
+        out_file_path = add_suffix(dst_file_path, f"{k}")
         cv2.imwrite(out_file_path, gauss_imgs[k])
+
+
+
+    if mask_img is not None:
+        os.makedirs(mask_out_dir, exist_ok=True)
+        cv2.imwrite(mask_out_path, mask_img)
+
+    if contour_pts_img is not None:
+        contours_out_dir = linux_path(src_dir, '#contours')
+        os.makedirs(contours_out_dir, exist_ok=True)
+        contours_out_path = linux_path(contours_out_dir, src_fname)
+        cv2.imwrite(contours_out_path, contour_pts_img)
 
 
 if __name__ == '__main__':
