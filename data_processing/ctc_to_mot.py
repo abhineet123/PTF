@@ -8,6 +8,7 @@ import cv2
 
 from pprint import pprint
 from tqdm import tqdm
+from datetime import datetime
 
 import paramparse
 
@@ -33,18 +34,20 @@ class Params:
         self.start_id = 0
         self.end_id = -1
 
-        self.save_img = 0
-        self.show_img = 0
-        self.write_gt = 1
-        self.write_img = 1
+        self.write_gt = 0
+        self.write_img = 0
         self.raad_gt = 0
         self.tra_only = 0
+
+        self.show_img = 0
+        self.save_img = 0
         self.save_vid = 0
-        self.disable_tqdm = 0
+
+        self.disable_tqdm = 1
         self.codec = 'H264'
 
-        self.vis_height = 1050
-        self.vis_width = 1900
+        self.vis_height = 1080
+        self.vis_width = 1920
 
 
 def main():
@@ -119,7 +122,9 @@ def main():
 
     _exit = 0
     _pause = 1
+    time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
 
+    log_path = linux_path(root_dir, actor, 'log_{}.log'.format(time_stamp))
     tif_root_dir = linux_path(root_dir, actor, 'tif')
     assert os.path.exists(tif_root_dir), "tif_root_dir does not exist"
 
@@ -424,9 +429,16 @@ def main():
             n_seq_img_unique_uint8 = len(seq_img_unique_uint8)
 
             if n_seq_img_unique > n_seq_img_unique_uint8:
-                print('{} :: drop in number of unique values from {} ({}, {}) to {} ({}, {})'.format(
-                    seq_img_src_file, n_seq_img_unique, max_pix, min_pix,
-                    n_seq_img_unique_uint8, max_pix_uint8, min_pix_uint8))
+                # print('{} :: drop in number of unique values from {} ({}, {}) to {} ({}, {})'.format(
+                #     seq_img_src_file, n_seq_img_unique, max_pix, min_pix,
+                #     n_seq_img_unique_uint8, max_pix_uint8, min_pix_uint8))
+                with open(log_path, 'a') as log_fid:
+                    log_fid.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
+                        seq_name, seq_img_src_file,
+                        n_seq_img_unique, n_seq_img_unique_uint8,
+                        max_pix, min_pix,
+                        max_pix_uint8, min_pix_uint8
+                    ))
                 print()
 
             if write_img:
@@ -452,12 +464,11 @@ def main():
                 if len(seq_img_col.shape) == 2:
                     seq_img_col = cv2.cvtColor(seq_img_col, cv2.COLOR_GRAY2BGR)
 
-                seq_img_col2 = seq_img_col.copy()
+                # seq_img_col2 = seq_img_col.copy()
 
                 seq_img_col3 = seq_img_col.copy()
 
             if not gt_available:
-
                 if save_img:
                     if vid_out is not None:
                         vid_out.write(seq_img_col)
@@ -510,16 +521,17 @@ def main():
 
                     col = col_rgb[ann_cols[col_id]]
                     drawBox(seq_img_col, xmin, ymin, xmax, ymax, label=str(obj_id), box_color=col)
-                    seq_img_col2[obj_locations] = col
+                    # seq_img_col2[obj_locations] = col
 
                     if file_seg:
                         try:
-                            seq_img_col3[file_seg[obj_id][0]] = col
+                            locations, bbox = file_seg[obj_id][:2]
                         except KeyError:
                             print('weird stuff going on here')
                         else:
-                            min_x, min_y, max_x, max_y = file_seg[obj_id][1]
-                            drawBox(seq_img_col3, min_x, min_y, max_x, max_y, label=str(obj_id), box_color=col)
+                            seq_img_col3[locations] = col
+                            # min_x, min_y, max_x, max_y = bbox
+                            # drawBox(seq_img_col3, min_x, min_y, max_x, max_y, label=str(obj_id), box_color=col)
 
                 if write_gt:
                     out_gt_fid.write('{:d},{:d},{:.3f},{:.3f},{:d},{:d},1,-1,-1,-1\n'.format(
@@ -528,14 +540,15 @@ def main():
             skip_seq = 0
 
             if show_img:
-                images_to_stack = [seq_img_col, seq_img_col2]
+                # images_to_stack = [seq_img_col, seq_img_col2]
+                images_to_stack = [seq_img_col, ]
                 if file_seg:
                     images_to_stack.append(seq_img_col3)
                     __pause = _pause
                 else:
                     __pause = _pause
 
-                seq_img_vis = stackImages(images_to_stack)
+                seq_img_vis = stackImages(images_to_stack, sep_size=5)
 
                 seq_img_vis = resizeAR(seq_img_vis, height=vis_height, width=vis_width)
 

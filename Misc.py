@@ -3944,7 +3944,7 @@ def linux_path(*args, **kwargs):
 # import gmpy
 def stackImages(img_list, grid_size=None, stack_order=0, borderless=1,
                 preserve_order=0, return_idx=0, annotations=None,
-                ann_fmt=(0, 5, 15, 1, 1, 255, 255, 255, 0, 0, 0), only_height=0):
+                ann_fmt=(0, 5, 15, 1, 1, 255, 255, 255, 0, 0, 0), only_height=0, sep_size=0):
     for img_id, img in enumerate(img_list):
         if len(img.shape) == 2:
             img_list[img_id] = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
@@ -4039,7 +4039,18 @@ def stackImages(img_list, grid_size=None, stack_order=0, borderless=1,
                     curr_img = resizeAR(curr_img, 0, curr_row.shape[0])
                 # print('curr_row.shape: ', curr_row.shape)
                 # print('curr_img.shape: ', curr_img.shape)
-                curr_row = np.concatenate((curr_row, curr_img), axis=inner_axis)
+
+                if sep_size:
+                    sep_img_shape = list(curr_row.shape)
+                    if inner_axis==1:
+                        sep_img_shape[1] = sep_size
+                    else:
+                        sep_img_shape[0] = sep_size
+
+                    sep_img = np.full(sep_img_shape, 255, dtype=curr_row.dtype)
+                    curr_row = np.concatenate((curr_row, sep_img, curr_img), axis=inner_axis)
+                else:
+                    curr_row = np.concatenate((curr_row, curr_img), axis=inner_axis)
 
             curr_h, curr_w = curr_img.shape[:2]
             stack_locations.append((start_row, start_col, start_row + curr_h, start_col + curr_w))
@@ -4061,7 +4072,17 @@ def stackImages(img_list, grid_size=None, stack_order=0, borderless=1,
                     new_start_col += w_resized
             # print('curr_row.shape: ', curr_row.shape)
             # print('stacked_img.shape: ', stacked_img.shape)
-            stacked_img = np.concatenate((stacked_img, curr_row), axis=stack_order)
+
+            if sep_size:
+                sep_img_shape = list(curr_row.shape)
+                if stack_order == 1:
+                    sep_img_shape[1] = sep_size
+                else:
+                    sep_img_shape[0] = sep_size
+                sep_img = np.full(sep_img_shape, 255, dtype=curr_row.dtype)
+                stacked_img = np.concatenate((stacked_img, sep_img, curr_row), axis=stack_order)
+            else:
+                stacked_img = np.concatenate((stacked_img, curr_row), axis=stack_order)
 
         curr_h, curr_w = curr_row.shape[:2]
         start_row += curr_h
