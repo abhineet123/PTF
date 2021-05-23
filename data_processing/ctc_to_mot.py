@@ -44,7 +44,7 @@ class Params:
         self.save_img = 0
         self.save_vid = 0
 
-        self.disable_tqdm = 1
+        self.disable_tqdm = 0
         self.codec = 'H264'
 
         self.vis_height = 1080
