@@ -1,5 +1,8 @@
 import xml.etree.cElementTree as ET
 import sys
+
+sys.path.append('..')
+
 import os
 import shutil
 import glob
@@ -66,7 +69,7 @@ def main():
     show_img = _params.show_img
     vis_height = _params.vis_height
     vis_width = _params.vis_width
-    
+
     # default_obj_size = _params.default_obj_size
     ignore_missing_gt = _params.ignore_missing_gt
     ignore_missing_seg = _params.ignore_missing_seg
