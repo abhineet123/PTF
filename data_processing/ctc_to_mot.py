@@ -32,7 +32,8 @@ class Params:
 
         self.start_id = 0
         self.end_id = -1
-        self.seq_ids = [6, 7, 14, 15]
+        self.seq_ids = []
+        # self.seq_ids = [6, 7, 14, 15]
 
         self.write_gt = 0
         self.write_img = 1
