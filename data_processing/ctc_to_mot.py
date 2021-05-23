@@ -33,15 +33,16 @@ class Params:
 
         self.start_id = 0
         self.end_id = -1
+        self.seq_ids = [6, 7, 14, 15]
 
-        self.write_gt = 0
+        self.write_gt = 1
         self.write_img = 0
-        self.raad_gt = 0
+        self.raad_gt = 1
         self.tra_only = 0
 
-        self.show_img = 0
-        self.save_img = 0
-        self.save_vid = 0
+        self.show_img = 1
+        self.save_img = 1
+        self.save_vid = 1
 
         self.disable_tqdm = 1
         self.codec = 'H264'
@@ -104,10 +105,10 @@ def main():
     ann_cols = ('green', 'blue', 'red', 'cyan', 'magenta', 'gold', 'purple', 'peach_puff', 'azure',
                 'dark_slate_gray', 'navy', 'turquoise')
 
-    out_img_root_path = linux_path(root_dir, actor, 'Images')
+    out_img_root_path = linux_path(root_dir, actor, 'Images_TIF')
     os.makedirs(out_img_root_path, exist_ok=True)
 
-    out_img_jpg_root_path = linux_path(root_dir, actor, 'Images_JPG')
+    out_img_jpg_root_path = linux_path(root_dir, actor, 'Images')
     os.makedirs(out_img_jpg_root_path, exist_ok=True)
 
     if save_img:
@@ -128,7 +129,12 @@ def main():
     tif_root_dir = linux_path(root_dir, actor, 'tif')
     assert os.path.exists(tif_root_dir), "tif_root_dir does not exist"
 
-    for seq_id in range(start_id, end_id + 1):
+    seq_ids = _params.seq_ids
+    if not seq_ids:
+        seq_ids = list(range(start_id, end_id + 1))
+
+    n_seq = len(seq_ids)
+    for __id, seq_id in enumerate(seq_ids):
 
         seq_name = actor_sequences[seq_id]
 
@@ -145,7 +151,7 @@ def main():
 
         n_frames = len(seq_img_src_files)
 
-        print('seq {} / {}\t{}\t{} frames'.format(seq_id + start_id + 1, end_id + 1, seq_name, n_frames))
+        print('seq {} / {}\t{}\t{}\t{} frames'.format(__id+1, n_seq, seq_id, seq_name, n_frames))
 
         n_frames_out_fid.write("{:d}: ('{:s}', {:d}),\n".format(seq_id, seq_name, n_frames))
 
@@ -196,6 +202,8 @@ def main():
                         print(msg)
                     else:
                         raise AssertionError(msg)
+                else:
+                    seg_available = 1
             else:
                 seg_available = 1
 
@@ -439,7 +447,7 @@ def main():
                         max_pix, min_pix,
                         max_pix_uint8, min_pix_uint8
                     ))
-                print()
+                # print()
 
             if write_img:
                 # out_img_file = os.path.splitext(seq_img_src_file)[0] + '.png'

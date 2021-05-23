@@ -155,9 +155,9 @@ class Params:
         self.del_log_file = 'vwm_sort.log'
 
 
-def main(args, multi_exit_program=None,
-         # sft_vars=None
-         ):
+def run(args, multi_exit_program=None,
+        # sft_vars=None
+        ):
     # is_switching = 0
     p = psutil.Process(os.getpid())
     try:
@@ -1078,7 +1078,6 @@ def main(args, multi_exit_program=None,
                        )
                 src_files[_id] = _src_files
                 totals[_id] = (_total, all_total, src_dir)
-
 
             # src_file_list = [list(x) for x in src_file_list]
             # src_file_list = [x for x in src_file_list]
@@ -3821,13 +3820,20 @@ def main(args, multi_exit_program=None,
     #     win_wallpaper_func(SPI_SETDESKWALLPAPER, 0, orig_wp_fname, 0)
 
 
-if __name__ == '__main__':
+# import gc
+
+def main():
     # print('sys.argv:\n{}'.format(pformat(sys.argv)))
     while True:
         try:
-            _exit_program = main(sys.argv[1:])
+            _exit_program = run(sys.argv[1:])
         except KeyboardInterrupt:
             break
 
         if _exit_program:
             break
+        # gc.collect()
+
+
+if __name__ == '__main__':
+    main()
