@@ -23,26 +23,22 @@ class Params:
         self.ignore_missing_gt = 1
         self.ignore_missing_seg = 1
         self.ignored_region_only = 0
-        self.mode = 0
-        # self.obj_size = (50, 50)
-        self.quality = 3
+
         self.resize = 0
         self.root_dir = '/data'
-
-        self.speed = 0.5
 
         self.start_id = 0
         self.end_id = -1
         self.seq_ids = [6, 7, 14, 15]
 
-        self.write_gt = 1
-        self.write_img = 0
-        self.raad_gt = 1
+        self.write_gt = 0
+        self.write_img = 1
+        self.raad_gt = 0
         self.tra_only = 0
 
-        self.show_img = 1
-        self.save_img = 1
-        self.save_vid = 1
+        self.show_img = 0
+        self.save_img = 0
+        self.save_vid = 0
 
         self.disable_tqdm = 1
         self.codec = 'H264'
@@ -62,12 +58,15 @@ def main():
 
     write_img = _params.write_img
     write_gt = _params.write_gt
+
     save_img = _params.save_img
     save_vid = _params.save_vid
     codec = _params.codec
+
     show_img = _params.show_img
     vis_height = _params.vis_height
     vis_width = _params.vis_width
+    
     # default_obj_size = _params.default_obj_size
     ignore_missing_gt = _params.ignore_missing_gt
     ignore_missing_seg = _params.ignore_missing_seg

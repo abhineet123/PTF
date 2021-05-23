@@ -1,11 +1,16 @@
 <!-- MarkdownTOC -->
 
+- [ctc_to_mot](#ctc_to_mo_t_)
 - [reformatMOT](#reformatmot_)
     - [CTMC       @ reformatMOT](#ctmc___reformatmo_t_)
         - [train       @ CTMC/reformatMOT](#train___ctmc_reformatmot_)
         - [test       @ CTMC/reformatMOT](#test___ctmc_reformatmot_)
 
 <!-- /MarkdownTOC -->
+
+<a id="ctc_to_mo_t_"></a>
+# ctc_to_mot
+python3 ctc_to_mot.py
 
 <a id="reformatmot_"></a>
 # reformatMOT
