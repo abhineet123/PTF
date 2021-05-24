@@ -30,7 +30,7 @@ class Params:
         self.resize = 0
         self.root_dir = '/data'
 
-        self.start_id = 0
+        self.start_id = 34
         self.end_id = -1
         self.seq_ids = []
         # self.seq_ids = [6, 7, 14, 15]
@@ -108,8 +108,8 @@ def main():
     ann_cols = ('green', 'blue', 'red', 'cyan', 'magenta', 'gold', 'purple', 'peach_puff', 'azure',
                 'dark_slate_gray', 'navy', 'turquoise')
 
-    out_img_root_path = linux_path(root_dir, actor, 'Images_TIF')
-    os.makedirs(out_img_root_path, exist_ok=True)
+    out_img_tif_root_path = linux_path(root_dir, actor, 'Images_TIF')
+    os.makedirs(out_img_tif_root_path, exist_ok=True)
 
     out_img_jpg_root_path = linux_path(root_dir, actor, 'Images')
     os.makedirs(out_img_jpg_root_path, exist_ok=True)
@@ -211,8 +211,9 @@ def main():
                 seg_available = 1
 
         if write_img:
-            out_img_dir_path = linux_path(out_img_root_path, seq_name)
-            os.makedirs(out_img_dir_path, exist_ok=True)
+            out_img_tif_dir_path = linux_path(out_img_tif_root_path, seq_name)
+            os.makedirs(out_img_tif_dir_path, exist_ok=True)
+            print('copying TIF images to {}'.format(out_img_tif_dir_path))
 
             out_img_jpg_dir_path = linux_path(out_img_jpg_root_path, seq_name)
             os.makedirs(out_img_jpg_dir_path, exist_ok=True)
@@ -454,10 +455,10 @@ def main():
 
             if write_img:
                 # out_img_file = os.path.splitext(seq_img_src_file)[0] + '.png'
-                # out_img_file_path = linux_path(out_img_dir_path, out_img_file)
+                # out_img_file_path = linux_path(out_img_tif_dir_path, out_img_file)
 
                 out_img_file_tif = os.path.splitext(seq_img_src_file)[0] + '.tif'
-                out_img_file_path_tif = linux_path(out_img_dir_path, out_img_file_tif)
+                out_img_file_path_tif = linux_path(out_img_tif_dir_path, out_img_file_tif)
 
                 out_img_file_uint8 = os.path.splitext(seq_img_src_file)[0] + '.jpg'
                 out_img_file_path_uint8 = linux_path(out_img_jpg_dir_path, out_img_file_uint8)
