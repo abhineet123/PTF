@@ -70,7 +70,7 @@ def main():
         # write('lines:\n{}'.format(lines))
     commands = []
 
-    time_stamp = datetime.now().strftime("%y%m%d_%H%M%S_%f")
+    time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
 
     for in_fname in in_fnames:
         if in_fname is not None:
