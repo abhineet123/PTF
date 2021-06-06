@@ -22,7 +22,8 @@ def write(_str):
 
 def main():
     params = {
-        'in_fname': "C:/UofA/PhD/Code/deep_mdp/tracking_module/cmd/res_from_gt.md",
+        # 'in_fname': "C:/UofA/PhD/Code/deep_mdp/tracking_module/cmd/res_from_gt.md",
+        'in_fname': "",
         'working_dir': '',
         'start_id': 0,
         'end_id': -1,
