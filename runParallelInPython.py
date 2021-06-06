@@ -152,22 +152,30 @@ def main():
 
         if enable_logging:
             out_fname = tee_log_id + '.ansi'
+            zip_fname = out_fname.replace('.ansi', '.zip')
+
             out_path = linux_path(log_dir, out_fname)
-            write('Writing log to {}\n'.format(out_path))
+            zip_path = os.path.join(log_dir, zip_fname)
+
+            write('{}\n'.format(zip_path))
+            
             f = open(out_path, 'w')
             p = subprocess.Popen(args, stdout=f, stderr=f)
         else:
             write('\n')
-            f = None
+            f = out_fname = zip_fname = None
             p = subprocess.Popen(args)
 
-        processes.append((p, f))
+        processes.append((p, f, out_fname, zip_fname))
 
-    for p, f in processes:
+    for p, f, f_name, zip_fname in processes:
         p.wait()
         if f is not None:
             f.close()
 
+        zip_cmd = 'cd {} && zip -rm {} {}'.format(log_dir, zip_fname, f_name)
+
+        os.system(zip_cmd)
 
 if __name__ == '__main__':
     main()
