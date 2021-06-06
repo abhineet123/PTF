@@ -1,6 +1,7 @@
 import sys
 import os
 import subprocess
+import shlex
 
 from pprint import pformat
 from datetime import datetime
@@ -146,16 +147,18 @@ def main():
         write(txt)
         # subprocess.Popen(_cmd.split(' '))
 
+        args = shlex.split(_cmd)
+
         if enable_logging:
             out_fname = tee_log_id + '.ansi'
             out_path = linux_path(log_dir, out_fname)
             write('Writing log to {}\n'.format(out_path))
             f = open(out_path, 'w')
-            p = subprocess.Popen(_cmd, stdout=f, stderr=f)
+            p = subprocess.Popen(args, stdout=f, stderr=f)
         else:
             write('\n')
             f = None
-            p = subprocess.Popen(_cmd)
+            p = subprocess.Popen(args)
 
         processes.append((p, f))
 
