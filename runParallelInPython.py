@@ -35,6 +35,7 @@ def main():
 
     in_fname = params['in_fname']
     working_dir = params['working_dir']
+    server = params['server']
     log_dir = params['log_dir']
     enable_logging = params['enable_logging']
 
@@ -114,6 +115,9 @@ def main():
 
             for __line_id, __line in enumerate(_multi_token_lines):
                 tee_log_id = '{}_{}_{}_{}'.format(basename_no_ext, valid_line_id, __line_id, time_stamp)
+                if server:
+                    tee_log_id = '{}_{}'.format(tee_log_id, server)
+
                 if enable_logging:
                     __line = '{} @ tee_log={}'.format(__line, tee_log_id)
 
