@@ -46,6 +46,11 @@ def main():
 
     os.makedirs(log_dir, exist_ok=1)
 
+    src_dir = os.getcwd()
+    src_file_gen = [[(f, os.path.join(dirpath, f)) for f in filenames]
+                    for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
+    fname_to_path = dict([item for sublist in src_file_gen for item in sublist])
+
     write('\nprocessing input: {}'.format(in_fname))
 
     in_fname_no_ext, in_fname_ext = os.path.splitext(os.path.basename(in_fname))
@@ -53,8 +58,8 @@ def main():
         in_fnames = [in_fname, ]
     elif in_fname_ext == '.bshm':
         try:
-            # in_fname_path = fname_to_path[in_fname]
-            in_fname_path = in_fname
+            in_fname_path = fname_to_path[in_fname]
+            # in_fname_path = in_fname
         except KeyError:
             raise IOError('invalid file name: {}'.format(in_fname))
 
@@ -70,8 +75,8 @@ def main():
     for in_fname in in_fnames:
         if in_fname is not None:
             try:
-                # in_fname_path = fname_to_path[in_fname]
-                in_fname_path = in_fname
+                in_fname_path = fname_to_path[in_fname]
+                # in_fname_path = in_fname
             except KeyError:
                 raise IOError('invalid file name: {}'.format(in_fname))
 
