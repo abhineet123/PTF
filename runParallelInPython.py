@@ -9,8 +9,9 @@ import re
 
 import paramparse
 
-from Misc import linux_path
 
+def linux_path(*args, **kwargs):
+    return os.path.join(*args, **kwargs).replace(os.sep, '/')
 
 def write(_str):
     with open('rpip.ansi', 'a') as fid:
