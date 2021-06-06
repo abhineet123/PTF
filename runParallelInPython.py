@@ -12,7 +12,7 @@ from Misc import linux_path
 
 
 def write(_str):
-    with open('rpit.ansi', 'a') as fid:
+    with open('rpip.ansi', 'a') as fid:
         fid.write(_str + '\n')
     print(_str)
 
@@ -134,17 +134,17 @@ def main():
     for _cmd_id, _cmd_data in enumerate(commands):
         _cmd, tee_log_id = _cmd_data
         txt = 'running command {}: {}'.format(_cmd_id, _cmd)
-        print(txt)
+        write(txt)
         # subprocess.Popen(_cmd.split(' '))
 
         if enable_logging:
             out_fname = tee_log_id + '.ansi'
             out_path = linux_path(log_dir, out_fname)
-            print('Writing log to {}\n'.format(out_path))
+            write('Writing log to {}\n'.format(out_path))
             f = open(out_path, 'w')
             p = subprocess.Popen(_cmd, stdout=f, stderr=f)
         else:
-            print('\n')
+            write('\n')
             f = None
             p = subprocess.Popen(_cmd)
 
