@@ -8,6 +8,7 @@ from datetime import datetime
 import re
 
 import paramparse
+import numpy as np
 
 
 def linux_path(*args, **kwargs):
@@ -32,6 +33,7 @@ def main():
         'pane_id_sep': '>',
         'log_dir': 'log/rpip',
         'enable_logging': 1,
+        'batch_size': 50,
     }
     paramparse.process_dict(params)
 
@@ -42,6 +44,7 @@ def main():
     server = params['server']
     log_dir = params['log_dir']
     enable_logging = params['enable_logging']
+    batch_size = params['batch_size']
 
     if working_dir:
         os.chdir(working_dir)
@@ -149,41 +152,59 @@ def main():
                     commands.append((__line, tee_log_id))
                 valid_line_id += 1
 
-        processes = []
-        for _cmd_id, _cmd_data in enumerate(commands):
-            _cmd, tee_log_id = _cmd_data
-            txt = 'running command {}: {}'.format(_cmd_id, _cmd)
-            write(txt)
-            # subprocess.Popen(_cmd.split(' '))
+        n_commands = len(commands)
 
-            args = shlex.split(_cmd)
+        n_batches = np.ceil(n_commands / batch_size)
 
-            if enable_logging:
-                out_fname = tee_log_id + '.ansi'
-                zip_fname = out_fname.replace('.ansi', '.zip')
+        for batch_id in range(n_batches):
 
-                out_path = linux_path(log_dir, out_fname)
-                zip_path = os.path.join(log_dir, zip_fname)
+            start_batch_id = batch_id * batch_size
+            end_batch_id = min(start_batch_id + batch_size, n_commands)
 
-                write('{}\n'.format(zip_path))
+            batch_commands = commands[start_batch_id:end_batch_id]
 
-                f = open(out_path, 'w')
-                p = subprocess.Popen(args, stdout=f, stderr=f)
-            else:
-                write('\n')
-                f = out_fname = zip_fname = None
-                p = subprocess.Popen(args)
+            processes = []
+            for _cmd_id, _cmd_data in enumerate(batch_commands):
+                _cmd, tee_log_id = _cmd_data
+                txt = '{}: {}'.format(_cmd_id + start_batch_id, _cmd)
+                write(txt)
+                # subprocess.Popen(_cmd.split(' '))
 
-            processes.append((p, f, out_fname, zip_fname))
+                args = shlex.split(_cmd)
 
-        for p, f, f_name, zip_fname in processes:
-            p.wait()
-            if f is not None:
+                if enable_logging:
+                    out_fname = tee_log_id + '.ansi'
+                    zip_fname = out_fname.replace('.ansi', '.zip')
+
+                    out_path = linux_path(log_dir, out_fname)
+                    zip_path = os.path.join(log_dir, zip_fname)
+
+                    write('{}\n'.format(zip_path))
+
+                    f = open(out_path, 'w')
+                    p = subprocess.Popen(args, stdout=f, stderr=f)
+                else:
+                    write('\n')
+                    f = out_fname = zip_fname = None
+                    p = subprocess.Popen(args)
+
+                processes.append((p, f, out_fname, zip_fname))
+
+            batch_time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+            write('{} :: running batch {} / {} with {} commands ...'.format(
+                batch_time_stamp, batch_id + 1, n_batches, batch_size))
+
+            for p, f, f_name, zip_fname in processes:
+                p.wait()
+
+                if f is None:
+                    continue
+
                 f.close()
 
-            zip_cmd = 'cd {} && zip -rm {} {}'.format(log_dir, zip_fname, f_name)
+                zip_cmd = 'cd {} && zip -rm {} {}'.format(log_dir, zip_fname, f_name)
 
-            os.system(zip_cmd)
+                os.system(zip_cmd)
 
 
 if __name__ == '__main__':
