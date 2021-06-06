@@ -136,6 +136,7 @@ class Params:
         self.max_magnified_height_ratio = 3
         self.speed = 0.5
         self.src_dirs = ''
+        self.exclude_src_dirs = ''
         self.src_path = '.'
         self.src_root_dir = '.'
         self.tall_position = 0
@@ -173,6 +174,19 @@ def run(args, multi_exit_program=None,
     src_root_dir = params.src_root_dir
     src_path = params.src_path
     src_dirs = params.src_dirs
+    exclude_src_dirs = params.exclude_src_dirs
+
+    print('exclude_src_dirs: {}'.format(exclude_src_dirs))
+
+    if exclude_src_dirs:
+        exclude_src_dirs_list = ['!!#{}'.format(k) for k in exclude_src_dirs.split(',') if k]
+        exclude_src_dirs_str = ','.join(exclude_src_dirs_list)
+        src_dirs = '{},{}'.format(exclude_src_dirs_str, src_dirs)
+
+        print('exclude_src_dirs_list: {}'.format(exclude_src_dirs_list))
+        print('exclude_src_dirs_str: {}'.format(exclude_src_dirs_str))
+        print('src_dirs: {}'.format(src_dirs))
+
     _width = params.width
     _height = params.height
     min_height_ratio = params.min_height_ratio
@@ -2589,9 +2603,9 @@ def run(args, multi_exit_program=None,
     exit_program = 0
 
     numpad_to_ascii = {
-        2293760: '1',
-        2228224: '2',
-        2359296: '3',
+        2293760: '#crop',
+        2228224: '#sort',
+        2359296: '#misc',
         2162688: '#proc',
         2949120: '#bad',
     }

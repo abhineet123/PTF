@@ -125,6 +125,17 @@ def run_scp(params, server_name, log_dir, log_fname, out_dir, is_file, timestamp
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     client.connect(params.url, username=params.user, password=params.pwd)
 
+    sftp = client.open_sftp()
+
+    log_path = linux_path(src_root_path, log_fname)
+
+    try:
+        file_stats = sftp.stat(log_path)
+    except IOError:
+        print('remote file does not exist: {}'.format(log_path))
+        client.close()
+        return None
+
     stdin, stdout, stderr = client.exec_command(remote_cmd)
     stdout = list(stdout)
     stderr = list(stderr)
@@ -145,7 +156,11 @@ def run_scp(params, server_name, log_dir, log_fname, out_dir, is_file, timestamp
         print('Running {}'.format(scp_cmd))
 
     scp_cmd_list = scp_cmd.split(' ')
-    subprocess.check_call(scp_cmd_list)
+    try:
+        subprocess.check_call(scp_cmd_list)
+    except subprocess.CalledProcessError as e:
+        print(e)
+        return None
 
     with ZipFile(zip_fname, 'r') as zipObj:
         zipObj.extractall()
@@ -186,6 +201,10 @@ def main():
     for server_id, server_name in enumerate(params.servers):
         log_path = run_scp(params.scp, server_name, params.log_dir, params.log_fname, out_dir, is_file=1,
                            timestamp=timestamp)
+
+        if log_path is None:
+            print ('log data for server {} not found'.format(server_name))
+            continue
 
         log_data = open(log_path, 'r').readlines()
 
