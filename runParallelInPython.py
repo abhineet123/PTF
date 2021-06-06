@@ -154,11 +154,11 @@ def main():
 
         n_commands = len(commands)
 
-        n_batches = np.ceil(n_commands / batch_size)
+        n_batches = int(np.ceil(n_commands / batch_size))
 
         for batch_id in range(n_batches):
 
-            start_batch_id = batch_id * batch_size
+            start_batch_id = int(batch_id * batch_size)
             end_batch_id = min(start_batch_id + batch_size, n_commands)
 
             batch_commands = commands[start_batch_id:end_batch_id]
