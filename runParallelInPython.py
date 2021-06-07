@@ -2,6 +2,7 @@ import sys
 import os
 import subprocess
 import shlex
+import time
 
 from pprint import pformat
 from datetime import datetime
@@ -153,8 +154,8 @@ def main():
                 valid_line_id += 1
 
         n_commands = len(commands)
-
         n_batches = int(np.ceil(n_commands / batch_size))
+        avg_batch_time = 0
 
         for batch_id in range(n_batches):
 
@@ -162,6 +163,9 @@ def main():
             end_batch_id = min(start_batch_id + batch_size, n_commands)
 
             batch_commands = commands[start_batch_id:end_batch_id]
+
+            batch_start_t = time.time()
+            batch_start_time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
 
             processes = []
             for _cmd_id, _cmd_data in enumerate(batch_commands):
@@ -190,9 +194,8 @@ def main():
 
                 processes.append((p, f, out_fname, zip_fname))
 
-            batch_time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
             write('{} :: running batch {} / {} with {} commands ...'.format(
-                batch_time_stamp, batch_id + 1, n_batches, batch_size))
+                batch_start_time_stamp, batch_id + 1, n_batches, batch_size))
 
             for p, f, f_name, zip_fname in processes:
                 p.wait()
@@ -205,6 +208,13 @@ def main():
                 zip_cmd = 'cd {} && zip -rm {} {}'.format(log_dir, zip_fname, f_name)
 
                 os.system(zip_cmd)
+            batch_end_t = time.time()
+
+            batch_time = batch_end_t - batch_start_t
+            avg_batch_time += (batch_time - avg_batch_time) / (batch_id + 1)
+            batch_end_time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+            write('{} :: Batch {} completed. Time taken: {} sec (avg: {} sec)'.format(
+                batch_end_time_stamp, batch_id + 1, batch_time, avg_batch_time))
 
 
 if __name__ == '__main__':
