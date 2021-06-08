@@ -82,12 +82,18 @@ def main():
     numerical_data = np.array(numerical_data)
 
     all_ids = [line[id_col] for line in lines_list]
+    all_ids_unique = all_ids
 
     if extract_unique_id:
         all_ids_commonprefix = os.path.commonprefix(all_ids)
-        all_ids_unique = [k.replace(all_ids_commonprefix, '') for k in all_ids]
-    else:
-        all_ids_unique = all_ids
+        if all_ids_commonprefix:
+            all_ids_unique = [k.replace(all_ids_commonprefix, '') for k in all_ids_unique]
+
+        all_ids_inv = [_id[::-1] for _id in all_ids]
+        all_ids_inv_commonprefix = os.path.commonprefix(all_ids_inv)
+        if all_ids_inv_commonprefix:
+            all_ids_inv_commonprefix_inv = all_ids_inv_commonprefix[::-1]
+            all_ids_unique = [k.replace(all_ids_inv_commonprefix_inv, '') for k in all_ids_unique]
 
     max_row_ids = np.argmax(numerical_data, axis=0)
     min_row_ids = np.argmin(numerical_data, axis=0)
