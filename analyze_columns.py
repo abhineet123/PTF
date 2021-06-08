@@ -1,4 +1,4 @@
-import re
+import os
 import numpy as np
 
 import paramparse
@@ -31,6 +31,8 @@ def main():
         'inverted': 1,
         'remove_duplicates': 1,
         'max_cols': 7,
+        'id_col': 1,
+        'extract_unique_id': 1,
 
         # 'mismatch_replace': [],
         'mismatch_replace': ['abs', 'rand'],
@@ -43,6 +45,8 @@ def main():
     inverted = _params['inverted']
     remove_duplicates = _params['remove_duplicates']
     max_cols = _params['max_cols']
+    id_col = _params['id_col']
+    extract_unique_id = _params['extract_unique_id']
 
     # pyautogui.hotkey('ctrl', 'c')
 
@@ -77,23 +81,38 @@ def main():
 
     numerical_data = np.array(numerical_data)
 
-    max_ids = np.argmax(numerical_data, axis=0)
-    min_ids = np.argmin(numerical_data, axis=0)
+    all_ids = [line[id_col] for line in lines_list]
+
+    if extract_unique_id:
+        all_ids_commonprefix = os.path.commonprefix(all_ids)
+        all_ids_unique = [k.replace(all_ids_commonprefix, '') for k in all_ids]
+    else:
+        all_ids_unique = all_ids
+
+    max_row_ids = np.argmax(numerical_data, axis=0)
+    min_row_ids = np.argmin(numerical_data, axis=0)
 
     max_vals = np.amax(numerical_data, axis=0)
     min_vals = np.amin(numerical_data, axis=0)
-    mean_vals = np.mean(numerical_data, axis=0)
-    median_vals = np.median(numerical_data, axis=0)
 
-    max_lines = [lines[i] for i in max_ids]
-    min_lines = [lines[i] for i in min_ids]
+    # mean_vals = np.mean(numerical_data, axis=0)
+    # median_vals = np.median(numerical_data, axis=0)
 
-    max_vals_str = '\t'.join(str(k) for k in max_vals)
-    min_vals_str = '\t'.join(str(k) for k in min_vals)
-    mean_vals_str = '\t'.join(str(k) for k in mean_vals)
-    median_vals_str = '\t'.join(str(k) for k in median_vals)
+    max_lines = [lines[i] for i in max_row_ids]
+    min_lines = [lines[i] for i in min_row_ids]
 
-    out_txt = '\n'.join([max_vals_str, min_vals_str, mean_vals_str, median_vals_str])
+    max_line_ids = [all_ids_unique[i] for i in max_row_ids]
+    min_line_ids = [all_ids_unique[i] for i in min_row_ids]
+
+    max_vals_str = '\t\t'.join('{}\t{}'.format(k1, k2) for k1, k2 in zip(max_line_ids, max_vals))
+    min_vals_str = '\t\t'.join('{}\t{}'.format(k1, k2) for k1, k2 in zip(min_line_ids, min_vals))
+
+    # mean_vals_str = '\t'.join(str(k) for k in mean_vals)
+    # median_vals_str = '\t'.join(str(k) for k in median_vals)
+
+    out_txt = '\n'.join([max_vals_str, min_vals_str,
+                         # mean_vals_str, median_vals_str
+                         ])
 
     out_txt += '\n\n' + '\n'.join(max_lines) + '\n\n' + '\n'.join(min_lines)
 
