@@ -162,6 +162,8 @@ def main():
             start_batch_id = int(batch_id * batch_size)
             end_batch_id = min(start_batch_id + batch_size, n_commands)
 
+            actual_batch_size = end_batch_id - start_batch_id
+
             batch_commands = commands[start_batch_id:end_batch_id]
 
             batch_start_t = time.time()
@@ -195,7 +197,7 @@ def main():
                 processes.append((p, f, out_fname, zip_fname))
 
             write('{} :: running batch {} / {} with {} commands ...'.format(
-                batch_start_time_stamp, batch_id + 1, n_batches, batch_size))
+                batch_start_time_stamp, batch_id + 1, n_batches, actual_batch_size))
 
             for p, f, f_name, zip_fname in processes:
                 p.wait()

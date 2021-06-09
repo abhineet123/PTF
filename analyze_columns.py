@@ -32,6 +32,7 @@ def main():
         'remove_duplicates': 1,
         'max_cols': 7,
         'id_col': 1,
+        'data_cols': [0, 3, 6],
         'extract_unique_id': 1,
 
         # 'mismatch_replace': [],
@@ -47,6 +48,7 @@ def main():
     max_cols = _params['max_cols']
     id_col = _params['id_col']
     extract_unique_id = _params['extract_unique_id']
+    data_cols = _params['data_cols']
 
     # pyautogui.hotkey('ctrl', 'c')
 
@@ -67,6 +69,9 @@ def main():
     assert n_lines > 1, "too few lines to analyse"
 
     numerical_column_ids = [i for i, val in enumerate(lines_list[0]) if is_number(val)]
+
+    if data_cols:
+        numerical_column_ids = [numerical_column_ids[i] for i in data_cols]
 
     n_cols = len(numerical_column_ids)
 
@@ -110,8 +115,8 @@ def main():
     max_line_ids = [all_ids_unique[i] for i in max_row_ids]
     min_line_ids = [all_ids_unique[i] for i in min_row_ids]
 
-    max_vals_str = '\t\t'.join('{}\t{}'.format(k1, k2) for k1, k2 in zip(max_line_ids, max_vals))
-    min_vals_str = '\t\t'.join('{}\t{}'.format(k1, k2) for k1, k2 in zip(min_line_ids, min_vals))
+    max_vals_str = '\t'.join('{}\t{}'.format(k1, k2) for k1, k2 in zip(max_line_ids, max_vals))
+    min_vals_str = '\t'.join('{}\t{}'.format(k1, k2) for k1, k2 in zip(min_line_ids, min_vals))
 
     # mean_vals_str = '\t'.join(str(k) for k in mean_vals)
     # median_vals_str = '\t'.join(str(k) for k in median_vals)

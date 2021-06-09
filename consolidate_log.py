@@ -55,7 +55,7 @@ class Params:
     log_dir = 'log'
     log_fname = 'mot_metrics_accumulative_hota.log'
 
-    servers = ['grs', 'x99', 'orca']
+    servers = ['grs', 'orca', 'x99']
     # servers = ['x99', 'orca']
     cmd_in_file = linux_path('log', 'multi_vis_cmd.txt')
     force_download = 0
