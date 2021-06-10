@@ -130,6 +130,7 @@ class Params:
         self.show_img = 0
         self.show_window = 1
         self.smooth_blending = 0
+        self.auto_aspect_ratio = 0
         self.min_aspect_ratio = 0
         self.max_aspect_ratio = 1.5
         self.magnified_height_ratio = 0
@@ -251,8 +252,9 @@ def run(args, multi_exit_program=None,
     parallel_read = params.parallel_read
     max_buffer_ram = params.max_buffer_ram
     # smooth_blending = params.smooth_blending
-    min_aspect_ratio = params.min_aspect_ratio
-    max_aspect_ratio = params.max_aspect_ratio
+    auto_aspect_ratio = params.auto_aspect_ratio
+    _min_aspect_ratio = params.min_aspect_ratio
+    _max_aspect_ratio = params.max_aspect_ratio
 
     if log_color:
         from colorlog import ColoredFormatter
@@ -1597,6 +1599,18 @@ def run(args, multi_exit_program=None,
         # print('src_aspect_ratio: {}'.format(src_aspect_ratio))
         # print('min_aspect_ratio: {}'.format(min_aspect_ratio))
         # print('max_aspect_ratio: {}'.format(max_aspect_ratio))
+
+        if auto_aspect_ratio and frg_positions:
+            win_x1, win_y1, win_x2, win_y2 = frg_positions[frg_win_id]
+            win_w, win_h = win_x2 - win_x1, win_y2 - win_y1
+            win_aspect_ratio = float(win_w) / float(win_h)
+            min_aspect_ratio, max_aspect_ratio = win_aspect_ratio * 0.5, win_aspect_ratio
+
+            # print('win_aspect_ratio: {}'.format(win_aspect_ratio))
+            # print('min_aspect_ratio: {}'.format(min_aspect_ratio))
+            # print('max_aspect_ratio: {}'.format(max_aspect_ratio))
+        else:
+            min_aspect_ratio, max_aspect_ratio = _min_aspect_ratio, _max_aspect_ratio
 
         if min_aspect_ratio > 0 and src_aspect_ratio < min_aspect_ratio:
             magnified_height_ratio = params.magnified_height_ratio
