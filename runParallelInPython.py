@@ -185,6 +185,7 @@ def main():
                     out_path = linux_path(log_dir, out_fname)
                     zip_path = os.path.join(log_dir, zip_fname)
 
+                    write('{}\n'.format(out_path))
                     write('{}\n'.format(zip_path))
 
                     f = open(out_path, 'w')
