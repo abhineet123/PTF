@@ -1604,7 +1604,7 @@ def run(args, multi_exit_program=None,
             win_x1, win_y1, win_x2, win_y2 = frg_positions[frg_win_id]
             win_w, win_h = win_x2 - win_x1, win_y2 - win_y1
             win_aspect_ratio = float(win_w) / float(win_h)
-            min_aspect_ratio, max_aspect_ratio = win_aspect_ratio * 0.5, win_aspect_ratio
+            min_aspect_ratio, max_aspect_ratio = win_aspect_ratio * 0.45, win_aspect_ratio
 
             # print('win_aspect_ratio: {}'.format(win_aspect_ratio))
             # print('min_aspect_ratio: {}'.format(min_aspect_ratio))

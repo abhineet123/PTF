@@ -52,12 +52,12 @@ def main():
 
     os.makedirs(log_dir, exist_ok=1)
 
-    src_dir = os.getcwd()
-    src_file_gen = [[(f, os.path.join(dirpath, f)) for f in filenames]
-                    for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
-    fname_to_path = dict([item for sublist in src_file_gen for item in sublist])
-
     while True:
+        src_dir = os.getcwd()
+        src_file_gen = [[(f, os.path.join(dirpath, f)) for f in filenames]
+                        for (dirpath, dirnames, filenames) in os.walk(src_dir, followlinks=True)]
+        fname_to_path = dict([item for sublist in src_file_gen for item in sublist])
+
         lines = None
         if _in_fname:
             in_fname = _in_fname

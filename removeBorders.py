@@ -140,6 +140,10 @@ if __name__ == '__main__':
         if resize:
             dst_img = cv2.resize(dst_img, (out_width, out_height))
 
+        if dst_img.shape == src_img.shape:
+            print('\nskipping {} with no trimming found'.format(src_img_fname))
+            continue
+
         src_img_dir = os.path.dirname(src_img_fname)
         img_fname = os.path.basename(src_img_fname)
         img_fname_no_ext = os.path.splitext(img_fname)[0]
@@ -148,8 +152,7 @@ if __name__ == '__main__':
         if resize:
             dst_path = '{:s}_{}x{}'.format(dst_path, out_width, out_height)
 
-        if not os.path.isdir(dst_path):
-            os.makedirs(dst_path)
+        os.makedirs(dst_path, exist_ok=1)
 
         dst_img_fname = os.path.join(dst_path, '{}.{}'.format(img_fname_no_ext, out_ext))
         cv2.imwrite(dst_img_fname, dst_img, img_quality_params)
