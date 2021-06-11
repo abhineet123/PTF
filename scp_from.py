@@ -27,7 +27,7 @@ if __name__ == '__main__':
         scp_fname = os.path.join('~', src_fname_rel)
     else:
         src_fname_rel = src_fname
-        scp_fname = src_fname
+        scp_fname = src_fname_abs
 
     if not file_mode and not src_fname_ext and not src_fname.endswith('/'):
         """no ext --> directory -> add terminating / to prevent recreation of directory structure on dst"""
