@@ -9,12 +9,14 @@ if __name__ == '__main__':
         'scp_dst': '',
         'overwrite': 0,
         'file_mode': 0,
+        'abs_path': 1,
     }
     processArguments(sys.argv[1:], params)
     src_fname = params['src_fname']
     scp_dst = params['scp_dst']
     overwrite = params['overwrite']
     file_mode = params['file_mode']
+    abs_path = params['abs_path']
 
     # src_fname = os.path.realpath(src_fname)
     src_fname_abs = os.path.abspath(src_fname)
@@ -27,7 +29,10 @@ if __name__ == '__main__':
         scp_fname = os.path.join('~', src_fname_rel)
     else:
         src_fname_rel = src_fname
-        scp_fname = src_fname_abs
+        if abs_path:
+            scp_fname = src_fname_abs
+        else:
+            scp_fname = src_fname
 
     if not file_mode and not src_fname_ext and not src_fname.endswith('/'):
         """no ext --> directory -> add terminating / to prevent recreation of directory structure on dst"""
