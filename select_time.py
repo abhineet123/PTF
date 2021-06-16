@@ -9,6 +9,7 @@ except ImportError:
 
 import pyperclip
 
+
 def is_time(line):
     time_found = 0
     time_obj = None
@@ -47,6 +48,7 @@ def main():
         'pairwise': 1,
         'first_and_last': 0,
         'add_date': 1,
+        'add_diff': 1,
 
     }
     paramparse.process_dict(_params)
@@ -57,6 +59,7 @@ def main():
     first_and_last = _params['first_and_last']
     pairwise = _params['pairwise']
     add_date = _params['add_date']
+    add_diff = _params['add_diff']
 
     try:
         in_txt = Tk().clipboard_get()  # type: str
@@ -66,6 +69,7 @@ def main():
 
     lines = in_txt.split('\n')
     out_lines = []
+    out_times = []
     out_categories = []
 
     date_str = datetime.now().strftime("%y-%m-%d")
@@ -102,9 +106,10 @@ def main():
                     if not time_found:
                         date_str = possible_date
 
-        line, time_found, _ = is_time(line)
+        line, time_found, time_obj = is_time(line)
 
         if time_found:
+            out_times.append(time_obj)
             out_lines.append(line)
             if categories:
                 if category is None:
@@ -112,6 +117,7 @@ def main():
                 out_categories.append(category)
 
     if first_and_last and len(out_lines) > 2:
+        out_times = [out_times[0], out_times[-1]]
         out_lines = [out_lines[0], out_lines[-1]]
 
     n_out_lines = len(out_lines)
@@ -123,10 +129,22 @@ def main():
         for _line_id in range(n_out_lines - 1):
             if horz:
                 _out_txt = '{}\t{}'.format(out_lines[_line_id], out_lines[_line_id + 1])
+
                 if add_date:
                     _out_txt = '{}\t{}'.format(date_str, _out_txt)
                 if categories:
                     _out_txt += '\t{}'.format(out_categories[_line_id + 1])
+
+                if add_diff:
+                    time_diff = out_times[_line_id + 1] - out_times[_line_id]
+                    time_diff_str = str(time_diff)
+
+                    if ',' in time_diff_str:
+                        """times from different days across midnight"""
+                        time_diff_str = time_diff_str.split(',')[-1].strip()
+
+                    _out_txt += '\t{}'.format(time_diff_str)
+
                 out_txt += _out_txt + '\n'
             else:
                 out_txt += '{}\t'.format(out_lines[_line_id])
