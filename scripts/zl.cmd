@@ -1,3 +1,3 @@
 @echo on
 
-python2 "%~dp0\..\zipList.py" relative=1 list_file=%1
+python2 "%~dp0\..\zipList.py" relative=0 list_file=%1
