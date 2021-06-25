@@ -13,7 +13,7 @@ if __name__ == '__main__':
         'out_postfix': '',
         'relative': 0,
         'move': 0,
-        'switches': '-r',
+        'switches': '-r -0',
     }
     processArguments(sys.argv[1:], params)
     list_file = params['list_file']
