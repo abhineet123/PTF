@@ -78,7 +78,7 @@ if __name__ == '__main__':
         zip_cmd = 'cd {} && zip {} {} . -i {}'.format(root_dir, switches, out_name, zip_cmd)
         out_path = os.path.join(root_dir, out_name)
     else:
-        zip_cmd = 'zip {:s} {:s} {:s}'.format(switches, out_name, zip)
+        zip_cmd = 'zip {:s} {:s} {:s}'.format(switches, out_name, zip_cmd)
         out_path = out_name
 
     print('\nrunning: {}\n'.format(zip_cmd))
