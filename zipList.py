@@ -12,6 +12,7 @@ if __name__ == '__main__':
         'scp_dst': '',
         'out_postfix': '',
         'relative': 0,
+        'move': 0,
         'switches': '-r',
     }
     processArguments(sys.argv[1:], params)
@@ -23,6 +24,7 @@ if __name__ == '__main__':
     scp_dst = params['scp_dst']
     relative = params['relative']
     switches = params['switches']
+    move = params['move']
 
     if list_file:
         if os.path.isdir(list_file):
@@ -87,18 +89,19 @@ if __name__ == '__main__':
 
     os.system(zip_cmd)
 
-    os.system('unzip -l {}'.format(out_path))
+    if move:
+        os.system('unzip -l {}'.format(out_path))
 
-    if scp_dst:
-        scp_cmd = 'scp {} {}:~/'.format(out_path, scp_dst)
-        print('\nrunning: {}\n'.format(scp_cmd))
-        os.system(scp_cmd)
-        rm_cmd = 'rm {}'.format(out_path)
-        print('\nrunning: {}\n'.format(rm_cmd))
-        os.system(rm_cmd)
-    else:
-        mv_cmd = 'mv {:s} ~'.format(out_path)
-        print('\nrunning: {}\n'.format(mv_cmd))
-        os.system(mv_cmd)
+        if scp_dst:
+            scp_cmd = 'scp {} {}:~/'.format(out_path, scp_dst)
+            print('\nrunning: {}\n'.format(scp_cmd))
+            os.system(scp_cmd)
+            rm_cmd = 'rm {}'.format(out_path)
+            print('\nrunning: {}\n'.format(rm_cmd))
+            os.system(rm_cmd)
+        else:
+            mv_cmd = 'mv {:s} ~'.format(out_path)
+            print('\nrunning: {}\n'.format(mv_cmd))
+            os.system(mv_cmd)
 
     print('out_name:\n {}'.format(out_name))
