@@ -70,6 +70,8 @@ if __name__ == '__main__':
     time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
     out_name = '{}_{}.zip'.format(out_name, time_stamp)
 
+    zip_paths = ['"{}"'.format(k) for k in zip_paths]
+
     zip_cmd = ' '.join(zip_paths)
     # for zip_path in zip_paths:
     #     zip_cmd = '{:s} {:s}'.format(zip_cmd, zip_path)
