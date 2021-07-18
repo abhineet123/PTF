@@ -127,6 +127,7 @@ def main():
         'n_splits': 0,
         'frames_per_seq': 0,
         'video_mode': 0,
+        'subseq_from_filename': 1,
     }
 
     processArguments(sys.argv[1:], params)
@@ -147,6 +148,7 @@ def main():
     codec = params['codec']
     fps = params['fps']
     ext = params['ext']
+    subseq_from_filename = params['subseq_from_filename']
 
     n_splits = _n_splits
 
@@ -554,7 +556,18 @@ def main():
                     video_out.write(image)
                 video_out.release()
             else:
-                dst_path = os.path.join(src_path, f'{seq_name}_{sub_seq_id}')
+                if subseq_from_filename:
+                    start_file = src_files[start_id]
+                    end_file = src_files[end_id - 1]
+
+                    start_file_no_ext = os.path.splitext(start_file)[0]
+                    end_file_no_ext = os.path.splitext(end_file)[0]
+
+                    subseq_name = f'{start_file_no_ext}_to_{end_file_no_ext}'
+                else:
+                    subseq_name = f'{seq_name}_{sub_seq_id}'
+
+                dst_path = os.path.join(src_path, subseq_name)
                 if not os.path.isdir(dst_path):
                     os.makedirs(dst_path)
                 for i in range(start_id, end_id):

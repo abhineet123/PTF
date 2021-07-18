@@ -67,7 +67,9 @@ if __name__ == '__main__':
                          os.path.isdir(os.path.join(list_file, name))]
             src_paths.sort(key=sortKey)
         else:
-            src_paths = [x.strip() for x in open(list_file).readlines() if x.strip() and not x.startswith('#')]
+            src_paths = [x.strip() for x in open(list_file).readlines() if x.strip()
+                         and not x.startswith('#')
+                         and not x.startswith('@')]
             if root_dir:
                 root_dir = os.path.abspath(root_dir)
                 root_dir_name = os.path.basename(root_dir)

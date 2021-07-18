@@ -24,7 +24,7 @@ def chunk_reader(fobj, chunk_size=1024):
         yield chunk
 
 
-def getHash(file_path):
+def get_hash(file_path):
     hashobj = hashlib.sha1()
     for chunk in chunk_reader(open(file_path, 'rb')):
         hashobj.update(chunk)
@@ -107,7 +107,7 @@ def main():
 
     if new_stats:
         print('Computing hashes for {}/{} files ...'.format(n_new_files, n_files))
-        db.update({k: (os.path.getmtime(all_stats[k]), getHash(all_stats[k]))
+        db.update({k: (os.path.getmtime(all_stats[k]), get_hash(all_stats[k]))
                    for k in new_stats})
     else:
         print('No new files to compute hashes for')
@@ -118,7 +118,7 @@ def main():
     if files:
         if os.path.isfile(files):
             print('Looking for duplicates of {}'.format(files))
-            file_hash = getHash(files)
+            file_hash = get_hash(files)
             duplicates = [(files, all_stats[k]) for k in all_stats if db[k][1] == file_hash]
         elif os.path.isdir(files):
             _src_file_gen = [[os.path.abspath(os.path.join(_dirpath, f)) for f in _filenames]
@@ -141,7 +141,7 @@ def main():
 
             if _new_stats:
                 print('Computing hashes for {}/{} orig files ...'.format(_n_new_files, _n_files))
-                db.update({k: (os.path.getmtime(_all_stats[k]), getHash(_all_stats[k]))
+                db.update({k: (os.path.getmtime(_all_stats[k]), get_hash(_all_stats[k]))
                            for k in _new_stats})
 
             print('Looking for duplicates of {} files in {} among {} files in {}'.format(

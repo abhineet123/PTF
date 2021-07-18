@@ -32,7 +32,10 @@ if __name__ == '__main__':
                          os.path.isdir(os.path.join(list_file, name))]
             zip_paths.sort(key=sortKey)
         else:
-            zip_paths = [x.strip() for x in open(list_file).readlines() if x.strip()]
+            zip_paths = [x.strip() for x in open(list_file).readlines() if x.strip()
+                         and not x.startswith('#')
+                         and not x.startswith('@')
+                         ]
             if root_dir:
                 zip_paths = [os.path.join(root_dir, name) for name in zip_paths]
     elif file_name:
