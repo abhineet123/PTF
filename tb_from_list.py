@@ -27,6 +27,10 @@ def main():
 
             data_list = [k.strip().split('\t') for k in data]
 
+            if params.start_id > 0:
+                data_list = data_list[params.start_id:]
+
+
             data_list_str = ['{}:{}'.format(k[0], k[1]) for k in data_list]
             log_dirs = ','.join(data_list_str)
         else:
