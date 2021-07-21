@@ -47,7 +47,7 @@ def main():
 
         os.system(tb_cmd)
 
-        list_fname = input('Enter log folder / list file name\n')
+        list_fname = input('\nEnter log folder / list file name\n')
 
         if not list_fname.strip():
             list_fname = params.list_fname
