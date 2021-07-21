@@ -30,14 +30,17 @@ def main():
             if params.start_id > 0:
                 data_list = data_list[params.start_id:]
 
-
             data_list_str = ['{}:{}'.format(k[0], k[1]) for k in data_list]
             log_dirs = ','.join(data_list_str)
+            log_dirs_arg = '--logdir_spec'
+
         else:
             log_dirs = list_fname
 
-        tb_cmd = "{} {} --logdir={} --bind_all --samples_per_plugin images={}".format(
-            params.python_exe, params.tb_path, log_dirs, params.images,
+            log_dirs_arg = '--logdir'
+
+        tb_cmd = "{} {} {}={} --bind_all --samples_per_plugin images={}".format(
+            params.python_exe, params.tb_path, log_dirs_arg, log_dirs, params.images,
         )
 
         print('running: {}'.format(tb_cmd))
