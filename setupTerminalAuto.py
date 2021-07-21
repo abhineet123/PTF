@@ -7,17 +7,30 @@ from Misc import processArguments, sortKey
 
 if __name__ == '__main__':
     params = {
-        'exe_path': '',
+        'exe_path': 'fatty.exe',
         'auth_path': '',
         'config': 0,
         'wait_t': 3,
+        'n_git_panes': 8,
+        'git_wait': 0.5,
+        'git_wait_init': 10,
+        'git_wait_restore': 20,
+        'only_git': 0,
+        'enable_git': 0,
+        'git_postproc': 0,
     }
     processArguments(sys.argv[1:], params)
     exe_path = params['exe_path']
     auth_path = params['auth_path']
     config = params['config']
     wait_t = params['wait_t']
-
+    n_git_panes = params['n_git_panes']
+    enable_git = params['enable_git']
+    git_postproc = params['git_postproc']
+    only_git = params['only_git']
+    git_wait = params['git_wait']
+    git_wait_init = params['git_wait_init']
+    git_wait_restore = params['git_wait_restore']
     # app_t = application.Application().start("cmd.exe")
     # app_t = application.Application().start("C:\\Users\\Tommy\\Desktop\\startup_progs\\t.lnk")
     # app_t = application.Application().start("H:\\UofA\\MSc\\Code\\TrackingFramework\\scripts\\t.cmd")    
@@ -26,142 +39,184 @@ if __name__ == '__main__':
     # app_t = application.Application().start("C:\\Program Files (x86)\\PowerCmd\\PowerCmd.exe")
     # app_t.window().maximize()
 
-    # sys.exit()
-
-    auth_data = open(auth_path, 'r').readlines()
-    auth_data = [k.strip() for k in auth_data]
-
-    name00, name01, pwd0 = auth_data[0].split(' ')
-    name10, name11, pwd1 = auth_data[1].split(' ')
-    name20, name21, pwd2 = auth_data[2].split(' ')
-
-    print('Setting up system 0 with tmux sessions {}, {} and pwd {}'.format(name00, name01, pwd0))
-    print('Setting up system 1 with tmux sessions {}, {} and pwd {}'.format(name10, name11, pwd1))
-    print('Setting up system 2 with tmux sessions {}, {} and pwd {}'.format(name20, name21, pwd2))
+    start_t = time.time()
 
     # sys.exit()
+    assert exe_path, 'Terminal executable path must be provided'
 
-    if not exe_path:
-        raise IOError('Terminal executable path must be provided')
+    if not only_git:
 
-    app = application.Application().start(exe_path)
-    app.window().maximize()
+        auth_data = open(auth_path, 'r').readlines()
+        auth_data = [k.strip() for k in auth_data]
+
+        name00, name01, pwd0 = auth_data[0].split(' ')
+        name10, name11, pwd1 = auth_data[1].split(' ')
+        name20, name21, pwd2 = auth_data[2].split(' ')
+
+        print('Setting up system 0 with tmux sessions {}, {}'.format(name00, name01))
+        print('Setting up system 1 with tmux sessions {}, {}'.format(name10, name11))
+        print('Setting up system 2 with tmux sessions {}, {}'.format(name20, name21))
+
+        servers_app = application.Application().start(exe_path)
+        servers_app.window().maximize()
+
     if config == -1:
 
         mouse_x, mouse_y = win32api.GetCursorPos()
 
-        apps = [app, ]
-        app2 = application.Application().start(exe_path)
-        app2.window().maximize()
+        if not only_git:
 
-        apps.append(app2)
+            apps = [servers_app, ]
+            servers_app2 = application.Application().start(exe_path)
+            servers_app2.window().maximize()
 
-        for _app in apps:
-            # _app.fatty.type_keys("t~")
-            # _app.fatty.type_keys("^+t")
-            # _app.fatty.type_keys("f~")
-            # _app.fatty.type_keys("^+t")
-            _app.fatty.type_keys("sstg{VK_SPACE}tb~")
-            _app.fatty.type_keys("sudo{VK_SPACE}-s~")
-            _app.fatty.type_keys("%s~" % pwd0)
+            apps.append(servers_app2)
+
+            for _app in apps:
+                # _app.fatty.type_keys("t~")
+                # _app.fatty.type_keys("^+t")
+                # _app.fatty.type_keys("f~")
+                # _app.fatty.type_keys("^+t")
+                _app.fatty.type_keys("sstg{VK_SPACE}tb~")
+                _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+                _app.fatty.type_keys("%s~" % pwd0)
+
+                # time.sleep(1)
+
+        if enable_git:
+            git_app = application.Application().start(exe_path)
+            git_app.window().maximize()
+            git_app.fatty.type_keys("tmux{VK_SPACE}new~")
+
+        if not only_git:
+            time.sleep(wait_t)
+
+            servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name00)
+            servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name01)
+
+            for _app in apps:
+                _app.fatty.type_keys("^+t")
+                _app.fatty.type_keys("sstg2~")
+                _app.fatty.type_keys("sstz~")
+                _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+                _app.fatty.type_keys("%s~" % pwd1)
+
+            time.sleep(wait_t)
+
+            servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name10)
+            servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name11)
 
             # time.sleep(1)
 
-        app3 = application.Application().start(exe_path)
-        app3.window().maximize()
-        app3.fatty.type_keys("tmux{VK_SPACE}new~")
+            # time.sleep(1)
+            # app.fatty.type_keys("+{RIGHT}")
+            # app2.fatty.type_keys("+{RIGHT}")
 
-        time.sleep(wait_t)
+            for _app in apps:
+                _app.fatty.type_keys("^+t")
+                _app.fatty.type_keys("sstg3~")
+                _app.fatty.type_keys("sstx~")
+                _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+                _app.fatty.type_keys("%s~" % pwd2)
 
-        app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name00)
-        app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name01)
+            time.sleep(wait_t)
 
-        for _app in apps:
-            _app.fatty.type_keys("^+t")
-            _app.fatty.type_keys("sstg2~")
-            _app.fatty.type_keys("sstz~")
-            _app.fatty.type_keys("sudo{VK_SPACE}-s~")
-            _app.fatty.type_keys("%s~" % pwd1)
+            servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name20)
+            servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name21)
 
-        time.sleep(wait_t)
+        if enable_git:
+            if only_git:
+                print('waiting {} secs for git init'.format(git_wait_init))
+                time.sleep(git_wait_init)
 
-        app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name10)
-        app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name11)
+            git_app.fatty.type_keys("^b^r")
 
-        # time.sleep(1)
+            if git_postproc:
+                print('waiting {} secs for git restore'.format(git_wait_restore))
+                time.sleep(git_wait_restore)
 
-        # time.sleep(1)
-        # app.fatty.type_keys("+{RIGHT}")
-        # app2.fatty.type_keys("+{RIGHT}")
+                print('running git post proc...')
+                for _ in range(n_git_panes):
+                    git_app.fatty.type_keys("{UP}~")
+                    git_app.fatty.type_keys("./gitu.bat{VK_SPACE}f")
+                    time.sleep(git_wait)
+                    git_app.fatty.type_keys("^b{DOWN}")
+                    time.sleep(git_wait)
 
-        for _app in apps:
-            _app.fatty.type_keys("^+t")
-            _app.fatty.type_keys("sstg3~")
-            _app.fatty.type_keys("sstx~")
-            _app.fatty.type_keys("sudo{VK_SPACE}-s~")
-            _app.fatty.type_keys("%s~" % pwd2)
+                git_app.fatty.type_keys("^b{LEFT}")
+                time.sleep(git_wait)
 
-        time.sleep(wait_t)
-
-        app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name20)
-        app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name21)
-
-        app3.fatty.type_keys("^b^r")
+                for _ in range(n_git_panes):
+                    git_app.fatty.type_keys("{UP}~")
+                    git_app.fatty.type_keys("./gitu.bat{VK_SPACE}f")
+                    time.sleep(git_wait)
+                    git_app.fatty.type_keys("^b{DOWN}")
+                    time.sleep(git_wait)
+                print('done')
 
         mouse.move(coords=(mouse_x, mouse_y))
+
     elif config == 1:
-        app.fatty.type_keys("t~")
-        app.fatty.type_keys("^+t")
-        app.fatty.type_keys("f~")
-        app.fatty.type_keys("^+t")
-        app.fatty.type_keys("sstg{VK_SPACE}tb~")
-        app.fatty.type_keys("sudo{VK_SPACE}-s~")
-        app.fatty.type_keys("%s~" % pwd0)
+        servers_app.fatty.type_keys("t~")
+        servers_app.fatty.type_keys("^+t")
+        servers_app.fatty.type_keys("f~")
+        servers_app.fatty.type_keys("^+t")
+        servers_app.fatty.type_keys("sstg{VK_SPACE}tb~")
+        servers_app.fatty.type_keys("sudo{VK_SPACE}-s~")
+        servers_app.fatty.type_keys("%s~" % pwd0)
         time.sleep(2)
 
         if config == 0:
-            app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}grs~")
+            servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}grs~")
         else:
-            app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}grs2~")
+            servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}grs2~")
 
-        app.fatty.type_keys("^+t")
-        app.fatty.type_keys("sstg2~")
-        app.fatty.type_keys("sstz~")
-        app.fatty.type_keys("sudo{VK_SPACE}-s~")
-        app.fatty.type_keys("%s~" % pwd1)
+        servers_app.fatty.type_keys("^+t")
+        servers_app.fatty.type_keys("sstg2~")
+        servers_app.fatty.type_keys("sstz~")
+        servers_app.fatty.type_keys("sudo{VK_SPACE}-s~")
+        servers_app.fatty.type_keys("%s~" % pwd1)
 
         time.sleep(wait_t)
 
         if config == 0:
-            app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}orca~")
+            servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}orca~")
         else:
-            app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}orca2~")
+            servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}orca2~")
 
     elif config == 2:
-        app.fatty.type_keys("tmux{VK_SPACE}new~")
+        servers_app.fatty.type_keys("tmux{VK_SPACE}new~")
         time.sleep(wait_t)
-        app.fatty.type_keys("^b^r")
+        servers_app.fatty.type_keys("^b^r")
 
     elif config == 3:
-        app.fatty.type_keys("^+t")
-        app.fatty.type_keys("sstb~")
-        app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
-        app.fatty.type_keys("tmux{VK_SPACE}a~")
-        app.fatty.type_keys("tmux{VK_SPACE}new~")
+        servers_app.fatty.type_keys("^+t")
+        servers_app.fatty.type_keys("sstb~")
+        servers_app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
+        servers_app.fatty.type_keys("tmux{VK_SPACE}a~")
+        servers_app.fatty.type_keys("tmux{VK_SPACE}new~")
 
-        app.fatty.type_keys("^+t")
-        app.fatty.type_keys("sstc~")
-        app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
-        app.fatty.type_keys("tmux{VK_SPACE}a~")
-        app.fatty.type_keys("tmux{VK_SPACE}new~")
+        servers_app.fatty.type_keys("^+t")
+        servers_app.fatty.type_keys("sstc~")
+        servers_app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
+        servers_app.fatty.type_keys("tmux{VK_SPACE}a~")
+        servers_app.fatty.type_keys("tmux{VK_SPACE}new~")
 
-        app.fatty.type_keys("^+t")
-        app.fatty.type_keys("sstgr~")
-        app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
-        app.fatty.type_keys("tmux{VK_SPACE}a~")
-        app.fatty.type_keys("tmux{VK_SPACE}new~")
+        servers_app.fatty.type_keys("^+t")
+        servers_app.fatty.type_keys("sstgr~")
+        servers_app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
+        servers_app.fatty.type_keys("tmux{VK_SPACE}a~")
+        servers_app.fatty.type_keys("tmux{VK_SPACE}new~")
+
+    end_t = time.time()
+
+    print('setup time: {}'.format(end_t - start_t))
 
     while True:
+
+        if only_git:
+            time.sleep(wait_t)
+            continue
 
         k = input('Enter any key to restore ssh connections')
         # print('Enter any key to restore ssh connections')
@@ -179,8 +234,8 @@ if __name__ == '__main__':
 
             time.sleep(wait_t)
 
-            app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name00)
-            app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name01)
+            servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name00)
+            servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name01)
 
             for _app in apps:
                 _app.fatty.type_keys("^+t")
@@ -191,8 +246,8 @@ if __name__ == '__main__':
 
             time.sleep(wait_t)
 
-            app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name10)
-            app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name11)
+            servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name10)
+            servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name11)
 
             # time.sleep(1)
 
@@ -209,31 +264,31 @@ if __name__ == '__main__':
 
             time.sleep(wait_t)
 
-            app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name20)
-            app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name21)
+            servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name20)
+            servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name21)
 
         elif config == 3:
 
-            app.fatty.type_keys("^+w")
-            app.fatty.type_keys("^+w")
-            app.fatty.type_keys("^+w")
+            servers_app.fatty.type_keys("^+w")
+            servers_app.fatty.type_keys("^+w")
+            servers_app.fatty.type_keys("^+w")
 
-            app.fatty.type_keys("^+t")
-            app.fatty.type_keys("sstb~")
-            app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
-            app.fatty.type_keys("tmux{VK_SPACE}a~")
-            app.fatty.type_keys("tmux{VK_SPACE}new~")
+            servers_app.fatty.type_keys("^+t")
+            servers_app.fatty.type_keys("sstb~")
+            servers_app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
+            servers_app.fatty.type_keys("tmux{VK_SPACE}a~")
+            servers_app.fatty.type_keys("tmux{VK_SPACE}new~")
 
-            app.fatty.type_keys("^+t")
-            app.fatty.type_keys("sstc~")
-            app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
-            app.fatty.type_keys("tmux{VK_SPACE}a~")
-            app.fatty.type_keys("tmux{VK_SPACE}new~")
+            servers_app.fatty.type_keys("^+t")
+            servers_app.fatty.type_keys("sstc~")
+            servers_app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
+            servers_app.fatty.type_keys("tmux{VK_SPACE}a~")
+            servers_app.fatty.type_keys("tmux{VK_SPACE}new~")
 
-            app.fatty.type_keys("^+t")
-            app.fatty.type_keys("sstgr~")
-            app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
-            app.fatty.type_keys("tmux{VK_SPACE}a~")
-            app.fatty.type_keys("tmux{VK_SPACE}new~")
+            servers_app.fatty.type_keys("^+t")
+            servers_app.fatty.type_keys("sstgr~")
+            servers_app.fatty.type_keys("source{VK_SPACE}envpy36/bin/activate~")
+            servers_app.fatty.type_keys("tmux{VK_SPACE}a~")
+            servers_app.fatty.type_keys("tmux{VK_SPACE}new~")
 
         mouse.move(coords=(mouse_x, mouse_y))
