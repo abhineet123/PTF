@@ -16,8 +16,8 @@ from scipy.signal import argrelextrema
 from Misc import processArguments, sortKey, resizeAR, col_rgb
 
 
-def getPlotImage(data_x, data_y, cols, title, line_labels, x_label, y_label,
-                 scatter=None, ylim=None, legend=0):
+def get_plot_image(data_x, data_y, cols, title, line_labels, x_label, y_label,
+                   scatter=None, ylim=None, legend=0):
     cols = [(col[0] / 255.0, col[1] / 255.0, col[2] / 255.0) for col in cols]
 
     fig = Figure(
@@ -351,11 +351,11 @@ def main():
                 # image = resizeAR(image, width, height)
 
                 if show_img:
-                    sim_plot = getPlotImage([list(range(start_id, frame_id)), ], [sim_list, ], plot_cols,
-                                            metric_type, [metric_type, ], 'frame', metric_type)
+                    sim_plot = get_plot_image([list(range(start_id, frame_id)), ], [sim_list, ], plot_cols,
+                                              metric_type, [metric_type, ], 'frame', metric_type)
 
-                    sim_ratio_plot = getPlotImage([list(range(start_id, frame_id)), ], [sim_ratio_list, ], plot_cols,
-                                                  metric_type_ratio, [metric_type_ratio, ], 'frame', metric_type_ratio)
+                    sim_ratio_plot = get_plot_image([list(range(start_id, frame_id)), ], [sim_ratio_list, ], plot_cols,
+                                                    metric_type_ratio, [metric_type_ratio, ], 'frame', metric_type_ratio)
 
                     cv2.imshow('sim_plot', sim_plot)
                     cv2.imshow('sim_ratio_plot', sim_ratio_plot)
@@ -426,9 +426,9 @@ def main():
                         _frames_per_seq = int(n_src_files / n_splits)
                         split_indices = list(range(_frames_per_seq, n_src_files, _frames_per_seq))
 
-                    scatter_plot = getPlotImage([list(range(len(_data))), ], [_data, ], plot_cols,
-                                                metric_type, [metric_type, ], 'frame', metric_type,
-                                                scatter=split_indices)
+                    scatter_plot = get_plot_image([list(range(len(_data))), ], [_data, ], plot_cols,
+                                                  metric_type, [metric_type, ], 'frame', metric_type,
+                                                  scatter=split_indices)
                     print(f'n_splits: {n_splits}')
                     print(f'frames_per_seq: {_frames_per_seq}')
                     cv2.imshow(win_name, scatter_plot)
@@ -439,9 +439,9 @@ def main():
                     order = _order
                     split_indices = argrelextrema(_data, cmp_func, order=order)[0]
                     split_indices = [k for k in split_indices if cmp_func(_data[k], thresh)]
-                    scatter_plot = getPlotImage([list(range(len(_data))), ], [_data, ], plot_cols,
-                                                metric_type, [metric_type, ], 'frame', metric_type,
-                                                scatter=split_indices)
+                    scatter_plot = get_plot_image([list(range(len(_data))), ], [_data, ], plot_cols,
+                                                  metric_type, [metric_type, ], 'frame', metric_type,
+                                                  scatter=split_indices)
                     print(f'order: {order}')
                     cv2.imshow(win_name, scatter_plot)
 
@@ -450,9 +450,9 @@ def main():
                     thresh = min_thresh + float(max_thresh - min_thresh) / float(100000) * x
                     split_indices = argrelextrema(_data, cmp_func, order=order)[0]
                     split_indices = [k for k in split_indices if cmp_func(_data[k], thresh)]
-                    scatter_plot = getPlotImage([list(range(len(_data))), ], [_data, ], plot_cols,
-                                                metric_type, [metric_type, ], 'frame', metric_type,
-                                                scatter=split_indices)
+                    scatter_plot = get_plot_image([list(range(len(_data))), ], [_data, ], plot_cols,
+                                                  metric_type, [metric_type, ], 'frame', metric_type,
+                                                  scatter=split_indices)
                     n_splits = len(split_indices)
                     split_lengths = [split_indices[j + 1] - split_indices[j] for j in range(n_splits - 1)]
 
@@ -484,9 +484,9 @@ def main():
                         return
                     thresh = min_thresh + float(max_thresh) / float(x)
                     split_indices = np.nonzero(cmp_func(_data, thresh))
-                    scatter_plot = getPlotImage([list(range(len(_data))), ], [_data, ], plot_cols,
-                                                metric_type, [metric_type, ], 'frame', metric_type,
-                                                scatter=split_indices)
+                    scatter_plot = get_plot_image([list(range(len(_data))), ], [_data, ], plot_cols,
+                                                  metric_type, [metric_type, ], 'frame', metric_type,
+                                                  scatter=split_indices)
                     cv2.imshow(win_name, scatter_plot)
 
                 update_order(order)
