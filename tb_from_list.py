@@ -30,7 +30,7 @@ def main():
             if params.start_id > 0:
                 data_list = data_list[params.start_id:]
 
-            data_list_str = ['{}:{}'.format(k[0], k[1]) for k in data_list]
+            data_list_str = ['{}:{}'.format(k[0], k[1]) for k in data_list if os.path.isdir(k[1])]
             log_dirs = ','.join(data_list_str)
             log_dirs_arg = '--logdir_spec'
 
