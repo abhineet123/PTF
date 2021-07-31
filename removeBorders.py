@@ -1,4 +1,5 @@
 import os
+import shutil
 import cv2
 import sys
 import numpy as np
@@ -18,6 +19,7 @@ params = {
     'resize': 0,
     'out_size': '',
     'out_ext': 'jpg',
+    'in_place': 'in_place',
 }
 
 if __name__ == '__main__':
@@ -34,6 +36,7 @@ if __name__ == '__main__':
     out_size = params['out_size']
     out_ext = params['out_ext']
     recursive = params['recursive']
+    in_place = params['in_place']
 
     if out_size:
         resize = 1
@@ -151,10 +154,13 @@ if __name__ == '__main__':
         dst_path = '{:s}_no_borders'.format(src_img_dir)
         if resize:
             dst_path = '{:s}_{}x{}'.format(dst_path, out_width, out_height)
-
         os.makedirs(dst_path, exist_ok=1)
-
         dst_img_fname = os.path.join(dst_path, '{}.{}'.format(img_fname_no_ext, out_ext))
+
+        if in_place:
+            shutil.copy(src_img_fname, dst_img_fname)
+            dst_img_fname = src_img_fname
+
         cv2.imwrite(dst_img_fname, dst_img, img_quality_params)
 
         img_id += 1

@@ -9,7 +9,10 @@ except ImportError:
 import time
 import win32gui, win32api
 from pywinauto import application, mouse
+import os
 import ctypes
+
+import paramparse
 
 EnumWindows = ctypes.windll.user32.EnumWindows
 EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int))
@@ -20,6 +23,15 @@ IsWindowVisible = ctypes.windll.user32.IsWindowVisible
 titles = []
 
 
+class Params:
+    def __init__(self):
+        self.cfg = ()
+        self.win_titles = ['Timing', 'Google Chrome']
+        self.txt_path = 'Z:/Documents/Backup/txtpad'
+        self.txt_proc_list = 'processed.txt'
+        self.recursive = 1
+
+
 def foreach_window(hwnd, lParam):
     if IsWindowVisible(hwnd):
         length = GetWindowTextLength(hwnd)
@@ -28,12 +40,15 @@ def foreach_window(hwnd, lParam):
         titles.append((hwnd, buff.value))
     return True
 
+def linux_path(*args, **kwargs):
+    return os.path.join(*args, **kwargs).replace(os.sep, '/')
 
-def process(in_txt):
+def process(in_txt, verbose=1):
     lines = in_txt.split('\n')
     lines = [line for line in lines if line.strip()]
 
-    print('lines: {}'.format(lines))
+    if verbose:
+        print('lines: {}'.format(lines))
 
     start_t = None
     curr_t = None
@@ -87,8 +102,64 @@ def process(in_txt):
     return out_txt
 
 
+def copy_to_clipboard(out_txt):
+    try:
+        import pyperclip
+
+        pyperclip.copy(out_txt)
+        spam = pyperclip.paste()
+    except BaseException as e:
+        print('Copying to clipboard failed: {}'.format(e))
+
+
 def main():
-    win_titles = ['Timing', 'Google Chrome']
+    params = Params()
+    paramparse.process(params)
+
+    if params.txt_path:
+
+        assert os.path.isdir(params.txt_path), "embedded text path: {}".format(params.txt_path)
+
+        if params.recursive:
+            files_gen = [[linux_path(dirpath, f) for f in filenames if
+                          f.endswith('.txt')]
+                         for (dirpath, dirnames, filenames) in os.walk(params.txt_path, followlinks=True)]
+            files = [item for sublist in files_gen for item in sublist]
+        else:
+            files = os.listdir(params.txt_path)
+            files = [linux_path(params.txt_path, k) for k in files if k and k.endswith('.txt')]
+
+        txt_proc_list_path = linux_path(params.txt_path, params.txt_proc_list)
+
+        if os.path.isfile(txt_proc_list_path):
+            processed_files = open(txt_proc_list_path, 'r').readlines()
+            processed_files = [k.strip().split('\t')[1] for k in processed_files if k.strip()]
+
+            files = [k for k in files if k not in processed_files]
+
+        files.sort(key=os.path.getmtime)
+        n_files = len(files)
+
+        if n_files > 1:
+            print('found {} new files:\n{}'.format(n_files, '\n'.join(files)))
+
+        for file_id, file in enumerate(files):
+            print('reading file {} / {}: {}'.format(file_id + 1, n_files, file))
+            in_txt = open(file, 'r').read()
+            out_txt = process(in_txt, verbose=0)
+            print(out_txt)
+
+            copy_to_clipboard(out_txt)
+
+            with open(txt_proc_list_path, 'a') as fid:
+                timestamp_str = datetime.now().strftime("%y%m%d %H:%M:%S.%f")[:-4]
+
+                fid.write('{}\t{}\n'.format(timestamp_str, file))
+
+            if file_id + 1 < n_files > 1:
+                _ = input('\npress any key to continue\n')
+        return
+
     try:
         in_txt = Tk().clipboard_get()
     except BaseException as e:
@@ -122,11 +193,11 @@ def main():
             # for i in range(len(titles)):
             #     print(titles[i])
 
-            target_title = [k[1] for k in titles if all(title in k[1] for title in win_titles)]
+            target_title = [k[1] for k in titles if all(title in k[1] for title in params.win_titles)]
             # print('target_title: {}'.format(target_title))
 
             if not target_title:
-                raise IOError('Window with win_titles: {} not found'.format(win_titles))
+                raise IOError('Window with win_titles: {} not found'.format(params.win_titles))
 
             target_title = target_title[0]
 
@@ -173,13 +244,8 @@ def main():
     print(out_txt)
     # with open(out_fname, 'w') as out_fid:
     #     out_fid.write(out_txt)
-    try:
-        import pyperclip
 
-        pyperclip.copy(out_txt)
-        spam = pyperclip.paste()
-    except BaseException as e:
-        print('Copying to clipboard failed: {}'.format(e))
+    copy_to_clipboard(out_txt)
 
 
 if __name__ == '__main__':

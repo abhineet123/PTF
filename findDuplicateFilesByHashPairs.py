@@ -12,6 +12,8 @@ try:
 except:
     import pickle
 
+from tqdm import tqdm
+
 from Misc import processArguments
 
 
@@ -108,7 +110,7 @@ def main():
     if new_stats:
         print('Computing hashes for {}/{} files ...'.format(n_new_files, n_files))
         db.update({k: (os.path.getmtime(all_stats[k]), get_hash(all_stats[k]))
-                   for k in new_stats})
+                   for k in tqdm(new_stats)})
     else:
         print('No new files to compute hashes for')
     # src_file_hash_list = list(src_file_hash_dict.keys())
