@@ -12,6 +12,7 @@ from pywinauto import application, mouse
 import os
 import ctypes
 
+import subprocess
 import paramparse
 
 EnumWindows = ctypes.windll.user32.EnumWindows
@@ -28,7 +29,7 @@ class Params:
         self.cfg = ()
         self.win_titles = ['Timing', 'Google Chrome']
         self.txt_path = 'Z:/Documents/Backup/txtpad'
-        self.txt_proc_list = 'processed.txt'
+        self.txt_proc_list = 'processed.log'
         self.recursive = 1
 
 
@@ -116,50 +117,6 @@ def main():
     params = Params()
     paramparse.process(params)
 
-    if params.txt_path:
-
-        assert os.path.isdir(params.txt_path), "embedded text path: {}".format(params.txt_path)
-
-        if params.recursive:
-            files_gen = [[linux_path(dirpath, f) for f in filenames if
-                          f.endswith('.txt')]
-                         for (dirpath, dirnames, filenames) in os.walk(params.txt_path, followlinks=True)]
-            files = [item for sublist in files_gen for item in sublist]
-        else:
-            files = os.listdir(params.txt_path)
-            files = [linux_path(params.txt_path, k) for k in files if k and k.endswith('.txt')]
-
-        txt_proc_list_path = linux_path(params.txt_path, params.txt_proc_list)
-
-        if os.path.isfile(txt_proc_list_path):
-            processed_files = open(txt_proc_list_path, 'r').readlines()
-            processed_files = [k.strip().split('\t')[1] for k in processed_files if k.strip()]
-
-            files = [k for k in files if k not in processed_files]
-
-        files.sort(key=os.path.getmtime)
-        n_files = len(files)
-
-        if n_files > 1:
-            print('found {} new files:\n{}'.format(n_files, '\n'.join(files)))
-
-        for file_id, file in enumerate(files):
-            print('reading file {} / {}: {}'.format(file_id + 1, n_files, file))
-            in_txt = open(file, 'r').read()
-            out_txt = process(in_txt, verbose=0)
-            print(out_txt)
-
-            copy_to_clipboard(out_txt)
-
-            with open(txt_proc_list_path, 'a') as fid:
-                timestamp_str = datetime.now().strftime("%y%m%d %H:%M:%S.%f")[:-4]
-
-                fid.write('{}\t{}\n'.format(timestamp_str, file))
-
-            if file_id + 1 < n_files > 1:
-                _ = input('\npress any key to continue\n')
-        return
-
     try:
         in_txt = Tk().clipboard_get()
     except BaseException as e:
@@ -182,6 +139,56 @@ def main():
                 out_txt = ''
 
     if not out_txt:
+        if params.txt_path:
+
+            assert os.path.isdir(params.txt_path), "embedded text path: {}".format(params.txt_path)
+
+            if params.recursive:
+                files_gen = [[linux_path(dirpath, f) for f in filenames if
+                              f.endswith('.txt')]
+                             for (dirpath, dirnames, filenames) in os.walk(params.txt_path, followlinks=True)]
+                files = [item for sublist in files_gen for item in sublist]
+            else:
+                files = os.listdir(params.txt_path)
+                files = [linux_path(params.txt_path, k) for k in files if k and k.endswith('.txt')]
+
+            txt_proc_list_path = linux_path(params.txt_path, params.txt_proc_list)
+
+            if os.path.isfile(txt_proc_list_path):
+                processed_files = open(txt_proc_list_path, 'r').readlines()
+                processed_files = [k.strip().split('\t')[1] for k in processed_files if k.strip()]
+
+                files = [k for k in files if k not in processed_files]
+
+            files.sort(key=os.path.getmtime)
+            n_files = len(files)
+
+            if n_files > 1:
+                print('found {} new files:\n{}'.format(n_files, '\n'.join(files)))
+
+            for file_id, file in enumerate(files):
+                print('reading file {} / {}: {}'.format(file_id + 1, n_files, file))
+                in_txt = open(file, 'r').read()
+                out_txt = process(in_txt, verbose=0)
+                print(out_txt)
+
+                copy_to_clipboard(out_txt)
+
+                with open(txt_proc_list_path, 'r+') as f:
+                    content = f.read()
+                    f.seek(0, 0)
+
+                    timestamp_str = datetime.now().strftime("%y%m%d %H:%M:%S.%f")[:-4]
+
+                    txt = '{}\t{}\n'.format(timestamp_str, file)
+                    f.write(txt + content)
+
+                os.system("start {}".format(file))
+
+                _ = input('\npress any key to continue\n')
+
+            return
+
         # time.sleep(1)
         try:
             orig_x, orig_y = win32api.GetCursorPos()
