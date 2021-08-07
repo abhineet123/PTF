@@ -1477,8 +1477,10 @@ def run(args, multi_exit_program=None,
                                     img_sequences[_load_id][img_fname] = src_img
                         else:
                             src_img = np.copy(img_fname)
-                    # if trim_images:
-                    #     src_img = np.asarray(trim(Image.fromarray(src_img)))
+                    if trim_images:
+                        # print('trimming...')
+                        src_img = np.asarray(trim(Image.fromarray(src_img)))
+
                     if rotate_images:
                         src_img = np.rot90(src_img, rotate_images)
                 else:

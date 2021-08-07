@@ -141,7 +141,7 @@ for src_id, _src_path in enumerate(src_files):
     if n_frames <= 0:
         dst_n_frames = total_frames
     else:
-        if total_frames > 0 and n_frames > total_frames:
+        if n_frames > total_frames > 0:
             raise AssertionError('Invalid n_frames {} for video with {} frames'.format(n_frames, total_frames))
         dst_n_frames = n_frames
 
@@ -171,7 +171,8 @@ for src_id, _src_path in enumerate(src_files):
     if add_headers > 0:
         header_path = header_files[src_id]
         header_img = cv2.imread(header_path)
-        header_img = resizeAR(header_img, dst_width, dst_height)
+        header_img = resizeAR(header_img, dst_width, dst_height, placement_type=1)
+
         for i in range(n_header_frames):
             video_out.write(header_img)
 

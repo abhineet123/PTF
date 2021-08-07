@@ -289,16 +289,34 @@ def sortKeyOld(fname):
     return key
 
 
-def trim(im):
-    bg = Image.new(im.mode, im.size, im.getpixel((0, 0)))
-    diff = ImageChops.difference(im, bg)
-    # diff.show()
-    diff = ImageChops.add(diff, diff, 2.0, -35)
-    # diff.show()
-    # diff = ImageChops.add(diff, diff)
-    bbox = diff.getbbox()
-    if bbox:
-        return im.crop(bbox)
+def trim(im, all_corners=0, margin=-5):
+    im_size = im.size
+    # print('im_size: {}'.format(im_size))
+
+    h, w = im_size[:2]
+    bg_pix_ul = im.getpixel((0, 0))
+
+    bg_pixs = [bg_pix_ul, ]
+
+    if all_corners:
+        bg_pix_ur = im.getpixel((0, w - 1))
+        bg_pix_ll = im.getpixel((h - 1, 0))
+        bg_pix_lr = im.getpixel((h - 1, w - 1))
+
+        bg_pixs += [bg_pix_ur, bg_pix_ll, bg_pix_lr]
+    # im.show()
+    # print('bg_pix: {}'.format(bg_pix))
+
+    for pix in bg_pixs:
+        bg = Image.new(im.mode, im_size, pix)
+        diff = ImageChops.difference(im, bg)
+        # diff.show()
+        diff = ImageChops.add(diff, diff, 2.0, margin)
+        # diff.show()
+        # diff = ImageChops.add(diff, diff)
+        bbox = diff.getbbox()
+        if bbox:
+            im = im.crop(bbox)
     return im
 
 
@@ -3745,7 +3763,6 @@ class ParamDict:
         'PhC-C2DL-PSC_01': 40,
         'PhC-C2DL-PSC_02': 40,
 
-
         # test
         'BF-C2DL-HSC_Test_01': 40,
         'BF-C2DL-HSC_Test_02': 40,
@@ -4042,7 +4059,7 @@ def stackImages(img_list, grid_size=None, stack_order=0, borderless=1,
 
                 if sep_size:
                     sep_img_shape = list(curr_row.shape)
-                    if inner_axis==1:
+                    if inner_axis == 1:
                         sep_img_shape[1] = sep_size
                     else:
                         sep_img_shape[0] = sep_size

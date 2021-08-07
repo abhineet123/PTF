@@ -6,8 +6,9 @@ import imageio
 import numpy as np
 from pprint import pformat
 from pykalman import KalmanFilter
+from PIL import Image
 
-from Misc import sortKey, processArguments, drawBox
+from Misc import sortKey, processArguments, drawBox, trim
 
 # def processArguments(args, params):
 #     # arguments specified as 'arg_name=argv_val'
@@ -46,6 +47,7 @@ params = {
     'recursive': 1,
     'tracker_type': 0,
     'filtering': 0,
+    'trim_images': 1,
 }
 
 if __name__ == '__main__':
@@ -70,6 +72,7 @@ if __name__ == '__main__':
     recursive = params['recursive']
     tracker_type = params['tracker_type']
     filtering = params['filtering']
+    trim_images = params['trim_images']
 
     vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv', '.gif', '.webm']
     img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
@@ -228,6 +231,9 @@ if __name__ == '__main__':
                 if not ret:
                     print('\nFrame {:d} could not be read'.format(frame_id + 1))
                     break
+            if trim_images:
+                frame = np.asarray(trim(Image.fromarray(frame)))
+
             if crop and frame_id == 0:
                 roi = cv2.selectROI('Select ROI', frame)
                 print('orig roi: {}'.format(roi))
