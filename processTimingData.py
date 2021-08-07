@@ -145,7 +145,7 @@ def main():
 
             if params.recursive:
                 files_gen = [[linux_path(dirpath, f) for f in filenames if
-                              f.endswith('.txt')]
+                              f.endswith('.txt') and f.startswith('Timing')]
                              for (dirpath, dirnames, filenames) in os.walk(params.txt_path, followlinks=True)]
                 files = [item for sublist in files_gen for item in sublist]
             else:

@@ -26,6 +26,9 @@ params = {
     'ext': 'mkv',
     'out_postfix': '',
     'reverse': 0,
+    'move_src': 0,
+    'use_skv': 0,
+    'disable_suffix': 0,
 }
 
 processArguments(sys.argv[1:], params)
@@ -39,11 +42,14 @@ n_frames = params['n_frames']
 _width = params['width']
 _height = params['height']
 fps = params['fps']
+use_skv = params['use_skv']
 codec = params['codec']
 ext = params['ext']
 out_postfix = params['out_postfix']
 reverse = params['reverse']
 save_root_dir = params['save_root_dir']
+move_src = params['move_src']
+disable_suffix = params['disable_suffix']
 
 img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
 
@@ -56,7 +62,7 @@ if os.path.isdir(_src_path):
         #              os.path.isdir(os.path.join(_src_path, k))]
         src_paths_gen = [[os.path.join(dirpath, d) for d in dirnames if
                           any([os.path.splitext(f.lower())[1] in img_exts
-                                for f in os.listdir(os.path.join(dirpath, d))])]
+                               for f in os.listdir(os.path.join(dirpath, d))])]
                          for (dirpath, dirnames, filenames) in os.walk(_src_path, followlinks=True)]
         src_paths = [item for sublist in src_paths_gen for item in sublist]
         src_root_dir = os.path.abspath(_src_path)
@@ -82,12 +88,21 @@ exit_prog = 0
 
 n_src_paths = len(src_paths)
 
+cwd = os.getcwd()
+
 for src_id, src_path in enumerate(src_paths):
     seq_name = os.path.basename(src_path)
 
     print('{}/{} Reading source images from: {}'.format(src_id + 1, n_src_paths, src_path))
 
     src_path = os.path.abspath(src_path)
+
+    if move_src:
+        rel_src_path = os.path.relpath(src_path, os.getcwd())
+        dst_path = os.path.join(cwd, 'i2v', rel_src_path)
+
+        print('{} --> {}'.format(src_path, dst_path))
+
     src_files = [k for k in os.listdir(src_path) for _ext in img_exts if k.endswith(_ext)]
     n_src_files = len(src_files)
     if n_src_files <= 0:
@@ -104,16 +119,19 @@ for src_id, src_path in enumerate(src_paths):
     width, height = _width, _height
 
     if not save_path:
-        save_fname = '{}_{}'.format(os.path.basename(src_path), fps)
+        save_fname = os.path.basename(src_path)
 
-        if height > 0 and width > 0:
-            save_fname = '{}_{}x{}'.format(save_fname, width, height)
+        if not disable_suffix:
+            save_fname = '{}_{}'.format(save_fname, fps)
 
-        if out_postfix:
-            save_fname = '{}_{}'.format(save_fname, out_postfix)
+            if height > 0 and width > 0:
+                save_fname = '{}_{}x{}'.format(save_fname, width, height)
 
-        if reverse:
-            save_fname = '{}_r{}'.format(save_fname, reverse)
+            if out_postfix:
+                save_fname = '{}_{}'.format(save_fname, out_postfix)
+
+            if reverse:
+                save_fname = '{}_r{}'.format(save_fname, reverse)
 
         save_path = os.path.join(os.path.dirname(src_path), '{}.{}'.format(save_fname, ext))
 
@@ -153,7 +171,16 @@ for src_id, src_path in enumerate(src_paths):
         temp_img = cv2.imread(os.path.join(src_path, src_files[0]))
         height, width, _ = temp_img.shape
 
-    if codec == 'H265':
+    import skvideo.io
+
+    if use_skv:
+        video_out = skvideo.io.FFmpegWriter(save_path, outputdict={
+            '-vcodec': 'libx264',  # use the h.264 codec
+            '-crf': '0',  # set the constant rate factor to 0, which is lossless
+            '-preset': 'veryslow'  # the slower the better compression, in princple, try
+            # other options see https://trac.ffmpeg.org/wiki/Encode/H.264
+        })
+    elif codec == 'H265':
         video_out = VideoWriterGPU(save_path, fps, (width, height))
     else:
         fourcc = cv2.VideoWriter_fourcc(*codec)
@@ -189,7 +216,10 @@ for src_id, src_path in enumerate(src_paths):
             elif k == 32:
                 pause_after_frame = 1 - pause_after_frame
 
-        video_out.write(image)
+        if use_skv:
+            video_out.writeFrame(image[:, :, ::-1])  # write the frame as RGB not BGR
+        else:
+            video_out.write(image)
 
         frame_id += 1
 
@@ -201,7 +231,7 @@ for src_id, src_path in enumerate(src_paths):
             sys.stdout.flush()
             start_t = end_t
 
-        if n_frames > 0 and (frame_id - start_id) >= n_frames:
+        if (frame_id - start_id) >= n_frames > 0:
             break
 
         if frame_id >= n_src_files:
@@ -210,12 +240,17 @@ for src_id, src_path in enumerate(src_paths):
     sys.stdout.write('\n\n')
     sys.stdout.flush()
 
-    video_out.release()
+    if use_skv:
+        video_out.close()  # close the writer
+    else:
+        video_out.release()
 
     if show_img:
         cv2.destroyWindow(seq_name)
 
-    if del_src:
+    if move_src:
+        shutil.move(src_path, dst_path)
+    elif del_src:
         print('Removing source folder {}'.format(src_path))
         shutil.rmtree(src_path)
 

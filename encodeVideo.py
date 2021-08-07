@@ -2,7 +2,9 @@ import cv2
 import sys
 import os, shutil
 
-from Misc import processArguments, sortKey, resizeAR
+import paramparse
+
+from Misc import sortKey, resizeAR
 
 params = {
     'src_path': '.',
@@ -20,9 +22,12 @@ params = {
     'ext': 'mkv',
     'out_postfix': '',
     'add_headers': 0.0,
+    'vid_exts': ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv'],
+    'img_exts': ['.jpg', '.png', '.jpeg', '.tif', '.bmp'],
 }
 
-processArguments(sys.argv[1:], params)
+paramparse.process_dict(params)
+
 _src_path = params['src_path']
 save_path = params['save_path']
 img_ext = params['img_ext']
@@ -38,14 +43,14 @@ reverse = params['reverse']
 combine = params['combine']
 out_postfix = params['out_postfix']
 add_headers = params['add_headers']
+vid_exts = params['vid_exts']
+img_exts = params['img_exts']
 
 height = width = 0
 if res:
     width, height = [int(x) for x in res.split('x')]
 
 print('Reading source videos from: {}'.format(_src_path))
-vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv']
-img_exts = ['.jpg', '.png', '.jpeg', '.tif', '.bmp']
 
 header_files = None
 
@@ -75,18 +80,17 @@ if add_headers > 0:
 if add_headers > 0:
     print('Adding headers of length {} secs'.format(add_headers))
 
-
 if reverse == 1:
     print('Writing reversed video')
 elif reverse == 2:
     print('Appending reversed video')
 
-if combine and n_videos>1:
+if combine and n_videos > 1:
     print('Combining all videos into a single output video')
 
 video_out = None
 
-n_header_frames = int(add_headers*fps)
+n_header_frames = int(add_headers * fps)
 
 for src_id, _src_path in enumerate(src_files):
 
@@ -228,9 +232,10 @@ for src_id, _src_path in enumerate(src_files):
 
     if show_img:
         cv2.destroyWindow(seq_name)
-    if del_src:
+
+    if del_src and src_path != dst_path:
         print('Removing source video {}'.format(src_path))
-        shutil.rmtree(src_path)
+        os.remove(src_path)
 
 if combine:
     video_out.release()

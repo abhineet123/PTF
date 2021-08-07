@@ -19,7 +19,7 @@ class VideoWriterGPU:
         self._path = path
         width, height = size
 
-        command = ['ffmpeg2',
+        command = ['ffmpeg',
                    '-y',
                    '-f', 'rawvideo',
                    '-codec', 'rawvideo',
