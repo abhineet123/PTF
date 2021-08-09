@@ -10,6 +10,7 @@ import time
 import win32gui, win32api
 from pywinauto import application, mouse
 import os
+import shutil
 import ctypes
 
 import subprocess
@@ -168,6 +169,12 @@ def main():
 
             for file_id, file in enumerate(files):
                 print('reading file {} / {}: {}'.format(file_id + 1, n_files, file))
+
+                dst_file = file.replace('.txt', '.log')
+                shutil.move(file, dst_file)
+
+                file = dst_file
+
                 in_txt = open(file, 'r').read()
                 out_txt = process(in_txt, verbose=0)
                 print(out_txt)

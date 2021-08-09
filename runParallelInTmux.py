@@ -23,7 +23,7 @@ def main():
         'pane_id': '12.0',
         'pane_id_sep': '>',
         'log_dir': 'log/tee',
-        'enable_logging': 1,
+        'enable_logging': 0,
     }
     paramparse.process_dict(params)
 

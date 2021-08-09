@@ -1,6 +1,8 @@
 __author__ = 'Tommy'
 import os
-import sys, re
+import sys
+import re
+import shutil
 
 try:
     from PIL import Image, ImageChops
@@ -25,9 +27,12 @@ except ImportError as e:
 import copy
 import struct
 import time
+from tqdm import tqdm
+
 # from DecompUtils import getBinaryPtsImage2
 from Homography import *
-import six
+
+# import six
 
 col_rgb = {
     'snow': (250, 250, 255),
@@ -318,6 +323,26 @@ def trim(im, all_corners=0, margin=-5):
         if bbox:
             im = im.crop(bbox)
     return im
+
+
+def move_or_del_files(src_path, filenames, dst_path='', remove_empty=1):
+    if dst_path:
+        print('moving files from {} --> {}'.format(src_path, dst_path))
+        os.makedirs(dst_path, exist_ok=True)
+    else:
+        print('deleting files in {}'.format(src_path))
+
+    for filename in tqdm(filenames):
+        file_src_path = os.path.join(src_path, filename)
+        if not dst_path:
+            os.remove(file_src_path)
+        else:
+            file_dst_path = os.path.join(dst_path, filename)
+            shutil.move(file_src_path, file_dst_path)
+
+    if remove_empty and not os.listdir(src_path):
+        print('deleting empty folder: {}'.format(src_path))
+        shutil.rmtree(src_path)
 
 
 def processArguments(args, params):

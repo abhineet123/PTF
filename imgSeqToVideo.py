@@ -7,7 +7,7 @@ from pprint import pformat
 from tqdm import tqdm
 import skvideo.io
 
-from Misc import processArguments, sortKey, resizeAR
+from Misc import processArguments, sortKey, resizeAR, move_or_del_files
 from video_io import VideoWriterGPU
 
 
@@ -110,15 +110,15 @@ def main():
     for src_id, src_path in enumerate(src_paths):
         seq_name = os.path.basename(src_path)
 
-        print('{}/{} Reading source images from: {}'.format(src_id + 1, n_src_paths, src_path))
+        print('\n{}/{} Reading source images from: {}'.format(src_id + 1, n_src_paths, src_path))
 
         src_path = os.path.abspath(src_path)
 
         if move_src:
             rel_src_path = os.path.relpath(src_path, os.getcwd())
             dst_path = os.path.join(cwd, 'i2v', rel_src_path)
-
-            print('{} --> {}'.format(src_path, dst_path))
+        else:
+            dst_path = ''
 
         src_files = [k for k in os.listdir(src_path) for _ext in img_exts if k.endswith(_ext)]
         n_src_files = len(src_files)
@@ -255,7 +255,7 @@ def main():
                     proc_fps = float(print_diff) / (end_t - start_t)
                 except:
                     proc_fps = 0
-                    
+
                 sys.stdout.write('\rDone {:d}/{:d} frames at {:.4f} fps'.format(
                     frame_id - start_id, n_src_files - start_id, proc_fps))
                 sys.stdout.flush()
@@ -267,7 +267,7 @@ def main():
             if frame_id >= n_src_files:
                 break
 
-        sys.stdout.write('\n\n')
+        sys.stdout.write('\n')
         sys.stdout.flush()
 
         if use_skv:
@@ -278,11 +278,8 @@ def main():
         if show_img:
             cv2.destroyWindow(seq_name)
 
-        if move_src:
-            shutil.move(src_path, dst_path)
-        elif del_src:
-            print('Removing source folder {}'.format(src_path))
-            shutil.rmtree(src_path)
+        if move_src or del_src:
+            move_or_del_files(src_path, src_files, dst_path)
 
         save_path = ''
 
