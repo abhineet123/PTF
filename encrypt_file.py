@@ -1,4 +1,5 @@
 from cryptography.fernet import Fernet
+import paramparse
 
 def write_key():
     """
@@ -65,7 +66,7 @@ def main():
     # load the key
     key = load_key()
     # file name
-    file = "C:/cygwin64/home/Tommy/auth.txt"
+    file = "Z:\\Lectures\\temp.txt"
 
     # encrypt it
     encrypt(file, key)

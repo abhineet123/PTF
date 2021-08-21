@@ -170,10 +170,7 @@ def main():
             for file_id, file in enumerate(files):
                 print('reading file {} / {}: {}'.format(file_id + 1, n_files, file))
 
-                dst_file = file.replace('.txt', '.log')
-                shutil.move(file, dst_file)
-
-                file = dst_file
+                # file = dst_file
 
                 in_txt = open(file, 'r').read()
                 out_txt = process(in_txt, verbose=0)
@@ -190,7 +187,9 @@ def main():
                     txt = '{}\t{}\n'.format(timestamp_str, file)
                     f.write(txt + content)
 
-                os.system("start {}".format(file))
+                # dst_file = file.replace('.txt', '.log')
+                # shutil.move(file, dst_file)
+                os.system("vscode {}".format(file))
 
                 _ = input('\npress any key to continue\n')
 

@@ -822,7 +822,6 @@ def run(args, multi_exit_program=None,
     _lazy_video_load = lazy_video_load
 
     img_sortKey = functools.partial(sortKey, only_basename=0)
-
     if src_dirs:
         src_dirs = src_dirs.split(',')
         # inc_src_dirs = [k for k in src_dirs if k[0] != '!']
@@ -833,6 +832,44 @@ def run(args, multi_exit_program=None,
             src_dirs = [k for k in src_dirs if k not in exclude_dir_pattern]
             exclude_dir_pattern = [k.lstrip('!') for k in exclude_dir_pattern]
             print(f'Excluding all directories containing any of {exclude_dir_pattern} in their path')
+
+        dir_ranges = [(i, k) for i, k in enumerate(src_dirs) if '__to__' in k]
+
+        for dir_range_idx, dir_range in dir_ranges:
+            dir_range = dir_range.split('__to__')
+            assert len(dir_range) == 2, "Invalid directory range specified: {}".format(dir_range)
+
+            _prefix = ''
+            if dir_range[0].startswith('!'):
+                range_start = int(dir_range[0][1:])
+                _prefix = '!'
+            else:
+                range_start = int(dir_range[0])
+            _suffix = ''
+            if '***' in dir_range[1]:
+                dir_range[1], _suffix = dir_range[1].split('***')
+                _suffix = '***' + _suffix
+            if '**' in dir_range[1]:
+                dir_range[1], _suffix = dir_range[1].split('**')
+                _suffix = '**' + _suffix
+            if '*' in dir_range[1]:
+                dir_range[1], _suffix = dir_range[1].split('*')
+                _suffix = '*' + _suffix
+            elif '///' in dir_range[1]:
+                dir_range[1], _suffix = dir_range[1].split('///')
+                _suffix = '///' + _suffix
+            elif '//' in dir_range[1]:
+                dir_range[1], _suffix = dir_range[1].split('//')
+                _suffix = '//' + _suffix
+
+            range_end = int(dir_range[1])
+
+            for j in range(range_end, range_start-1, -1):
+                dir_name = _prefix + str(j) + _suffix
+
+                src_dirs.insert(dir_range_idx, dir_name)
+
+        src_dirs = [k for k in src_dirs if '__to__' not in k]
 
         src_dirs = [os.path.join(src_root_dir, k) if not k.startswith('!') else
                     os.path.join('!' + src_root_dir, k[1:])
