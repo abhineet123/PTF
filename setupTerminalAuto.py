@@ -3,12 +3,17 @@ import time
 import os, sys
 import win32api
 
-from Misc import processArguments, sortKey
+from Misc import processArguments, linux_path
+import encrypt_file_aes as encryption
 
 if __name__ == '__main__':
     params = {
         'exe_path': 'fatty.exe',
-        'auth_path': '',
+        'key_root': '',
+        'key_dir': '',
+        'auth_root': '',
+        'auth_dir': '',
+        'auth_file': '',
         'config': 0,
         'wait_t': 3,
         'n_git_panes': 8,
@@ -21,7 +26,11 @@ if __name__ == '__main__':
     }
     processArguments(sys.argv[1:], params)
     exe_path = params['exe_path']
-    auth_path = params['auth_path']
+    key_root = params['key_root']
+    key_dir = params['key_dir']
+    auth_root = params['auth_root']
+    auth_dir = params['auth_dir']
+    auth_file = params['auth_file']
     config = params['config']
     wait_t = params['wait_t']
     n_git_panes = params['n_git_panes']
@@ -45,13 +54,34 @@ if __name__ == '__main__':
     assert exe_path, 'Terminal executable path must be provided'
 
     if not only_git:
-
+        auth_path = linux_path(auth_root, auth_dir, auth_file)
         auth_data = open(auth_path, 'r').readlines()
         auth_data = [k.strip() for k in auth_data]
 
-        name00, name01, pwd0 = auth_data[0].split(' ')
-        name10, name11, pwd1 = auth_data[1].split(' ')
-        name20, name21, pwd2 = auth_data[2].split(' ')
+        name00, name01, ecr0, key0 = auth_data[0].split(' ')
+        name10, name11, ecr1, key1 = auth_data[1].split(' ')
+        name20, name21, ecr2, key2 = auth_data[2].split(' ')
+
+        key0_path = linux_path(key_root, key_dir, key0)
+        key1_path = linux_path(key_root, key_dir, key1)
+        key2_path = linux_path(key_root, key_dir, key2)
+
+        encryption_params = encryption.Params()
+        encryption_params.mode = 1
+        encryption_params.root_dir = key_root
+        encryption_params.parent_dir = key_dir
+
+        encryption_params.in_file = ecr0
+        encryption_params.key0 = key0
+        pwd0 = encryption.run(encryption_params)
+
+        encryption_params.in_file = ecr1
+        encryption_params.key0 = key1
+        pwd1 = encryption.run(encryption_params)
+
+        encryption_params.in_file = ecr2
+        encryption_params.key0 = key2
+        pwd2 = encryption.run(encryption_params)
 
         print('Setting up system 0 with tmux sessions {}, {}'.format(name00, name01))
         print('Setting up system 1 with tmux sessions {}, {}'.format(name10, name11))

@@ -32,6 +32,11 @@ class Params:
         self.txt_path = 'Z:/Documents/Backup/txtpad'
         self.txt_proc_list = 'processed.log'
         self.recursive = 1
+        self.ffs = 1
+        self.ffs_exe = ''
+        self.ffs_root = ''
+        self.ffs_ext = ''
+        self.ffs_files = []
 
 
 def foreach_window(hwnd, lParam):
@@ -42,8 +47,10 @@ def foreach_window(hwnd, lParam):
         titles.append((hwnd, buff.value))
     return True
 
+
 def linux_path(*args, **kwargs):
     return os.path.join(*args, **kwargs).replace(os.sep, '/')
+
 
 def process(in_txt, verbose=1):
     lines = in_txt.split('\n')
@@ -140,6 +147,14 @@ def main():
                 out_txt = ''
 
     if not out_txt:
+
+        if params.ffs:
+            for _ffs_file in params.ffs_files:
+                ffs_path = os.path.join(params.ffs_root, _ffs_file + '.' + params.ffs_ext)
+                ffs_cmd = '{} "{}"'.format(params.ffs_exe, ffs_path)
+                print(ffs_cmd)
+                os.system(ffs_cmd)
+
         if params.txt_path:
 
             assert os.path.isdir(params.txt_path), "embedded text path: {}".format(params.txt_path)
