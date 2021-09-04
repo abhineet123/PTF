@@ -131,6 +131,7 @@ class Params:
         self.show_window = 1
         self.smooth_blending = 0
         self.auto_aspect_ratio = 0
+        self.auto_min_aspect_ratio = 0.45
         self.min_aspect_ratio = 0
         self.max_aspect_ratio = 1.5
         self.magnified_height_ratio = 0
@@ -252,6 +253,7 @@ def run(args, multi_exit_program=None,
     parallel_read = params.parallel_read
     max_buffer_ram = params.max_buffer_ram
     # smooth_blending = params.smooth_blending
+    auto_min_aspect_ratio = params.auto_min_aspect_ratio
     auto_aspect_ratio = params.auto_aspect_ratio
     _min_aspect_ratio = params.min_aspect_ratio
     _max_aspect_ratio = params.max_aspect_ratio
@@ -525,7 +527,7 @@ def run(args, multi_exit_program=None,
 
     sft_exceptions_multi = [('XY:(', ') - RGB:(', ', HTML:('), ]
 
-    widescreen_monitor = [-1920, -1080]
+    widescreen_monitor = [0, -1080]
 
     if wallpaper_mode:
         enable_hotkeys = 1
@@ -1643,7 +1645,7 @@ def run(args, multi_exit_program=None,
             win_x1, win_y1, win_x2, win_y2 = frg_positions[frg_win_id]
             win_w, win_h = win_x2 - win_x1, win_y2 - win_y1
             win_aspect_ratio = float(win_w) / float(win_h)
-            min_aspect_ratio, max_aspect_ratio = win_aspect_ratio * 0.45, win_aspect_ratio
+            min_aspect_ratio, max_aspect_ratio = win_aspect_ratio * auto_min_aspect_ratio, win_aspect_ratio
 
             # print('win_aspect_ratio: {}'.format(win_aspect_ratio))
             # print('min_aspect_ratio: {}'.format(min_aspect_ratio))
@@ -3066,8 +3068,10 @@ def run(args, multi_exit_program=None,
                 exit_program = 1
                 break
             elif k == 13:
+                """enter"""
                 changeMode()
-            elif k == 92:  # \ --> tall left
+            elif k == 92:  # \ --> tall right
+                """ctrl+enter"""
                 if mode == 1:
                     widescreen_mode = 1 - widescreen_mode
                 elif tall_position == 1:
@@ -3075,7 +3079,8 @@ def run(args, multi_exit_program=None,
                 else:
                     tall_position = 1
                 changeMode()
-            elif k == 10 or k == 124:  # | --> tall right
+            elif k == 10 or k == 124:  # | --> tall left
+                """vertical bar |"""
                 if mode == 1:
                     widescreen_mode = 1 - widescreen_mode
                 elif tall_position == 2:

@@ -32,6 +32,7 @@ class Params:
         self.txt_path = 'Z:/Documents/Backup/txtpad'
         self.txt_proc_list = 'processed.log'
         self.recursive = 1
+        self.category = 2
         self.ffs = 1
         self.ffs_exe = ''
         self.ffs_root = ''
@@ -139,7 +140,11 @@ def main():
     if lines:
         if all(line.endswith('.ogg') for line in lines):
             out_lines = [line.split('-')[1].split('.')[0].replace('_', ':') for line in lines]
+            if params.category > 0:
+                out_lines = ['{} :: {}'.format(line, params.category) for line in out_lines]
+
             out_txt = '\n'.join(sorted(out_lines))
+
         else:
             try:
                 out_txt = process(in_txt)

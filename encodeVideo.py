@@ -1,8 +1,10 @@
-import cv2
 import sys
 import os
 import time
 from tqdm import tqdm
+import numpy as np
+from PIL import Image
+import cv2
 
 import imutils
 import skvideo.io
@@ -10,6 +12,7 @@ import skvideo.io
 import paramparse
 
 from Misc import sortKey, resizeAR
+from Misc import processArguments, trim
 
 params = {
     'src_path': '.',
@@ -30,6 +33,7 @@ params = {
     'disable_suffix': 0,
     'out_postfix': '',
     'add_headers': 0.0,
+    'remove_border': 0,
     'rotate': 0,
     'vid_exts': ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv'],
     'img_exts': ['.jpg', '.png', '.jpeg', '.tif', '.bmp'],
@@ -58,6 +62,7 @@ disable_suffix = params['disable_suffix']
 use_skv = params['use_skv']
 recursive = params['recursive']
 rotate = params['rotate']
+remove_border = params['remove_border']
 
 height = width = 0
 if res:
@@ -245,6 +250,9 @@ for src_id, _src_path in enumerate(src_files):
         if not ret:
             print('\nFrame {:d} could not be read'.format(frame_id + 1))
             break
+
+        if remove_border:
+            image = np.asarray(trim(Image.fromarray(image), all_corners=1))
 
         if rotate == 1:
             image = imutils.rotate_bound(image, 90)

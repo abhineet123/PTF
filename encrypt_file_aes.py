@@ -20,7 +20,7 @@ class Params:
         self.key_file = "key.key"
         self.out_file = "out.out"
         self.mode = 0
-        self.clipboard = 0
+        self.clipboard = 1
 
     def process(self):
         if not self.root_dir_key:
