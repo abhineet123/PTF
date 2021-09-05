@@ -105,7 +105,7 @@ def type_string(out_txt):
     import pyautogui
 
     import time
-    print('waiting 1 second to change active app')
+    # print('waiting 1 second to change active app')
     time.sleep(1)
     pyautogui.write(out_txt)
     pyautogui.press('enter')

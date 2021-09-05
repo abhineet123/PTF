@@ -115,8 +115,8 @@ def copy_from_clipboard():
         in_txt = win32clipboard.GetClipboardData()
     except BaseException as e:
         print('GetClipboardData failed: {}'.format(e))
+        win32clipboard.CloseClipboard()
         return None
-
     win32clipboard.CloseClipboard()
     return in_txt
 
@@ -193,7 +193,7 @@ def main():
                     copy_to_clipboard(_path, print_txt=1)
                     # input('press any key')
                     os.system(params.link_cmd)
-                    time.sleep(1)
+                    time.sleep(0.5)
             return
         else:
             try:
@@ -249,6 +249,12 @@ def main():
 
             copy_to_clipboard(out_txt)
 
+            # dst_file = file.replace('.txt', '.log')
+            # shutil.move(file, dst_file)
+            os.system("vscode {}".format(file))
+
+            _ = input('\npress any key to continue\n')
+
             with open(txt_proc_list_path, 'r+') as f:
                 content = f.read()
                 f.seek(0, 0)
@@ -257,12 +263,6 @@ def main():
 
                 txt = '{}\t{}\n'.format(timestamp_str, file)
                 f.write(txt + content)
-
-            # dst_file = file.replace('.txt', '.log')
-            # shutil.move(file, dst_file)
-            os.system("vscode {}".format(file))
-
-            _ = input('\npress any key to continue\n')
 
         return
 
