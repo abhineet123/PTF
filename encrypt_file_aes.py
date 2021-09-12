@@ -2,6 +2,7 @@ from Cryptodome.Cipher import AES
 from Cryptodome.Random import get_random_bytes
 
 import os
+import time
 
 import paramparse
 
@@ -22,6 +23,7 @@ class Params:
         self.mode = 0
         self.from_clipboard = 0
         self.clipboard = 1
+        self.auto_switch = 1
 
     def process(self):
         if not self.root_dir_key:
@@ -101,13 +103,79 @@ def decrypt(filename, key):
     return decrypted_data
 
 
-def type_string(out_txt):
-    # import keyboard
-    import pyautogui
+def find_last_active_window():
+    import win32gui
 
-    import time
-    # print('waiting 1 second to change active app')
-    time.sleep(1)
+    win_titles = []
+    win_handles = []
+
+    def foreach_window(hwnd, lParam):
+        import ctypes
+
+        GetWindowText = ctypes.windll.user32.GetWindowTextW
+        GetWindowTextLength = ctypes.windll.user32.GetWindowTextLengthW
+        IsWindowVisible = ctypes.windll.user32.IsWindowVisible
+
+        if IsWindowVisible(hwnd):
+            length = GetWindowTextLength(hwnd)
+            buff = ctypes.create_unicode_buffer(length + 1)
+            GetWindowText(hwnd, buff, length + 1)
+            win_titles.append(buff.value)
+            win_handles.append(hwnd)
+        return True
+
+    win32gui.EnumWindows(foreach_window, None)
+
+    vwm_title_start = 'VWM_'
+
+    target_id = [i for i, k in enumerate(win_titles) if k.startswith(vwm_title_start)]
+    if not target_id:
+        print('window with title starting with "{}"" not found'.format(vwm_title_start))
+        return False
+
+    if len(target_id) > 1:
+        target_win_titles = [win_titles[i] for i in target_id]
+        print(
+            'multiple windows with titles starting with "{}"" found: {}'.format(vwm_title_start, target_win_titles))
+        return False
+
+    vwm_title = win_titles[target_id[0]]
+    vwm_handle = win_handles[target_id[0]]
+
+    print('\nfound vwm window with title {} and handle {}\n'.format(vwm_title, vwm_handle))
+
+    if vwm_handle is not None:
+        import win32api
+        import win32con
+        win32api.PostMessage(vwm_handle, win32con.WM_CHAR, 0x45, 0)
+
+        time.sleep(1)
+
+        last_active_handle = copy_from_clipboard()
+
+        try:
+            last_active_handle_int = int(last_active_handle)
+        except TypeError:
+            print('invalid last_active_handle: {}'.format(last_active_handle))
+            return False
+
+        last_active_name = win32gui.GetWindowText(last_active_handle_int)
+
+        print('last_active_handle_int: {}'.format(last_active_handle_int))
+        print('last_active_name: {}'.format(last_active_name))
+        win32gui.SetForegroundWindow(last_active_handle_int)
+        return True
+
+
+def type_string(out_txt, auto_switch):
+    if auto_switch:
+        find_last_active_window()
+
+    else:
+        # print('waiting 1 second to change active app')
+        time.sleep(1)
+
+    import pyautogui
     pyautogui.write(out_txt)
     pyautogui.press('enter')
 
@@ -167,7 +235,7 @@ def run(params):
             if params.clipboard == 1:
                 copy_to_clipboard(out_txt)
             elif params.clipboard == 2:
-                type_string(out_txt)
+                type_string(out_txt, params.auto_switch)
         else:
             # write the original file
             with open(params.out_file, "wb") as file:

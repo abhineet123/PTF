@@ -15,6 +15,8 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
                        second_from_top, monitors, vwm_win_name, dup_win_names,
                        monitor_id, dup_monitor_ids, duplicate_window,
                        only__maximized, frg_win_handles, frg_monitor_ids,
+                       global_prev_active_handle,
+                       # global_prev_active_name,
                        other_vars=None
                        ):
     # prev_active_win_name = None
@@ -31,7 +33,7 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
     xyplorer_id = ' - XYplorer 20.10'
 
     prev_monitor_id = None
-    global_prev_active_name = None
+    _global_prev_active_name = None
 
     centroids = []
     for curr_id, monitor in enumerate(monitors):
@@ -68,7 +70,7 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
             # print('frg_win_handles: {}'.format(frg_win_handles))
             # print('active_handle: {}'.format(active_handle))
             # print('active_name: {}'.format(active_name))
-            # print('global_prev_active_name: {}'.format(global_prev_active_name))
+            # print('_global_prev_active_name: {}'.format(_global_prev_active_name))
 
             # print('prev_active_handles: {}'.format(prev_active_handles))
             # print('prev_active_names: {}'.format(prev_active_names))
@@ -76,11 +78,11 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
             # print('prev_active_called_handles: {}'.format(prev_active_called_handles))
             # print('prev_active_called_names: {}'.format(prev_active_called_names))
 
-            if global_prev_active_name is not None and _monitor_id in prev_active_called_handles:
+            if _global_prev_active_name is not None and _monitor_id in prev_active_called_handles:
                 prev_active_called_handle = prev_active_called_handles[_monitor_id]
                 prev_active_called_name = prev_active_called_names[_monitor_id]
 
-                global_prev_win_handle = win32gui.FindWindow(None, global_prev_active_name)
+                global_prev_win_handle = win32gui.FindWindow(None, _global_prev_active_name)
                 # _prev_active_handle_now = win32gui.FindWindow(None, prev_active_called_name)
 
                 # print('global_prev_win_handle: {}'.format(global_prev_win_handle))
@@ -88,8 +90,8 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
                 # print('prev_active_called_handle: {}'.format(prev_active_called_handle))
 
                 # if not global_prev_win_handle or (
-                        # xyplorer_id in global_prev_active_name and
-                        # global_prev_win_handle == prev_active_called_handle
+                # xyplorer_id in _global_prev_active_name and
+                # global_prev_win_handle == prev_active_called_handle
                 # ):
 
                 # print('XYplorer bug')
@@ -110,8 +112,10 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
 
         # active_names.append(active_name)
 
-        global_prev_active_name = active_name
-        # global_prev_active_handle = active_handle
+        _global_prev_active_name = active_name
+
+        # global_prev_active_name.value = active_name
+        global_prev_active_handle.value = active_handle
 
         if any([k in active_name for k in sft_exceptions]):
             # print('sft_exceptions')
@@ -169,7 +173,6 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
                 # print('_monitor_id: {}'.format(_monitor_id))
                 # print('monitor_ids: {}'.format(monitor_ids))
                 continue
-
 
         try:
             prev_active_handle = prev_active_handles[_monitor_id]

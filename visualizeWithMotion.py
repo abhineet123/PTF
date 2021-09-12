@@ -41,6 +41,15 @@ VideoCapture = cv2.VideoCapture
 
 # from wand.image import Image as wandImage
 
+def copy_to_clipboard(out_txt):
+    try:
+        import pyperclip
+
+        pyperclip.copy(out_txt)
+        _ = pyperclip.paste()
+    except BaseException as e:
+        print('Copying to clipboard failed: {}'.format(e))
+
 
 def checkImage(fn):
     proc = Popen(['identify', '-verbose', fn], stdout=PIPE, stderr=PIPE)
@@ -866,7 +875,7 @@ def run(args, multi_exit_program=None,
 
             range_end = int(dir_range[1])
 
-            for j in range(range_end, range_start-1, -1):
+            for j in range(range_end, range_start - 1, -1):
                 dir_name = _prefix + str(j) + _suffix
 
                 src_dirs.insert(dir_range_idx, dir_name)
@@ -2772,6 +2781,8 @@ def run(args, multi_exit_program=None,
 
     sft_active_monitor_id = multiprocessing.Value('I', lock=False)
     sft_active_win_handle = multiprocessing.Value('L', lock=False)
+    # sft_prev_active_name = multiprocessing.Value(ctypes.c_wchar_p, lock=False)
+    sft_prev_active_win_handle = multiprocessing.Value('L', lock=False)
 
     # sft_other_vars = None
 
@@ -2788,6 +2799,7 @@ def run(args, multi_exit_program=None,
                                                second_from_top, monitors, win_name,
                                                dup_win_names, monitor_id, dup_monitor_ids,
                                                duplicate_window, only_maximized, frg_win_handles, frg_monitor_ids,
+                                               sft_prev_active_win_handle,
                                                # sft_other_vars
                                                ))
 
@@ -3437,6 +3449,14 @@ def run(args, multi_exit_program=None,
                 # on_top = 0
                 # hideBorder(win_name)
 
+            elif k == ord('E'):
+                prev_active_win_handle = int(sft_prev_active_win_handle.value)
+                prev_active_win_name = win32gui.GetWindowText(prev_active_win_handle)
+
+                print('prev_active_win_name: {}'.format(prev_active_win_name))
+                print('prev_active_win_handle: {}'.format(prev_active_win_handle))
+
+                copy_to_clipboard(str(prev_active_win_handle))
             elif k == ord('D'):
 
                 if not show_window:
@@ -3770,13 +3790,7 @@ def run(args, multi_exit_program=None,
                             _txt += '"' + os.path.abspath(img_fnames[_idx]) + '"' + '\n'
                     _print(_txt)
                     _print()
-                try:
-                    import pyperclip
-
-                    pyperclip.copy(_txt)
-                    _ = pyperclip.paste()
-                except BaseException as e:
-                    print('Copying to clipboard failed: {}'.format(e))
+                copy_to_clipboard(_txt)
 
             elif k == ord('f') or k == ord('/') or k == ord('?'):
                 fullscreen = 1 - fullscreen
