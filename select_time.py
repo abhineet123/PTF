@@ -42,6 +42,7 @@ def is_time(line):
 def main():
     _params = {
         'horz': 1,
+        'categories_out': 1,
         'categories': 1,
         'category_sep': ' :: ',
         'date_sep': ' – ',
@@ -53,6 +54,7 @@ def main():
     }
     paramparse.process_dict(_params)
     horz = _params['horz']
+    categories_out = _params['categories_out']
     categories = _params['categories']
     category_sep = _params['category_sep']
     date_sep = _params['date_sep']
@@ -132,7 +134,7 @@ def main():
 
                 if add_date:
                     _out_txt = '{}\t{}'.format(date_str, _out_txt)
-                if categories:
+                if categories_out:
                     _out_txt += '\t{}'.format(out_categories[_line_id + 1])
 
                 if add_diff:
@@ -151,7 +153,7 @@ def main():
                 out_txt2 += '{}\t'.format(out_lines[_line_id + 1])
                 if add_date:
                     out_txt0 = '{}\t'.format(date_str)
-                if categories:
+                if categories_out:
                     out_txt3 += '{}\t'.format(out_categories[_line_id + 1])
         if not horz:
             out_txt += '\n' + out_txt2

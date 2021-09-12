@@ -20,6 +20,7 @@ class Params:
         self.key_file = "key.key"
         self.out_file = "out.out"
         self.mode = 0
+        self.from_clipboard = 0
         self.clipboard = 1
 
     def process(self):
@@ -114,6 +115,20 @@ def type_string(out_txt):
     #     keyboard.send(c)
 
 
+def copy_from_clipboard():
+    try:
+        import win32clipboard
+
+        win32clipboard.OpenClipboard()
+        in_txt = win32clipboard.GetClipboardData()
+    except BaseException as e:
+        print('Copying from clipboard failed: {}'.format(e))
+        win32clipboard.CloseClipboard()
+        return None
+    win32clipboard.CloseClipboard()
+    return in_txt
+
+
 def copy_to_clipboard(out_txt):
     try:
         import pyperclip
@@ -139,21 +154,26 @@ def run(params):
         # encrypt it
         encrypt(params.in_file, key, params.out_file, params.clipboard)
     else:
-        key = load_key(params.key_file)
-        decrypted_data = decrypt(params.in_file, key)
-        decrypted_txt = decrypted_data.decode('ascii')
+
+        if params.from_clipboard:
+            out_txt = copy_from_clipboard()
+            print('out_txt: {}'.format(out_txt))
+        else:
+            key = load_key(params.key_file)
+            decrypted_data = decrypt(params.in_file, key)
+            out_txt = decrypted_data.decode('ascii')
 
         if params.clipboard:
             if params.clipboard == 1:
-                copy_to_clipboard(decrypted_txt)
+                copy_to_clipboard(out_txt)
             elif params.clipboard == 2:
-                type_string(decrypted_txt)
+                type_string(out_txt)
         else:
             # write the original file
             with open(params.out_file, "wb") as file:
                 file.write(decrypted_data)
 
-        return decrypted_txt
+        return out_txt
 
 
 if __name__ == '__main__':

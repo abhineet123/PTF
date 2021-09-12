@@ -1658,7 +1658,7 @@ class MainWindow(QMainWindow, WindowMixin):
 
             if os.name != 'nt':
                 print('\nExiting...')
-                ports = [3000]
+                ports = [self.port,]
                 for port in ports:
                     cmd = 'lsof -t -i tcp:{:d} | xargs kill -SIGTERM'.format(port)
                     subprocess.check_output(cmd, shell=True)
@@ -2874,9 +2874,9 @@ class MainWindow(QMainWindow, WindowMixin):
         # if not self.other_windows.tracking_server_log.isVisible():
         #     self.view_tracking_server_log()
 
-        sertver = Server(self.params.server, self.logger)
+        server = Server(self.params.server, self.logger)
 
-        TRACKING_PORT = 3002
+        # TRACKING_PORT = 3002
         # self.other_windows.tracking_server_log.start_server()
         # cmd_args = self.other_windows.tracking_server_log.getCommandLineArgs()
         num_frames = self.frames_reader.num_frames
@@ -2885,7 +2885,7 @@ class MainWindow(QMainWindow, WindowMixin):
             cmd_args='',
             path=self.frames_reader.get_path(),
             frame_number=curr_index,
-            port=3000,
+            port=self.port,
             trigger_tracking_request=False,
             bbox=bbox,
             label=curr_shape.label,
@@ -2895,7 +2895,7 @@ class MainWindow(QMainWindow, WindowMixin):
             num_frames=num_frames,
         )
 
-        sertver.patchTracking(request)
+        server.patchTracking(request)
 
         # self.send_patch_tracking_request(
         #     curr_index, bbox, curr_shape.label, self.track_id,)
@@ -2932,7 +2932,7 @@ class MainWindow(QMainWindow, WindowMixin):
         requests = [
             dict(
                 request_type="stop",
-                port=3000,
+                port=self.port,
             )
         ]
         # print('Sending request for frame {:d} with {:d} boxes'.format(
@@ -2960,7 +2960,7 @@ class MainWindow(QMainWindow, WindowMixin):
                 cmd_args='',
                 path=self.frames_reader.get_path(),
                 frame_number=frame_number,
-                port=3000,
+                port=self.port,
                 trigger_tracking_request=False,
                 bbox=bbox,
                 label=label,
@@ -3010,7 +3010,7 @@ class MainWindow(QMainWindow, WindowMixin):
     #             csv_path=out_file_path,
     #             class_dict=class_dict,
     #             frame_number=frame_number,
-    #             port=3000,
+    #             port=self.port,
     #             trigger_tracking_request=False,
     #             roi=self.roi,
     #             num_frames=num_frames,

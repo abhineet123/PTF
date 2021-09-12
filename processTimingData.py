@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 
 import time
 import win32gui, win32api
-import win32clipboard
 from pywinauto import application, mouse
 import os
 import shutil
@@ -106,11 +105,16 @@ def process(in_txt, verbose=1):
             curr_t = start_t + timedelta(hours=lap_total_t.hour, minutes=lap_total_t.minute,
                                          seconds=lap_total_t.second, microseconds=lap_total_t.microsecond)
             out_txt += curr_t.strftime('%H:%M:%S') + '.{}\n'.format(int(curr_t.microsecond / 10000))
+    if not started:
+        raise AssertionError('invalid string to extract timing data from')
+
     return out_txt
 
 
 def copy_from_clipboard():
     try:
+        import win32clipboard
+
         win32clipboard.OpenClipboard()
         in_txt = win32clipboard.GetClipboardData()
     except BaseException as e:
@@ -238,7 +242,7 @@ def main():
         if n_files > 1:
             print('found {} new files:\n{}'.format(n_files, '\n'.join(files)))
 
-        for file_id, file in enumerate(files):
+        for file_id, file in enumerate(files[::-1]):
             print('reading file {} / {}: {}'.format(file_id + 1, n_files, file))
 
             # file = dst_file
@@ -249,9 +253,15 @@ def main():
 
             copy_to_clipboard(out_txt)
 
+            out_txt_lines = out_txt.split('\n')
+
+            n_out_txt_lines = len(out_txt_lines)
+
             # dst_file = file.replace('.txt', '.log')
             # shutil.move(file, dst_file)
-            os.system("vscode {}".format(file))
+
+            if n_out_txt_lines == 1:
+                os.system("vscode {}".format(file))
 
             _ = input('\npress any key to continue\n')
 
