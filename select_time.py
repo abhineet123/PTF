@@ -116,14 +116,17 @@ def main():
         line, time_found, time_obj = is_time(line)
 
         if time_found:
+            curr_comments_str = ''
+
             if curr_comments:
                 curr_comments_str = ';'.join(curr_comments)
-                if not out_lines:
-                    print('dangling comment found: {}'.format(curr_comments_str))
-            else:
-                curr_comments_str = ''
-                if out_lines:
-                    print('no comment found for: {}'.format(line))
+                curr_comments = []
+
+            #     if not out_lines:
+            #         print('dangling comment found: {}'.format(curr_comments_str))
+            # else:
+            #     if out_lines:
+            #         print('no comment found for: {}'.format(line))
 
             time_to_comments.append(curr_comments_str)
 
@@ -133,13 +136,19 @@ def main():
                 if category is None:
                     category = -1
                 out_categories.append(category)
-            curr_comments = []
+
+
         else:
             curr_comments.append(line)
 
     if first_and_last and len(out_lines) > 2:
         out_times = [out_times[0], out_times[-1]]
         out_lines = [out_lines[0], out_lines[-1]]
+
+    curr_comments_str = ''
+    if curr_comments:
+        curr_comments_str = ';'.join(curr_comments)
+    time_to_comments.append(curr_comments_str)
 
     n_out_lines = len(out_lines)
     if pairwise:
@@ -167,7 +176,7 @@ def main():
                     _out_txt += '\t{}'.format(time_diff_str)
 
                 if add_comment:
-                    _out_txt = '{}\t{}'.format(_out_txt, time_to_comments[_line_id + 1])
+                    _out_txt = '{}\t{}'.format(_out_txt, time_to_comments[_line_id + 2])
 
                 out_txt += _out_txt + '\n'
             else:
