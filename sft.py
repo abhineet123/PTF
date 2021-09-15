@@ -30,7 +30,7 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
     prev_active_called_handles = {}
     prev_active_called_names = {}
 
-    xyplorer_id = ' - XYplorer 20.10'
+    prev_active_win_exceptions = ['RocketDock', ]
 
     prev_monitor_id = None
     _global_prev_active_name = None
@@ -56,6 +56,9 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
         active_handle = win32gui.GetForegroundWindow()
         active_name = win32gui.GetWindowText(active_handle)
         # print('active_name: {}'.format(active_name))
+
+        if active_name not in prev_active_win_exceptions:
+            global_prev_active_handle.value = active_handle
 
         if not active_name:
             # print('empty active_name')
@@ -115,7 +118,6 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
         _global_prev_active_name = active_name
 
         # global_prev_active_name.value = active_name
-        global_prev_active_handle.value = active_handle
 
         if any([k in active_name for k in sft_exceptions]):
             # print('sft_exceptions')

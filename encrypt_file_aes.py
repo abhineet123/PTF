@@ -23,7 +23,7 @@ class Params:
         self.mode = 0
         self.from_clipboard = 0
         self.clipboard = 1
-        self.auto_switch = 1
+        self.auto_switch = 0
 
     def process(self):
         if not self.root_dir_key:

@@ -50,7 +50,7 @@ def main():
         'first_and_last': 0,
         'add_date': 1,
         'add_diff': 1,
-
+        'add_comment': 0,
     }
     paramparse.process_dict(_params)
     horz = _params['horz']
@@ -62,6 +62,7 @@ def main():
     pairwise = _params['pairwise']
     add_date = _params['add_date']
     add_diff = _params['add_diff']
+    add_comment = _params['add_comment']
 
     try:
         in_txt = Tk().clipboard_get()  # type: str
@@ -69,12 +70,16 @@ def main():
         print('Tk().clipboard_get() failed: {}'.format(e))
         return
 
-    lines = in_txt.split('\n')
+    lines = [k.strip() for k in in_txt.split('\n') if k.strip()]
+
     out_lines = []
     out_times = []
     out_categories = []
 
     date_str = datetime.now().strftime("%y-%m-%d")
+    curr_comments = []
+
+    time_to_comments = []
 
     for line in lines:
         category = None
@@ -111,12 +116,26 @@ def main():
         line, time_found, time_obj = is_time(line)
 
         if time_found:
+            if curr_comments:
+                curr_comments_str = ';'.join(curr_comments)
+                if not out_lines:
+                    print('dangling comment found: {}'.format(curr_comments_str))
+            else:
+                curr_comments_str = ''
+                if out_lines:
+                    print('no comment found for: {}'.format(line))
+
+            time_to_comments.append(curr_comments_str)
+
             out_times.append(time_obj)
             out_lines.append(line)
             if categories:
                 if category is None:
                     category = -1
                 out_categories.append(category)
+            curr_comments = []
+        else:
+            curr_comments.append(line)
 
     if first_and_last and len(out_lines) > 2:
         out_times = [out_times[0], out_times[-1]]
@@ -146,6 +165,9 @@ def main():
                         time_diff_str = time_diff_str.split(',')[-1].strip()
 
                     _out_txt += '\t{}'.format(time_diff_str)
+
+                if add_comment:
+                    _out_txt = '{}\t{}'.format(_out_txt, time_to_comments[_line_id + 1])
 
                 out_txt += _out_txt + '\n'
             else:
