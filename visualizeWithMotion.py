@@ -2782,7 +2782,7 @@ def run(args, multi_exit_program=None,
     sft_active_monitor_id = multiprocessing.Value('I', lock=False)
     sft_active_win_handle = multiprocessing.Value('L', lock=False)
     # sft_prev_active_name = multiprocessing.Value(ctypes.c_wchar_p, lock=False)
-    sft_prev_active_win_handle = multiprocessing.Value('L', lock=False)
+    # sft_prev_active_win_handle = multiprocessing.Value('L', lock=False)
 
     # sft_other_vars = None
 
@@ -2792,14 +2792,14 @@ def run(args, multi_exit_program=None,
     # manager = multiprocessing.Manager()
     # active_win_info = manager.dict()
 
-    second_from_top_thread = None
+    # second_from_top_thread = None
     if second_from_top:
         second_from_top_thread = Process(target=sft.second_from_top_fn,
                                          args=(sft_active_monitor_id, sft_active_win_handle, sft_exit_program,
                                                second_from_top, monitors, win_name,
                                                dup_win_names, monitor_id, dup_monitor_ids,
                                                duplicate_window, only_maximized, frg_win_handles, frg_monitor_ids,
-                                               sft_prev_active_win_handle,
+                                               # sft_prev_active_win_handle,
                                                # sft_other_vars
                                                ))
 
@@ -3449,14 +3449,14 @@ def run(args, multi_exit_program=None,
                 # on_top = 0
                 # hideBorder(win_name)
 
-            elif k == ord('E'):
-                prev_active_win_handle = int(sft_prev_active_win_handle.value)
-                prev_active_win_name = win32gui.GetWindowText(prev_active_win_handle)
-
-                print('prev_active_win_name: {}'.format(prev_active_win_name))
-                print('prev_active_win_handle: {}'.format(prev_active_win_handle))
-
-                copy_to_clipboard(str(prev_active_win_handle))
+            # elif k == ord('E'):
+            #     prev_active_win_handle = int(sft_prev_active_win_handle.value)
+            #     prev_active_win_name = win32gui.GetWindowText(prev_active_win_handle)
+            #
+            #     print('prev_active_win_name: {}'.format(prev_active_win_name))
+            #     print('prev_active_win_handle: {}'.format(prev_active_win_handle))
+            #
+            #     copy_to_clipboard(str(prev_active_win_handle))
             elif k == ord('D'):
 
                 if not show_window:

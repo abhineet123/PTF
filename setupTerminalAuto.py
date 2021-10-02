@@ -2,6 +2,7 @@ from pywinauto import application, mouse
 import time
 import os, sys
 import win32api
+import pyautogui
 
 from Misc import processArguments, linux_path
 import encrypt_file_aes as encryption
@@ -23,6 +24,7 @@ if __name__ == '__main__':
         'only_git': 0,
         'enable_git': 0,
         'git_postproc': 0,
+        'git_cmds': '',
     }
     processArguments(sys.argv[1:], params)
     exe_path = params['exe_path']
@@ -40,6 +42,7 @@ if __name__ == '__main__':
     git_wait = params['git_wait']
     git_wait_init = params['git_wait_init']
     git_wait_restore = params['git_wait_restore']
+    git_cmds = params['git_cmds']
     # app_t = application.Application().start("cmd.exe")
     # app_t = application.Application().start("C:\\Users\\Tommy\\Desktop\\startup_progs\\t.lnk")
     # app_t = application.Application().start("H:\\UofA\\MSc\\Code\\TrackingFramework\\scripts\\t.cmd")    
@@ -72,15 +75,18 @@ if __name__ == '__main__':
         encryption_params.parent_dir = key_dir
 
         encryption_params.in_file = ecr0
-        encryption_params.key0 = key0
+        encryption_params.key_file = key0
+        encryption_params.process()
         pwd0 = encryption.run(encryption_params)
 
         encryption_params.in_file = ecr1
-        encryption_params.key0 = key1
+        encryption_params.key_file = key1
+        encryption_params.process()
         pwd1 = encryption.run(encryption_params)
 
         encryption_params.in_file = ecr2
-        encryption_params.key0 = key2
+        encryption_params.key_file = key2
+        encryption_params.process()
         pwd2 = encryption.run(encryption_params)
 
         print('Setting up system 0 with tmux sessions {}, {}'.format(name00, name01))
@@ -95,7 +101,7 @@ if __name__ == '__main__':
         mouse_x, mouse_y = win32api.GetCursorPos()
 
         if not only_git:
-
+            """connect to grs"""
             apps = [servers_app, ]
             servers_app2 = application.Application().start(exe_path)
             servers_app2.window().maximize()
@@ -109,7 +115,11 @@ if __name__ == '__main__':
                 # _app.fatty.type_keys("^+t")
                 _app.fatty.type_keys("sstg{VK_SPACE}tb~")
                 _app.fatty.type_keys("sudo{VK_SPACE}-s~")
-                _app.fatty.type_keys("%s~" % pwd0)
+
+                # _app.fatty.type_keys("%s~" % pwd0)
+                time.sleep(1)
+                pyautogui.write(pwd0)
+                pyautogui.press('enter')
 
                 # time.sleep(1)
 
@@ -119,20 +129,27 @@ if __name__ == '__main__':
             git_app.fatty.type_keys("tmux{VK_SPACE}new~")
 
         if not only_git:
+            """connect to orca"""
             time.sleep(wait_t)
-
             servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name00)
             servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name01)
+
 
             for _app in apps:
                 _app.fatty.type_keys("^+t")
                 _app.fatty.type_keys("sstg2~")
                 _app.fatty.type_keys("sstz~")
                 _app.fatty.type_keys("sudo{VK_SPACE}-s~")
-                _app.fatty.type_keys("%s~" % pwd1)
+
+                # _app.fatty.type_keys("%s~" % pwd1)
+
+                time.sleep(1)
+                pyautogui.write(pwd1)
+                pyautogui.press('enter')
 
             time.sleep(wait_t)
 
+            """connect to x99"""
             servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name10)
             servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name11)
 
@@ -147,7 +164,12 @@ if __name__ == '__main__':
                 _app.fatty.type_keys("sstg3~")
                 _app.fatty.type_keys("sstx~")
                 _app.fatty.type_keys("sudo{VK_SPACE}-s~")
-                _app.fatty.type_keys("%s~" % pwd2)
+
+                time.sleep(1)
+                pyautogui.write(pwd2)
+                pyautogui.press('enter')
+
+                # _app.fatty.type_keys("%s~" % pwd2)
 
             time.sleep(wait_t)
 
@@ -166,22 +188,52 @@ if __name__ == '__main__':
                 time.sleep(git_wait_restore)
 
                 print('running git post proc...')
-                for _ in range(n_git_panes):
-                    git_app.fatty.type_keys("{UP}~")
-                    git_app.fatty.type_keys("./gitu.bat{VK_SPACE}f")
-                    time.sleep(git_wait)
-                    git_app.fatty.type_keys("^b{DOWN}")
+
+                if git_cmds:
+                    git_cmds_list = [k.strip() for k in open(git_cmds, 'r').readlines() if k.strip()]
+                    for git_cmd in git_cmds_list:
+
+                        if not git_cmd:
+                            continue
+
+                        print('git_cmd: {}'.format(git_cmd))
+
+                        if git_cmd == '__0__':
+                            git_app.fatty.type_keys("^b")
+                            git_app.fatty.type_keys("q")
+                            git_app.fatty.type_keys("0")
+                        elif git_cmd == '__git__':
+                            git_app.fatty.type_keys("./gitu.bat{VK_SPACE}f")
+                        elif git_cmd == '__up__':
+                            git_app.fatty.type_keys("^b{UP}")
+                        elif git_cmd == '__down__':
+                            git_app.fatty.type_keys("^b{DOWN}")
+                        elif git_cmd == '__right__':
+                            git_app.fatty.type_keys("^b{RIGHT}")
+                        elif git_cmd == '__left__':
+                            git_app.fatty.type_keys("^b{LEFT}")
+                        else:
+                            pyautogui.write(git_cmd)
+                            # pyautogui.press('enter')
+
+                        time.sleep(git_wait)
+                else:
+                    for _ in range(n_git_panes):
+                        git_app.fatty.type_keys("{UP}~")
+                        git_app.fatty.type_keys("./gitu.bat{VK_SPACE}f")
+                        time.sleep(git_wait)
+                        git_app.fatty.type_keys("^b{DOWN}")
+                        time.sleep(git_wait)
+
+                    git_app.fatty.type_keys("^b{LEFT}")
                     time.sleep(git_wait)
 
-                git_app.fatty.type_keys("^b{LEFT}")
-                time.sleep(git_wait)
-
-                for _ in range(n_git_panes):
-                    git_app.fatty.type_keys("{UP}~")
-                    git_app.fatty.type_keys("./gitu.bat{VK_SPACE}f")
-                    time.sleep(git_wait)
-                    git_app.fatty.type_keys("^b{DOWN}")
-                    time.sleep(git_wait)
+                    for _ in range(n_git_panes):
+                        git_app.fatty.type_keys("{UP}~")
+                        git_app.fatty.type_keys("./gitu.bat{VK_SPACE}f")
+                        time.sleep(git_wait)
+                        git_app.fatty.type_keys("^b{DOWN}")
+                        time.sleep(git_wait)
                 print('done')
 
         mouse.move(coords=(mouse_x, mouse_y))

@@ -253,12 +253,15 @@ def main():
 
             copy_to_clipboard(out_txt)
 
-            out_txt_lines = out_txt.split('\n')
+            out_txt_lines = [k for k in out_txt.split('\n') if k]
 
             n_out_txt_lines = len(out_txt_lines)
 
             # dst_file = file.replace('.txt', '.log')
             # shutil.move(file, dst_file)
+
+            print('out_txt_lines: {}'.format(out_txt_lines))
+            print('n_out_txt_lines: {}'.format(n_out_txt_lines))
 
             if n_out_txt_lines == 1:
                 os.system("vscode {}".format(file))

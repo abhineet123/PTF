@@ -15,7 +15,7 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
                        second_from_top, monitors, vwm_win_name, dup_win_names,
                        monitor_id, dup_monitor_ids, duplicate_window,
                        only__maximized, frg_win_handles, frg_monitor_ids,
-                       global_prev_active_handle,
+                       # global_prev_active_handle,
                        # global_prev_active_name,
                        other_vars=None
                        ):
@@ -30,7 +30,7 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
     prev_active_called_handles = {}
     prev_active_called_names = {}
 
-    prev_active_win_exceptions = ['RocketDock', ]
+    # prev_active_win_exceptions = ['RocketDock', ]
 
     prev_monitor_id = None
     _global_prev_active_name = None
@@ -57,8 +57,8 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
         active_name = win32gui.GetWindowText(active_handle)
         # print('active_name: {}'.format(active_name))
 
-        if active_name not in prev_active_win_exceptions:
-            global_prev_active_handle.value = active_handle
+        # if active_name not in prev_active_win_exceptions:
+        #     global_prev_active_handle.value = active_handle
 
         if not active_name:
             # print('empty active_name')
