@@ -158,6 +158,7 @@ class Params:
         self.wallpaper_dir = ''
         self.wallpaper_mode = 0
         self.widescreen_mode = 0
+        self.blended_border = 0
         self.width = 0
         self.win_name = ''
         self.win_offset_x = 0
@@ -219,6 +220,7 @@ def run(args, multi_exit_program=None,
     recursive = params.recursive
     fullscreen = params.fullscreen
     reversed_pos = params.reversed_pos
+    blended_border = params.blended_border
 
     # if len(reversed_pos) == 1:
     #     reversed_pos = int(reversed_pos)
@@ -1750,6 +1752,47 @@ def run(args, multi_exit_program=None,
         #     src_end_col += left_border + right_border
 
         src_img_ar = np.zeros((dst_height, dst_width, n_channels), dtype=np.uint8)
+
+        # __src_height = src_end_row - src_start_row
+        # __src_width = src_end_col - src_start_col
+        #
+        # if blended_border:
+        #     src_img_border = src_img[:, :blended_border, ...]
+        #     src_img_border_flip = cv2.flip(src_img_border, 1)
+        #     src_img = np.concatenate((src_img_border_flip, src_img), axis=1)
+        #
+        #     src_img_ar[int(src_start_row):int(src_end_row), int(src_start_col - blended_border):int(src_end_col),
+        #     :] = src_img
+        #
+        #     blending_mask_grad = np.repeat(
+        #         np.tile(
+        #             np.linspace(0, 1, blended_border),
+        #             (src_img.shape[0], 1)
+        #         )
+        #         [:, :, np.newaxis], 3,
+        #         axis=2).astype(np.float32)
+        #
+        #     # blending_mask_black = np.zeros((dst_height, dst_width - __src_width - blended_border, n_channels),
+        #     #                                dtype=np.float32)
+        #     # blending_mask_white = np.ones((dst_height, __src_width, n_channels), dtype=np.float32)
+        #
+        #     # blending_mask = np.concatenate((blending_mask_black, blending_mask_grad, blending_mask_white), axis=1)
+        #
+        #     dst_bkg_img = np.zeros((dst_height, dst_width, n_channels), dtype=np.uint8)
+        #     blending_mask = np.zeros((dst_height, dst_width, n_channels), dtype=np.float32)
+        #
+        #     blending_mask[int(src_start_row):int(src_end_row), int(src_start_col):int(src_end_col), :] = 1.0
+        #
+        #     blending_mask[:, int(src_start_col - blended_border):int(src_start_col), :] = blending_mask_grad
+        #
+        #     cv2.imshow('blending_mask', blending_mask)
+        #
+        #     src_img_ar = (src_img_ar.astype(np.float32) * blending_mask +
+        #                   dst_bkg_img.astype(np.float32) * (1.0 - blending_mask)).astype(np.uint8)
+        #
+        #     cv2.imshow('src_img_ar', src_img_ar)
+        # else:
+
         src_img_ar[int(src_start_row):int(src_end_row), int(src_start_col):int(src_end_col), :] = src_img
 
         target_width = dst_width
