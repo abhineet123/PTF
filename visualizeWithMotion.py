@@ -139,6 +139,7 @@ class Params:
         self.show_img = 0
         self.show_window = 1
         self.smooth_blending = 0
+        self.save_magnified = 0
         self.auto_aspect_ratio = 0
         self.auto_min_aspect_ratio = 0.45
         self.min_aspect_ratio = 0
@@ -266,6 +267,7 @@ def run(args, multi_exit_program=None,
     # smooth_blending = params.smooth_blending
     auto_min_aspect_ratio = params.auto_min_aspect_ratio
     auto_aspect_ratio = params.auto_aspect_ratio
+    save_magnified = params.save_magnified
     _min_aspect_ratio = params.min_aspect_ratio
     _max_aspect_ratio = params.max_aspect_ratio
 
@@ -1668,7 +1670,21 @@ def run(args, multi_exit_program=None,
             magnified_height_ratio = params.magnified_height_ratio
             if magnified_height_ratio == 0:
                 magnified_height_ratio = min(max_aspect_ratio / src_aspect_ratio - 1, params.max_magnified_height_ratio)
-            magnified_patch = src_img[:int(src_height / magnified_height_ratio), ...]
+
+            magnified_height = int(src_height / magnified_height_ratio)
+
+            magnified_patch = src_img[:magnified_height, ...]
+            if save_magnified and n_images == 1:
+                in_img_out = img_fnames[0]
+                in_img_fname = os.path.basename(in_img_out)
+                in_img_dir = os.path.dirname(in_img_out)
+                in_img_fname_no_ext, in_img_fname_ext = os.path.splitext(in_img_fname)
+
+                magnified_img_fname = '{}_mag_{}{}'.format(in_img_fname_no_ext, magnified_height, in_img_fname_ext)
+                magnified_img_path = os.path.join(in_img_dir, magnified_img_fname)
+                if not os.path.exists(magnified_img_path):
+                    print('saving magnified image to {}'.format(magnified_img_path))
+                    cv2.imwrite(magnified_img_path, magnified_patch)
 
             """magnify top half and append"""
             stacked_aspect_ratio = min(max_aspect_ratio, src_aspect_ratio * (1 + magnified_height_ratio))
