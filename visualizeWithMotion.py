@@ -158,7 +158,7 @@ class Params:
         self.wallpaper_dir = ''
         self.wallpaper_mode = 0
         self.widescreen_mode = 0
-        self.blended_border = 0
+        # self.blended_border = 0
         self.width = 0
         self.win_name = ''
         self.win_offset_x = 0
@@ -220,7 +220,7 @@ def run(args, multi_exit_program=None,
     recursive = params.recursive
     fullscreen = params.fullscreen
     reversed_pos = params.reversed_pos
-    blended_border = params.blended_border
+    # blended_border = params.blended_border
 
     # if len(reversed_pos) == 1:
     #     reversed_pos = int(reversed_pos)
