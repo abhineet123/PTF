@@ -18,6 +18,7 @@ if __name__ == '__main__':
         'config': 0,
         'wait_t': 3,
         'n_git_panes': 8,
+        'git_half': 1,
         'git_wait': 0.5,
         'git_wait_init': 10,
         'git_wait_restore': 20,
@@ -43,6 +44,7 @@ if __name__ == '__main__':
     git_wait_init = params['git_wait_init']
     git_wait_restore = params['git_wait_restore']
     git_cmds = params['git_cmds']
+    git_half = params['git_half']
     # app_t = application.Application().start("cmd.exe")
     # app_t = application.Application().start("C:\\Users\\Tommy\\Desktop\\startup_progs\\t.lnk")
     # app_t = application.Application().start("H:\\UofA\\MSc\\Code\\TrackingFramework\\scripts\\t.cmd")    
@@ -126,6 +128,21 @@ if __name__ == '__main__':
         if enable_git:
             git_app = application.Application().start(exe_path)
             git_app.window().maximize()
+
+            if git_half:
+                pyautogui.keyDown('ctrlleft')
+                pyautogui.keyDown('winleft')
+                pyautogui.keyDown('altleft')
+
+                if git_half == 2:
+                    pyautogui.press('left')
+                else:
+                    pyautogui.press('right')
+
+                pyautogui.keyUp('ctrlleft')
+                pyautogui.keyUp('winleft')
+                pyautogui.keyUp('altleft')
+
             git_app.fatty.type_keys("tmux{VK_SPACE}new~")
 
         if not only_git:
@@ -309,7 +326,7 @@ if __name__ == '__main__':
 
     if only_git:
         k = input('Enter any key to terminate tmux-git')
-        
+
         git_app.fatty.type_keys("^b")
         git_app.fatty.type_keys("{d}")
         time.sleep(1)
