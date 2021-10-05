@@ -134,7 +134,6 @@ if __name__ == '__main__':
             servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name00)
             servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name01)
 
-
             for _app in apps:
                 _app.fatty.type_keys("^+t")
                 _app.fatty.type_keys("sstg2~")
@@ -308,22 +307,20 @@ if __name__ == '__main__':
 
     print('setup time: {}'.format(end_t - start_t))
 
+    if only_git:
+        k = input('Enter any key to terminate tmux-git')
+        
+        git_app.fatty.type_keys("^b")
+        git_app.fatty.type_keys("{d}")
+        time.sleep(1)
+        git_app.fatty.type_keys("tmux{VK_SPACE}kill-server")
+        git_app.fatty.type_keys("{ENTER}")
+        time.sleep(2)
+        git_app.window().close()
+
+        sys.exit()
+
     while True:
-
-        if only_git:
-            try:
-                time.sleep(wait_t)
-            except KeyboardInterrupt:
-                git_app.fatty.type_keys("^b")
-                git_app.fatty.type_keys("{d}")
-                time.sleep(2)
-                git_app.fatty.type_keys("tmux kill-server")
-                git_app.fatty.type_keys("{ENTER}")
-                time.sleep(10)
-                git_app.window().close()
-                break
-            continue
-
         k = input('Enter any key to restore ssh connections')
         # print('Enter any key to restore ssh connections')
         # os.system("pause")
