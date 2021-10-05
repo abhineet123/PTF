@@ -181,11 +181,11 @@ if __name__ == '__main__':
                 print('waiting {} secs for git init'.format(git_wait_init))
                 time.sleep(git_wait_init)
 
-            git_app.fatty.type_keys("^b^r")
+            # git_app.fatty.type_keys("^b^r")
 
             if git_postproc:
-                print('waiting {} secs for git restore'.format(git_wait_restore))
-                time.sleep(git_wait_restore)
+                # print('waiting {} secs for git restore'.format(git_wait_restore))
+                # time.sleep(git_wait_restore)
 
                 print('running git post proc...')
 
@@ -202,16 +202,30 @@ if __name__ == '__main__':
                             git_app.fatty.type_keys("^b")
                             git_app.fatty.type_keys("q")
                             git_app.fatty.type_keys("0")
+                        elif git_cmd == '__enter__':
+                            # pyautogui.press('enter')
+                            git_app.fatty.type_keys("{ENTER}")
                         elif git_cmd == '__git__':
-                            git_app.fatty.type_keys("./gitu.bat{VK_SPACE}f")
+                            # pass
+                            git_app.fatty.type_keys("./gitu.sh{VK_SPACE}f")
+                        elif git_cmd == '__vert__':
+                            git_app.fatty.type_keys("^b")
+                            git_app.fatty.type_keys('{%}')
+                        elif git_cmd == '__horz__':
+                            git_app.fatty.type_keys("^b")
+                            git_app.fatty.type_keys('{"}')
                         elif git_cmd == '__up__':
-                            git_app.fatty.type_keys("^b{UP}")
+                            git_app.fatty.type_keys("^b")
+                            git_app.fatty.type_keys("{UP}")
                         elif git_cmd == '__down__':
-                            git_app.fatty.type_keys("^b{DOWN}")
+                            git_app.fatty.type_keys("^b")
+                            git_app.fatty.type_keys("{DOWN}")
                         elif git_cmd == '__right__':
-                            git_app.fatty.type_keys("^b{RIGHT}")
+                            git_app.fatty.type_keys("^b")
+                            git_app.fatty.type_keys("{RIGHT}")
                         elif git_cmd == '__left__':
-                            git_app.fatty.type_keys("^b{LEFT}")
+                            git_app.fatty.type_keys("^b")
+                            git_app.fatty.type_keys("{LEFT}")
                         else:
                             pyautogui.write(git_cmd)
                             # pyautogui.press('enter')
@@ -297,7 +311,17 @@ if __name__ == '__main__':
     while True:
 
         if only_git:
-            time.sleep(wait_t)
+            try:
+                time.sleep(wait_t)
+            except KeyboardInterrupt:
+                git_app.fatty.type_keys("^b")
+                git_app.fatty.type_keys("{d}")
+                time.sleep(2)
+                git_app.fatty.type_keys("tmux kill-server")
+                git_app.fatty.type_keys("{ENTER}")
+                time.sleep(10)
+                git_app.window().close()
+                break
             continue
 
         k = input('Enter any key to restore ssh connections')
