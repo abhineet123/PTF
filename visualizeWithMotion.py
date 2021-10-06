@@ -1683,7 +1683,7 @@ def run(args, multi_exit_program=None,
                 magnified_img_fname = '{}_mag_{}{}'.format(in_img_fname_no_ext, magnified_height, in_img_fname_ext)
                 magnified_img_path = os.path.join(in_img_dir, magnified_img_fname)
                 if not os.path.exists(magnified_img_path):
-                    print('saving magnified image to {}'.format(magnified_img_path))
+                    # print('saving magnified image to {}'.format(magnified_img_path))
                     cv2.imwrite(magnified_img_path, magnified_patch)
 
             """magnify top half and append"""
