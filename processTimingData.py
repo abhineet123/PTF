@@ -58,6 +58,7 @@ def process(in_txt, verbose=1):
 
     start_t = None
     curr_t = None
+    total_t_line = None
     out_txt = ''
     started = 0
     for line in lines:
@@ -105,8 +106,34 @@ def process(in_txt, verbose=1):
             curr_t = start_t + timedelta(hours=lap_total_t.hour, minutes=lap_total_t.minute,
                                          seconds=lap_total_t.second, microseconds=lap_total_t.microsecond)
             out_txt += curr_t.strftime('%H:%M:%S') + '.{}\n'.format(int(curr_t.microsecond / 10000))
+        elif line.startswith('Total Time: '):
+            total_t_line = line.replace('Total Time: ', '').strip()
+
     if not started:
         raise AssertionError('invalid string to extract timing data from')
+
+    out_txt_lines = [k for k in out_txt.split('\n') if k]
+
+    n_out_txt_lines = len(out_txt_lines)
+
+    print('out_txt_lines: {}'.format(out_txt_lines))
+    print('n_out_txt_lines: {}'.format(n_out_txt_lines))
+    print('total_t_line: {}'.format(total_t_line))
+
+    if n_out_txt_lines == 1 and total_t_line is not None:
+        total_t_line_data = total_t_line.split('.')
+        # print('_line_data: {}'.format(_line_data))
+
+        _line = '{}:{}'.format(total_t_line_data[0], int(total_t_line_data[1]) * 10000)
+        # print('_line: {}'.format(_line))
+
+        total_t = datetime.strptime(_line, '%H:%M:%S:%f')
+        total_t_str = total_t.strftime('%H:%M:%S') + '.{}'.format(total_t_line_data[1])
+        curr_t = start_t + timedelta(hours=total_t.hour, minutes=total_t.minute,
+                                     seconds=total_t.second, microseconds=total_t.microsecond)
+        curr_t_str = curr_t.strftime('%H:%M:%S') + '.{}'.format(int(curr_t.microsecond / 10000))
+
+        out_txt += 'Lap 1\t{}\t{}\t{}\n'.format(total_t_str, total_t_str, curr_t_str)
 
     return out_txt
 
