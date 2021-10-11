@@ -7,6 +7,21 @@ import pyautogui
 from Misc import processArguments, linux_path
 import encrypt_file_aes as encryption
 
+def half_sized_window(half_type):
+    pyautogui.keyDown('ctrlleft')
+    pyautogui.keyDown('winleft')
+    pyautogui.keyDown('altleft')
+
+    if half_type == 1:
+        pyautogui.press('right')
+    else:
+        pyautogui.press('left')
+
+    pyautogui.keyUp('ctrlleft')
+    pyautogui.keyUp('winleft')
+    pyautogui.keyUp('altleft')
+
+
 if __name__ == '__main__':
     params = {
         'exe_path': 'fatty.exe',
@@ -95,8 +110,16 @@ if __name__ == '__main__':
         print('Setting up system 1 with tmux sessions {}, {}'.format(name10, name11))
         print('Setting up system 2 with tmux sessions {}, {}'.format(name20, name21))
 
+        # print(pwd0)
+        # print(pwd1)
+        # print(pwd2)
+
+        # exit()
+
         servers_app = application.Application().start(exe_path)
         servers_app.window().maximize()
+
+        half_sized_window(half_type=2)
 
     if config == -1:
 
@@ -107,6 +130,7 @@ if __name__ == '__main__':
             apps = [servers_app, ]
             servers_app2 = application.Application().start(exe_path)
             servers_app2.window().maximize()
+            half_sized_window(half_type=1)
 
             apps.append(servers_app2)
 
@@ -130,18 +154,20 @@ if __name__ == '__main__':
             git_app.window().maximize()
 
             if git_half:
-                pyautogui.keyDown('ctrlleft')
-                pyautogui.keyDown('winleft')
-                pyautogui.keyDown('altleft')
+                half_sized_window(git_half)
 
-                if git_half == 2:
-                    pyautogui.press('left')
-                else:
-                    pyautogui.press('right')
-
-                pyautogui.keyUp('ctrlleft')
-                pyautogui.keyUp('winleft')
-                pyautogui.keyUp('altleft')
+                # pyautogui.keyDown('ctrlleft')
+                # pyautogui.keyDown('winleft')
+                # pyautogui.keyDown('altleft')
+                #
+                # if git_half == 2:
+                #     pyautogui.press('left')
+                # else:
+                #     pyautogui.press('right')
+                #
+                # pyautogui.keyUp('ctrlleft')
+                # pyautogui.keyUp('winleft')
+                # pyautogui.keyUp('altleft')
 
             git_app.fatty.type_keys("tmux{VK_SPACE}new~")
 
@@ -154,12 +180,14 @@ if __name__ == '__main__':
             for _app in apps:
                 _app.fatty.type_keys("^+t")
                 _app.fatty.type_keys("sstg2~")
+                # time.sleep(2)
                 _app.fatty.type_keys("sstz~")
+                # time.sleep(2)
                 _app.fatty.type_keys("sudo{VK_SPACE}-s~")
-
+                # time.sleep(2)
                 # _app.fatty.type_keys("%s~" % pwd1)
 
-                time.sleep(1)
+                # time.sleep(1)
                 pyautogui.write(pwd1)
                 pyautogui.press('enter')
 
@@ -178,10 +206,16 @@ if __name__ == '__main__':
             for _app in apps:
                 _app.fatty.type_keys("^+t")
                 _app.fatty.type_keys("sstg3~")
-                _app.fatty.type_keys("sstx~")
-                _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+                # time.sleep(2)
 
-                time.sleep(1)
+                _app.fatty.type_keys("sstx~")
+                # time.sleep(2)
+
+                _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+                # time.sleep(2)
+
+
+                # time.sleep(1)
                 pyautogui.write(pwd2)
                 pyautogui.press('enter')
 

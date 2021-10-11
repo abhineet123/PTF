@@ -2,6 +2,7 @@ import sys, os, inspect, itertools
 import cv2
 from pprint import pprint
 from datetime import datetime
+from tqdm import tqdm
 
 try:
     import cPickle as pickle
@@ -113,7 +114,7 @@ def check_for_similar_images(files, paths, db_file, methodName="Hellinger", n_re
     if new_stats:
         print('Computing features for {}/{} files ...'.format(n_new_files, n_files))
         db.update({k: (os.path.getmtime(all_stats[k]), getHist(all_stats[k]))
-                   for k in new_stats})
+                   for k in tqdm(new_stats)})
 
     # for _stsats in new_stats:
     #     full_path = all_stats[_stsats]
