@@ -32,6 +32,7 @@ if __name__ == '__main__':
         'auth_dir': '',
         'auth_file': '',
         'config': 0,
+        'pwd_wait': 2,
         'wait_t': 3,
         'n_git_panes': 8,
         'git_half': 1,
@@ -61,6 +62,7 @@ if __name__ == '__main__':
     git_wait_restore = params['git_wait_restore']
     git_cmds = params['git_cmds']
     git_half = params['git_half']
+    pwd_wait = params['pwd_wait']
     # app_t = application.Application().start("cmd.exe")
     # app_t = application.Application().start("C:\\Users\\Tommy\\Desktop\\startup_progs\\t.lnk")
     # app_t = application.Application().start("H:\\UofA\\MSc\\Code\\TrackingFramework\\scripts\\t.cmd")    
@@ -146,7 +148,7 @@ if __name__ == '__main__':
                 _app.fatty.type_keys("sudo{VK_SPACE}-s~")
 
                 # _app.fatty.type_keys("%s~" % pwd0)
-                time.sleep(3)
+                time.sleep(pwd_wait)
                 pyautogui.write(pwd0)
                 pyautogui.press('enter')
 
@@ -190,7 +192,7 @@ if __name__ == '__main__':
                 # time.sleep(2)
                 # _app.fatty.type_keys("%s~" % pwd1)
 
-                time.sleep(3)
+                time.sleep(pwd_wait)
                 pyautogui.write(pwd1)
                 pyautogui.press('enter')
 
@@ -217,7 +219,7 @@ if __name__ == '__main__':
                 _app.fatty.type_keys("sudo{VK_SPACE}-s~")
                 # time.sleep(2)
 
-                time.sleep(3)
+                time.sleep(pwd_wait)
                 pyautogui.write(pwd2)
                 pyautogui.press('enter')
 
@@ -382,12 +384,16 @@ if __name__ == '__main__':
 
         if config == -1:
             for _app in apps:
+                """grs"""
                 _app.fatty.type_keys("^+w")
                 _app.fatty.type_keys("^+w")
                 _app.fatty.type_keys("sstg{VK_SPACE}tb~")
                 _app.fatty.type_keys("sudo{VK_SPACE}-s~")
-                time.sleep(3)
-                _app.fatty.type_keys("%s~" % pwd0)
+                
+                time.sleep(pwd_wait)
+                # _app.fatty.type_keys("%s~" % pwd0)
+                pyautogui.write(pwd0)
+                pyautogui.press('enter')
 
             time.sleep(wait_t)
 
@@ -395,12 +401,16 @@ if __name__ == '__main__':
             servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name01)
 
             for _app in apps:
+                """orca"""
                 _app.fatty.type_keys("^+t")
                 _app.fatty.type_keys("sstg2~")
                 _app.fatty.type_keys("sstz~")
                 _app.fatty.type_keys("sudo{VK_SPACE}-s~")
-                time.sleep(3)
-                _app.fatty.type_keys("%s~" % pwd1)
+
+                time.sleep(pwd_wait)
+                # _app.fatty.type_keys("%s~" % pwd1)
+                pyautogui.write(pwd1)
+                pyautogui.press('enter')
 
             time.sleep(wait_t)
 
@@ -414,12 +424,16 @@ if __name__ == '__main__':
             # app2.fatty.type_keys("+{RIGHT}")
 
             for _app in apps:
+                """x99"""
                 _app.fatty.type_keys("^+t")
                 _app.fatty.type_keys("sstg3~")
                 _app.fatty.type_keys("sstx~")
                 _app.fatty.type_keys("sudo{VK_SPACE}-s~")
-                time.sleep(3)
-                _app.fatty.type_keys("%s~" % pwd2)
+
+                time.sleep(pwd_wait)
+                # _app.fatty.type_keys("%s~" % pwd2)
+                pyautogui.write(pwd2)
+                pyautogui.press('enter')
 
             time.sleep(wait_t)
 
