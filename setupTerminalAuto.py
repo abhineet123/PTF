@@ -7,6 +7,7 @@ import pyautogui
 from Misc import processArguments, linux_path
 import encrypt_file_aes as encryption
 
+
 def half_sized_window(half_type):
     pyautogui.keyDown('ctrlleft')
     pyautogui.keyDown('winleft')
@@ -143,7 +144,7 @@ if __name__ == '__main__':
                 _app.fatty.type_keys("sudo{VK_SPACE}-s~")
 
                 # _app.fatty.type_keys("%s~" % pwd0)
-                time.sleep(1)
+                time.sleep(3)
                 pyautogui.write(pwd0)
                 pyautogui.press('enter')
 
@@ -187,7 +188,7 @@ if __name__ == '__main__':
                 # time.sleep(2)
                 # _app.fatty.type_keys("%s~" % pwd1)
 
-                # time.sleep(1)
+                time.sleep(3)
                 pyautogui.write(pwd1)
                 pyautogui.press('enter')
 
@@ -214,8 +215,7 @@ if __name__ == '__main__':
                 _app.fatty.type_keys("sudo{VK_SPACE}-s~")
                 # time.sleep(2)
 
-
-                # time.sleep(1)
+                time.sleep(3)
                 pyautogui.write(pwd2)
                 pyautogui.press('enter')
 
@@ -384,6 +384,7 @@ if __name__ == '__main__':
                 _app.fatty.type_keys("^+w")
                 _app.fatty.type_keys("sstg{VK_SPACE}tb~")
                 _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+                time.sleep(3)
                 _app.fatty.type_keys("%s~" % pwd0)
 
             time.sleep(wait_t)
@@ -396,6 +397,7 @@ if __name__ == '__main__':
                 _app.fatty.type_keys("sstg2~")
                 _app.fatty.type_keys("sstz~")
                 _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+                time.sleep(3)
                 _app.fatty.type_keys("%s~" % pwd1)
 
             time.sleep(wait_t)
@@ -414,6 +416,7 @@ if __name__ == '__main__':
                 _app.fatty.type_keys("sstg3~")
                 _app.fatty.type_keys("sstx~")
                 _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+                time.sleep(3)
                 _app.fatty.type_keys("%s~" % pwd2)
 
             time.sleep(wait_t)

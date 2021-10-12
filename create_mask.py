@@ -99,7 +99,6 @@ def runHED(shape_patch, hed_net):
 
 def getContourPts(mask_pts, shape=None, show_img=0, verbose=1,
                   patch_img=None, mag_patch_size=50, mag_win_size=800, show_magnified_window=1):
-
     height, width = shape
 
     n_cols = len(cols)
@@ -245,7 +244,8 @@ def getContourPts(mask_pts, shape=None, show_img=0, verbose=1,
 
     return contour_pts
 
-def get_contour_pts_image(contour_pts, n_contour_pts,  height, width):
+
+def get_contour_pts_image(contour_pts, n_contour_pts, height, width):
     contour_pts_img = np.zeros((height, width, 3), dtype=np.uint8)
     for i in range(n_contour_pts - 1):
         pt1, pt2 = contour_pts[i], contour_pts[i + 1]
@@ -259,6 +259,7 @@ def get_contour_pts_image(contour_pts, n_contour_pts,  height, width):
         contour_pts_img = cv2.line(contour_pts_img, pt1, pt2, col, thickness=2)
 
     return contour_pts_img
+
 
 def contour_pts_to_mask(contour_pts, patch_img, col=(255, 255, 255), blend_ratio=0.5):
     # np.savetxt('contourPtsToMask_mask_pts.txt', contour_pts, fmt='%.6f')
@@ -336,7 +337,7 @@ def addMask(in_img, params, mask_img=None, augment=None, hed_net=None):
 
     h, w = in_img.shape[:2]
 
-    disp_size_diff = max(h/50, w/50)
+    disp_size_diff = max(h / 50, w / 50)
 
     scale_x, scale_y = disp_size[0] / w, disp_size[1] / h
     scale_factor = min(scale_x, scale_y)
@@ -1298,8 +1299,6 @@ def main():
     for k in gauss_imgs:
         out_file_path = add_suffix(dst_file_path, f"{k}")
         cv2.imwrite(out_file_path, gauss_imgs[k])
-
-
 
     if mask_img is not None:
         os.makedirs(mask_out_dir, exist_ok=True)

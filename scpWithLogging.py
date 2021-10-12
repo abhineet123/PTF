@@ -1,15 +1,16 @@
-from pywinauto import application, mouse
 import os
-import sys
-import time
-# from dragonfly import Window
-
 import ctypes
 import win32gui
 import win32api
+from pywinauto import application, mouse
 
-from Misc import processArguments
+import paramparse
 
+import encrypt_file_aes as encryption
+
+
+def linux_path(*args, **kwargs):
+    return os.path.join(*args, **kwargs).replace(os.sep, '/')
 
 def run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode):
     dst_full_path = '{}/{}'.format(dst_path, k)
@@ -33,26 +34,50 @@ def main():
         'mode': 0,
         'wait_t': 10,
         'scp_dst': '',
+        'key_root': '',
+        'key_dir': '',
+        'auth_root': '',
+        'auth_dir': '',
+        'auth_file': '',
         'auth_path': '',
         'dst_path': '.',
         'scp_path': '.',
         'scp_name': 'grs',
     }
-    processArguments(sys.argv[1:], params)
+    paramparse.process_dict(params)
+
     win_title = params['win_title']
     mode = params['mode']
     wait_t = params['wait_t']
     scp_dst = params['scp_dst']
-    auth_path = params['auth_path']
     dst_path = params['dst_path']
     scp_path = params['scp_path']
     scp_name = params['scp_name']
 
+    key_root = params['key_root']
+    key_dir = params['key_dir']
+    auth_root = params['auth_root']
+    auth_dir = params['auth_dir']
+    auth_file = params['auth_file']
+
     # Window.get_all_windows()
+
+    auth_path = linux_path(auth_root, auth_dir, auth_file)
     auth_data = open(auth_path, 'r').readlines()
     auth_data = [k.strip() for k in auth_data]
 
-    name00, name01, pwd0 = auth_data[0].split(' ')
+    name00, name01, ecr0, key0 = auth_data[0].split(' ')
+
+    encryption_params = encryption.Params()
+    encryption_params.mode = 1
+    encryption_params.root_dir = key_root
+    encryption_params.parent_dir = key_dir
+
+    encryption_params.in_file = ecr0
+    encryption_params.key_file = key0
+    encryption_params.process()
+    pwd0 = encryption.run(encryption_params)
+
 
     EnumWindows = ctypes.windll.user32.EnumWindows
     EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int))
