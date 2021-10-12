@@ -12,14 +12,18 @@ import encrypt_file_aes as encryption
 def linux_path(*args, **kwargs):
     return os.path.join(*args, **kwargs).replace(os.sep, '/')
 
-def run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode):
-    dst_full_path = '{}/{}'.format(dst_path, k)
-    if mode == 0:
-        scp_cmd = "pscp -pw {} {}:{}/{} {}".format(pwd0, scp_dst, scp_path, k, dst_full_path)
-    elif mode == 1:
-        scp_cmd = "pscp -pw {} {} {}:{}/".format(pwd0, dst_full_path, scp_dst, scp_path)
 
-    # print('Running {}'.format(scp_cmd))
+def run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port):
+    dst_full_path = '{}/{}'.format(dst_path, k)
+    scp_cmd = "pscp -pw {}".format(pwd0)
+    if port:
+        scp_cmd = '{} -P {}'.format(scp_cmd, port)
+    if mode == 0:
+        scp_cmd = "{} {}:{}/{} {}".format(scp_cmd, scp_dst, scp_path, k, dst_full_path)
+    elif mode == 1:
+        scp_cmd = "{} {} {}:{}/".format(scp_cmd, dst_full_path, scp_dst, scp_path)
+
+    print('Running {}'.format(scp_cmd))
     os.system(scp_cmd)
 
     if mode == 1:
@@ -31,6 +35,7 @@ def run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode):
 def main():
     params = {
         'win_title': 'The Journal 8',
+        'use_ahk': 1,
         'mode': 0,
         'wait_t': 10,
         'scp_dst': '',
@@ -47,6 +52,7 @@ def main():
     paramparse.process_dict(params)
 
     win_title = params['win_title']
+    use_ahk = params['use_ahk']
     mode = params['mode']
     wait_t = params['wait_t']
     scp_dst = params['scp_dst']
@@ -66,7 +72,11 @@ def main():
     auth_data = open(auth_path, 'r').readlines()
     auth_data = [k.strip() for k in auth_data]
 
-    name00, name01, ecr0, key0 = auth_data[0].split(' ')
+    dst_info = auth_data[0].split(' ')
+    name00, name01, ecr0, key0 = dst_info[:4]
+
+    if len(dst_info) > 4:
+        port = dst_info[4]
 
     encryption_params = encryption.Params()
     encryption_params.mode = 1
@@ -77,13 +87,6 @@ def main():
     encryption_params.key_file = key0
     encryption_params.process()
     pwd0 = encryption.run(encryption_params)
-
-
-    EnumWindows = ctypes.windll.user32.EnumWindows
-    EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int))
-    GetWindowText = ctypes.windll.user32.GetWindowTextW
-    GetWindowTextLength = ctypes.windll.user32.GetWindowTextLengthW
-    IsWindowVisible = ctypes.windll.user32.IsWindowVisible
 
     # Form1.SetFocus()
     default_fmy_key = '0'
@@ -103,8 +106,15 @@ def main():
         k = input('Enter {}\n'.format(data_type))
 
         x, y = win32api.GetCursorPos()
-
         # EnumWindows(EnumWindowsProc(foreach_window), 0)
+        if use_ahk:
+            os.system('paste_with_cat_1')
+            run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port)
+            continue
+
+        GetWindowText = ctypes.windll.user32.GetWindowTextW
+        GetWindowTextLength = ctypes.windll.user32.GetWindowTextLengthW
+        IsWindowVisible = ctypes.windll.user32.IsWindowVisible
 
         titles = []
 
@@ -126,7 +136,7 @@ def main():
 
         if not target_title:
             print('Window with win_title: {} not found'.format(win_title))
-            run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode)
+            run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port)
             continue
 
         target_title = target_title[0]
@@ -136,13 +146,13 @@ def main():
             app = application.Application().connect(title=target_title, found_index=0)
         except BaseException as e:
             print('Failed to connect to app for window {}: {}'.format(target_title, e))
-            run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode)
+            run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port)
             continue
         try:
             app_win = app.window(title=target_title)
         except BaseException as e:
             print('Failed to access app window for {}: {}'.format(target_title, e))
-            run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode)
+            run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port)
             continue
 
         try:
@@ -182,7 +192,7 @@ def main():
             print('Failed to type entry in app : {}'.format(e))
             pass
 
-        run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode)
+        run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port)
 
 
 if __name__ == '__main__':

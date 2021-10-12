@@ -79,9 +79,11 @@ if __name__ == '__main__':
         auth_data = open(auth_path, 'r').readlines()
         auth_data = [k.strip() for k in auth_data]
 
-        name00, name01, ecr0, key0 = auth_data[0].split(' ')
-        name10, name11, ecr1, key1 = auth_data[1].split(' ')
-        name20, name21, ecr2, key2 = auth_data[2].split(' ')
+        dst0_info = auth_data[0].split(' ')
+        name00, name01, ecr0, key0 = dst0_info[:4]
+
+        name10, name11, ecr1, key1 = auth_data[1].split(' ')[:4]
+        name20, name21, ecr2, key2 = auth_data[2].split(' ')[:4]
 
         key0_path = linux_path(key_root, key_dir, key0)
         key1_path = linux_path(key_root, key_dir, key1)
