@@ -62,7 +62,7 @@ if __name__ == '__main__':
     rsync_cmd = 'rsync {} {}:{} {}'.format(switches, scp_dst, scp_fname, src_fname)
 
     if scp_port:
-        rsync_cmd = "{} -e 'ssh -p {}}'".format(rsync_cmd, scp_port)
+        rsync_cmd = "{} -e 'ssh -p {}'".format(rsync_cmd, scp_port)
 
     print('\nrunning: {}\n'.format(rsync_cmd))
     os.system(rsync_cmd)
