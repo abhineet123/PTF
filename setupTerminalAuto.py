@@ -370,6 +370,9 @@ if __name__ == '__main__':
         time.sleep(1)
         git_app.fatty.type_keys("tmux{VK_SPACE}kill-server")
         git_app.fatty.type_keys("{ENTER}")
+        git_app.fatty.type_keys("taskkill{VK_SPACE}/F{VK_SPACE}/IM{VK_SPACE}bash.exe")
+        git_app.fatty.type_keys("{ENTER}")
+
         time.sleep(2)
         git_app.window().close()
 

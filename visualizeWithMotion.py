@@ -104,7 +104,7 @@ class Params:
         self.dup_reversed_pos = []
         self.duplicate_window = 0
         self.enable_hotkeys = 0
-        self.fps = 30
+        self.fps = 40
         self.frg_monitor_ids = []
         self.frg_win_titles = []
         self.fullscreen = 0
@@ -132,7 +132,7 @@ class Params:
         self.random_mode = 0
         self.recursive = 1
         self.resize = 0
-        self.reverse_video = 1
+        self.reverse_video = 0
         self.reversed_pos = 1
         self.second_from_top = 0
         self.set_wallpaper = 0
@@ -1093,9 +1093,9 @@ def run(args, multi_exit_program=None,
         excluded = 0
         processed_dirs = []
         totals = {}
-        for _id, src_dir in enumerate(src_dirs):
-            if _samples[_id] < 0:
-                _samples[_id] = 1
+        for src_dir_id, src_dir in enumerate(src_dirs):
+            if _samples[src_dir_id] < 0:
+                _samples[src_dir_id] = 1
 
             if src_dir.startswith('!'):
                 src_dir = src_dir[1:]
@@ -1103,7 +1103,7 @@ def run(args, multi_exit_program=None,
             else:
                 excluded = 0
 
-            # print(f'{src_dir} : count: { _counts[_id]}')
+            # print(f'{src_dir} : count: { _counts[src_dir_id]}')
 
             if recursive:
                 src_file_gen = [[os.path.join(dirpath, f) for f in filenames if
@@ -1144,8 +1144,8 @@ def run(args, multi_exit_program=None,
                        f'for total: {_total} / {all_total}'
                        f'(unique: {_n_src_files} / {all_total_unique})'
                        )
-                src_files[_id] = _src_files
-                totals[_id] = (_total, all_total, src_dir)
+                src_files[src_dir_id] = _src_files
+                totals[src_dir_id] = (_total, all_total, src_dir)
 
             # src_file_list = [list(x) for x in src_file_list]
             # src_file_list = [x for x in src_file_list]

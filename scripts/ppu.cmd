@@ -1,1 +1,1 @@
-pip3 install --upgrade %1
+python3 -m pip install --upgrade %1

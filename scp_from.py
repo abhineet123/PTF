@@ -6,6 +6,7 @@ from Misc import processArguments
 if __name__ == '__main__':
     params = {
         'src_fname': '',
+        'scp_port': '',
         'scp_dst': '',
         'overwrite': 0,
         'file_mode': 0,
@@ -14,6 +15,7 @@ if __name__ == '__main__':
     processArguments(sys.argv[1:], params)
     src_fname = params['src_fname']
     scp_dst = params['scp_dst']
+    scp_port = params['scp_port']
     overwrite = params['overwrite']
     file_mode = params['file_mode']
     abs_path = params['abs_path']
@@ -58,6 +60,9 @@ if __name__ == '__main__':
     #     rsync_cmd = 'scp -r {}:{} {}'.format(scp_dst, scp_fname, src_fname)
 
     rsync_cmd = 'rsync {} {}:{} {}'.format(switches, scp_dst, scp_fname, src_fname)
+
+    if scp_port:
+        rsync_cmd = "{} -e 'ssh -p {}}'".format(rsync_cmd, scp_port)
 
     print('\nrunning: {}\n'.format(rsync_cmd))
     os.system(rsync_cmd)
