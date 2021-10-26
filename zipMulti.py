@@ -15,6 +15,7 @@ if __name__ == '__main__':
         'out_name': '',
         'postfix': '',
         'scp_dst': '',
+        'scp_port': '',
         'switches': '-r',
         'relative': 0,
         'add_time_stamp': 1,
@@ -29,6 +30,7 @@ if __name__ == '__main__':
     postfix = params['postfix']
     switches = params['switches']
     scp_dst = params['scp_dst']
+    scp_port = params['scp_port']
     relative = params['relative']
     add_time_stamp = params['add_time_stamp']
     move_to_home = params['move_to_home']
@@ -155,7 +157,12 @@ if __name__ == '__main__':
     # os.system('unzip -l {}'.format(out_path))
 
     if scp_dst:
-        scp_cmd = 'scp {} {}:~/'.format(out_path, scp_dst)
+        scp_cmd = 'scp'
+        if scp_port:
+            scp_cmd = '{} -P {}'.format(scp_cmd, scp_port)
+
+        scp_cmd = '{} {} {}:~/'.format(scp_cmd, out_path, scp_dst)
+
         print('\nrunning: {}\n'.format(scp_cmd))
         os.system(scp_cmd)
         rm_cmd = 'rm {}'.format(out_path)
