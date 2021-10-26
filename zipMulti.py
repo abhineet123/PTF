@@ -16,6 +16,7 @@ if __name__ == '__main__':
         'postfix': '',
         'scp_dst': '',
         'scp_port': '',
+        'inclusion': '',
         'switches': '-r',
         'relative': 0,
         'add_time_stamp': 1,
@@ -23,6 +24,7 @@ if __name__ == '__main__':
     }
     processArguments(sys.argv[1:], params)
     _dir_names = params['dir_names']
+    inclusion = params['inclusion']
     exclusions = params['exclusions']
     exclude_ext = params['exclude_ext']
     include_ext = params['include_ext']
@@ -35,7 +37,7 @@ if __name__ == '__main__':
     add_time_stamp = params['add_time_stamp']
     move_to_home = params['move_to_home']
 
-    print('dir_names: ', _dir_names)
+    print('_dir_names: ', _dir_names)
 
     if len(_dir_names) == 1:
         dir_names = _dir_names[0].split(os.sep)
@@ -134,6 +136,10 @@ if __name__ == '__main__':
                     exclusion = os.path.join(exclude_root, exclusion)
                 switches2 += ' -x "{}"'.format(exclusion)
             zip_cmd = '{:s} {:s}'.format(zip_cmd, switches2)
+
+        if inclusion:
+            print('Including only files matching pattern: {}'.format(inclusion))
+            zip_cmd = '{:s} -i "{}"'.format(zip_cmd, switches2)
 
         if include_ext:
             print('Including only files with extensions: {}'.format(include_ext))
