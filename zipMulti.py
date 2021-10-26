@@ -139,7 +139,7 @@ if __name__ == '__main__':
 
         if inclusion:
             print('Including only files matching pattern: {}'.format(inclusion))
-            zip_cmd = '{:s} -i "{}"'.format(zip_cmd, switches2)
+            zip_cmd = '{:s} -i "{}"'.format(zip_cmd, inclusion)
 
         if include_ext:
             print('Including only files with extensions: {}'.format(include_ext))
