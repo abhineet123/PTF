@@ -19,21 +19,33 @@ IsWindowVisible = ctypes.windll.user32.IsWindowVisible
 titles = []
 
 
-class Params:
+class Params(paramparse.CFG):
     def __init__(self):
-        self.cfg = ()
+        super().__init__()
+
         self.win_titles = ['Timing', 'Google Chrome']
         self.txt_path = 'Z:/Documents/Backup/txtpad'
         self.txt_proc_list = 'processed.log'
         self.recursive = 1
         self.category = 2
-        self.paste_cmd = ''
-        self.link_cmd = ''
-        self.ffs = 1
-        self.ffs_exe = ''
-        self.ffs_root = ''
-        self.ffs_ext = ''
-        self.ffs_files = []
+
+        self.ffs = Params.FFS()
+        self.cmd = Params.CMD()
+
+    class FFS:
+        def __init__(self):
+            self.enable = 1
+            self.exe = ''
+            self.root = ''
+            self.ext = ''
+            self.files = []
+
+    class CMD:
+        def __init__(self):
+            self.paste = ''
+            self.link = ''
+            self.down = ''
+            self.enter = ''
 
 
 def foreach_window(hwnd, lParam):
@@ -169,6 +181,57 @@ def copy_to_clipboard(out_txt, print_txt=0):
     # win32clipboard.CloseClipboard()
 
 
+def process_ogg(ogg_paths, lines, category, is_path, cmd, pause_for_input):
+    """
+
+    :param ogg_paths:
+    :param lines:
+    :param category:
+    :param is_path:
+    :type cmd: Params.CMD
+    :param pause_for_input:
+    :return:
+    """
+    base_names = [os.path.basename(line) for line in ogg_paths]
+    out_lines = [base_name.split('-')[1].split('.')[0].replace('_', ':') for base_name in base_names]
+    if category > 0:
+        out_lines = ['{} :: {}'.format(line, category) for line in out_lines]
+
+    sort_idx = sorted(range(len(out_lines)), key=out_lines.__getitem__)
+
+    out_lines = [out_lines[k] for k in sort_idx]
+    lines = [lines[k] for k in sort_idx]
+
+    out_txt = '\n'.join(out_lines)
+    copy_to_clipboard(out_txt, print_txt=1)
+
+    in_txt = '\n'.join(lines)
+    print(in_txt)
+    if pause_for_input:
+        input('press any key')
+
+    print('is_path: {}'.format(is_path))
+    print('paste: {}'.format(cmd.paste))
+    print('link: {}'.format(cmd.link))
+    print('down: {}'.format(cmd.down))
+    print('enter: {}'.format(cmd.enter))
+
+    if is_path and cmd.paste and cmd.link:
+        os.system(cmd.paste)
+        for _path in lines[::-1]:
+            print(_path)
+            copy_to_clipboard(_path, print_txt=1)
+            # input('press any key')
+            os.system(cmd.link)
+            time.sleep(0.5)
+
+        if is_path and cmd.down and cmd.enter:
+            for _ in range(len(lines)):
+                os.system(cmd.down)
+                os.system(cmd.down)
+            os.system(cmd.enter)
+
+
 def main():
     params = Params()
     paramparse.process(params)
@@ -188,6 +251,7 @@ def main():
             stripped_lines = lines[:]
 
         is_ogg = all(line.endswith('.ogg') for line in stripped_lines)
+        is_folder = all(os.path.isdir(line) for line in stripped_lines)
 
         print('is_ogg: {}'.format(is_ogg))
         print('stripped_lines: {}'.format(stripped_lines))
@@ -196,35 +260,16 @@ def main():
         # input('press any key')
 
         if is_ogg:
-            base_names = [os.path.basename(line) for line in stripped_lines]
-            out_lines = [base_name.split('-')[1].split('.')[0].replace('_', ':') for base_name in base_names]
-            if params.category > 0:
-                out_lines = ['{} :: {}'.format(line, params.category) for line in out_lines]
-
-            sort_idx = sorted(range(len(out_lines)), key=out_lines.__getitem__)
-
-            out_lines = [out_lines[k] for k in sort_idx]
-            lines = [lines[k] for k in sort_idx]
-
-            out_txt = '\n'.join(out_lines)
-            copy_to_clipboard(out_txt, print_txt=1)
-
-            in_txt = '\n'.join(lines)
-            print(in_txt)
-            input('press any key')
-
-            print('is_path: {}'.format(is_path))
-            print('paste_cmd: {}'.format(params.paste_cmd))
-            print('link_cmd: {}'.format(params.link_cmd))
-
-            if is_path and params.paste_cmd and params.link_cmd:
-                os.system(params.paste_cmd)
-                for _path in lines[::-1]:
-                    print(_path)
-                    copy_to_clipboard(_path, print_txt=1)
-                    # input('press any key')
-                    os.system(params.link_cmd)
-                    time.sleep(0.5)
+            process_ogg(stripped_lines, lines, params.category, is_path, params.cmd,
+                        pause_for_input=1)
+            return
+        elif is_folder:
+            stripped_lines.sort()
+            for folder in stripped_lines:
+                ogg_paths = ['{}'.format(os.path.join(folder, k)) for k in os.listdir(folder) if k.endswith('.ogg')]
+                ogg_lines = ['"{}"'.format(k) for k in ogg_paths]
+                process_ogg(ogg_paths, ogg_lines, params.category, is_path, params.cmd,
+                            pause_for_input=0)
             return
         else:
             try:
@@ -235,10 +280,10 @@ def main():
                 copy_to_clipboard(out_txt, print_txt=1)
                 return
 
-    if params.ffs:
-        for _ffs_file in params.ffs_files:
-            ffs_path = os.path.join(params.ffs_root, _ffs_file + '.' + params.ffs_ext)
-            ffs_cmd = '{} "{}"'.format(params.ffs_exe, ffs_path)
+    if params.ffs.enable:
+        for _ffs_file in params.ffs.files:
+            ffs_path = os.path.join(params.ffs.root, _ffs_file + '.' + params.ffs.ext)
+            ffs_cmd = '{} "{}"'.format(params.ffs.exe, ffs_path)
             print(ffs_cmd)
             os.system(ffs_cmd)
 
