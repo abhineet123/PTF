@@ -24,7 +24,7 @@ class Params(paramparse.CFG):
         super().__init__()
 
         self.win_titles = ['Timing', 'Google Chrome']
-        self.txt_path = 'Z:/Documents/Backup/txtpad'
+        self.txt_path = 'C:/Users/Tommy/Documents/Backup/txtpad'
         self.txt_proc_list = 'processed.log'
         self.recursive = 1
         self.category = 2
@@ -250,8 +250,13 @@ def main():
         else:
             stripped_lines = lines[:]
 
-        is_ogg = all(line.endswith('.ogg') for line in stripped_lines)
-        is_folder = all(os.path.isdir(line) for line in stripped_lines)
+        try:
+            is_ogg = all(line.endswith('.ogg') for line in stripped_lines)
+            is_folder = all(os.path.isdir(line) for line in stripped_lines)
+        except BaseException as e:
+            print('exception during ogg / folder check : {}'.format(e))
+            is_ogg = 0
+            is_folder = 0
 
         print('is_ogg: {}'.format(is_ogg))
         print('stripped_lines: {}'.format(stripped_lines))
@@ -289,7 +294,7 @@ def main():
 
     if params.txt_path:
 
-        assert os.path.isdir(params.txt_path), "embedded text path: {}".format(params.txt_path)
+        assert os.path.isdir(params.txt_path), "invalid text path: {}".format(params.txt_path)
 
         if params.recursive:
             files_gen = [[linux_path(dirpath, f) for f in filenames if

@@ -34,6 +34,7 @@ def main():
         'pane_id_sep': '>',
         'log_dir': 'log/rpip',
         'enable_logging': 1,
+        'enable_tee': 0,
         'batch_size': 50,
     }
     paramparse.process_dict(params)
@@ -45,6 +46,7 @@ def main():
     server = params['server']
     log_dir = params['log_dir']
     enable_logging = params['enable_logging']
+    enable_tee = params['enable_tee']
     batch_size = params['batch_size']
 
     if working_dir:
@@ -138,7 +140,8 @@ def main():
                         tee_log_id = '{}_{}'.format(tee_log_id, server)
 
                     if enable_logging:
-                        __line = '{} @ tee_log={}'.format(__line, tee_log_id)
+                        if enable_tee:
+                            __line = '{} @ tee_log={}'.format(__line, tee_log_id)
 
                         """disable python output buffering to ensure in-order output in the logging fine"""
                         if __line.startswith('python '):

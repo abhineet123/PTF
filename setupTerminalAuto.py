@@ -4,6 +4,8 @@ import os, sys
 import win32api
 import pyautogui
 
+import paramparse
+
 from Misc import processArguments, linux_path
 import encrypt_file_aes as encryption
 
@@ -24,45 +26,133 @@ def half_sized_window(half_type):
 
 
 if __name__ == '__main__':
-    params = {
-        'exe_path': 'fatty.exe',
-        'key_root': '',
-        'key_dir': '',
-        'auth_root': '',
-        'auth_dir': '',
-        'auth_file': '',
-        'config': 0,
-        'pwd_wait': 2,
-        'wait_t': 3,
-        'n_git_panes': 8,
-        'git_half': 1,
-        'git_wait': 0.5,
-        'git_wait_init': 10,
-        'git_wait_restore': 20,
-        'only_git': 0,
-        'enable_git': 0,
-        'git_postproc': 0,
-        'git_cmds': '',
-    }
-    processArguments(sys.argv[1:], params)
-    exe_path = params['exe_path']
-    key_root = params['key_root']
-    key_dir = params['key_dir']
-    auth_root = params['auth_root']
-    auth_dir = params['auth_dir']
-    auth_file = params['auth_file']
-    config = params['config']
-    wait_t = params['wait_t']
-    n_git_panes = params['n_git_panes']
-    enable_git = params['enable_git']
-    git_postproc = params['git_postproc']
-    only_git = params['only_git']
-    git_wait = params['git_wait']
-    git_wait_init = params['git_wait_init']
-    git_wait_restore = params['git_wait_restore']
-    git_cmds = params['git_cmds']
-    git_half = params['git_half']
-    pwd_wait = params['pwd_wait']
+    # params = {
+    #     'exe_path': 'fatty.exe',
+    #     'key_root': '',
+    #     'key_dir': '',
+    #     'auth_root': '',
+    #     'auth_dir': '',
+    #     'auth_file': '',
+    #     'config': 0,
+    #     'pwd_wait': 2,
+    #     'wait_t': 3,
+    #     'n_git_panes': 8,
+    #     'git_half': 1,
+    #     'git_wait': 0.5,
+    #     'git_wait_init': 10,
+    #     'git_wait_restore': 20,
+    #     'only_git': 0,
+    #     'enable_git': 0,
+    #     'git_postproc': 0,
+    #     'git_cmds': '',
+    # }
+    # paramparse.from_dict(params, to_clipboard=1)
+    # exit()
+
+    class Params(paramparse.CFG):
+        """
+        :ivar auth_dir:
+        :type auth_dir: str
+
+        :ivar auth_file:
+        :type auth_file: str
+
+        :ivar auth_root:
+        :type auth_root: str
+
+        :ivar config:
+        :type config: int
+
+        :ivar enable_git:
+        :type enable_git: int
+
+        :ivar exe_path:
+        :type exe_path: str
+
+        :ivar git_cmds:
+        :type git_cmds: str
+
+        :ivar git_half:
+        :type git_half: int
+
+        :ivar git_postproc:
+        :type git_postproc: int
+
+        :ivar git_wait:
+        :type git_wait: float
+
+        :ivar git_wait_init:
+        :type git_wait_init: int
+
+        :ivar git_wait_restore:
+        :type git_wait_restore: int
+
+        :ivar key_dir:
+        :type key_dir: str
+
+        :ivar key_root:
+        :type key_root: str
+
+        :ivar n_git_panes:
+        :type n_git_panes: int
+
+        :ivar only_git:
+        :type only_git: int
+
+        :ivar pwd_wait:
+        :type pwd_wait: int
+
+        :ivar wait_t:
+        :type wait_t: int
+
+        """
+
+        def __init__(self):
+            super().__init__()
+            self.cfg = ()
+            self.auth_dir = ''
+            self.auth_file = ''
+            self.auth_root = ''
+            self.config = 0
+            self.enable_git = 0
+            self.exe_path = 'fatty.exe'
+            self.git_cmds = ''
+            self.git_half = 1
+            self.git_postproc = 0
+            self.git_wait = 0.5
+            self.git_wait_init = 10
+            self.git_wait_restore = 20
+            self.key_dir = ''
+            self.key_root = ''
+            self.n_git_panes = 8
+            self.only_git = 0
+            self.pwd_wait = 2
+            self.wait_t = 3
+
+
+    params = Params()
+    paramparse.process(params)
+
+    # processArguments(sys.argv[1:], params)
+    exe_path = params.exe_path
+    key_root = params.key_root
+    key_dir = params.key_dir
+    auth_root = params.auth_root
+    auth_dir = params.auth_dir
+    auth_file = params.auth_file
+    config = params.config
+    wait_t = params.wait_t
+    n_git_panes = params.n_git_panes
+    enable_git = params.enable_git
+    git_postproc = params.git_postproc
+    only_git = params.only_git
+    git_wait = params.git_wait
+    git_wait_init = params.git_wait_init
+    git_wait_restore = params.git_wait_restore
+    git_cmds = params.git_cmds
+    git_half = params.git_half
+    pwd_wait = params.pwd_wait
+
     # app_t = application.Application().start("cmd.exe")
     # app_t = application.Application().start("C:\\Users\\Tommy\\Desktop\\startup_progs\\t.lnk")
     # app_t = application.Application().start("H:\\UofA\\MSc\\Code\\TrackingFramework\\scripts\\t.cmd")    
@@ -392,7 +482,7 @@ if __name__ == '__main__':
                 _app.fatty.type_keys("^+w")
                 _app.fatty.type_keys("sstg{VK_SPACE}tb~")
                 _app.fatty.type_keys("sudo{VK_SPACE}-s~")
-                
+
                 time.sleep(pwd_wait)
                 # _app.fatty.type_keys("%s~" % pwd0)
                 pyautogui.write(pwd0)

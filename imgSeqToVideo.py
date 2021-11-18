@@ -7,7 +7,9 @@ from pprint import pformat
 from tqdm import tqdm
 import skvideo.io
 
-from Misc import processArguments, sortKey, resizeAR, move_or_del_files
+import paramparse
+
+from Misc import sortKey, resizeAR, move_or_del_files
 from video_io import VideoWriterGPU
 
 
@@ -45,9 +47,10 @@ def main():
         'use_skv': 0,
         'disable_suffix': 0,
         'read_in_batch': 1,
+        'placement_type': 1,
     }
 
-    processArguments(sys.argv[1:], params)
+    paramparse.process_dict(params)
     _src_path = params['src_path']
     save_path = params['save_path']
     img_ext = params['img_ext']
@@ -67,6 +70,7 @@ def main():
     move_src = params['move_src']
     disable_suffix = params['disable_suffix']
     read_in_batch = params['read_in_batch']
+    placement_type = params['placement_type']
 
     img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
 
@@ -100,6 +104,8 @@ def main():
         print('Writing the reverse sequence')
     elif reverse == 2:
         print('Appending the reverse sequence')
+
+    print('placement_type: {}'.format(placement_type))
 
     exit_prog = 0
 
@@ -229,7 +235,7 @@ def main():
 
                 image = cv2.imread(file_path)
 
-            image = resizeAR(image, width, height, placement_type=1)
+            image = resizeAR(image, width, height, placement_type=placement_type)
 
             if show_img:
                 cv2.imshow(seq_name, image)

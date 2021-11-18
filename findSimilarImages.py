@@ -54,7 +54,7 @@ def check_for_similar_images(files, paths, db_file, methodName="Hellinger", n_re
         db_file = os.path.join(script_path, 'log', db_file)
 
         if os.path.isfile(db_file):
-            print('Loading feature  db from {}'.format(db_file))
+            print('Loading feature db from {}'.format(db_file))
             db = pickle.load(open(db_file, "rb"))
         else:
             db_file_dir = os.path.dirname(db_file)

@@ -409,6 +409,9 @@ def resizeAR(src_img, width=0, height=0, return_factors=False,
 
     # print('placement_type: {}'.format(placement_type))
 
+
+    # print('placement_type: {}'.format(placement_type))
+
     if resize_factor != 0:
         width, height = int(src_width * resize_factor), int(src_height * resize_factor)
 
