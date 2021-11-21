@@ -317,9 +317,14 @@ def main():
         n_files = len(files)
 
         if n_files > 1:
-            print('found {} new files:\n{}'.format(n_files, '\n'.join(files)))
+            _ = input('\nfound {} new files:\n{}\nPress any key to continue\n'.format(n_files, files))
+        else:
+            _ = input('\nfound no new files. Press any key to exit\n')
 
         for file_id, file in enumerate(files[::-1]):
+            if file_id > 0:
+                _ = input('\nDone {} / {}. Press any key to continue\n'.format(file_id + 1, n_files))
+
             print('reading file {} / {}: {}'.format(file_id + 1, n_files, file))
 
             # file = dst_file
@@ -342,8 +347,6 @@ def main():
 
             if n_out_txt_lines == 1:
                 os.system("vscode {}".format(file))
-
-            _ = input('\npress any key to continue\n')
 
             with open(txt_proc_list_path, 'r+') as f:
                 content = f.read()
