@@ -113,7 +113,7 @@ class Params:
         self.keep_borders = 0
         self.lazy_video_load = 1
         self.log_color = ''
-        self.max_buffer_ram = 10000000000.0
+        self.max_buffer_ram = 1.6e10
         self.max_switches = 1
         self.min_height_ratio = 0.4
         self.mode = 0
@@ -751,9 +751,8 @@ def run(args, multi_exit_program=None,
                         os.path.basename(src_path), n_frames, w, h, memory_required / 1e9))
 
                     if memory_required > max_buffer_ram:
-                        # _print('Buffer memory needed is more than the maximum allowed {} GB so using lazy
-                        # load'.format(
-                        #     max_buffer_ram / 1e9))
+                        _print('Buffer memory needed is more than the maximum allowed {} GB so using lazy load'.format(
+                            max_buffer_ram / 1e9))
                         _src_files = cap
                         _lazy_video_load = 1
                     else:
@@ -3224,7 +3223,8 @@ def run(args, multi_exit_program=None,
                     _print('Reversing video')
                     for _id in img_id:
                         img_id[_id] = total_frames[_id] - img_id[_id] - 1
-                        src_files[_id] = list(reversed(src_files[_id]))
+                        if isinstance(src_files[_id], list):
+                            src_files[_id] = list(reversed(src_files[_id]))
                 else:
                     random_mode = 1 - random_mode
                     if random_mode:
@@ -3838,17 +3838,20 @@ def run(args, multi_exit_program=None,
                 except BaseException as e:
                     print('Copying to clipboard failed: {}'.format(e))
             elif k == ord('F') or k == ord('0'):
-                if n_images == 1:
-                    _txt = '"' + os.path.abspath(img_fname) + '"'
-                    _print(_txt)
+                if video_mode == 1:
+                    _print(src_path)
                 else:
-                    _txt = ''
-                    _print()
-                    for _idx in stack_idx:
-                        if not video_mode:
-                            _txt += '"' + os.path.abspath(img_fnames[_idx]) + '"' + '\n'
-                    _print(_txt)
-                    _print()
+                    if n_images == 1:
+                        _txt = '"' + os.path.abspath(img_fname) + '"'
+                        _print(_txt)
+                    else:
+                        _txt = ''
+                        _print()
+                        for _idx in stack_idx:
+                            if not video_mode:
+                                _txt += '"' + os.path.abspath(img_fnames[_idx]) + '"' + '\n'
+                        _print(_txt)
+                        _print()
                 copy_to_clipboard(_txt)
 
             elif k == ord('f') or k == ord('/') or k == ord('?'):

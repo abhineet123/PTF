@@ -316,14 +316,14 @@ def main():
         files.sort(key=os.path.getmtime)
         n_files = len(files)
 
-        if n_files > 1:
+        if n_files > 0:
             _ = input('\nfound {} new files:\n{}\nPress any key to continue\n'.format(n_files, files))
         else:
             _ = input('\nfound no new files. Press any key to exit\n')
 
         for file_id, file in enumerate(files[::-1]):
             if file_id > 0:
-                _ = input('\nDone {} / {}. Press any key to continue\n'.format(file_id + 1, n_files))
+                _ = input('\nDone {} / {}. Press any key to continue\n'.format(file_id, n_files))
 
             print('reading file {} / {}: {}'.format(file_id + 1, n_files, file))
 
