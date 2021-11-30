@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import paramparse
 
 try:
@@ -8,6 +8,16 @@ except ImportError:
     # import tkinter as Tk
 
 import pyperclip
+
+
+def is_date(line):
+    date_obj = None
+    try:
+        date_obj = datetime.strptime(line, '%Y-%m-%d')
+    except ValueError:
+        pass
+
+    return date_obj
 
 
 def is_time(line):
@@ -33,6 +43,7 @@ def is_time(line):
     #     time_found = 1
 
     if time_obj is not None:
+        time_obj = time_obj.time()
         line = time_obj.strftime('%I:%M:%S %p')
         time_found = 1
 
@@ -50,7 +61,8 @@ def main():
         'first_and_last': 0,
         'add_date': 1,
         'add_diff': 1,
-        'add_comment': 0,
+        'add_comment': 1,
+        'min_start_time': '03:00:00',
     }
     paramparse.process_dict(_params)
     horz = _params['horz']
@@ -63,7 +75,7 @@ def main():
     add_date = _params['add_date']
     add_diff = _params['add_diff']
     add_comment = _params['add_comment']
-
+    min_start_time = _params['min_start_time']
     try:
         in_txt = Tk().clipboard_get()  # type: str
     except BaseException as e:
@@ -72,14 +84,19 @@ def main():
 
     lines = [k.strip() for k in in_txt.split('\n') if k.strip()]
 
+    min_start_time_obj = datetime.strptime(min_start_time, '%H:%M:%S').time()
+    midnight_time_obj = datetime.strptime('00:00:00', '%H:%M:%S').time()
+
     out_lines = []
     out_times = []
+    out_date_times = []
+    # out_date_time_str = []
     out_categories = []
 
-    date_str = datetime.now().strftime("%y-%m-%d")
+    date_str = datetime.now().strftime("%Y-%m-%d")
     curr_comments = []
 
-    time_to_comments = []
+    out_comments = []
 
     for line in lines:
         category = None
@@ -128,27 +145,47 @@ def main():
             #     if out_lines:
             #         print('no comment found for: {}'.format(line))
 
-            time_to_comments.append(curr_comments_str)
+            out_comments.append(curr_comments_str)
 
+            date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+
+            if midnight_time_obj <= time_obj < min_start_time_obj:
+                date_obj = date_obj + timedelta(days=1)
+
+            date_time_obj = datetime.combine(date_obj, time_obj)
+
+            # date_time_str = date_time_obj.strftime("%Y%m%d_%H%M%S")
+            # out_date_time_str.append(date_time_str)
+
+            out_date_times.append(date_time_obj)
             out_times.append(time_obj)
             out_lines.append(line)
+
             if categories:
                 if category is None:
                     category = -1
                 out_categories.append(category)
-
-
         else:
             curr_comments.append(line)
 
-    if first_and_last and len(out_lines) > 2:
-        out_times = [out_times[0], out_times[-1]]
-        out_lines = [out_lines[0], out_lines[-1]]
-
-    curr_comments_str = ''
     if curr_comments:
         curr_comments_str = ';'.join(curr_comments)
-    time_to_comments.append(curr_comments_str)
+    else:
+        curr_comments_str = ''
+
+    out_comments.append(curr_comments_str)
+
+    sort_idx = [i[0] for i in sorted(enumerate(out_date_times), key=lambda x: x[1])]
+
+    # out_date_times = [out_date_times[i] for i in sort_idx]
+    # # out_date_time_str = [out_date_time_str[i] for i in sort_idx]
+    # out_times = [out_times[i] for i in sort_idx]
+    # out_lines = [out_lines[i] for i in sort_idx]
+    # out_comments = [out_comments[i] for i in sort_idx]
+
+    if first_and_last and len(out_lines) > 2:
+        out_date_times = [out_date_times[sort_idx[0]], out_date_times[sort_idx[-1]]]
+        out_lines = [out_lines[sort_idx[0]], out_lines[sort_idx[-1]]]
 
     n_out_lines = len(out_lines)
     if pairwise:
@@ -158,34 +195,38 @@ def main():
         out_txt3 = ''
         for _line_id in range(n_out_lines - 1):
             if horz:
-                _out_txt = '{}\t{}'.format(out_lines[_line_id], out_lines[_line_id + 1])
+                _out_txt = '{}\t{}'.format(out_lines[sort_idx[_line_id]], out_lines[sort_idx[_line_id + 1]])
 
                 if add_date:
                     _out_txt = '{}\t{}'.format(date_str, _out_txt)
                 if categories_out:
-                    _out_txt += '\t{}'.format(out_categories[_line_id + 1])
+                    _out_txt += '\t{}'.format(out_categories[sort_idx[_line_id + 1]])
 
                 if add_diff:
-                    time_diff = out_times[_line_id + 1] - out_times[_line_id]
+                    time_diff = out_date_times[sort_idx[_line_id + 1]] - out_date_times[sort_idx[_line_id]]
                     time_diff_str = str(time_diff)
 
                     if ',' in time_diff_str:
                         """times from different days across midnight"""
-                        time_diff_str = time_diff_str.split(',')[-1].strip()
+                        print('times from different days across midnight found')
+                        input()
+                        exit()
+                        # time_diff_str = time_diff_str.split(',')[-1].strip()
 
                     _out_txt += '\t{}'.format(time_diff_str)
 
                 if add_comment:
-                    _out_txt = '{}\t{}'.format(_out_txt, time_to_comments[_line_id + 2])
+                    """out_comments has an annoying extra entry at top"""
+                    _out_txt = '{}\t{}'.format(_out_txt, out_comments[sort_idx[_line_id + 1] + 1])
 
                 out_txt += _out_txt + '\n'
             else:
-                out_txt += '{}\t'.format(out_lines[_line_id])
-                out_txt2 += '{}\t'.format(out_lines[_line_id + 1])
+                out_txt += '{}\t'.format(out_lines[sort_idx[_line_id]])
+                out_txt2 += '{}\t'.format(out_lines[sort_idx[_line_id + 1]])
                 if add_date:
                     out_txt0 = '{}\t'.format(date_str)
                 if categories_out:
-                    out_txt3 += '{}\t'.format(out_categories[_line_id + 1])
+                    out_txt3 += '{}\t'.format(out_categories[sort_idx[_line_id + 1]])
         if not horz:
             out_txt += '\n' + out_txt2
             if add_date:
