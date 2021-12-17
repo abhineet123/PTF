@@ -48,6 +48,7 @@ def main():
         'disable_suffix': 0,
         'read_in_batch': 1,
         'placement_type': 1,
+        'recursive': 0,
     }
 
     paramparse.process_dict(params)
@@ -71,24 +72,28 @@ def main():
     disable_suffix = params['disable_suffix']
     read_in_batch = params['read_in_batch']
     placement_type = params['placement_type']
+    recursive = params['recursive']
 
     img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
 
     src_root_dir = ''
 
     if os.path.isdir(_src_path):
-        src_files = [k for k in os.listdir(_src_path) for _ext in img_exts if k.endswith(_ext)]
-        if not src_files:
-            # src_paths = [os.path.join(_src_path, k) for k in os.listdir(_src_path) if
-            #              os.path.isdir(os.path.join(_src_path, k))]
-            src_paths_gen = [[os.path.join(dirpath, d) for d in dirnames if
-                              any([os.path.splitext(f.lower())[1] in img_exts
-                                   for f in os.listdir(os.path.join(dirpath, d))])]
-                             for (dirpath, dirnames, filenames) in os.walk(_src_path, followlinks=True)]
-            src_paths = [item for sublist in src_paths_gen for item in sublist]
-            src_root_dir = os.path.abspath(_src_path)
-        else:
+        if recursive:
             src_paths = [_src_path]
+        else:
+            src_files = [k for k in os.listdir(_src_path) for _ext in img_exts if k.endswith(_ext)]
+            if not src_files:
+                # src_paths = [os.path.join(_src_path, k) for k in os.listdir(_src_path) if
+                #              os.path.isdir(os.path.join(_src_path, k))]
+                src_paths_gen = [[os.path.join(dirpath, d) for d in dirnames if
+                                  any([os.path.splitext(f.lower())[1] in img_exts
+                                       for f in os.listdir(os.path.join(dirpath, d))])]
+                                 for (dirpath, dirnames, filenames) in os.walk(_src_path, followlinks=True)]
+                src_paths = [item for sublist in src_paths_gen for item in sublist]
+                src_root_dir = os.path.abspath(_src_path)
+            else:
+                src_paths = [_src_path]
         print('Found {} image sequence(s):\n{}'.format(len(src_paths), pformat(src_paths)))
     elif os.path.isfile(_src_path):
         print('Reading source image sequences from: {}'.format(_src_path))
@@ -99,6 +104,9 @@ def main():
         print('n_seq: {}'.format(n_seq))
     else:
         raise IOError('Invalid src_path: {}'.format(_src_path))
+
+    if recursive:
+        print('searching for images recursively')
 
     if reverse == 1:
         print('Writing the reverse sequence')
@@ -126,7 +134,13 @@ def main():
         else:
             dst_path = ''
 
-        src_files = [k for k in os.listdir(src_path) for _ext in img_exts if k.endswith(_ext)]
+        if recursive:
+            src_file_gen = [[os.path.join(dirpath, f) for f in filenames if
+                             os.path.splitext(f.lower())[1] in img_exts]
+                            for (dirpath, dirnames, filenames) in os.walk(src_path, followlinks=True)]
+            src_files = [item for sublist in src_file_gen for item in sublist]
+        else:
+            src_files = [k for k in os.listdir(src_path) for _ext in img_exts if k.endswith(_ext)]
         n_src_files = len(src_files)
         if n_src_files <= 0:
             raise SystemError('No input frames found')
