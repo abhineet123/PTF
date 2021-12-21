@@ -940,7 +940,7 @@ def run(args, multi_exit_program=None,
         _denominators.append(_denominator)
         _samples.append(_sample)
 
-        # _print(f'{src_dir} : {_numerator} / {_denominator}, {_sample}')
+        _print(f'{src_dir} : {_numerator} / {_denominator}, {_sample}')
 
         _src_dirs.append(src_dir)
 
@@ -1136,10 +1136,10 @@ def run(args, multi_exit_program=None,
                     _src_files = [k for k in _src_files if k not in excluded_src_files]
                     _n_src_files = len(_src_files)
 
-                _total = int(_n_src_files * _counts[_id] / _samples[_id])
+                _total = int(_n_src_files * _counts[src_dir_id] / _samples[src_dir_id])
                 all_total += _total
                 _print(f'Adding {_n_src_files} images from: {src_dir} '
-                       f'with sample: {_samples[_id]} and multiplicity {_counts[_id]} '
+                       f'with sample: {_samples[src_dir_id]} and multiplicity {_counts[src_dir_id]} '
                        f'for total: {_total} / {all_total}'
                        f'(unique: {_n_src_files} / {all_total_unique})'
                        )

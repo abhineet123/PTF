@@ -118,11 +118,11 @@ if __name__ == '__main__':
             out_name = _out_name
 
         if relative:
-            zip_cmd = 'cd {} && zip {} {} {}'.format(zip_root_path, switches, out_name, zip_file)
+            zip_cmd = 'cd "{}" && zip {} "{}" "{}"'.format(zip_root_path, switches, out_name, zip_file)
             out_path = os.path.join(zip_root_path, out_name)
             exclude_root = zip_file
         else:
-            zip_cmd = 'zip {:s} {:s} {:s}'.format(switches, out_name, zip_path)
+            zip_cmd = 'zip {:s} "{:s}" "{:s}"'.format(switches, out_name, zip_path)
             out_path = out_name
             exclude_root = zip_path
 
@@ -167,15 +167,15 @@ if __name__ == '__main__':
         if scp_port:
             scp_cmd = '{} -P {}'.format(scp_cmd, scp_port)
 
-        scp_cmd = '{} {} {}:~/'.format(scp_cmd, out_path, scp_dst)
+        scp_cmd = '{} "{}" {}:~/'.format(scp_cmd, out_path, scp_dst)
 
         print('\nrunning: {}\n'.format(scp_cmd))
         os.system(scp_cmd)
-        rm_cmd = 'rm {}'.format(out_path)
+        rm_cmd = 'rm "{}"'.format(out_path)
         print('\nrunning: {}\n'.format(rm_cmd))
         os.system(rm_cmd)
     elif move_to_home:
-        mv_cmd = 'mv {:s} ~'.format(out_path)
+        mv_cmd = 'mv "{:s}" ~'.format(out_path)
         print('\nrunning: {}\n'.format(mv_cmd))
         os.system(mv_cmd)
 
