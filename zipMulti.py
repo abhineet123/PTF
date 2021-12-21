@@ -100,6 +100,8 @@ if __name__ == '__main__':
             out_name = '{}_{}'.format(out_name, postfix)
 
         out_name = out_name.replace('.', '_')
+        out_name = out_name.replace('(', '_')
+        out_name = out_name.replace(')', '_')
         if add_time_stamp:
             time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
             out_name = '{}_{}'.format(out_name, time_stamp)
