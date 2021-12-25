@@ -14,7 +14,7 @@ def linux_path(*args, **kwargs):
 
 
 def run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port):
-    dst_full_path = '{}/{}'.format(dst_path, k)
+    dst_full_path = '{}/{}'.format(dst_path, k).replace(os.sep, '/')
     scp_cmd = "pscp -pw {}".format(pwd0)
     if port:
         scp_cmd = '{} -P {}'.format(scp_cmd, port)
@@ -22,8 +22,10 @@ def run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port):
         scp_cmd = "{} {}:{}/{} {}".format(scp_cmd, scp_dst, scp_path, k, dst_full_path)
     elif mode == 1:
         scp_cmd = "{} {} {}:{}/".format(scp_cmd, dst_full_path, scp_dst, scp_path)
+    elif mode == -1:
+        scp_cmd = "scp -i {} {}:{}/{} {}".format(pwd0, scp_dst, scp_path, k, dst_path)
 
-    # print('Running {}'.format(scp_cmd))
+    print('Running {}'.format(scp_cmd))
     os.system(scp_cmd)
 
     if mode == 1:
@@ -68,29 +70,33 @@ def main():
 
     # Window.get_all_windows()
 
-    auth_path = linux_path(auth_root, auth_dir, auth_file)
-    auth_data = open(auth_path, 'r').readlines()
-    auth_data = [k.strip() for k in auth_data]
+    if mode == -1 or mode == -2:
+        pwd0 = auth_file
+        port = None
+    else:
+        auth_path = linux_path(auth_root, auth_dir, auth_file)
+        auth_data = open(auth_path, 'r').readlines()
+        auth_data = [k.strip() for k in auth_data]
 
-    dst_info = auth_data[0].split(' ')
-    name00, name01, ecr0, key0 = dst_info[:4]
+        dst_info = auth_data[0].split(' ')
+        name00, name01, ecr0, key0 = dst_info[:4]
 
-    if len(dst_info) > 4:
-        port = dst_info[4]
+        if len(dst_info) > 4:
+            port = dst_info[4]
 
-    encryption_params = encryption.Params()
-    encryption_params.mode = 1
-    encryption_params.root_dir = key_root
-    encryption_params.parent_dir = key_dir
+        encryption_params = encryption.Params()
+        encryption_params.mode = 1
+        encryption_params.root_dir = key_root
+        encryption_params.parent_dir = key_dir
 
-    encryption_params.in_file = ecr0
-    encryption_params.key_file = key0
-    encryption_params.process()
-    pwd0 = encryption.run(encryption_params)
+        encryption_params.in_file = ecr0
+        encryption_params.key_file = key0
+        encryption_params.process()
+        pwd0 = encryption.run(encryption_params)
 
     # Form1.SetFocus()
     default_fmy_key = '0'
-    if mode == 0:
+    if mode == 0 or mode == -1:
         data_type = 'filename (from)'
         highlight_key = '2'
     elif mode == 1:
@@ -99,8 +105,6 @@ def main():
     elif mode == 2:
         data_type = 'log'
         highlight_key = '4'
-    else:
-        raise AssertionError('Invalid mode: {}'.format(mode))
 
     while True:
         k = input('Enter {}\n'.format(data_type))

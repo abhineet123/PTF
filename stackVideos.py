@@ -24,9 +24,10 @@ params = {
     'only_height': 1,
     'width': 0,
     'height': 0,
+    'sep_size': 0,
     'fps': 30,
     'codec': 'H264',
-    'ext': 'mkv',
+    'ext': 'jpg',
     'grid_size': '',
     'resize_factor': 1.0,
 }
@@ -47,6 +48,7 @@ fps = params['fps']
 codec = params['codec']
 ext = params['ext']
 grid_size = params['grid_size']
+sep_size = params['sep_size']
 only_height = params['only_height']
 borderless = params['borderless']
 preserve_order = params['preserve_order']
@@ -174,7 +176,7 @@ while True:
         break
 
     out_img = stackImages(images, grid_size, borderless=borderless, preserve_order=preserve_order,
-                          annotations=annotations, ann_fmt=ann_fmt, only_height=only_height)
+                          annotations=annotations, ann_fmt=ann_fmt, only_height=only_height, sep_size=sep_size)
     if resize_factor != 1:
         out_img = cv2.resize(out_img, (0, 0), fx=resize_factor, fy=resize_factor)
 

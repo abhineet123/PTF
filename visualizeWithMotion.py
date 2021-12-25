@@ -32,7 +32,7 @@ import imageio
 from PIL import Image
 from paramparse import process
 
-from Misc import processArguments, sortKey, stackImages, resizeAR, addBorder, trim
+from Misc import sortKey, stackImages, resizeAR, addBorder, trim
 import sft
 
 # from Misc import VideoCaptureGPU as VideoCapture
@@ -162,6 +162,7 @@ class Params:
         # self.blended_border = 0
         self.width = 0
         self.win_name = ''
+        self.id_probs = ''
         self.win_offset_x = 0
         self.win_offset_y = 0
         self.log_file = 'vwm.log'
@@ -204,9 +205,6 @@ def run(args, multi_exit_program=None,
     _height = params.height
     min_height_ratio = params.min_height_ratio
     speed = params.speed
-    show_img = params.show_img
-    quality = params.quality
-    resize = params.resize
     mode = params.mode
     top_offset = params.top_offset
     bottom_offset = params.bottom_offset
@@ -227,7 +225,6 @@ def run(args, multi_exit_program=None,
     #     reversed_pos = int(reversed_pos)
 
     dup_reversed_pos = params.dup_reversed_pos
-    double_click_interval = params.double_click_interval
     n_images = params.n_images
     borderless = params.borderless
     preserve_order = params.preserve_order
@@ -270,6 +267,7 @@ def run(args, multi_exit_program=None,
     save_magnified = params.save_magnified
     _min_aspect_ratio = params.min_aspect_ratio
     _max_aspect_ratio = params.max_aspect_ratio
+    id_probs = params.id_probs
 
     if log_color:
         from colorlog import ColoredFormatter
@@ -687,7 +685,7 @@ def run(args, multi_exit_program=None,
             assert img is not None, f"Failed to read image: {_file}"
             _img_sequences[_load_id][_file] = img
 
-    def loadVideo(_load_id):
+    def load_video(_load_id):
         nonlocal src_files, total_frames, img_id, img_sequences, _lazy_video_load
 
         _lazy_video_load = lazy_video_load
@@ -1210,6 +1208,80 @@ def run(args, multi_exit_program=None,
 
             _print(f'total_frames: {total_frames[0]}  (unique: {n_unique_frames})')
 
+        if id_probs and os.path.exists(id_probs):
+            id_probs_data = open(id_probs, 'r').readlines()
+            id_probs_data = [k.strip().split('\t') for k in id_probs_data if k.strip()]
+
+            # print('id_probs_data: {}'.format(id_probs_data))
+
+            print('')
+
+            _prefix_to_prob = {_prefix: float(_prob) for _prefix, _prob in id_probs_data}
+
+            for _id in src_files:
+                curr_src_files = src_files[_id].copy()
+
+                _prefix_to_files = {}
+                _prefix_to_n_files = {}
+
+                max_matching_n_files = 0
+                total_n_files = 0
+                for _prefix, _prob in _prefix_to_prob.items():
+                    matching_src_files = [_file for i, _file in enumerate(curr_src_files) if
+                                          os.path.basename(_file).startswith(_prefix)]
+
+                    n_matching_src_files = len(matching_src_files)
+
+                    if n_matching_src_files == 0:
+                        print("no matching files found for {}".format(_prefix))
+                        continue
+
+                    curr_src_files = list(set(curr_src_files) - set(matching_src_files))
+
+                    # curr_src_files = [k for k in curr_src_files if k not in matched_files]
+
+                    _prefix_to_files[_prefix] = matching_src_files
+                    _prefix_to_n_files[_prefix] = n_matching_src_files
+
+                    # n_mult_src_files = n_matching_src_files * _prob
+
+                    print('{:25s}\t{:6d}'.format(_prefix, n_matching_src_files))
+
+                    if n_matching_src_files > max_matching_n_files:
+                        max_matching_n_files = n_matching_src_files
+
+                    total_n_files += n_matching_src_files
+
+                if len(curr_src_files) > 0:
+                    print('unmatched files: {}'.format('\n'.join(curr_src_files)))
+
+                assert total_n_files > 0, "no matching files found for any prefix"
+
+                _mult_src_files = []
+                _prefix_to_mult = {}
+                for _prefix, n_matching_src_files in _prefix_to_n_files.items():
+                    _prob = _prefix_to_prob[_prefix]
+
+                    _mult = int((float(max_matching_n_files) / float(n_matching_src_files)) * _prob)
+
+                    matching_src_files = _prefix_to_files[_prefix]
+
+                    if _mult > 1:
+                        matching_src_files = matching_src_files * _mult
+                    _mult_src_files += matching_src_files
+
+                    n_mult_src_files = len(matching_src_files)
+
+                    print('{:25s}\t{:.2f}\t{:6d}\t{:6d}\t{:6d}'.format(
+                        _prefix, _prob, n_matching_src_files, _mult, n_mult_src_files))
+
+                src_files[_id] = _mult_src_files
+
+                total_frames[_id] = len(src_files[_id])
+
+                _print(f'total_frames[{_id}]: {total_n_files}')
+                _print(f'mult frames[{_id}]: {total_frames[_id]}')
+
         if not multi_mode and random_mode:
             src_files_rand[0] = list(np.random.permutation(src_files[0]))
 
@@ -1223,7 +1295,7 @@ def run(args, multi_exit_program=None,
             n_videos = len(video_files_list)
 
     if video_mode:
-        loadVideo(0)
+        load_video(0)
         transition_interval = int(1000.0 / fps)
         total_frames = {
             0: total_frames[0]
@@ -1448,7 +1520,7 @@ def run(args, multi_exit_program=None,
                                 video_files_list = list(np.random.permutation(video_files_list))
                             vid_id = 0
                         src_path = video_files_list[vid_id]
-                        loadVideo(_load_id)
+                        load_video(_load_id)
                     _total_frames = total_frames[_load_id]
                     _img_id = img_id[_load_id]
                     src_id = 0
@@ -1473,7 +1545,7 @@ def run(args, multi_exit_program=None,
                     if video_mode and auto_progress_video:
                         vid_id = (vid_id + 1) % n_videos
                         src_path = video_files_list[vid_id]
-                        loadVideo(_load_id)
+                        load_video(_load_id)
                         _img_id = 0
                     else:
                         if video_mode and reverse_video and (video_mode == 2 or not _lazy_video_load):
@@ -2076,7 +2148,7 @@ def run(args, multi_exit_program=None,
                         for __load_id in range(n_images):
                             vid_id = (vid_id + 1) % n_videos
                             src_path = video_files_list[vid_id]
-                            loadVideo(__load_id)
+                            load_video(__load_id)
                         loadImage()
                     else:
                         _print('next image')
@@ -2282,7 +2354,7 @@ def run(args, multi_exit_program=None,
                                 if vid_id < 0:
                                     vid_id = n_videos - 1
                                 src_path = video_files_list[vid_id]
-                                loadVideo(__load_id)
+                                load_video(__load_id)
                             loadImage()
                         else:
                             loadImage(-1)
@@ -3791,7 +3863,7 @@ def run(args, multi_exit_program=None,
                     for __load_id in range(n_images):
                         vid_id = (vid_id + 1) % n_videos
                         src_path = video_files_list[vid_id]
-                        loadVideo(__load_id)
+                        load_video(__load_id)
                     loadImage()
                 else:
                     if speed == 0 and auto_progress:
@@ -3806,7 +3878,7 @@ def run(args, multi_exit_program=None,
                         if vid_id < 0:
                             vid_id = n_videos - 1
                         src_path = video_files_list[vid_id]
-                        loadVideo(__load_id)
+                        load_video(__load_id)
                     loadImage()
                 else:
                     if speed == 0 and auto_progress:
