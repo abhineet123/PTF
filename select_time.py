@@ -7,9 +7,6 @@ except ImportError:
     from tkinter import Tk
     # import tkinter as Tk
 
-import pyperclip
-
-
 def is_date(line):
     date_obj = None
     try:
@@ -246,6 +243,8 @@ def main():
     print('out_txt:\n{}'.format(out_txt))
 
     try:
+        import pyperclip
+
         pyperclip.copy(out_txt)
         spam = pyperclip.paste()
     except BaseException as e:

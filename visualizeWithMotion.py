@@ -1257,25 +1257,38 @@ def run(args, multi_exit_program=None,
 
                 assert total_n_files > 0, "no matching files found for any prefix"
 
-                _mult_src_files = []
-                _prefix_to_mult = {}
+                all_mult_src_files = []
                 for _prefix, n_matching_src_files in _prefix_to_n_files.items():
                     _prob = _prefix_to_prob[_prefix]
 
                     _mult = int((float(max_matching_n_files) / float(n_matching_src_files)) * _prob)
 
-                    matching_src_files = _prefix_to_files[_prefix]
+                    target_count = int((float(max_matching_n_files) * _prob))
 
-                    if _mult > 1:
-                        matching_src_files = matching_src_files * _mult
-                    _mult_src_files += matching_src_files
+                    if target_count > n_matching_src_files:
+                        _mult = int(target_count / n_matching_src_files)
+                        _residual = target_count % n_matching_src_files
 
-                    n_mult_src_files = len(matching_src_files)
+                        matching_src_files = _prefix_to_files[_prefix]
 
-                    print('{:25s}\t{:.2f}\t{:6d}\t{:6d}\t{:6d}'.format(
-                        _prefix, _prob, n_matching_src_files, _mult, n_mult_src_files))
+                        mult_src_files = matching_src_files * _mult
 
-                src_files[_id] = _mult_src_files
+                        if _residual > 0:
+                            random.shuffle(matching_src_files)
+                            mult_src_files += matching_src_files[:_residual]
+                    else:
+                        mult_src_files = matching_src_files
+                        _mult = 1
+                        _residual = 0
+
+                    all_mult_src_files += mult_src_files
+
+                    n_mult_src_files = len(mult_src_files)
+
+                    print('{:25s}\t{:.2f}\t{:6d}\t{:6d}\t{:6d}\t{:6d}'.format(
+                        _prefix, _prob, n_matching_src_files, _mult, _residual, n_mult_src_files))
+
+                src_files[_id] = all_mult_src_files
 
                 total_frames[_id] = len(src_files[_id])
 
@@ -2796,13 +2809,25 @@ def run(args, multi_exit_program=None,
     loadImage(set_grid_size=set_grid_size)
     exit_program = 0
 
-    numpad_to_ascii = {
-        2293760: '#crop',
-        2228224: '#sort',
-        2359296: '#misc',
-        2162688: '#proc',
-        2949120: '#bad',
+    numpad_to_cat = {
+        'End': '#crop',
+        'PgDn': '#sort',
+        'Home': '#misc',
+        'PgUp': '#proc',
+        'Insert': '#proc',
+        'Delete': '#bad',
     }
+
+    ascii_to_numpad = {
+        2293760: 'End',
+        2228224: 'PgDn',
+        2359296: 'Home',
+        2162688: 'PgUp',
+        2949120: 'Insert',
+        3014656: 'Delete',
+    }
+    
+    print('numpad_to_cat:\n{}'.format('\n'.join('\t{}: {}'.format(k, v) for k, v in numpad_to_cat.items())))
     images_to_del = []
     images_to_sort = {}
     images_to_sort_inv = {}
@@ -3885,30 +3910,32 @@ def run(args, multi_exit_program=None,
                         auto_progress_type = -1
                     else:
                         loadImage(-1)
-            elif k == 3014656:
-                _print('marking image {} for deletion:'.format(len(images_to_del) + 1))
-                if n_images == 1:
-                    img_fpath = os.path.abspath(img_fname)
-                    _txt = '"' + img_fpath + '"'
-                    _print(_txt)
-                    images_to_del.append(img_fpath)
-                else:
-                    _txt = ''
-                    for _idx in stack_idx:
-                        if not video_mode:
-                            img_fpath = os.path.abspath(img_fnames[_idx])
-                            _txt += '"' + img_fpath + '"' + '\n'
-                            images_to_del.append(img_fpath)
-                        _print(_txt)
-                if n_images == 1:
-                    loadImage(1)
-                try:
-                    import pyperclip
 
-                    pyperclip.copy(_txt)
-                    _ = pyperclip.paste()
-                except BaseException as e:
-                    print('Copying to clipboard failed: {}'.format(e))
+            # elif k == 3014656:
+            #     _print('marking image {} for deletion:'.format(len(images_to_del) + 1))
+            #     if n_images == 1:
+            #         img_fpath = os.path.abspath(img_fname)
+            #         _txt = '"' + img_fpath + '"'
+            #         _print(_txt)
+            #         images_to_del.append(img_fpath)
+            #     else:
+            #         _txt = ''
+            #         for _idx in stack_idx:
+            #             if not video_mode:
+            #                 img_fpath = os.path.abspath(img_fnames[_idx])
+            #                 _txt += '"' + img_fpath + '"' + '\n'
+            #                 images_to_del.append(img_fpath)
+            #             _print(_txt)
+            #     if n_images == 1:
+            #         loadImage(1)
+            #     try:
+            #         import pyperclip
+            #
+            #         pyperclip.copy(_txt)
+            #         _ = pyperclip.paste()
+            #     except BaseException as e:
+            #         print('Copying to clipboard failed: {}'.format(e))
+
             elif k == ord('F') or k == ord('0'):
                 if video_mode == 1:
                     _print(src_path)
@@ -3937,12 +3964,17 @@ def run(args, multi_exit_program=None,
                 else:
                     _print('fullscreen mode disabled')
             else:
+
                 try:
-                    numpad_key = numpad_to_ascii[k]
+                    numpad_key = ascii_to_numpad[k]
                 except KeyError as e:
                     _print('Unknown key: {} :: {}'.format(k, e))
                 else:
-                    sortImage(img_fname, numpad_key)
+                    sort_cat = numpad_to_cat[numpad_key]
+                    # print('k: {}'.format(k))
+                    # print('numpad_key: {}'.format(numpad_key))
+                    # print('sort_cat: {}'.format(sort_cat))
+                    sortImage(img_fname, sort_cat)
 
         # if hotkeys_available:
         #     msg = wintypes.MSG()

@@ -18,17 +18,20 @@ def run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port):
     scp_cmd = "pscp -pw {}".format(pwd0)
     if port:
         scp_cmd = '{} -P {}'.format(scp_cmd, port)
+
     if mode == 0:
         scp_cmd = "{} {}:{}/{} {}".format(scp_cmd, scp_dst, scp_path, k, dst_full_path)
     elif mode == 1:
         scp_cmd = "{} {} {}:{}/".format(scp_cmd, dst_full_path, scp_dst, scp_path)
     elif mode == -1:
         scp_cmd = "scp -i {} {}:{}/{} {}".format(pwd0, scp_dst, scp_path, k, dst_path)
+    elif mode == -2:
+        scp_cmd = "scp -i {} {} {}:{}/{}".format(pwd0, dst_full_path, scp_dst, scp_path, k)
 
     print('Running {}'.format(scp_cmd))
     os.system(scp_cmd)
 
-    if mode == 1:
+    if mode == 1 or mode == -2:
         rm_cmd = 'rm {}'.format(dst_full_path)
         # print('Running {}'.format(rm_cmd))
         os.system(rm_cmd)
@@ -99,7 +102,7 @@ def main():
     if mode == 0 or mode == -1:
         data_type = 'filename (from)'
         highlight_key = '2'
-    elif mode == 1:
+    elif mode == 1 or mode == -2:
         data_type = 'filename (to)'
         highlight_key = '3'
     elif mode == 2:
@@ -107,11 +110,24 @@ def main():
         highlight_key = '4'
 
     while True:
-        k = input('Enter {}\n'.format(data_type))
+        k = input('\nEnter {}\n'.format(data_type))
 
         x, y = win32api.GetCursorPos()
         # EnumWindows(EnumWindowsProc(foreach_window), 0)
         if use_ahk:
+            if mode == 0 or mode == -1:
+                clip_txt = '{} from {}'.format(k, scp_name)
+            elif mode == 1 or mode == -2:
+                clip_txt = '{} to {}'.format(k, scp_name)
+
+            try:
+                import pyperclip
+
+                pyperclip.copy(clip_txt)
+                _ = pyperclip.paste()
+            except BaseException as e:
+                print('Copying to clipboard failed: {}'.format(e))
+
             os.system('paste_with_cat_1')
             run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port)
             continue
