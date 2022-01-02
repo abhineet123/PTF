@@ -21,7 +21,7 @@ def main():
     }
     paramparse.process_dict(params)
     sleep_t = params['sleep_t']
-    max_t = params['max_t']
+    max_t = float(params['max_t'])
     switch_t = params['switch_t']
     mode = params['mode']
 
@@ -32,7 +32,6 @@ def main():
         key = b'key Page_Down '
     else:
         key = b'key Return '
-
 
     start_t = time.time()
     while True:
