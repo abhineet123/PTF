@@ -634,6 +634,8 @@ def run(args, multi_exit_program=None,
     video_files_list = []
     n_videos = vid_id = 0
     # video_mode = 0
+    horz_flip_images = 0
+    vert_flip_images = 0
     rotate_images = 0
     src_path = os.path.abspath(src_path)
 
@@ -1245,7 +1247,7 @@ def run(args, multi_exit_program=None,
 
                     # n_mult_src_files = n_matching_src_files * _prob
 
-                    print('{:25s}\t{:6d}'.format(_prefix, n_matching_src_files))
+                    # print('{:25s}\t{:6d}'.format(_prefix, n_matching_src_files))
 
                     if n_matching_src_files > max_matching_n_files:
                         max_matching_n_files = n_matching_src_files
@@ -1285,8 +1287,8 @@ def run(args, multi_exit_program=None,
 
                     n_mult_src_files = len(mult_src_files)
 
-                    print('{:25s}\t{:.2f}\t{:6d}\t{:6d}\t{:6d}\t{:6d}'.format(
-                        _prefix, _prob, n_matching_src_files, _mult, _residual, n_mult_src_files))
+                    # print('{:25s}\t{:.2f}\t{:6d}\t{:6d}\t{:6d}\t{:6d}'.format(
+                    #     _prefix, _prob, n_matching_src_files, _mult, _residual, n_mult_src_files))
 
                 src_files[_id] = all_mult_src_files
 
@@ -1617,6 +1619,12 @@ def run(args, multi_exit_program=None,
                         # print('trimming...')
                         src_img = np.asarray(trim(Image.fromarray(src_img)))
 
+                    if horz_flip_images:
+                        src_img = np.fliplr(src_img)
+
+                    if vert_flip_images:
+                        src_img = np.flipud(src_img)
+
                     if rotate_images:
                         src_img = np.rot90(src_img, rotate_images)
                 else:
@@ -1645,6 +1653,12 @@ def run(args, multi_exit_program=None,
                     if trim_images:
                         src_img = np.asarray(trim(Image.fromarray(src_img)))
                         # src_img = wandImage(src_img).trim(color=None, fuzz=0) ()
+
+                    if horz_flip_images:
+                        src_img = np.fliplr(src_img)
+
+                    if vert_flip_images:
+                        src_img = np.flipud(src_img)
 
                     if rotate_images:
                         src_img = np.rot90(src_img, rotate_images)
@@ -2826,7 +2840,7 @@ def run(args, multi_exit_program=None,
         2949120: 'Insert',
         3014656: 'Delete',
     }
-    
+
     print('numpad_to_cat:\n{}'.format('\n'.join('\t{}: {}'.format(k, v) for k, v in numpad_to_cat.items())))
     images_to_del = []
     images_to_sort = {}
@@ -3297,7 +3311,24 @@ def run(args, multi_exit_program=None,
                 new_r = int(np.ceil((n_images / new_c)))
                 grid_size = (new_r, new_c)
                 loadImage()
+            elif k == ord('v'):
+                vert_flip_images = 1 - vert_flip_images
+                if vert_flip_images == 0:
+                    _print('disabling vertical image flipping')
+                elif vert_flip_images == 1:
+                    _print('enabling vertical image flipping')
+                src_images = []
+                loadImage()
             elif k == ord('h'):
+                horz_flip_images = 1 - horz_flip_images
+
+                if horz_flip_images == 0:
+                    _print('disabling horizontal image flipping')
+                elif horz_flip_images == 1:
+                    _print('enabling horizontal image flipping')
+                src_images = []
+                loadImage()
+            elif k == ord('H'):
                 show_window = 1 - show_window
                 if show_window:
                     # _print('{} :: showing window\n'.format(win_name))
@@ -3698,30 +3729,30 @@ def run(args, multi_exit_program=None,
                     # on_top = 0
                     # hideBorder(dup_win_names)
 
+            # elif k == ord('V'):
+            #     if second_from_top:
+            #         second_from_top = 0
+            #         _print('second_from_top disabled')
+            #         sys.stdout.write('waiting for second_from_top_thread to exit...')
+            #         sft_exit_program.value = 1
+            #         # second_from_top_thread.terminate()
+            #         sys.stdout.write('done\n')
+            #     else:
+            #         second_from_top = 1
+            #         _print('second_from_top enabled')
+            #         sft_exit_program.value = 0
+            #         second_from_top_thread = Process(target=sft.second_from_top_fn,
+            #                                          args=(
+            #                                              sft_active_monitor_id, sft_active_win_handle, sft_exit_program,
+            #                                              second_from_top, monitors, win_name,
+            #                                              dup_win_names, monitor_id, dup_monitor_ids,
+            #                                              duplicate_window, only_maximized, frg_win_handles,
+            #                                              # sft_other_vars
+            #                                          ))
+            #         second_from_top_thread.start()
+            #         # mouse.on_click(second_from_top_callback, args=())
+            #         # mouse.unhook(second_from_top_callback)
             elif k == ord('V'):
-                if second_from_top:
-                    second_from_top = 0
-                    _print('second_from_top disabled')
-                    sys.stdout.write('waiting for second_from_top_thread to exit...')
-                    sft_exit_program.value = 1
-                    # second_from_top_thread.terminate()
-                    sys.stdout.write('done\n')
-                else:
-                    second_from_top = 1
-                    _print('second_from_top enabled')
-                    sft_exit_program.value = 0
-                    second_from_top_thread = Process(target=sft.second_from_top_fn,
-                                                     args=(
-                                                         sft_active_monitor_id, sft_active_win_handle, sft_exit_program,
-                                                         second_from_top, monitors, win_name,
-                                                         dup_win_names, monitor_id, dup_monitor_ids,
-                                                         duplicate_window, only_maximized, frg_win_handles,
-                                                         # sft_other_vars
-                                                     ))
-                    second_from_top_thread.start()
-                    # mouse.on_click(second_from_top_callback, args=())
-                    # mouse.unhook(second_from_top_callback)
-            elif k == ord('v'):
                 on_top = 1 - on_top
                 hideBorder(win_name, on_top)
                 if duplicate_window:
