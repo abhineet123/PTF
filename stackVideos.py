@@ -30,6 +30,7 @@ params = {
     'ext': 'jpg',
     'grid_size': '',
     'resize_factor': 1.0,
+    'recursive': 0,
 }
 
 processArguments(sys.argv[1:], params)
@@ -54,6 +55,7 @@ borderless = params['borderless']
 preserve_order = params['preserve_order']
 ann_fmt = params['ann_fmt']
 resize_factor = params['resize_factor']
+recursive = params['recursive']
 
 vid_exts = ['mkv', 'mp4', 'avi', 'mjpg', 'wmv']
 image_exts = ['jpg', 'bmp', 'png', 'tif']
@@ -108,7 +110,7 @@ for src_file in src_files:
     if os.path.isfile(src_file):
         cap = cv2.VideoCapture()
     elif os.path.isdir(src_file):
-        cap = ImageSequenceCapture(src_file)
+        cap = ImageSequenceCapture(src_file, recursive=recursive)
     else:
         raise IOError('Invalid src_file: {}'.format(src_file))
 

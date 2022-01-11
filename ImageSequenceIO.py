@@ -55,7 +55,7 @@ class ImageSequenceCapture:
     :param int recursive
     """
 
-    def __init__(self, src_path='', recursive=0, img_exts=(), logger=None):
+    def __init__(self, src_path='', recursive=0):
         self.src_path = ''
         self.src_fmt = ''
         self.recursive = 0
@@ -66,7 +66,7 @@ class ImageSequenceCapture:
         self.frame_id = 0
 
         if src_path:
-            if self.open(src_path, recursive, img_exts):
+            if self.open(src_path, recursive):
                 self.is_open = True
 
     def isOpened(self, cv_prop):
@@ -101,7 +101,10 @@ class ImageSequenceCapture:
         else:
             raise IOError('Invalid cv_prop: {}'.format(cv_prop))
 
-    def open(self, src_path='', recursive=0, img_exts=()):
+    def open(self, src_path='', recursive=0):
+        if self.is_open:
+            return True
+
         if src_path:
             img_ext = os.path.splitext(os.path.basename(src_path))[1]
             if img_ext:
@@ -112,19 +115,24 @@ class ImageSequenceCapture:
                 self.src_path = src_path
 
             self.recursive = recursive
-        if img_exts:
-            self.img_exts = img_exts
+
+        print('looking for images with formats {} in {}'.format(self.img_exts, self.src_path))
 
         if recursive:
-            src_file_gen = [[os.path.join(dirpath, f) for f in filenames if
-                             os.path.splitext(f.lower())[1] in self.img_exts]
+            print('searching recursively')
+            src_file_gen = [[os.path.join(dirpath, f) for f in filenames
+                             if os.path.splitext(f.lower())[1] in self.img_exts
+                             ]
                             for (dirpath, dirnames, filenames) in os.walk(self.src_path, followlinks=True)]
             _src_files = [item for sublist in src_file_gen for item in sublist]
         else:
             _src_files = [os.path.join(self.src_path, k) for k in os.listdir(self.src_path) if
                           os.path.splitext(k.lower())[1] in self.img_exts]
 
-        if not _src_files:
+        n_src_files = len(_src_files)
+        print('n_src_files: {}'.format(n_src_files))
+
+        if n_src_files == 0:
             print('No images found in {}'.format(self.src_path))
             return False
 
@@ -138,4 +146,5 @@ class ImageSequenceCapture:
             matching_files = [self.src_fmt % i for i in range(1, self.n_src_files + 1)]
             self.src_files = [k for k in self.src_files if os.path.basename(k) in matching_files]
             self.n_src_files = len(self.src_files)
+
         return True
