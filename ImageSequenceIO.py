@@ -74,9 +74,11 @@ class ImageSequenceCapture:
 
     def read(self):
         if self.frame_id >= self.n_src_files:
-            raise IOError('Invalid frame_id: {} for sequence with {} frames'.format(
+            print('Invalid frame_id: {} for sequence with {} frames'.format(
                 self.frame_id, self.n_src_files
             ))
+            return False, None
+
         frame = cv2.imread(self.src_files[self.frame_id])
         self.frame_id += 1
         return True, frame

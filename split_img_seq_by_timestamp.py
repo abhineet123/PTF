@@ -2,64 +2,139 @@ import os
 import numpy as np
 from datetime import datetime
 from pprint import pformat
+from tqdm import tqdm
+import random
+import pandas as pd
 
 import paramparse
 
 
-def main():
-    params = {
-        'src_path': '.',
-        'save_path': '',
-        'save_root_dir': '',
-        'img_ext': 'jpg',
-        'show_img': 1,
-        'del_src': 0,
-        'start_id': 0,
-        'n_frames': 0,
-        'width': 0,
-        'height': 0,
-        'fps': 30,
-        # 'codec': 'FFV1',
-        # 'ext': 'avi',
-        'codec': 'H264',
-        'ext': 'mkv',
-        'out_postfix': '',
-        'reverse': 0,
-        'move_src': 0,
-        'use_skv': 0,
-        'disable_suffix': 0,
-        'read_in_batch': 1,
-        'placement_type': 1,
-        'recursive': 1,
-        'timedelta_thresh': 0.4,
-    }
+class Params:
+    """
+    :ivar codec:
+    :type codec: str
 
-    paramparse.process_dict(params)
-    _src_path = params['src_path']
-    save_path = params['save_path']
-    img_ext = params['img_ext']
-    show_img = params['show_img']
-    del_src = params['del_src']
-    start_id = params['start_id']
-    n_frames = params['n_frames']
-    _width = params['width']
-    _height = params['height']
-    fps = params['fps']
-    use_skv = params['use_skv']
-    codec = params['codec']
-    ext = params['ext']
-    out_postfix = params['out_postfix']
-    reverse = params['reverse']
-    save_root_dir = params['save_root_dir']
-    move_src = params['move_src']
-    disable_suffix = params['disable_suffix']
-    timedelta_thresh = params['timedelta_thresh']
-    placement_type = params['placement_type']
-    recursive = params['recursive']
+    :ivar del_src:
+    :type del_src: int
+
+    :ivar disable_suffix:
+    :type disable_suffix: int
+
+    :ivar ext:
+    :type ext: str
+
+    :ivar fps:
+    :type fps: int
+
+    :ivar height:
+    :type height: int
+
+    :ivar img_ext:
+    :type img_ext: str
+
+    :ivar max_rials:
+    :type max_rials: int
+
+    :ivar move_src:
+    :type move_src: int
+
+    :ivar n_frames:
+    :type n_frames: int
+
+    :ivar out_postfix:
+    :type out_postfix: str
+
+    :ivar placement_type:
+    :type placement_type: int
+
+    :ivar ratio_eps:
+    :type ratio_eps: float
+
+    :ivar read_in_batch:
+    :type read_in_batch: int
+
+    :ivar recursive:
+    :type recursive: int
+
+    :ivar reverse:
+    :type reverse: int
+
+    :ivar save_path:
+    :type save_path: str
+
+    :ivar save_root_dir:
+    :type save_root_dir: str
+
+    :ivar show_img:
+    :type show_img: int
+
+    :ivar src_path:
+    :type src_path: str
+
+    :ivar src_root_dir:
+    :type src_root_dir: str
+
+    :ivar start_id:
+    :type start_id: int
+
+    :ivar test_ratio:
+    :type test_ratio: float
+
+    :ivar timedelta_thresh:
+    :type timedelta_thresh: float
+
+    :ivar use_skv:
+    :type use_skv: int
+
+    :ivar width:
+    :type width: int
+
+    """
+
+    def __init__(self):
+        self.cfg = ()
+        self.codec = 'H264'
+        self.del_src = 0
+        self.disable_suffix = 0
+        self.ext = 'mkv'
+        self.fps = 30
+        self.height = 0
+        self.img_ext = 'jpg'
+        self.max_rials = 100000
+        self.move_src = 0
+        self.n_frames = 0
+        self.out_postfix = ''
+        self.placement_type = 1
+        self.ratio_eps = 1e-3
+        self.read_in_batch = 1
+        self.recursive = 1
+        self.reverse = 0
+        self.save_path = ''
+        self.save_root_dir = ''
+        self.show_img = 1
+        self.src_path = '.'
+        self.src_root_dir = ''
+        self.start_id = 0
+        self.test_ratio = 0.3
+        self.timedelta_thresh = 1.0
+        self.use_skv = 0
+        self.width = 0
+
+
+def main():
+    params = Params()
+
+    paramparse.process(params)
+    src_root_dir = params.src_root_dir
+    _src_path = params.src_path
+    reverse = params.reverse
+    timedelta_thresh = params.timedelta_thresh
+    recursive = params.recursive
+    test_ratio = params.test_ratio
+    max_rials = params.max_rials
+    ratio_eps = params.ratio_eps
 
     img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
-
-    src_root_dir = ''
 
     if os.path.isdir(_src_path):
         if recursive:
@@ -67,14 +142,11 @@ def main():
         else:
             src_files = [k for k in os.listdir(_src_path) for _ext in img_exts if k.endswith(_ext)]
             if not src_files:
-                # src_paths = [os.path.join(_src_path, k) for k in os.listdir(_src_path) if
-                #              os.path.isdir(os.path.join(_src_path, k))]
                 src_paths_gen = [[os.path.join(dirpath, d) for d in dirnames if
                                   any([os.path.splitext(f.lower())[1] in img_exts
                                        for f in os.listdir(os.path.join(dirpath, d))])]
                                  for (dirpath, dirnames, filenames) in os.walk(_src_path, followlinks=True)]
                 src_paths = [item for sublist in src_paths_gen for item in sublist]
-                src_root_dir = os.path.abspath(_src_path)
             else:
                 src_paths = [_src_path]
         print('Found {} image sequence(s):\n{}'.format(len(src_paths), pformat(src_paths)))
@@ -84,6 +156,10 @@ def main():
         n_seq = len(src_paths)
         if n_seq <= 0:
             raise SystemError('No input sequences found in {}'.format(_src_path))
+
+        if src_root_dir:
+            src_paths = [os.path.join(src_root_dir, x) for x in src_paths]
+
         print('n_seq: {}'.format(n_seq))
     else:
         raise IOError('Invalid src_path: {}'.format(_src_path))
@@ -96,13 +172,7 @@ def main():
     elif reverse == 2:
         print('Appending the reverse sequence')
 
-    print('placement_type: {}'.format(placement_type))
-
-    exit_prog = 0
-
     n_src_paths = len(src_paths)
-
-    cwd = os.getcwd()
 
     for src_id, src_path in enumerate(src_paths):
         seq_name = os.path.basename(src_path)
@@ -110,12 +180,6 @@ def main():
         print('\n{}/{} Reading source images from: {}'.format(src_id + 1, n_src_paths, src_path))
 
         src_path = os.path.abspath(src_path)
-
-        if move_src:
-            rel_src_path = os.path.relpath(src_path, os.getcwd())
-            dst_path = os.path.join(cwd, 'i2v', rel_src_path)
-        else:
-            dst_path = ''
 
         if recursive:
             src_file_gen = [[os.path.join(dirpath, f) for f in filenames if
@@ -125,38 +189,90 @@ def main():
         else:
             src_files = [k for k in os.listdir(src_path) for _ext in img_exts if k.endswith(_ext)]
 
-        n_src_files = len(src_files)
+        n_files = len(src_files)
 
-        if n_src_files <= 0:
+        if n_files <= 0:
             raise AssertionError('No input frames found')
 
         src_files.sort()
-        print('n_src_files: {}'.format(n_src_files))
+        print('n_files: {}'.format(n_files))
 
         src_file_names = [os.path.splitext(os.path.basename(src_file))[0] for src_file in src_files]
         src_file_name_sec = [float(src_file_name) / 1000.0 for src_file_name in src_file_names]
         src_timstamps = [datetime.fromtimestamp(src_file_name) for src_file_name in src_file_name_sec]
 
-        src_tims_delta = [src_timstamps[i + 1] - src_timstamps[i] for i in range(n_src_files - 1)]
+        src_tims_delta = [src_timstamps[i + 1] - src_timstamps[i] for i in range(n_files - 1)]
 
         src_tims_delta_seconds = [k.seconds + k.microseconds * 1e-6 for k in src_tims_delta]
-
         src_tims_delta_seconds.insert(0, 0)
 
-        src_tims_delta_seconds = np.asarray(src_tims_delta_seconds)
+        subseq_start_ids = list(np.where(np.asarray(src_tims_delta_seconds) > timedelta_thresh)[0])
+        subseq_start_ids.insert(0, 0)
 
-        subseq_starts = np.where(src_tims_delta_seconds > timedelta_thresh)[0]
+        n_subseq = len(subseq_lengths)
+        print('n_subseq: {}'.format(n_subseq))
 
-        subseq_lengths = subseq_starts[1:] - subseq_starts[:-1]
+        subseq_start_ids = np.asarray(subseq_start_ids)
 
-        subseq_lengths = list(subseq_lengths)
-        subseq_lengths.insert(0, subseq_starts[0])
+        subseq_lengths = list(subseq_start_ids[1:] - subseq_start_ids[:-1])
+        subseq_lengths.append(n_files - subseq_start_ids[-1])
+
+        subseq_end_ids = subseq_start_ids + np.asarray(subseq_lengths) - 1
+
+        subseq_timestamps = [(src_timstamps[subseq_start_ids[i]], src_timstamps[subseq_end_ids[i]])
+                             for i in range(n_subseq)]
+
+        subseq_ids_and_lengths = list(range(n_subseq))
+
+        n_test_subseq = int(n_subseq * test_ratio)
+        print('n_test_subseq: {}'.format(n_test_subseq))
+
+        best_test_files_ratio = 0
+        best_n_test_files = 0
+        best_test_subseq_ids = best_train_subseq_ids = None
+
+        pbar = tqdm(range(max_rials))
+
+        print('looking for a random set of test sub sequences with closest possible ratio of files to {:.2f}'.format(
+            test_ratio))
+
+        for _ in pbar:
+            random.shuffle(subseq_ids_and_lengths)
+            test_subseq_lengths_with_ids = subseq_ids_and_lengths[:n_test_subseq]
+
+            n_test_files = sum(k[1] for k in test_subseq_lengths_with_ids)
+
+            test_files_ratio = float(n_test_files) / n_files
+
+            if abs(test_ratio - test_files_ratio) < abs(test_ratio - best_test_files_ratio):
+                best_test_files_ratio = test_files_ratio
+                best_n_test_files = n_test_files
+                best_test_subseq_ids = test_subseq_lengths_with_ids.copy()
+                best_train_subseq_ids = subseq_ids_and_lengths[n_test_subseq:].copy()
+
+                pbar.set_description('best_test_ratio: {:.10f} n_test_files: {:d}'.format(
+                    best_test_files_ratio, best_n_test_files))
+
+                if abs(best_test_files_ratio - test_ratio) < ratio_eps:
+                    break
+
+        print('n_test_files: {}'.format(best_n_test_files))
+
         subseq_lengths = np.asarray(subseq_lengths)
 
-        np.savetxt('src_tims_delta_seconds.txt', src_tims_delta_seconds, fmt='%.6f', delimiter='\n')
-        np.savetxt('subseq_starts.txt', subseq_starts, fmt='%d', delimiter='\n')
-        np.savetxt('subseq_lengths.txt', subseq_lengths, fmt='%d', delimiter='\n')
+        subseq_info = [
+            {
+                'start_id': subseq_start_ids[i],
+                'end_id': subseq_end_ids[i],
+                'length': subseq_lengths[i],
+                'start_timestamp': subseq_timestamps[i][0].strftime('%Y/%m/%d %I:%M:%S:%f %p'),
+                'end_timestamp': subseq_timestamps[i][1].strftime('%I:%M:%S %p'),
+            }
+            for i in range(n_subseq)
+        ]
 
+        df = pd.DataFrame(subseq_info, columns=['start_id', 'end_id', 'length', 'start_timestamp', 'end_timestamp'])
+        df.to_csv(f'{seq_name}_subseq_info.csv', index = False, sep='\t')
 
-if __name__ == '__main__':
-    main()
+    if __name__ == '__main__':
+        main()

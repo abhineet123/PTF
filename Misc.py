@@ -3998,10 +3998,13 @@ def stackImages(img_list, grid_size=None, stack_order=0, borderless=1,
     # print('grid_size: {}'.format(grid_size))
 
     if grid_size is None:
-        if n_images < 4:
+        if n_images < 3:
             n_cols, n_rows = n_images, 1
         else:
             n_cols = n_rows = int(np.ceil(np.sqrt(n_images)))
+
+            if n_rows * (n_cols - 1) >= n_images:
+                n_cols -= 1
     else:
         n_rows, n_cols = grid_size
     target_ar = 1920.0 / 1080.0

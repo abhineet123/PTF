@@ -12,7 +12,7 @@ params = {
     'root_dir': '',
     'save_path': '',
     'img_ext': 'jpg',
-    'show_img': 1,
+    'show_img': 2,
     'del_src': 0,
     'start_id': 0,
     'n_frames': 0,
@@ -103,10 +103,14 @@ else:
 n_frames_list = []
 cap_list = []
 size_list = []
+seq_names = []
 
 for src_file in src_files:
     src_file = os.path.abspath(src_file)
     seq_name = os.path.splitext(os.path.basename(src_file))[0]
+
+    seq_names.append(seq_name)
+
     if os.path.isfile(src_file):
         cap = cv2.VideoCapture()
     elif os.path.isdir(src_file):
@@ -141,36 +145,58 @@ video_out = None
 win_name = 'stacked_{}'.format(datetime.now().strftime("%y%m%d_%H%M%S"))
 
 min_n_frames = min(n_frames_list)
+max_n_frames = max(n_frames_list)
 
 if n_frames <= 0:
-    n_frames = min_n_frames
+    n_frames = max_n_frames
 else:
-    if min_n_frames < n_frames:
+    if max_n_frames < n_frames:
         raise IOError('Invalid n_frames: {} for sequence list with min_n_frames: {}'.format(n_frames, min_n_frames))
 
 if annotations:
-    if len(annotations) != n_videos:
-        raise IOError('Invalid annotations: {}'.format(annotations))
-    for i in range(n_videos):
-        if annotations[i] == '__n__':
-            annotations[i] = ''
+    if len(annotations) == 1 and annotations[0] == 1:
+        annotations = []
+        for i in range(n_videos):
+            annotations.append(seq_names[i])
+    else:
+        assert len(annotations) == n_videos, 'Invalid annotations: {}'.format(annotations)
+
+        for i in range(n_videos):
+            if annotations[i] == '__n__':
+                annotations[i] = ''
+
     print('Adding annotations:')
     pprint(annotations)
 else:
     annotations = None
 
+if show_img == 2:
+    vis_only = True
+    print('Running in visualization only mode')
+else:
+    vis_only = False
+
 while True:
 
     images = []
-    for cap in cap_list:
+    valid_caps = []
+    valid_annotations = []
+    for cap_id, cap in enumerate(cap_list):
         ret, image = cap.read()
         if not ret:
             print('\nFrame {:d} could not be read'.format(frame_id + 1))
-            break
+            continue
         images.append(image)
+        valid_caps.append(cap)
+        if annotations:
+            valid_annotations.append(annotations[cap_id])
 
-    if len(images) != n_videos:
-        break
+    cap_list = valid_caps
+    if annotations:
+        annotations = valid_annotations
+
+    # if len(images) != n_videos:
+    #     break
 
     frame_id += 1
 
@@ -182,23 +208,25 @@ while True:
     if resize_factor != 1:
         out_img = cv2.resize(out_img, (0, 0), fx=resize_factor, fy=resize_factor)
 
-    if video_out is None:
-        dst_height, dst_width = out_img.shape[:2]
-
-        if ext in vid_exts:
-            fourcc = cv2.VideoWriter_fourcc(*codec)
-            video_out = cv2.VideoWriter(dst_path, fourcc, fps, (dst_width, dst_height))
-        elif ext in image_exts:
-            video_out = ImageSequenceWriter(dst_path)
-        else:
-            raise IOError('Invalid ext: {}'.format(ext))
-
+    if not vis_only:
         if video_out is None:
-            raise IOError('Output video file could not be opened: {}'.format(dst_path))
+            dst_height, dst_width = out_img.shape[:2]
 
-        print('Saving {}x{} output video to {}'.format(dst_width, dst_height, dst_path))
+            if ext in vid_exts:
+                fourcc = cv2.VideoWriter_fourcc(*codec)
+                video_out = cv2.VideoWriter(dst_path, fourcc, fps, (dst_width, dst_height))
+            elif ext in image_exts:
+                video_out = ImageSequenceWriter(dst_path)
+            else:
+                raise IOError('Invalid ext: {}'.format(ext))
 
-    video_out.write(out_img)
+            if video_out is None:
+                raise IOError('Output video file could not be opened: {}'.format(dst_path))
+
+            print('Saving {}x{} output video to {}'.format(dst_width, dst_height, dst_path))
+
+        video_out.write(out_img)
+
     if show_img:
         out_img_disp = resizeAR(out_img, 1920, 1080)
         cv2.imshow(win_name, out_img_disp)
