@@ -272,7 +272,7 @@ def main():
         ]
 
         df = pd.DataFrame(subseq_info, columns=['start_id', 'end_id', 'length', 'start_timestamp', 'end_timestamp'])
-        df.to_csv(f'{seq_name}_subseq_info.csv', index = False, sep='\t')
+        df.to_csv(os.path.join(src_path, f'{seq_name}_subseq_info.csv'), index = False, sep='\t')
 
     if __name__ == '__main__':
         main()
