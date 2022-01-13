@@ -28,7 +28,7 @@ def run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port):
     elif mode == -2:
         scp_cmd = "scp -i {} {} {}:{}/{}".format(pwd0, dst_full_path, scp_dst, scp_path, k)
 
-    print('Running {}'.format(scp_cmd))
+    # print('Running {}'.format(scp_cmd))
     os.system(scp_cmd)
 
     if mode == 1 or mode == -2:

@@ -114,6 +114,7 @@ if __name__ == '__main__':
             self.auth_file = ''
             self.auth_root = ''
             self.config = 0
+            self.enable_isaic = 1
             self.enable_git = 0
             self.exe_path = 'fatty.exe'
             self.git_cmds = ''
@@ -143,6 +144,7 @@ if __name__ == '__main__':
     config = params.config
     wait_t = params.wait_t
     n_git_panes = params.n_git_panes
+    enable_isaic = params.enable_isaic
     enable_git = params.enable_git
     git_postproc = params.git_postproc
     only_git = params.only_git
@@ -267,11 +269,11 @@ if __name__ == '__main__':
             git_app.fatty.type_keys("tmux{VK_SPACE}new~")
 
         if not only_git:
-            """connect to orca"""
             time.sleep(wait_t)
             servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name00)
             servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name01)
 
+            """connect to orca"""
             for _app in apps:
                 _app.fatty.type_keys("^+t")
                 _app.fatty.type_keys("sstg2~")
@@ -287,8 +289,6 @@ if __name__ == '__main__':
                 pyautogui.press('enter')
 
             time.sleep(wait_t)
-
-            """connect to x99"""
             servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name10)
             servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name11)
 
@@ -298,6 +298,7 @@ if __name__ == '__main__':
             # app.fatty.type_keys("+{RIGHT}")
             # app2.fatty.type_keys("+{RIGHT}")
 
+            """connect to x99"""
             for _app in apps:
                 _app.fatty.type_keys("^+t")
                 _app.fatty.type_keys("sstg3~")
@@ -319,6 +320,14 @@ if __name__ == '__main__':
 
             servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name20)
             servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name21)
+
+            if enable_isaic:
+                """connect to isaic"""
+                servers_app.fatty.type_keys("^+t")
+                servers_app.fatty.type_keys("sshi~")
+                servers_app.fatty.type_keys("sudo{VK_SPACE}-s~")
+                time.sleep(1)
+                servers_app.fatty.type_keys("tmux{VK_SPACE}a~")
 
         if enable_git:
             if only_git:
@@ -476,6 +485,9 @@ if __name__ == '__main__':
         mouse_x, mouse_y = win32api.GetCursorPos()
 
         if config == -1:
+            if enable_isaic:
+                servers_app.fatty.type_keys("^+w")
+
             for _app in apps:
                 """grs"""
                 _app.fatty.type_keys("^+w")
@@ -532,6 +544,15 @@ if __name__ == '__main__':
 
             servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name20)
             servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name21)
+
+
+            if enable_isaic:
+                """connect to isaic"""
+                servers_app.fatty.type_keys("^+t")
+                servers_app.fatty.type_keys("sshi~")
+                servers_app.fatty.type_keys("sudo{VK_SPACE}-s~")
+                time.sleep(1)
+                servers_app.fatty.type_keys("tmux{VK_SPACE}a~")
 
         elif config == 3:
 
