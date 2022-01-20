@@ -409,7 +409,6 @@ def resizeAR(src_img, width=0, height=0, return_factors=False,
 
     # print('placement_type: {}'.format(placement_type))
 
-
     # print('placement_type: {}'.format(placement_type))
 
     if resize_factor != 0:
@@ -467,6 +466,21 @@ def resizeAR(src_img, width=0, height=0, return_factors=False,
         return dst_img, resize_factor, start_row, start_col
     else:
         return dst_img
+
+
+def sizeAR(src_img, height=0, width=0):
+    src_height, src_width, n_channels = src_img.shape
+
+    src_aspect_ratio = float(src_width) / float(src_height)
+
+    if width <= 0 and height <= 0:
+        return src_height, src_width
+    elif height <= 0:
+        height = int(width / src_aspect_ratio)
+    elif width <= 0:
+        width = int(height * src_aspect_ratio)
+
+    return height, width
 
 
 def str2num(s):

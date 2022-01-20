@@ -9,7 +9,7 @@ import skvideo.io
 
 import paramparse
 
-from Misc import sortKey, resizeAR, move_or_del_files
+from Misc import sortKey, resizeAR, sizeAR, move_or_del_files
 from video_io import VideoWriterGPU
 
 
@@ -59,8 +59,8 @@ def main():
     del_src = params['del_src']
     start_id = params['start_id']
     n_frames = params['n_frames']
-    _width = params['width']
-    _height = params['height']
+    __width = params['width']
+    __height = params['height']
     fps = params['fps']
     use_skv = params['use_skv']
     codec = params['codec']
@@ -153,32 +153,7 @@ def main():
             src_files += src_files[::-1]
             n_src_files *= 2
 
-        width, height = _width, _height
-
-        if not save_path:
-            save_fname = os.path.basename(src_path)
-
-            if not disable_suffix:
-                save_fname = '{}_{}'.format(save_fname, fps)
-
-                if height > 0 and width > 0:
-                    save_fname = '{}_{}x{}'.format(save_fname, width, height)
-
-                if out_postfix:
-                    save_fname = '{}_{}'.format(save_fname, out_postfix)
-
-                if reverse:
-                    save_fname = '{}_r{}'.format(save_fname, reverse)
-
-            save_path = os.path.join(os.path.dirname(src_path), '{}.{}'.format(save_fname, ext))
-
-            if src_root_dir and save_root_dir:
-                save_path = save_path.replace(src_root_dir, save_root_dir)
-                print('save_path: {}'.format(save_path))
-                print('src_root_dir: {}'.format(src_root_dir))
-                print('save_root_dir: {}'.format(save_root_dir))
-                print('save_path: {}'.format(save_path))
-                # sys.exit()
+        _width, _height = __width, __height
 
         if os.path.exists(save_path):
             dst_mtime = os.path.getmtime(save_path)
@@ -205,16 +180,50 @@ def main():
             os.makedirs(save_dir)
 
         src_images = []
+        print('orig: {} x {}'.format(_width, _height))
+
         if read_in_batch:
             print('reading all images in batch')
             src_images = [read_image(src_path, k) for k in tqdm(src_files)]
-            if height <= 0 or width <= 0:
+            if _height <= 0 and _width <= 0:
                 heights, widths = zip(*[k.shape[:2] for k in src_images])
-                height, width = max(heights), max(widths)
+                _height, _width = max(heights), max(widths)
+            elif _height <= 0:
+                _height, _width = sizeAR(src_images[0], width=_width)
+            elif _width <= 0:
+                _height, _width = sizeAR(src_images[0], height=_height)
+
         else:
-            if height <= 0 or width <= 0:
+            if _height <= 0 or _width <= 0:
                 temp_img = cv2.imread(os.path.join(src_path, src_files[0]))
-                height, width, _ = temp_img.shape
+                _height, _width, _ = temp_img.shape
+
+        print('inferred: {} x {}'.format(_width, _height))
+
+        if not save_path:
+            save_fname = os.path.basename(src_path)
+
+            if not disable_suffix:
+                save_fname = '{}_{}'.format(save_fname, fps)
+
+                if _height > 0 and _width > 0:
+                    save_fname = '{}_{}x{}'.format(save_fname, _width, _height)
+
+                if out_postfix:
+                    save_fname = '{}_{}'.format(save_fname, out_postfix)
+
+                if reverse:
+                    save_fname = '{}_r{}'.format(save_fname, reverse)
+
+            save_path = os.path.join(os.path.dirname(src_path), '{}.{}'.format(save_fname, ext))
+
+            if src_root_dir and save_root_dir:
+                save_path = save_path.replace(src_root_dir, save_root_dir)
+                print('save_path: {}'.format(save_path))
+                print('src_root_dir: {}'.format(src_root_dir))
+                print('save_root_dir: {}'.format(save_root_dir))
+                print('save_path: {}'.format(save_path))
+                # sys.exit()
 
         if use_skv:
             video_out = skvideo.io.FFmpegWriter(save_path, outputdict={
@@ -224,15 +233,15 @@ def main():
                 # other options see https://trac.ffmpeg.org/wiki/Encode/H.264
             })
         elif codec == 'H265':
-            video_out = VideoWriterGPU(save_path, fps, (width, height))
+            video_out = VideoWriterGPU(save_path, fps, (_width, _height))
         else:
             fourcc = cv2.VideoWriter_fourcc(*codec)
-            video_out = cv2.VideoWriter(save_path, fourcc, fps, (width, height))
+            video_out = cv2.VideoWriter(save_path, fourcc, fps, (_width, _height))
 
         if video_out is None:
             raise IOError('Output video file could not be opened: {}'.format(save_path))
 
-        print('Saving {}x{} output video to {}'.format(width, height, save_path))
+        print('Saving {}x{} output video to {}'.format(_width, _height, save_path))
 
         frame_id = start_id
         pause_after_frame = 0
@@ -249,7 +258,7 @@ def main():
 
                 image = cv2.imread(file_path)
 
-            image = resizeAR(image, width, height, placement_type=placement_type)
+            image = resizeAR(image, _width, _height, placement_type=placement_type)
 
             if show_img:
                 cv2.imshow(seq_name, image)

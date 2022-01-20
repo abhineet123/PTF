@@ -1,15 +1,17 @@
 import numpy as np
 import cv2
 import os
-from Misc import sortKey
+from Misc import sortKey, resizeAR
 
 
 class ImageSequenceWriter:
-    def __init__(self, file_path, fmt='image%06d', ext='jpg', logger=None):
+    def __init__(self, file_path, fmt='image%06d', ext='jpg', logger=None, height=0, width=0):
         self._file_path = file_path
         self._logger = logger
         self._fmt = fmt
         self._ext = ext
+        self._height = height
+        self._width = width
 
         split_path = os.path.splitext(file_path)
         self._save_dir = split_path[0]
@@ -33,10 +35,14 @@ class ImageSequenceWriter:
         self._logger('Saving images of type {:s} to {:s}\n'.format(self._ext, self._save_dir))
 
     def write(self, frame, frame_id=None, prefix=''):
+        if self._height or self._width:
+            frame = resizeAR(frame, height=self._height, width=self._width)
+
         if frame_id is None:
             self.frame_id += 1
         else:
             self.frame_id = frame_id
+
         if prefix:
             self.filename = '{:s}.{:s}'.format(prefix, self._ext)
         else:
@@ -102,6 +108,17 @@ class ImageSequenceCapture:
                 return w
         else:
             raise IOError('Invalid cv_prop: {}'.format(cv_prop))
+
+    def filter_files(self, files_list):
+        n_filtered_files = len(files_list)
+        print('filtering {} source files to {}'.format(self.n_src_files, n_filtered_files))
+
+        self.src_files = [k for k in self.src_files if os.path.basename(k) in files_list]
+        n_src_files = len(self.src_files)
+
+        assert n_src_files == n_filtered_files, "only {} files to be filtered found".format(n_src_files)
+
+        self.n_src_files = n_src_files
 
     def open(self, src_path='', recursive=0):
         if self.is_open:

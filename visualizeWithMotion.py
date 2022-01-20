@@ -30,6 +30,8 @@ from multiprocessing import Process
 import multiprocessing
 import imageio
 from PIL import Image
+import imutils
+
 from paramparse import process
 
 from Misc import sortKey, stackImages, resizeAR, addBorder, trim
@@ -637,6 +639,7 @@ def run(args, multi_exit_program=None,
     horz_flip_images = 0
     vert_flip_images = 0
     rotate_images = 0
+    fine_rotation_angle = 0
     src_path = os.path.abspath(src_path)
 
     if os.path.isdir(src_path):
@@ -695,11 +698,14 @@ def run(args, multi_exit_program=None,
             # _print('Loading frames from video image sequence {}'.format(src_path))
             _src_files = [os.path.join(src_path, k) for k in os.listdir(src_path) if
                           os.path.splitext(k.lower())[1] in img_exts]
-            try:
-                # nums = int(os.path.splitext(img_fname)[0].split('_')[-1])
-                _src_files.sort(key=img_sortKey)
-            except:
-                _src_files.sort()
+
+            _src_files.sort()
+
+            # try:
+            #     # nums = int(os.path.splitext(img_fname)[0].split('_')[-1])
+            #     _src_files.sort(key=img_sortKey)
+            # except:
+            #     _src_files.sort()
 
             img_sequences[_load_id] = {}
 
@@ -1625,7 +1631,9 @@ def run(args, multi_exit_program=None,
                     if vert_flip_images:
                         src_img = np.flipud(src_img)
 
-                    if rotate_images:
+                    if fine_rotation_angle > 0:
+                        src_img = imutils.rotate_bound(src_img, fine_rotation_angle)
+                    elif rotate_images:
                         src_img = np.rot90(src_img, rotate_images)
                 else:
                     if random_mode:
@@ -1660,8 +1668,11 @@ def run(args, multi_exit_program=None,
                     if vert_flip_images:
                         src_img = np.flipud(src_img)
 
-                    if rotate_images:
+                    if fine_rotation_angle > 0:
+                        src_img = imutils.rotate_bound(src_img, fine_rotation_angle)
+                    elif rotate_images:
                         src_img = np.rot90(src_img, rotate_images)
+
                     img_fnames[_load_id] = img_fname
 
                 src_images.append(src_img)
@@ -3375,11 +3386,20 @@ def run(args, multi_exit_program=None,
                 else:
                     _print('Auto progression disabled')
             elif k == ord('Q'):
-                auto_progress_video = 1 - auto_progress_video
-                if auto_progress_video:
-                    _print('Video auto progression enabled')
+                if video_mode:
+                    auto_progress_video = 1 - auto_progress_video
+                    if auto_progress_video:
+                        _print('Video auto progression enabled')
+                    else:
+                        _print('Video auto progression disabled')
                 else:
-                    _print('Video auto progression disabled')
+                    fine_rotation_angle += 5
+                    if fine_rotation_angle == 360:
+                        fine_rotation_angle = 0
+                    _print('Rotating images by {} degrees'.format(fine_rotation_angle))
+                    src_images = []
+                    loadImage()
+
             elif k == ord('e'):
                 reverse_video = 1 - reverse_video
                 if reverse_video:
@@ -3391,7 +3411,7 @@ def run(args, multi_exit_program=None,
                 rotate_images += 1
                 if rotate_images > 3:
                     rotate_images = 0
-                _print('Rotating video by {} degrees'.format(rotate_images * 90))
+                _print('Rotating images by {} degrees'.format(rotate_images * 90))
                 src_images = []
                 loadImage()
                 # else:
