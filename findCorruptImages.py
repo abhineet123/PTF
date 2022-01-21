@@ -26,11 +26,13 @@ available_parameters = [
     ("v", "verbose", "Also print clean files"),
 ]
 
+
 def checkImage(fn):
-  proc = Popen(['identify', '-verbose', fn], stdout=PIPE, stderr=PIPE)
-  out, err = proc.communicate()
-  exitcode = proc.returncode
-  return exitcode, out, err
+    proc = Popen(['identify', '-verbose', fn], stdout=PIPE, stderr=PIPE)
+    out, err = proc.communicate()
+    exitcode = proc.returncode
+    return exitcode, out, err
+
 
 class ProgramOptions(object):
     """Holds the program options, after they are parsed by parse_options()"""
@@ -109,7 +111,8 @@ def parse_options(argv, opt):
 
 def is_corrupt(jpegfile):
     """Returns None if the file is okay, returns an error string if the file is corrupt."""
-    # http://stackoverflow.com/questions/1401527/how-do-i-programmatically-check-whether-an-image-png-jpeg-or-gif-is-corrupted/1401565#1401565
+    # http://stackoverflow.com/questions/1401527/how-do-i-programmatically-check-whether-an-image-png-jpeg-or-gif-is
+    # -corrupted/1401565#1401565
     try:
         im = PIL.Image.open(jpegfile)
         im.verify()
@@ -121,28 +124,33 @@ def is_corrupt(jpegfile):
 def check_files(files, method, delete_file=0):
     """Receives a list of files and check each one."""
     global opt
+    log_file = open('fci_log.txt', 'w')
     n_files = len(files)
     for i, f in enumerate(files):
         # Filtering only JPEG images
         if not (f.endswith('.jpg') or f.endswith('.jpeg')):
             continue
-        if method==0:
+        if method == 0:
             status = is_corrupt(f)
             if status:
+                log_file.write(f + '\n')
                 # os.remove(f)
                 if delete_file:
                     print('\nDeleting corrupt file: {}'.format(f))
                     os.remove(f)
                 else:
                     print('\nFound corrupt file: {:s}\n'.format(f))
+
                 # print "{0}: {1}".format(f, status)
         else:
             code, output, error = checkImage(f)
             if str(code) != "0" or str(error) != "":
-                raise IOError("Damaged image found: {} :: {}".format(f, error))
-        sys.stdout.write('\rDone {}/{} images'.format(i+1, n_files))
+                log_file.write(f + '\n')
+                print("Damaged image found: {} :: {}".format(f, error))
+        sys.stdout.write('\rDone {}/{} images'.format(i + 1, n_files))
         sys.stdout.flush()
     # print()
+
 
 # def main():
 #     global opt
@@ -161,7 +169,6 @@ def check_files(files, method, delete_file=0):
 
 
 if __name__ == "__main__":
-
     params = {
         'root_dir': '.',
         'delete_file': 0,
@@ -183,7 +190,7 @@ if __name__ == "__main__":
                     for (dirpath, dirnames, filenames) in os.walk(root_dir, followlinks=True)]
     _src_files = [item for sublist in src_file_gen for item in sublist]
     _src_files = [os.path.abspath(k) for k in _src_files]
-    _src_files.sort(key=functools.partial(sortKey,only_basename=0))
+    _src_files.sort(key=functools.partial(sortKey, only_basename=0))
 
     check_files(_src_files, method, delete_file)
 
