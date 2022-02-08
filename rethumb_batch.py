@@ -24,7 +24,8 @@ for src_fname in src_file_names:
     cmd = 'rethumb "{}", "{}", "{}";'.format(thumbs_dir, filename, out_dir)
     out_txt += cmd
 
-
+if not os.path.exists(out_dir):
+    os.makedirs(out_dir)
 try:
     import pyperclip
     pyperclip.copy(out_txt)

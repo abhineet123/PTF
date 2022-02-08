@@ -112,6 +112,9 @@ def main():
     while True:
         k = input('\nEnter {}\n'.format(data_type))
 
+        if not k:
+            continue
+
         x, y = win32api.GetCursorPos()
         # EnumWindows(EnumWindowsProc(foreach_window), 0)
         if use_ahk:

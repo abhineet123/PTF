@@ -203,7 +203,9 @@ def process_ogg(ogg_paths, lines, category, is_path, cmd, pause_for_input):
     lines = [lines[k] for k in sort_idx]
 
     out_txt = '\n'.join(out_lines)
+
     copy_to_clipboard(out_txt, print_txt=1)
+    time.sleep(1.0)
 
     in_txt = '\n'.join(lines)
     print(in_txt)
@@ -221,6 +223,8 @@ def process_ogg(ogg_paths, lines, category, is_path, cmd, pause_for_input):
         for _path in lines[::-1]:
             print(_path)
             copy_to_clipboard(_path, print_txt=1)
+            time.sleep(0.5)
+
             # input('press any key')
             os.system(cmd.link)
             time.sleep(0.5)
@@ -283,6 +287,7 @@ def main():
                 pass
             else:
                 copy_to_clipboard(out_txt, print_txt=1)
+                time.sleep(0.5)
                 return
 
     if params.ffs.enable:
@@ -334,6 +339,7 @@ def main():
             print(out_txt)
 
             copy_to_clipboard(out_txt)
+            time.sleep(0.5)
 
             out_txt_lines = [k for k in out_txt.split('\n') if k]
 
@@ -422,7 +428,6 @@ def main():
     #     out_fid.write(out_txt)
 
     copy_to_clipboard(out_txt, print_txt=1)
-
 
 if __name__ == '__main__':
     main()

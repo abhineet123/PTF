@@ -32,7 +32,8 @@ def main():
             print('Tk().clipboard_get() failed: {}'.format(e))
             return
 
-    assert os.path.exists(src_path), "src_path does not exist"
+    src_path = src_path.replace(os.sep, '/').replace('"', '')
+    assert os.path.exists(src_path), "src_path does not exist: {}".format(src_path)
 
     src_dir = os.path.dirname(src_path)
     src_name = os.path.basename(src_path)

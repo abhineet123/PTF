@@ -149,7 +149,7 @@ def check_files(files, method, delete_file=0):
                 print("Damaged image found: {} :: {}".format(f, error))
         sys.stdout.write('\rDone {}/{} images'.format(i + 1, n_files))
         sys.stdout.flush()
-        
+
     log_file.close()
     # print()
 
