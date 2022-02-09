@@ -1,4 +1,6 @@
-import os, sys
+import os
+import sys
+import random
 from datetime import datetime
 
 from Misc import processArguments, sortKey
@@ -6,61 +8,63 @@ from Misc import processArguments, sortKey
 if __name__ == '__main__':
     params = {
         'list_file': '',
-        'file_name': '',
         'root_dir': '',
         'out_name': '',
         'scp_dst': '',
         'out_postfix': '',
         'relative': 0,
-        'move': 0,
-        'switches': '-r -0',
+        'n_samples': 0,
+        'shuffle': 0,
+        'scp_port': '',
+        'inclusion': '',
+        'add_time_stamp': 1,
+        'move_to_home': 1,
+        'switches': '-r',
     }
     processArguments(sys.argv[1:], params)
     list_file = params['list_file']
     root_dir = params['root_dir']
-    file_name = params['file_name']
     out_name = params['out_name']
     out_postfix = params['out_postfix']
     scp_dst = params['scp_dst']
     relative = params['relative']
     switches = params['switches']
-    move = params['move']
+    shuffle = params['shuffle']
+    n_samples = params['n_samples']
+    scp_port = params['scp_port']
+    move_to_home = params['move_to_home']
 
-    if list_file:
-        if os.path.isdir(list_file):
-            zip_paths = [os.path.join(list_file, name) for name in os.listdir(list_file) if
-                         os.path.isdir(os.path.join(list_file, name))]
-            zip_paths.sort(key=sortKey)
-        else:
-            zip_paths = [x.strip() for x in open(list_file).readlines() if x.strip()
-                         and not x.startswith('#')
-                         and not x.startswith('@')
-                         ]
-            if root_dir:
-                zip_paths = [os.path.join(root_dir, name) for name in zip_paths]
-    elif file_name:
-        zip_paths = [file_name]
+    if os.path.isdir(list_file):
+        print(f'looking for zip paths in {list_file}')
+
+        zip_paths = [os.path.join(list_file, name) for name in os.listdir(list_file)]
+        zip_paths.sort(key=sortKey)
+    elif os.path.isfile(list_file):
+        print(f'reading zip paths from {list_file}')
+        zip_paths = [x.strip() for x in open(list_file).readlines() if x.strip()
+                     and not x.startswith('#')
+                     and not x.startswith('@')
+                     ]
+        if root_dir:
+            zip_paths = [os.path.join(root_dir, name) for name in zip_paths]
     else:
-        from Tkinter import Tk
+        raise AssertionError('invalid list file: {}')
 
-        in_txt = Tk().clipboard_get()
-        lines = in_txt.split('\n')
-        zip_paths = [line.replace('"', '').strip() for line in lines]
-        zip_paths = [zip_path for zip_path in zip_paths if zip_path]
-        root_dir = os.path.commonprefix(zip_paths)
-        print('root_dir:\n {}'.format(root_dir))
+    n_paths = len(zip_paths)
+    print(f'found {n_paths} zip paths')
 
-        if not root_dir.endswith(os.path.sep):
-            root_dir = root_dir[:root_dir.rindex(os.path.sep)]
-        print('root_dir:\n {}'.format(root_dir))
+    if shuffle:
+        print('shuffling zip paths')
+        random.shuffle(zip_paths)
 
-        # if relative:
-        #     zip_paths = [os.path.relpath(zip_path, root_dir) for zip_path in zip_paths]
+    if n_paths > n_samples > 0:
+        print(f'Sampling {n_samples} / {n_paths} zip paths')
+
+        zip_paths = zip_paths[:n_samples]
 
     if not root_dir:
         root_dir = os.path.abspath(os.path.dirname(zip_paths[0]))
 
-    # zip_paths = [os.path.abspath(k) for k in zip_paths]
 
     if not out_name:
         _root_dir = os.path.basename(os.path.dirname(os.path.abspath(zip_paths[0])))
@@ -92,19 +96,25 @@ if __name__ == '__main__':
 
     os.system(zip_cmd)
 
-    if move:
-        os.system('unzip -l {}'.format(out_path))
+    assert os.path.exists(out_path), "zipping failed: {}".format(out_path)
 
-        if scp_dst:
-            scp_cmd = 'scp {} {}:~/'.format(out_path, scp_dst)
-            print('\nrunning: {}\n'.format(scp_cmd))
-            os.system(scp_cmd)
-            rm_cmd = 'rm {}'.format(out_path)
-            print('\nrunning: {}\n'.format(rm_cmd))
-            os.system(rm_cmd)
-        else:
-            mv_cmd = 'mv {:s} ~'.format(out_path)
-            print('\nrunning: {}\n'.format(mv_cmd))
-            os.system(mv_cmd)
+    # os.system('unzip -l {}'.format(out_path))
+
+    if scp_dst:
+        scp_cmd = 'scp'
+        if scp_port:
+            scp_cmd = '{} -P {}'.format(scp_cmd, scp_port)
+
+        scp_cmd = '{} "{}" {}:~/'.format(scp_cmd, out_path, scp_dst)
+
+        print('\nrunning: {}\n'.format(scp_cmd))
+        os.system(scp_cmd)
+        rm_cmd = 'rm "{}"'.format(out_path)
+        print('\nrunning: {}\n'.format(rm_cmd))
+        os.system(rm_cmd)
+    elif move_to_home:
+        mv_cmd = 'mv "{:s}" ~'.format(out_path)
+        print('\nrunning: {}\n'.format(mv_cmd))
+        os.system(mv_cmd)
 
     print('out_name:\n {}'.format(out_name))
