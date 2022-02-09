@@ -11,7 +11,7 @@ if __name__ == '__main__':
         'root_dir': '',
         'out_name': '',
         'scp_dst': '',
-        'out_postfix': '',
+        'postfix': '',
         'relative': 0,
         'n_samples': 0,
         'shuffle': 0,
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     list_file = params['list_file']
     root_dir = params['root_dir']
     out_name = params['out_name']
-    out_postfix = params['out_postfix']
+    postfix = params['postfix']
     scp_dst = params['scp_dst']
     relative = params['relative']
     switches = params['switches']
@@ -33,6 +33,7 @@ if __name__ == '__main__':
     n_samples = params['n_samples']
     scp_port = params['scp_port']
     move_to_home = params['move_to_home']
+
 
     if os.path.isdir(list_file):
         print(f'looking for zip paths in {list_file}')
@@ -65,7 +66,6 @@ if __name__ == '__main__':
     if not root_dir:
         root_dir = os.path.abspath(os.path.dirname(zip_paths[0]))
 
-
     if not out_name:
         _root_dir = os.path.basename(os.path.dirname(os.path.abspath(zip_paths[0])))
         list_fname_no_ext = os.path.splitext(os.path.basename(list_file))[0]
@@ -73,8 +73,8 @@ if __name__ == '__main__':
     else:
         out_name = os.path.splitext(out_name)[0]
 
-    if out_postfix:
-        out_name = '{}_{}'.format(out_name, out_postfix)
+    if postfix:
+        out_name = '{}_{}'.format(out_name, postfix)
 
     time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
     out_name = '{}_{}.zip'.format(out_name, time_stamp)
