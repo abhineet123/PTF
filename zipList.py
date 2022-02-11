@@ -63,9 +63,6 @@ if __name__ == '__main__':
         for _dir in dir_names:
             out_name = '{}_{}'.format(out_name, _dir) if out_name else _dir
 
-        if postfix:
-            out_name = '{}_{}'.format(out_name, postfix)
-
         out_name = out_name.replace('.', '_')
         out_name = out_name.replace('(', '_')
         out_name = out_name.replace(')', '_')
@@ -99,6 +96,9 @@ if __name__ == '__main__':
     # time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
     # out_name = '{}_{}.zip'.format(out_name, time_stamp)
 
+    if postfix:
+        out_name = '{}_{}'.format(out_name, postfix)
+        
     if add_time_stamp:
         time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
         out_name = '{}_{}'.format(out_name, time_stamp)
