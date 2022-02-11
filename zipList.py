@@ -57,12 +57,29 @@ if __name__ == '__main__':
     n_paths = len(zip_paths)
     print(f'found {n_paths} zip paths')
 
-    if shuffle:
-        print('shuffling zip paths')
-        random.shuffle(zip_paths)
+    if not out_name:
+        dir_names = list_file.split(os.sep)
+
+        for _dir in dir_names:
+            out_name = '{}_{}'.format(out_name, _dir) if out_name else _dir
+
+        if postfix:
+            out_name = '{}_{}'.format(out_name, postfix)
+
+        out_name = out_name.replace('.', '_')
+        out_name = out_name.replace('(', '_')
+        out_name = out_name.replace(')', '_')
 
     if n_paths > n_samples > 0:
         print(f'Sampling {n_samples} / {n_paths} zip paths')
+
+        out_name = '{}_sample_{}'.format(out_name, n_samples)
+
+        if shuffle:
+            print('shuffling zip paths')
+            random.shuffle(zip_paths)
+
+            out_name = '{}_shuffle'.format(out_name)
 
         zip_paths = zip_paths[:n_samples]
 
@@ -81,19 +98,6 @@ if __name__ == '__main__':
     #
     # time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
     # out_name = '{}_{}.zip'.format(out_name, time_stamp)
-
-    if not out_name:
-        dir_names = list_file.split(os.sep)
-
-        for _dir in dir_names:
-            out_name = '{}_{}'.format(out_name, _dir) if out_name else _dir
-
-        if postfix:
-            out_name = '{}_{}'.format(out_name, postfix)
-
-        out_name = out_name.replace('.', '_')
-        out_name = out_name.replace('(', '_')
-        out_name = out_name.replace(')', '_')
 
     if add_time_stamp:
         time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
