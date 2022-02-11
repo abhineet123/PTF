@@ -19,6 +19,7 @@ if __name__ == '__main__':
         'inclusion': '',
         'add_time_stamp': 1,
         'move_to_home': 1,
+        'add_time_stamp': 1,
         'switches': '-r',
     }
     processArguments(sys.argv[1:], params)
@@ -33,13 +34,14 @@ if __name__ == '__main__':
     n_samples = params['n_samples']
     scp_port = params['scp_port']
     move_to_home = params['move_to_home']
-
+    add_time_stamp = params['add_time_stamp']
 
     if os.path.isdir(list_file):
         print(f'looking for zip paths in {list_file}')
 
         zip_paths = [os.path.join(list_file, name) for name in os.listdir(list_file)]
         zip_paths.sort(key=sortKey)
+
     elif os.path.isfile(list_file):
         print(f'reading zip paths from {list_file}')
         zip_paths = [x.strip() for x in open(list_file).readlines() if x.strip()
@@ -48,6 +50,7 @@ if __name__ == '__main__':
                      ]
         if root_dir:
             zip_paths = [os.path.join(root_dir, name) for name in zip_paths]
+
     else:
         raise AssertionError('invalid list file: {}')
 
@@ -66,18 +69,37 @@ if __name__ == '__main__':
     if not root_dir:
         root_dir = os.path.abspath(os.path.dirname(zip_paths[0]))
 
+    # if not out_name:
+    #     _root_dir = os.path.basename(os.path.dirname(os.path.abspath(zip_paths[0])))
+    #     list_fname_no_ext = os.path.splitext(os.path.basename(list_file))[0]
+    #     out_name = '{}_{}'.format(_root_dir, list_fname_no_ext)
+    # else:
+    #     out_name = os.path.splitext(out_name)[0]
+    #
+    # if postfix:
+    #     out_name = '{}_{}'.format(out_name, postfix)
+    #
+    # time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+    # out_name = '{}_{}.zip'.format(out_name, time_stamp)
+
     if not out_name:
-        _root_dir = os.path.basename(os.path.dirname(os.path.abspath(zip_paths[0])))
-        list_fname_no_ext = os.path.splitext(os.path.basename(list_file))[0]
-        out_name = '{}_{}'.format(_root_dir, list_fname_no_ext)
-    else:
-        out_name = os.path.splitext(out_name)[0]
+        dir_names = list_file.split(os.sep)
 
-    if postfix:
-        out_name = '{}_{}'.format(out_name, postfix)
+        for _dir in dir_names:
+            out_name = '{}_{}'.format(out_name, _dir) if out_name else _dir
 
-    time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
-    out_name = '{}_{}.zip'.format(out_name, time_stamp)
+        if postfix:
+            out_name = '{}_{}'.format(out_name, postfix)
+
+        out_name = out_name.replace('.', '_')
+        out_name = out_name.replace('(', '_')
+        out_name = out_name.replace(')', '_')
+
+    if add_time_stamp:
+        time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+        out_name = '{}_{}'.format(out_name, time_stamp)
+
+    out_name = '{}.zip'.format(out_name)
 
     zip_paths = ['"{}"'.format(k) for k in zip_paths]
 
