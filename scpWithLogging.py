@@ -100,10 +100,10 @@ def main():
     # Form1.SetFocus()
     default_fmy_key = '0'
     if mode == 0 or mode == -1:
-        data_type = 'filename (from)'
+        data_type = 'filename (from {})'.format(scp_name)
         highlight_key = '2'
     elif mode == 1 or mode == -2:
-        data_type = 'filename (to)'
+        data_type = 'filename (to {})'.format(scp_name)
         highlight_key = '3'
     elif mode == 2:
         data_type = 'log'
@@ -130,9 +130,19 @@ def main():
                 _ = pyperclip.paste()
             except BaseException as e:
                 print('Copying to clipboard failed: {}'.format(e))
+            else:
+                os.system('paste_with_cat_1')
 
-            os.system('paste_with_cat_1')
             run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port)
+
+            try:
+                import pyperclip
+
+                pyperclip.copy('{}'.format(k))
+                _ = pyperclip.paste()
+            except:
+                pass
+
             continue
 
         GetWindowText = ctypes.windll.user32.GetWindowTextW

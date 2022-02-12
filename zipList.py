@@ -98,7 +98,7 @@ if __name__ == '__main__':
 
     if postfix:
         out_name = '{}_{}'.format(out_name, postfix)
-        
+
     if add_time_stamp:
         time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
         out_name = '{}_{}'.format(out_name, time_stamp)
