@@ -1,15 +1,49 @@
-import sys, os, inspect, itertools
+import os
+import inspect
+import itertools
+import numpy as np
 import cv2
 from pprint import pprint
 from datetime import datetime
 from tqdm import tqdm
+
+import functools
+
+import torch
+from torch import nn
+from tqdm import tqdm
+from torchvision import models, transforms
 
 try:
     import cPickle as pickle
 except:
     import pickle
 
-from Misc import processArguments
+import paramparse
+
+from Misc import resizeAR
+
+
+class FeatureExtractor(nn.Module):
+    def __init__(self, model):
+        super(FeatureExtractor, self).__init__()
+        # Extract VGG-16 Feature Layers
+        self.features = list(model.features)
+        self.features = nn.Sequential(*self.features)
+        # Extract VGG-16 Average Pooling Layer
+        self.pooling = model.avgpool
+        # Convert the image into one-dimensional vector
+        self.flatten = nn.Flatten()
+        # Extract the first part of fully-connected layer from VGG16
+        self.fc = model.classifier[0]
+
+    def forward(self, x):
+        # It will take the input 'x' until it returns the feature vector called 'out'
+        out = self.features(x)
+        out = self.pooling(out)
+        out = self.flatten(out)
+        out = self.fc(out)
+        return out
 
 
 def chunk_reader(fobj, chunk_size=1024):
@@ -21,7 +55,59 @@ def chunk_reader(fobj, chunk_size=1024):
         yield chunk
 
 
-def getHist(full_path):
+def create_vgg16(crop=False):
+    model = models.vgg16(pretrained=True)
+    # model = models.resnet101(pretrained=True)
+
+    device = torch.device('cuda:0' if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
+
+    new_model = FeatureExtractor(model)
+
+    transform_list = [
+        transforms.ToPILImage(),
+    ]
+
+    if crop:
+        transform_list.append(transforms.CenterCrop(512))
+        transform_list.append(transforms.Resize(448))
+
+    transform_list.append(transforms.ToTensor())
+
+    transform = transforms.Compose(transform_list)
+
+    return new_model, transform, device
+
+
+def get_vgg16(img_path, model, transform, device):
+    img_cv = cv2.imread(img_path)
+
+    assert img_cv is not None, "invalid image path: {}".format(img_path)
+    img_cv = resizeAR(img_cv, 448, 448)
+
+    img = transform(img_cv)
+
+    img = img.reshape(1, 3, 448, 448)
+    img = img.to(device)
+
+    # img_disp = img.cpu().detach().numpy().squeeze().transpose([1, 2, 0])
+
+    # cv2.imshow('img_cv', img_cv)
+    # cv2.imshow('img_disp', img_disp)
+    # cv2.waitKey(0)
+
+    feature = model(img)
+
+    feature = feature.cpu().detach().numpy().reshape(-1)
+
+    return feature
+
+
+def euclidean_dist(a, b):
+    return np.linalg.norm(a - b)
+
+
+def get_hist(full_path, model=None):
     curr_image = cv2.imread(full_path)
     curr_image = cv2.cvtColor(curr_image, cv2.COLOR_BGR2RGB)
     curr_hist = cv2.calcHist([curr_image], [0, 1, 2], None, [8, 8, 8],
@@ -30,21 +116,33 @@ def getHist(full_path):
     return curr_hist
 
 
-def check_for_similar_images(files, paths, db_file, methodName="Hellinger", n_results=10, thresh=0.1):
+def check_for_similar_images(files, paths, db_file, feature_type, methodName="Hellinger", n_results=10, thresh=0.1):
     valid_exts = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'tif']
-
-    OPENCV_METHODS = (
-        ("Correlation", cv2.HISTCMP_CORREL),
-        ("Chi-Squared", cv2.HISTCMP_CHISQR),
-        ("Intersection", cv2.HISTCMP_INTERSECT),
-        ("Hellinger", cv2.HISTCMP_BHATTACHARYYA))
-
-    # results = {}
     reverse = False
-    if methodName in ("Correlation", "Intersection"):
-        reverse = True
-    # method = OPENCV_METHODS[methodName]
-    method = cv2.HISTCMP_BHATTACHARYYA
+
+    if feature_type == 0:
+        print('using normalized histogram as features')
+        get_features = get_hist
+        # results = {}
+        OPENCV_METHODS = (
+            ("Correlation", cv2.HISTCMP_CORREL),
+            ("Chi-Squared", cv2.HISTCMP_CHISQR),
+            ("Intersection", cv2.HISTCMP_INTERSECT),
+            ("Hellinger", cv2.HISTCMP_BHATTACHARYYA)
+        )
+        if methodName in ("Correlation", "Intersection"):
+            reverse = True
+        # method = OPENCV_METHODS[methodName]
+        method = cv2.HISTCMP_BHATTACHARYYA
+        cmp_features = functools.partial(cv2.compareHist, method=method)
+    elif feature_type == 1:
+        print('using vgg16 features')
+        vgg16, transform, device = create_vgg16()
+        get_features = functools.partial(get_vgg16, model=vgg16, transform=transform, device=device)
+        cmp_features = euclidean_dist
+
+    else:
+        raise AssertionError('invalid feature type: {}'.format(feature_type))
 
     script_filename = inspect.getframeinfo(inspect.currentframe()).filename
     script_path = os.path.dirname(os.path.abspath(script_filename))
@@ -113,7 +211,7 @@ def check_for_similar_images(files, paths, db_file, methodName="Hellinger", n_re
 
     if new_stats:
         print('Computing features for {}/{} files ...'.format(n_new_files, n_files))
-        db.update({k: (os.path.getmtime(all_stats[k]), getHist(all_stats[k]))
+        db.update({k: (os.path.getmtime(all_stats[k]), get_features(all_stats[k]))
                    for k in tqdm(new_stats)})
 
     # for _stsats in new_stats:
@@ -121,7 +219,7 @@ def check_for_similar_images(files, paths, db_file, methodName="Hellinger", n_re
     #
     #     db[_stsats] = (os.path.getmtime(full_path), curr_hist)
     #
-    #     # d = cv2.compareHist(img_hist, curr_hist, method)
+    #     # d = cmp_features(img_features, curr_hist)
     #     # results[full_path] = d
     #
     #     # file_path_map[full_path] = full_path
@@ -138,18 +236,18 @@ def check_for_similar_images(files, paths, db_file, methodName="Hellinger", n_re
         if os.path.isfile(files):
             print('Looking for images similar to {} in {}'.format(files, paths))
 
-            img_hist = getHist(files)
+            img_features = get_features(files)
 
             # image = cv2.imread(_filename)
             # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            # img_hist = cv2.calcHist([image], [0, 1, 2], None, [8, 8, 8],
+            # img_features = cv2.calcHist([image], [0, 1, 2], None, [8, 8, 8],
             #                         [0, 256, 0, 256, 0, 256])
-            # cv2.normalize(img_hist, img_hist).flatten()
-            # print('img_hist: {}'.format(img_hist))
+            # cv2.normalize(img_features, img_features).flatten()
+            # print('img_features: {}'.format(img_features))
 
             print('Comparing features...')
 
-            results = {all_stats[k]: cv2.compareHist(img_hist, db[k][1], method) for k in all_stats}
+            results = {all_stats[k]: cmp_features(img_features, db[k][1]) for k in all_stats}
             results = sorted([(v, k) for (k, v) in results.items()], reverse=reverse)
             # print('\nTotal files searched: {}'.format(n_files))
 
@@ -188,14 +286,14 @@ def check_for_similar_images(files, paths, db_file, methodName="Hellinger", n_re
 
             if _new_stats:
                 print('Computing features for {}/{} orig files ...'.format(_n_new_files, _n_files))
-                db.update({k: (os.path.getmtime(_all_stats[k]), getHist(_all_stats[k]))
+                db.update({k: (os.path.getmtime(_all_stats[k]), get_features(_all_stats[k]))
                            for k in _new_stats})
 
             print('Looking for images similar to {} images in {} among {} images in {}'.format(
                 _n_files, files, n_files, paths))
 
             print('Comparing features...')
-            all_files_features_pairs = [(_all_stats[k1], all_stats[k2], cv2.compareHist(db[k1][1], db[k2][1], method))
+            all_files_features_pairs = [(_all_stats[k1], all_stats[k2], cmp_features(db[k1][1], db[k2][1]))
                                         for k1 in _all_stats
                                         for k2 in all_stats
                                         if k2 not in _all_stats]
@@ -204,7 +302,7 @@ def check_for_similar_images(files, paths, db_file, methodName="Hellinger", n_re
         print('Looking for pairwise similar images using thresh: {}'.format(thresh))
         print('Comparing features...')
         all_files_features_pairs = [(all_stats[k[0]], all_stats[k[1]],
-                                     cv2.compareHist(db[k[0]][1], db[k[1]][1], method)) for k in
+                                     cmp_features(db[k[0]][1], db[k[1]][1])) for k in
                                     itertools.combinations(list(all_stats.keys()), r=2)]
     if all_files_features_pairs:
         print('Thresholding...')
@@ -270,23 +368,47 @@ def check_for_similar_images(files, paths, db_file, methodName="Hellinger", n_re
         pickle.dump(db, open(db_file, "wb"))
 
 
+class Params:
+    """
+    :ivar db_file:
+    :type db_file: str
+
+    :ivar delete_file:
+    :type delete_file: int
+
+    :ivar feature_type:
+        0: normalized histogram
+        1: VGG16
+
+    :type feature_type: int
+
+    :ivar files:
+    :type files: str
+
+    :ivar root_dir:
+    :type root_dir: list
+
+    :ivar thresh:
+    :type thresh: float
+
+    """
+
+    def __init__(self):
+        self.cfg = ()
+        self.db_file = ''
+        self.delete_file = 0
+        self.feature_type = 0
+        self.files = ''
+        self.root_dir = ['.']
+        self.thresh = 0.1
+
+
 def main():
-    params = {
-        'files': '',
-        'root_dir': ['.', ],
-        'delete_file': 0,
-        'db_file': '',
-        'thresh': 0.1,
-    }
+    params = Params()
+    paramparse.process(params)
 
-    processArguments(sys.argv[1:], params)
-    files = params['files']
-    root_dir = params['root_dir']
-    delete_file = params['delete_file']
-    db_file = params['db_file']
-    thresh = params['thresh']
-
-    check_for_similar_images(files, root_dir, db_file, thresh=thresh)
+    check_for_similar_images(params.files, params.root_dir, params.db_file,
+                             params.feature_type, params.thresh)
 
 
 if __name__ == "__main__":
