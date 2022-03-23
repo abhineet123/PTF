@@ -140,7 +140,7 @@ if __name__ == "__main__":
     log_file = open('fci_log.txt', 'w')
 
     for (dirpath, dirnames, filenames) in tqdm(os.walk(root_dir, followlinks=True)):
-        for f in tqdm(filenames, decc=dirpath):
+        for f in tqdm(filenames, desc=dirpath):
 
             # Filtering only JPEG images
             if os.path.splitext(f.lower())[1] not in img_exts:
