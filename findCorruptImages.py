@@ -18,6 +18,7 @@ import sys
 import functools
 import PIL.Image
 from subprocess import Popen, PIPE
+from tqdm import tqdm
 
 from Misc import sortKey, processArguments
 
@@ -48,7 +49,6 @@ class ProgramOptions(object):
 
 
 def print_help():
-    global opt
     scriptname = os.path.basename(sys.argv[0])
     print("Usage: {0} [options] files_or_directories".format(scriptname))
     print("Recursively checks for corrupt JPEG files")
@@ -120,56 +120,6 @@ def is_corrupt(jpegfile):
         return str(e)
     return None
 
-
-def check_files(files, method, delete_file=0):
-    """Receives a list of files and check each one."""
-    global opt
-    log_file = open('fci_log.txt', 'w')
-    n_files = len(files)
-    for i, f in enumerate(files):
-        # Filtering only JPEG images
-        if not (f.endswith('.jpg') or f.endswith('.jpeg')):
-            continue
-        if method == 0:
-            status = is_corrupt(f)
-            if status:
-                log_file.write(f + '\n')
-                # os.remove(f)
-                if delete_file:
-                    print('\nDeleting corrupt file: {}'.format(f))
-                    os.remove(f)
-                else:
-                    print('\nFound corrupt file: {:s}\n'.format(f))
-
-                # print "{0}: {1}".format(f, status)
-        else:
-            code, output, error = checkImage(f)
-            if str(code) != "0" or str(error) != "":
-                log_file.write(f + '\n')
-                print("Damaged image found: {} :: {}".format(f, error))
-        sys.stdout.write('\rDone {}/{} images'.format(i + 1, n_files))
-        sys.stdout.flush()
-
-    log_file.close()
-    # print()
-
-
-# def main():
-#     global opt
-#
-#     opt = ProgramOptions()
-#     parse_options(sys.argv[1:], opt)
-#
-#     for pathname in opt.args:
-#         if os.path.isfile(pathname):
-#             check_files([pathname])
-#         elif os.path.isdir(pathname):
-#             for dirpath, dirnames, filenames in os.walk(pathname):
-#                 check_files([os.path.join(dirpath, f) for f in filenames])
-#         else:
-#             print("ERROR: '{0}' is neither a file or a dir.".format(pathname))
-
-
 if __name__ == "__main__":
     params = {
         'root_dir': '.',
@@ -187,14 +137,33 @@ if __name__ == "__main__":
 
     img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff')
 
-    src_file_gen = [[os.path.join(dirpath, f) for f in filenames if
-                     os.path.splitext(f.lower())[1] in img_exts]
-                    for (dirpath, dirnames, filenames) in os.walk(root_dir, followlinks=True)]
-    _src_files = [item for sublist in src_file_gen for item in sublist]
-    _src_files = [os.path.abspath(k) for k in _src_files]
-    _src_files.sort(key=functools.partial(sortKey, only_basename=0))
+    log_file = open('fci_log.txt', 'w')
 
-    check_files(_src_files, method, delete_file)
+    for (dirpath, dirnames, filenames) in tqdm(os.walk(root_dir, followlinks=True)):
+        for f in tqdm(filenames, decc=dirpath):
 
-    # for dirpath, dirnames, filenames in os.walk(root_dir):
-    #     check_files([os.path.join(dirpath, f) for f in filenames])
+            # Filtering only JPEG images
+            if os.path.splitext(f.lower())[1] not in img_exts:
+                continue
+
+            file_path = os.path.join(dirpath, f)
+
+            if method == 0:
+                status = is_corrupt(file_path)
+                if status:
+                    log_file.write(file_path + '\n')
+                    # os.remove(f)
+                    if delete_file:
+                        print('\nDeleting corrupt file: {}'.format(file_path))
+                        os.remove(f)
+                    else:
+                        print('\nFound corrupt file: {:s}\n'.format(file_path))
+
+                    # print "{0}: {1}".format(f, status)
+            else:
+                code, output, error = checkImage(file_path)
+                if str(code) != "0" or str(error) != "":
+                    log_file.write(file_path + '\n')
+                    print("Damaged image found: {} :: {}".format(file_path, error))
+
+
