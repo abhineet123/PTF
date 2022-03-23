@@ -14,8 +14,14 @@ def linux_path(*args, **kwargs):
 
 
 def run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port):
+    print('port: {}'.format(port))
+
     dst_full_path = '{}/{}'.format(dst_path, k).replace(os.sep, '/')
-    scp_cmd = "pscp -pw {}".format(pwd0)
+    if mode == -1 or mode == -2:
+        scp_cmd = "scp -i {}".format(pwd0)
+    else:
+        scp_cmd = "pscp -pw {}".format(pwd0)
+
     if port:
         scp_cmd = '{} -P {}'.format(scp_cmd, port)
 
@@ -24,11 +30,11 @@ def run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port):
     elif mode == 1:
         scp_cmd = "{} {} {}:{}/".format(scp_cmd, dst_full_path, scp_dst, scp_path)
     elif mode == -1:
-        scp_cmd = "scp -i {} {}:{}/{} {}".format(pwd0, scp_dst, scp_path, k, dst_path)
+        scp_cmd = "{} {}:{}/{} {}".format(scp_cmd, scp_dst, scp_path, k, dst_path)
     elif mode == -2:
-        scp_cmd = "scp -i {} {} {}:{}/{}".format(pwd0, dst_full_path, scp_dst, scp_path, k)
+        scp_cmd = "{} {} {}:{}/{}".format(scp_cmd, dst_full_path, scp_dst, scp_path, k)
 
-    # print('Running {}'.format(scp_cmd))
+    print('Running {}'.format(scp_cmd))
     os.system(scp_cmd)
 
     if mode == 1 or mode == -2:
@@ -50,6 +56,7 @@ def main():
         'auth_dir': '',
         'auth_file': '',
         'auth_path': '',
+        'port': '',
         'dst_path': '.',
         'scp_path': '.',
         'scp_name': 'grs',
@@ -64,6 +71,7 @@ def main():
     dst_path = params['dst_path']
     scp_path = params['scp_path']
     scp_name = params['scp_name']
+    port = params['port']
 
     key_root = params['key_root']
     key_dir = params['key_dir']
@@ -75,7 +83,6 @@ def main():
 
     if mode == -1 or mode == -2:
         pwd0 = auth_file
-        port = None
     else:
         auth_path = linux_path(auth_root, auth_dir, auth_file)
         auth_data = open(auth_path, 'r').readlines()

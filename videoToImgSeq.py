@@ -210,7 +210,8 @@ if __name__ == '__main__':
                     frame_gap, n_frames
                 ))
 
-        frame_id = all_frame_id = 0
+        frame_id = -1
+        all_frame_id = 0
         print_diff = max(1, int(n_frames / 100))
         start_t = time.time()
         means = [[0, 0], ]
@@ -222,6 +223,8 @@ if __name__ == '__main__':
             _pause = 0
         measurements = []
         while True:
+
+
             if _src_files:
                 frame = _src_files[frame_id]
                 if isinstance(frame, str):
@@ -231,10 +234,19 @@ if __name__ == '__main__':
                 if not ret:
                     print('\nFrame {:d} could not be read'.format(frame_id + 1))
                     break
+
+            frame_id += 1
+
+            if frame_id < start_id:
+                sys.stdout.write('\rSkipped {:d}/{:d} frames'.format(
+                    frame_id, start_id))
+                sys.stdout.flush()
+                continue
+
             if trim_images:
                 frame = np.asarray(trim(Image.fromarray(frame)))
 
-            if crop and frame_id == 0:
+            if crop and frame_id == start_id:
                 roi = cv2.selectROI('Select ROI', frame)
                 print('orig roi: {}'.format(roi))
                 cv2.destroyWindow('Select ROI')
@@ -362,13 +374,6 @@ if __name__ == '__main__':
             if frame_gap > 1 and all_frame_id % frame_gap != 0:
                 continue
 
-            frame_id += 1
-
-            if frame_id <= start_id:
-                sys.stdout.write('\rSkipped {:d}/{:d} frames'.format(
-                    frame_id, start_id))
-                sys.stdout.flush()
-                continue
             if roi_enabled:
                 frame = frame[roi[1]:roi[3], roi[0]:roi[2], :]
             if resize_factor != 1:

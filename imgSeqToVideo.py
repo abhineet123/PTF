@@ -9,7 +9,7 @@ import skvideo.io
 
 import paramparse
 
-from Misc import sortKey, resizeAR, sizeAR, move_or_del_files
+from Misc import sortKey, resizeAR, sizeAR, move_or_del_files, putTextWithBackground
 from video_io import VideoWriterGPU
 
 
@@ -49,6 +49,7 @@ def main():
         'read_in_batch': 1,
         'placement_type': 1,
         'recursive': 0,
+        'write_filename': 0,
     }
 
     paramparse.process_dict(params)
@@ -73,6 +74,7 @@ def main():
     read_in_batch = params['read_in_batch']
     placement_type = params['placement_type']
     recursive = params['recursive']
+    write_filename = params['write_filename']
 
     img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
 
@@ -114,6 +116,9 @@ def main():
         print('Appending the reverse sequence')
 
     print('placement_type: {}'.format(placement_type))
+
+    if write_filename:
+        print('Writing filename as header')
 
     exit_prog = 0
 
@@ -248,10 +253,10 @@ def main():
         print_diff = max(1, int(n_src_files / 100))
         start_t = time.time()
         while True:
+            filename = src_files[frame_id]
             if read_in_batch:
                 image = src_images[frame_id]
             else:
-                filename = src_files[frame_id]
                 file_path = os.path.join(src_path, filename)
                 if not os.path.exists(file_path):
                     raise SystemError('Image file {} does not exist'.format(file_path))
@@ -270,6 +275,11 @@ def main():
                     break
                 elif k == 32:
                     pause_after_frame = 1 - pause_after_frame
+
+            if write_filename:
+                ann_fmt = (0, 5, 15, 1, 1, 255, 255, 255, 0, 0, 0)
+                filename_no_ext = os.path.splitext(filename)[0]
+                putTextWithBackground(image, filename_no_ext, fmt=ann_fmt)
 
             if use_skv:
                 video_out.writeFrame(image[:, :, ::-1])  # write the frame as RGB not BGR

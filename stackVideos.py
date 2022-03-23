@@ -12,7 +12,7 @@ params = {
     'root_dir': '',
     'save_path': '',
     'img_ext': 'jpg',
-    'show_img': 2,
+    'show_img': 1,
     'del_src': 0,
     'start_id': 0,
     'n_frames': 0,

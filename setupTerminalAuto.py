@@ -114,7 +114,9 @@ if __name__ == '__main__':
             self.auth_file = ''
             self.auth_root = ''
             self.config = 0
-            self.enable_isaic = 1
+            self.enable_mj = 1
+            self.enable_isaic = 0
+            self.mj = ('mj', 'mj2')
             self.isaic = ('isc', 'isc2')
             self.enable_git = 0
             self.exe_path = 'fatty.exe'
@@ -145,7 +147,9 @@ if __name__ == '__main__':
     config = params.config
     wait_t = params.wait_t
     n_git_panes = params.n_git_panes
+    enable_mj = params.enable_mj
     enable_isaic = params.enable_isaic
+    mj1, mj2 = params.mj
     isaic1, isaic2 = params.isaic
     enable_git = params.enable_git
     git_postproc = params.git_postproc
@@ -337,6 +341,17 @@ if __name__ == '__main__':
                 servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % isaic1)
                 servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % isaic2)
 
+            if enable_mj:
+                """connect to mj server"""
+                for _app in apps:
+                    _app.fatty.type_keys("^+t")
+                    _app.fatty.type_keys("sshm~")
+
+                time.sleep(wait_t)
+
+                servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % mj1)
+                servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % mj2)
+
         if enable_git:
             if only_git:
                 print('waiting {} secs for git init'.format(git_wait_init))
@@ -500,6 +515,8 @@ if __name__ == '__main__':
                 _app.fatty.type_keys("^+w")
                 if enable_isaic:
                     _app.fatty.type_keys("^+w")
+                if enable_mj:
+                    _app.fatty.type_keys("^+w")
 
                 time.sleep(1)
 
@@ -567,6 +584,17 @@ if __name__ == '__main__':
 
                 servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % isaic1)
                 servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % isaic2)
+
+            if enable_mj:
+                for _app in apps:
+                    """mj server"""
+                    _app.fatty.type_keys("^+t")
+                    _app.fatty.type_keys("sshm~")
+
+                time.sleep(wait_t)
+
+                servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % mj1)
+                servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % mj2)
 
         elif config == 3:
 

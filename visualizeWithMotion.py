@@ -93,6 +93,7 @@ def hideBorder(_win_name, on_top):
 
 class Params:
     def __init__(self):
+        # self.cfg_root = 'cfg'
         self.cfg = ('',)
         self.alpha = 1.0
         self.auto_progress = 0
@@ -797,7 +798,7 @@ def run(args, multi_exit_program=None,
         if isinstance(_src_files, list):
             n_frames = len(_src_files)
             if video_mode == 2 or video_mode == 3 or not parallel_read:
-                if auto_progress and reverse_video:
+                if (auto_progress and reverse_video) or reverse_video == 2:
                     _src_files += list(reversed(_src_files))
                 total_frames[_load_id] = len(_src_files)
             else:
@@ -3289,9 +3290,14 @@ def run(args, multi_exit_program=None,
                 grid_size = (n_images, 1)
                 loadImage()
             elif k == ord('R'):
-                # single row grid
-                grid_size = (1, n_images)
-                loadImage()
+                if video_mode and n_images == 1:
+                    _print('resetting video')
+                    for _id in img_id:
+                        img_id[_id] = 0
+                else:
+                    # single row grid
+                    grid_size = (1, n_images)
+                    loadImage()
             elif k == ord('['):
                 # decrement grid rows
                 _r, _c = grid_size
@@ -3763,7 +3769,8 @@ def run(args, multi_exit_program=None,
             #         sft_exit_program.value = 0
             #         second_from_top_thread = Process(target=sft.second_from_top_fn,
             #                                          args=(
-            #                                              sft_active_monitor_id, sft_active_win_handle, sft_exit_program,
+            #                                              sft_active_monitor_id, sft_active_win_handle,
+            #                                              sft_exit_program,
             #                                              second_from_top, monitors, win_name,
             #                                              dup_win_names, monitor_id, dup_monitor_ids,
             #                                              duplicate_window, only_maximized, frg_win_handles,

@@ -6,24 +6,25 @@ from datetime import datetime
 from Misc import processArguments, sortKey
 
 if __name__ == '__main__':
-    params = {
-        'list_file': '',
-        'root_dir': '',
-        'out_name': '',
-        'scp_dst': '',
-        'postfix': '',
-        'relative': 0,
-        'n_samples': 0,
-        'shuffle': 0,
-        'scp_port': '',
-        'inclusion': '',
-        'add_time_stamp': 1,
-        'move_to_home': 1,
-        'add_time_stamp': 1,
-        'switches': '-r',
-    }
+    params = dict(
+        list_file='',
+        exclude_list='',
+        root_dir='',
+        out_name='',
+        scp_dst='',
+        postfix='',
+        relative=0,
+        n_samples=0,
+        shuffle=0,
+        scp_port='',
+        inclusion='',
+        move_to_home=1,
+        add_time_stamp=1,
+        switches='-r',
+    )
     processArguments(sys.argv[1:], params)
     list_file = params['list_file']
+    exclude_list = params['exclude_list']
     root_dir = params['root_dir']
     out_name = params['out_name']
     postfix = params['postfix']
@@ -36,10 +37,31 @@ if __name__ == '__main__':
     move_to_home = params['move_to_home']
     add_time_stamp = params['add_time_stamp']
 
+    excluded_files = []
+
+    if exclude_list:
+        if os.path.isdir(exclude_list):
+            print(f'looking for excluded file names in {exclude_list}')
+
+            excluded_files = [name for name in os.listdir(exclude_list)]
+            excluded_files.sort(key=sortKey)
+
+        elif os.path.isfile(exclude_list):
+            print(f'reading excluded file names from {exclude_list}')
+            excluded_files = [x.strip() for x in open(exclude_list).readlines() if x.strip()
+                              and not x.startswith('#')
+                              and not x.startswith('@')
+                              ]
+            if root_dir:
+                excluded_files = [os.path.join(root_dir, name) for name in excluded_files]
+
+        else:
+            raise AssertionError('invalid list file: {}')
+
     if os.path.isdir(list_file):
         print(f'looking for zip paths in {list_file}')
 
-        zip_paths = [os.path.join(list_file, name) for name in os.listdir(list_file)]
+        zip_paths = [os.path.join(list_file, name) for name in os.listdir(list_file) if name not in excluded_files]
         zip_paths.sort(key=sortKey)
 
     elif os.path.isfile(list_file):
@@ -47,6 +69,7 @@ if __name__ == '__main__':
         zip_paths = [x.strip() for x in open(list_file).readlines() if x.strip()
                      and not x.startswith('#')
                      and not x.startswith('@')
+                     and x.strip() not in excluded_files
                      ]
         if root_dir:
             zip_paths = [os.path.join(root_dir, name) for name in zip_paths]

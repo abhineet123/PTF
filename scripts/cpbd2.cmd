@@ -2,7 +2,7 @@
 REM crop patch by detection
 
 set curr_dir=%cd%
-set tf_api_dir=%~dp0\..\..\..\..\Acamp\code\tf_api
+set tf_api_dir=%~dp0\..\..\..\..\Acamp\acamp_code\tf_api
 echo %curr_dir%
 echo %tf_api_dir%
 echo %PYTHONPATH%
