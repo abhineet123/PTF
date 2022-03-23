@@ -145,8 +145,14 @@ if __name__ == "__main__":
 
     print('writing log to: {}'.format(log_file_path))
 
+    n_corrupt_files = 0
+    n_total_files = 0
+
     for (dirpath, dirnames, filenames) in os.walk(root_dir, followlinks=True):
-        for f in tqdm(filenames, desc=dirpath):
+        pbar = tqdm(filenames)
+        for f in pbar:
+
+            n_total_files += 1
 
             if os.path.splitext(f.lower())[1] not in img_exts:
                 continue
@@ -156,6 +162,7 @@ if __name__ == "__main__":
             if method == 0:
                 status = is_corrupt(file_path)
                 if status:
+                    n_corrupt_files += 1
                     log_file.write(file_path + '\n')
                     # os.remove(f)
                     if delete_file:
@@ -168,5 +175,8 @@ if __name__ == "__main__":
             else:
                 code, output, error = checkImage(file_path)
                 if str(code) != "0" or str(error) != "":
+                    n_corrupt_files += 1
                     log_file.write(file_path + '\n')
                     print("Damaged image found: {} :: {}".format(file_path, error))
+
+            pbar.set_description(f'{dirpath} (corrupt: {n_corrupt_files} / {n_total_files})')
