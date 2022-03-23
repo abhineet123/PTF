@@ -61,7 +61,6 @@ if __name__ == '__main__':
         n_excluded_files = len(excluded_files)
         print(f'found {n_excluded_files} excluded_files')
 
-
     if os.path.isdir(list_file):
         print(f'looking for zip paths in {list_file}')
 
@@ -145,7 +144,7 @@ if __name__ == '__main__':
         zip_cmd = 'zip {:s} {:s} {:s}'.format(switches, out_name, zip_cmd)
         out_path = out_name
 
-    print('\nrunning: {}\n'.format(zip_cmd))
+    # print('\nrunning: {}\n'.format(zip_cmd))
 
     os.system(zip_cmd)
 
