@@ -2,6 +2,8 @@ import os
 import sys
 import random
 from datetime import datetime
+from tqdm import tqdm
+import zipfile
 
 from Misc import processArguments, sortKey
 
@@ -20,6 +22,7 @@ if __name__ == '__main__':
         inclusion='',
         move_to_home=1,
         add_time_stamp=1,
+        builtin=1,
         switches='-r',
     )
     processArguments(sys.argv[1:], params)
@@ -36,6 +39,7 @@ if __name__ == '__main__':
     scp_port = params['scp_port']
     move_to_home = params['move_to_home']
     add_time_stamp = params['add_time_stamp']
+    builtin = params['builtin']
 
     excluded_files = []
 
@@ -103,7 +107,7 @@ if __name__ == '__main__':
         print(f'Sampling {n_samples} / {n_paths} zip paths')
 
         out_name = '{}_sample_{}'.format(out_name, n_samples)
-        
+
         zip_paths = zip_paths[:n_samples]
 
     if not root_dir:
@@ -131,22 +135,27 @@ if __name__ == '__main__':
 
     out_name = '{}.zip'.format(out_name)
 
-    zip_paths = ['"{}"'.format(k) for k in zip_paths]
-
-    zip_cmd = ' '.join(zip_paths)
-    # for zip_path in zip_paths:
-    #     zip_cmd = '{:s} {:s}'.format(zip_cmd, zip_path)
-
-    if relative:
-        zip_cmd = 'cd {} && zip {} {} . -i {}'.format(root_dir, switches, out_name, zip_cmd)
-        out_path = os.path.join(root_dir, out_name)
+    if builtin:
+        with zipfile.ZipFile(out_name, mode="w") as archive:
+            for zip_path in tqdm(zip_paths):
+                archive.write(zip_path, os.path.basename(zip_path))
     else:
-        zip_cmd = 'zip {:s} {:s} {:s}'.format(switches, out_name, zip_cmd)
-        out_path = out_name
+        zip_paths = ['"{}"'.format(k) for k in zip_paths]
 
-    # print('\nrunning: {}\n'.format(zip_cmd))
+        zip_cmd = ' '.join(zip_paths)
+        # for zip_path in zip_paths:
+        #     zip_cmd = '{:s} {:s}'.format(zip_cmd, zip_path)
 
-    os.system(zip_cmd)
+        if relative:
+            zip_cmd = 'cd {} && zip {} {} . -i {}'.format(root_dir, switches, out_name, zip_cmd)
+            out_path = os.path.join(root_dir, out_name)
+        else:
+            zip_cmd = 'zip {:s} {:s} {:s}'.format(switches, out_name, zip_cmd)
+            out_path = out_name
+
+        # print('\nrunning: {}\n'.format(zip_cmd))
+
+        os.system(zip_cmd)
 
     assert os.path.exists(out_path), "zipping failed: {}".format(out_path)
 
