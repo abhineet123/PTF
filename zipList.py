@@ -94,16 +94,16 @@ if __name__ == '__main__':
         out_name = out_name.replace(')', '_')
 
     if n_paths > n_samples > 0:
-        print(f'Sampling {n_samples} / {n_paths} zip paths')
-
-        out_name = '{}_sample_{}'.format(out_name, n_samples)
-
         if shuffle:
             print('shuffling zip paths')
             random.shuffle(zip_paths)
 
             out_name = '{}_shuffle'.format(out_name)
 
+        print(f'Sampling {n_samples} / {n_paths} zip paths')
+
+        out_name = '{}_sample_{}'.format(out_name, n_samples)
+        
         zip_paths = zip_paths[:n_samples]
 
     if not root_dir:
