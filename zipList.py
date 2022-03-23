@@ -135,8 +135,16 @@ if __name__ == '__main__':
 
     out_name = '{}.zip'.format(out_name)
 
+    if relative:
+        out_path = os.path.join(root_dir, out_name)
+    else:
+        out_path = out_name
+
+    n_paths = len(zip_paths)
+
     if builtin:
-        with zipfile.ZipFile(out_name, mode="w") as archive:
+        print('writing {} files to {}'.format(n_paths, out_path))
+        with zipfile.ZipFile(out_path, mode="w") as archive:
             for zip_path in tqdm(zip_paths):
                 archive.write(zip_path, os.path.basename(zip_path))
     else:
@@ -148,10 +156,8 @@ if __name__ == '__main__':
 
         if relative:
             zip_cmd = 'cd {} && zip {} {} . -i {}'.format(root_dir, switches, out_name, zip_cmd)
-            out_path = os.path.join(root_dir, out_name)
         else:
             zip_cmd = 'zip {:s} {:s} {:s}'.format(switches, out_name, zip_cmd)
-            out_path = out_name
 
         # print('\nrunning: {}\n'.format(zip_cmd))
 
