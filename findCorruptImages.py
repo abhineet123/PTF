@@ -155,7 +155,7 @@ if __name__ == "__main__":
                     # os.remove(f)
                     if delete_file:
                         print('\nDeleting corrupt file: {}'.format(file_path))
-                        os.remove(f)
+                        os.remove(file_path)
                     else:
                         print('\nFound corrupt file: {:s}\n'.format(file_path))
 
