@@ -139,6 +139,8 @@ if __name__ == "__main__":
 
     log_file = open('fci_log.txt', 'w')
 
+    print('root_dir: {}'.format(root_dir))
+
     for (dirpath, dirnames, filenames) in tqdm(os.walk(root_dir, followlinks=True)):
         for f in tqdm(filenames, desc=dirpath):
 
