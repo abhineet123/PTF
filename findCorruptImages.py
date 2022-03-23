@@ -120,6 +120,7 @@ def is_corrupt(jpegfile):
         return str(e)
     return None
 
+
 if __name__ == "__main__":
     params = {
         'root_dir': '.',
@@ -137,14 +138,16 @@ if __name__ == "__main__":
 
     img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff')
 
-    log_file = open('fci_log.txt', 'w')
-
     print('root_dir: {}'.format(root_dir))
 
-    for (dirpath, dirnames, filenames) in tqdm(os.walk(root_dir, followlinks=True)):
+    log_file_path = os.path.join(root_dir, 'fci_log.txt')
+    log_file = open(log_file_path, 'w')
+
+    print('writing log to: {}'.format(log_file_path))
+
+    for (dirpath, dirnames, filenames) in os.walk(root_dir, followlinks=True):
         for f in tqdm(filenames, desc=dirpath):
 
-            # Filtering only JPEG images
             if os.path.splitext(f.lower())[1] not in img_exts:
                 continue
 
@@ -167,5 +170,3 @@ if __name__ == "__main__":
                 if str(code) != "0" or str(error) != "":
                     log_file.write(file_path + '\n')
                     print("Damaged image found: {} :: {}".format(file_path, error))
-
-
