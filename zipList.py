@@ -56,7 +56,7 @@ if __name__ == '__main__':
                 excluded_files = [os.path.join(root_dir, name) for name in excluded_files]
 
         else:
-            raise AssertionError('invalid list file: {}')
+            raise AssertionError(f'invalid exclude_list: {exclude_list}')
 
     if os.path.isdir(list_file):
         print(f'looking for zip paths in {list_file}')
@@ -75,7 +75,7 @@ if __name__ == '__main__':
             zip_paths = [os.path.join(root_dir, name) for name in zip_paths]
 
     else:
-        raise AssertionError('invalid list file: {}')
+        raise AssertionError(f'invalid list file: {list_file}')
 
     n_paths = len(zip_paths)
     print(f'found {n_paths} zip paths')
