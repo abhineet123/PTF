@@ -71,7 +71,7 @@ for src_id, src_fname in enumerate(src_file_names):
     dst_path = os.path.join(dst_dir, dst_fname)
 
     print('{} --> {}'.format(src_path, dst_path))
-    # shutil.move(src_path, dst_path)
+    shutil.move(src_path, dst_path)
 
     if dir_file_id == files_per_subdir or src_id == n_files - 1:
         # print('Done sub dir {:d}'.format(subdir_id))
@@ -81,7 +81,7 @@ for src_id, src_fname in enumerate(src_file_names):
             final_dst_dir = os.path.join(root_dir, final_dst_subdir_name)
 
             print('\n{} --> {}\n'.format(dst_dir, final_dst_dir))
-            # shutil.move(dst_dir, final_dst_dir)
+            shutil.move(dst_dir, final_dst_dir)
 
         subdir_id += 1
         first_file_name = None
