@@ -22,6 +22,7 @@ if __name__ == '__main__':
         inclusion='',
         move_to_home=1,
         add_time_stamp=1,
+        recursive=1,
         builtin=1,
         switches='-r',
     )
@@ -40,6 +41,7 @@ if __name__ == '__main__':
     move_to_home = params['move_to_home']
     add_time_stamp = params['add_time_stamp']
     builtin = params['builtin']
+    recursive = params['recursive']
 
     excluded_files = []
 
@@ -68,7 +70,13 @@ if __name__ == '__main__':
     if os.path.isdir(list_file):
         print(f'looking for zip paths in {list_file}')
 
-        zip_paths = [os.path.join(list_file, name) for name in os.listdir(list_file) if name not in excluded_files]
+        if recursive:
+            print(f'searching recursively')
+            zip_paths_gen = [[os.path.join(dirpath, f) for f in filenames if f not in excluded_files]
+                             for (dirpath, dirnames, filenames) in os.walk(list_file, followlinks=False)]
+            zip_paths = [item for sublist in zip_paths_gen for item in sublist]
+        else:
+            zip_paths = [os.path.join(list_file, name) for name in os.listdir(list_file) if name not in excluded_files]
         zip_paths.sort(key=sortKey)
 
     elif os.path.isfile(list_file):
