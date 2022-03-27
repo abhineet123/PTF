@@ -166,6 +166,7 @@ class Params:
         self.width = 0
         self.win_name = ''
         self.id_probs = ''
+        self.target_aspect_ratio = 0
         self.win_offset_x = 0
         self.win_offset_y = 0
         self.log_file = 'vwm.log'
@@ -271,6 +272,7 @@ def run(args, multi_exit_program=None,
     _min_aspect_ratio = params.min_aspect_ratio
     _max_aspect_ratio = params.max_aspect_ratio
     id_probs = params.id_probs
+    target_aspect_ratio = params.target_aspect_ratio
 
     if log_color:
         from colorlog import ColoredFormatter
@@ -1675,6 +1677,20 @@ def run(args, multi_exit_program=None,
                         src_img = np.rot90(src_img, rotate_images)
 
                     img_fnames[_load_id] = img_fname
+
+                if target_aspect_ratio > 0:
+                    h, w = src_img.shape[:2]
+                    src_aspect_ratio = w / h
+                    resize_ratio = target_aspect_ratio / src_aspect_ratio
+
+                    _target_h, _target_w = h, w
+
+                    if resize_ratio < 1:
+                        _target_h *= int(1 / resize_ratio)
+                    else:
+                        _target_w *= int(resize_ratio)
+
+                    src_img = resizeAR(src_img, width=_target_w, height=_target_h, placement_type=1)
 
                 src_images.append(src_img)
                 if video_mode:
