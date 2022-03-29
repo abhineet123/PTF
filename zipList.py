@@ -114,6 +114,7 @@ if __name__ == '__main__':
             zip_names = [os.path.basename(k) for k in zip_paths]
 
         n_excluded_files = len(excluded_names)
+        print()
         print(f'found {n_excluded_files} excluded_files')
 
         useless_excluded_paths = [k for k, n in zip(excluded_paths, excluded_names) if n not in zip_names]
@@ -128,10 +129,12 @@ if __name__ == '__main__':
         _n_paths = len(zip_paths)
         n_filtered = n_paths - _n_paths
         n_unfiltered = n_excluded_files - n_filtered
-        print(f'found {_n_paths} zip paths after filtering '
-              f'with {n_filtered} filtered files, '
-              f'{n_unfiltered} unfiltered files '
-              f'and {n_useless_excluded_paths} useless_excluded_paths')
+        print(f'found {_n_paths} zip paths after filtering')
+        print(f'n_filtered: {n_filtered}')
+        print(f'n_unfiltered: {n_unfiltered}')
+        print(f'n_useless_excluded_paths: {n_useless_excluded_paths}')
+        print()
+
         n_paths = _n_paths
 
     if not out_name:
