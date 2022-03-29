@@ -127,8 +127,10 @@ if __name__ == '__main__':
 
         _n_paths = len(zip_paths)
         n_filtered = n_paths - _n_paths
+        n_unfiltered = n_excluded_files - n_filtered
         print(f'found {_n_paths} zip paths after filtering '
-              f'with {n_filtered} filtered files '
+              f'with {n_filtered} filtered files, '
+              f'{n_unfiltered} unfiltered files '
               f'and {n_useless_excluded_paths} useless_excluded_paths')
         n_paths = _n_paths
 
