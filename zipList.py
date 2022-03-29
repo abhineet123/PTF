@@ -65,7 +65,8 @@ if __name__ == '__main__':
                              for (dirpath, dirnames, filenames) in os.walk(list_file, followlinks=False)]
             zip_paths = [item for sublist in zip_paths_gen for item in sublist]
         else:
-            zip_paths = [os.path.join(list_file, name) for name in os.listdir(list_file) if name not in excluded_names]
+            zip_paths = [os.path.join(list_file, f) for f in os.listdir(list_file)]
+
         zip_paths.sort(key=sortKey)
 
     elif os.path.isfile(list_file):
@@ -81,6 +82,9 @@ if __name__ == '__main__':
     else:
         raise AssertionError(f'invalid list file: {list_file}')
 
+    if name_from_title:
+        zip_paths = [f for f in zip_paths if f.endswith('.jpg')]
+
     n_paths = len(zip_paths)
     print(f'found {n_paths} zip paths')
 
@@ -88,7 +92,7 @@ if __name__ == '__main__':
         if os.path.isdir(exclude_list):
             print(f'looking for excluded file names in {exclude_list}')
 
-            excluded_paths = [os.path.join(exclude_list, name) for name in os.listdir(exclude_list)]
+            excluded_paths = [os.path.join(exclude_list, f) for f in os.listdir(exclude_list)]
 
         elif os.path.isfile(exclude_list):
             print(f'reading excluded file names from {exclude_list}')
@@ -101,6 +105,8 @@ if __name__ == '__main__':
 
         if name_from_title:
             print('getting names from titles')
+
+            excluded_paths = [f for f in excluded_paths if f.endswith('.jpg')]
             excluded_names = [title_from_exif(k) for k in excluded_paths]
             zip_names = [title_from_exif(k) for k in zip_paths]
         else:
