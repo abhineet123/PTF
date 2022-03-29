@@ -37,7 +37,7 @@ if __name__ == '__main__':
         switches='-r',
     )
     paramparse.process_dict(params)
-    
+
     list_file = params['list_file']
     exclude_list = params['exclude_list']
     root_dir = params['root_dir']
@@ -96,7 +96,6 @@ if __name__ == '__main__':
             excluded_paths = [os.path.join(exclude_list, f) for f in os.listdir(exclude_list)]
 
             excluded_paths.sort()
-
 
         elif os.path.isfile(exclude_list):
             print(f'reading excluded file names from {exclude_list}')
