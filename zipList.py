@@ -88,12 +88,11 @@ if __name__ == '__main__':
         if os.path.isdir(exclude_list):
             print(f'looking for excluded file names in {exclude_list}')
 
-            excluded_names = [name for name in os.listdir(exclude_list)]
-            excluded_names.sort(key=sortKey)
+            excluded_paths = [os.path.join(exclude_list, name) for name in os.listdir(exclude_list)]
 
         elif os.path.isfile(exclude_list):
             print(f'reading excluded file names from {exclude_list}')
-            excluded_names = [x.strip() for x in open(exclude_list).readlines() if x.strip()
+            excluded_paths = [x.strip() for x in open(exclude_list).readlines() if x.strip()
                               and not x.startswith('#')
                               and not x.startswith('@')
                               ]
@@ -102,15 +101,14 @@ if __name__ == '__main__':
 
         if name_from_title:
             print('getting names from titles')
-            excluded_names = [title_from_exif(k) for k in excluded_names]
+            excluded_names = [title_from_exif(k) for k in excluded_paths]
+            zip_names = [title_from_exif(k) for k in zip_paths]
+        else:
+            excluded_names = [os.path.basename(k) for k in excluded_paths]
+            zip_names = [os.path.basename(k) for k in zip_paths]
 
         n_excluded_files = len(excluded_names)
         print(f'found {n_excluded_files} excluded_files')
-
-        if name_from_title:
-            zip_names = [title_from_exif(k) for k in excluded_names]
-        else:
-            zip_names = [os.path.basename(k) for k in excluded_names]
 
         zip_paths = [k for k, n in zip(zip_paths, zip_names) if n not in excluded_names]
 
