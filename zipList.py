@@ -133,9 +133,9 @@ if __name__ == '__main__':
         n_filtered = n_paths - _n_paths
         n_unfiltered = n_excluded_files - n_filtered
         print(f'found {_n_paths} zip paths after filtering')
-        print(f'n_filtered: {n_filtered}')
-        print(f'n_unfiltered: {n_unfiltered}')
-        print(f'n_useless_excluded_paths: {n_useless_excluded_paths}')
+        print(f'filtered: {n_filtered}')
+        print(f'unfiltered: {n_unfiltered}')
+        print(f'useless_excluded_paths: {n_useless_excluded_paths}')
         print()
 
         n_paths = _n_paths
