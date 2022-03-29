@@ -126,8 +126,11 @@ if __name__ == '__main__':
         zip_paths = [k for k, n in zip(zip_paths, zip_names) if n not in excluded_names]
 
         _n_paths = len(zip_paths)
-        n_filtered = _n_paths - n_paths
-        print(f'found {_n_paths} zip paths after filtering with {n_filtered} filtered files and {n_useless_excluded_paths} useless_excluded_paths')
+        n_filtered = n_paths - _n_paths
+        print(f'found {_n_paths} zip paths after filtering '
+              f'with {n_filtered} filtered files '
+              f'and {n_useless_excluded_paths} useless_excluded_paths')
+        n_paths = _n_paths
 
     if not out_name:
         dir_names = list_file.split(os.sep)
