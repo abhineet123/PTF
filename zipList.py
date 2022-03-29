@@ -4,8 +4,17 @@ import random
 from datetime import datetime
 from tqdm import tqdm
 import zipfile
+import piexif
 
 from Misc import processArguments, sortKey
+
+
+def title_from_exif(img_path):
+    exif_dict = piexif.load(img_path)
+    title = exif_dict['0th'][piexif.ImageIFD.ImageDescription].decode("utf-8")
+
+    return title
+
 
 if __name__ == '__main__':
     params = dict(
@@ -24,6 +33,7 @@ if __name__ == '__main__':
         add_time_stamp=1,
         recursive=1,
         builtin=1,
+        name_from_title=0,
         switches='-r',
     )
     processArguments(sys.argv[1:], params)
@@ -42,41 +52,20 @@ if __name__ == '__main__':
     add_time_stamp = params['add_time_stamp']
     builtin = params['builtin']
     recursive = params['recursive']
+    name_from_title = params['name_from_title']
 
-    excluded_files = []
-
-    if exclude_list:
-        if os.path.isdir(exclude_list):
-            print(f'looking for excluded file names in {exclude_list}')
-
-            excluded_files = [name for name in os.listdir(exclude_list)]
-            excluded_files.sort(key=sortKey)
-
-        elif os.path.isfile(exclude_list):
-            print(f'reading excluded file names from {exclude_list}')
-            excluded_files = [x.strip() for x in open(exclude_list).readlines() if x.strip()
-                              and not x.startswith('#')
-                              and not x.startswith('@')
-                              ]
-            if root_dir:
-                excluded_files = [os.path.join(root_dir, name) for name in excluded_files]
-
-        else:
-            raise AssertionError(f'invalid exclude_list: {exclude_list}')
-
-        n_excluded_files = len(excluded_files)
-        print(f'found {n_excluded_files} excluded_files')
+    excluded_names = []
 
     if os.path.isdir(list_file):
         print(f'looking for zip paths in {list_file}')
 
         if recursive:
             print(f'searching recursively')
-            zip_paths_gen = [[os.path.join(dirpath, f) for f in filenames if f not in excluded_files]
+            zip_paths_gen = [[os.path.join(dirpath, f) for f in filenames]
                              for (dirpath, dirnames, filenames) in os.walk(list_file, followlinks=False)]
             zip_paths = [item for sublist in zip_paths_gen for item in sublist]
         else:
-            zip_paths = [os.path.join(list_file, name) for name in os.listdir(list_file) if name not in excluded_files]
+            zip_paths = [os.path.join(list_file, name) for name in os.listdir(list_file) if name not in excluded_names]
         zip_paths.sort(key=sortKey)
 
     elif os.path.isfile(list_file):
@@ -84,7 +73,7 @@ if __name__ == '__main__':
         zip_paths = [x.strip() for x in open(list_file).readlines() if x.strip()
                      and not x.startswith('#')
                      and not x.startswith('@')
-                     and x.strip() not in excluded_files
+                     and x.strip() not in excluded_names
                      ]
         if root_dir:
             zip_paths = [os.path.join(root_dir, name) for name in zip_paths]
@@ -94,6 +83,39 @@ if __name__ == '__main__':
 
     n_paths = len(zip_paths)
     print(f'found {n_paths} zip paths')
+
+    if exclude_list:
+        if os.path.isdir(exclude_list):
+            print(f'looking for excluded file names in {exclude_list}')
+
+            excluded_names = [name for name in os.listdir(exclude_list)]
+            excluded_names.sort(key=sortKey)
+
+        elif os.path.isfile(exclude_list):
+            print(f'reading excluded file names from {exclude_list}')
+            excluded_names = [x.strip() for x in open(exclude_list).readlines() if x.strip()
+                              and not x.startswith('#')
+                              and not x.startswith('@')
+                              ]
+        else:
+            raise AssertionError(f'invalid exclude_list: {exclude_list}')
+
+        if name_from_title:
+            print('getting names from titles')
+            excluded_names = [title_from_exif(k) for k in excluded_names]
+
+        n_excluded_files = len(excluded_names)
+        print(f'found {n_excluded_files} excluded_files')
+
+        if name_from_title:
+            zip_names = [title_from_exif(k) for k in excluded_names]
+        else:
+            zip_names = [os.path.basename(k) for k in excluded_names]
+
+        zip_paths = [k for k, n in zip(zip_paths, zip_names) if n not in excluded_names]
+
+        n_paths = len(zip_paths)
+        print(f'found {n_paths} zip paths after filtering')
 
     if not out_name:
         dir_names = list_file.split(os.sep)
