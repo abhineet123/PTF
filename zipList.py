@@ -6,7 +6,7 @@ from tqdm import tqdm
 import zipfile
 import piexif
 
-from Misc import processArguments, sortKey
+import paramparse
 
 
 def title_from_exif(img_path):
@@ -36,7 +36,8 @@ if __name__ == '__main__':
         name_from_title=0,
         switches='-r',
     )
-    processArguments(sys.argv[1:], params)
+    paramparse.process_dict(params)
+    
     list_file = params['list_file']
     exclude_list = params['exclude_list']
     root_dir = params['root_dir']
@@ -67,7 +68,7 @@ if __name__ == '__main__':
         else:
             zip_paths = [os.path.join(list_file, f) for f in os.listdir(list_file)]
 
-        zip_paths.sort(key=sortKey)
+        zip_paths.sort()
 
     elif os.path.isfile(list_file):
         print(f'reading zip paths from {list_file}')
@@ -93,6 +94,9 @@ if __name__ == '__main__':
             print(f'looking for excluded file names in {exclude_list}')
 
             excluded_paths = [os.path.join(exclude_list, f) for f in os.listdir(exclude_list)]
+
+            excluded_paths.sort()
+
 
         elif os.path.isfile(exclude_list):
             print(f'reading excluded file names from {exclude_list}')
