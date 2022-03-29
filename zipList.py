@@ -116,10 +116,18 @@ if __name__ == '__main__':
         n_excluded_files = len(excluded_names)
         print(f'found {n_excluded_files} excluded_files')
 
+        useless_excluded_paths = [k for k, n in zip(excluded_paths, excluded_names) if n not in zip_names]
+
+        with open('useless_excluded_paths.txt', 'w') as fid:
+            fid.write('\n'.join(useless_excluded_paths))
+
+        n_useless_excluded_paths = len(useless_excluded_paths)
+
         zip_paths = [k for k, n in zip(zip_paths, zip_names) if n not in excluded_names]
 
-        n_paths = len(zip_paths)
-        print(f'found {n_paths} zip paths after filtering')
+        _n_paths = len(zip_paths)
+        n_filtered = _n_paths - n_paths
+        print(f'found {_n_paths} zip paths after filtering with {n_filtered} filtered files and {n_useless_excluded_paths} useless_excluded_paths')
 
     if not out_name:
         dir_names = list_file.split(os.sep)
