@@ -15,6 +15,28 @@ def title_from_exif(img_path):
 
     return title
 
+def to_epoch(dst_fname_noext, fmt='%Y_%m_%d-%H_%M_%S-%f', is_path=True):
+    if is_path:
+        dst_fname_noext = os.path.splitext(os.path.basename(dst_fname_noext))[0]
+
+    timestamp_ms, _id = dst_fname_noext.split('__')
+    timestamp_str = timestamp_ms + '000'
+    timestamp = datetime.strptime(timestamp_str, fmt)
+    epoch_sec = datetime.timestamp(timestamp)
+    epoch = str(int(float(epoch_sec) * 1000))
+
+    return epoch, _id
+
+
+def from_epoch(epoch, src_id, fmt='%Y_%m_%d-%H_%M_%S-%f'):
+    epoch_sec = float(epoch) / 1000.0
+    timstamp = datetime.fromtimestamp(epoch_sec)
+    timstamp_str = timstamp.strftime(fmt)
+    timstamp_str_ms = timstamp_str[:-3]
+    timstamp_id = '{}__{:d}'.format(timstamp_str_ms, src_id)
+
+    return timstamp_id
+
 
 if __name__ == '__main__':
     params = dict(
@@ -110,8 +132,11 @@ if __name__ == '__main__':
             print('getting names from titles')
 
             excluded_paths = [f for f in excluded_paths if f.endswith('.jpg')]
-            excluded_names = [title_from_exif(k) for k in excluded_paths]
-            zip_names = [title_from_exif(k) for k in zip_paths]
+            # excluded_names = [title_from_exif(k) for k in excluded_paths]
+            # zip_names = [title_from_exif(k) for k in zip_paths]
+            excluded_names = [to_epoch(k) for k in excluded_paths]
+            zip_names = [to_epoch(k) for k in zip_paths]
+
         else:
             excluded_names = [os.path.basename(k) for k in excluded_paths]
             zip_names = [os.path.basename(k) for k in zip_paths]
