@@ -42,7 +42,9 @@ params = {
     'resize_factor': 1.0,
     'start_id': 0,
     'out_fname_templ': 'image%06d',
-    'ext': 'jpg',
+    'codec': 'H264',
+    'fps': 30,
+    'ext': '.jpg',
     'mode': 0,
     'recursive': 1,
     'tracker_type': 0,
@@ -73,9 +75,14 @@ if __name__ == '__main__':
     tracker_type = params['tracker_type']
     filtering = params['filtering']
     trim_images = params['trim_images']
+    codec = params['codec']
+    fps = params['fps']
 
     vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv', '.gif', '.webm']
     img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
+
+    if not ext.startswith('.'):
+        ext = '.{}'.format(ext)
 
     roi_enabled = False
     if roi and isinstance(roi, (list, tuple)) and len(roi) == 4:
@@ -164,8 +171,19 @@ if __name__ == '__main__':
 
         if dst_dir and not os.path.isdir(dst_dir):
             os.makedirs(dst_dir)
-        print('Writing image sequence to: {:s}/{:s}.{}'.format(dst_dir, out_fname_templ, ext))
+
+        if ext in img_exts:
+            print('Writing output image sequence to: {:s}/{:s}{}'.format(dst_dir, out_fname_templ, ext))
+            write_to_video = False
+            video_out = None
+        elif ext in vid_exts:
+            print('Writing output video to: {:s}{}'.format(dst_dir, ext))
+            write_to_video = True
+        else:
+            raise AssertionError('invalid out ext: {}'.format(ext))
+
         _src_files = []
+        video_out = None
 
         _ext = os.path.splitext(src_path)[1]
         if mode == 0:
@@ -223,7 +241,6 @@ if __name__ == '__main__':
             _pause = 0
         measurements = []
         while True:
-
 
             if _src_files:
                 frame = _src_files[frame_id]
@@ -379,16 +396,29 @@ if __name__ == '__main__':
             if resize_factor != 1:
                 frame = cv2.resize(frame, (0, 0), fx=resize_factor, fy=resize_factor)
 
-            out_id = (frame_id - start_id)
-            if reverse == 1:
-                out_id = total_frames - out_id + 1
-            elif reverse == 2:
-                out_id2 = 2 * total_frames - out_id + 1
-                out_path2 = os.path.join(dst_dir, out_fname_templ % out_id2 + '.' + ext)
-                cv2.imwrite(out_path2, frame)
+            if write_to_video:
+                if video_out is None:
+                    dst_height, dst_width = frame.shape[:2]
+                    dst_path = dst_dir + ext
+                    fourcc = cv2.VideoWriter_fourcc(*codec)
+                    video_out = cv2.VideoWriter(dst_path, fourcc, fps, (dst_width, dst_height))
 
-            out_path = os.path.join(dst_dir, out_fname_templ % out_id + '.' + ext)
-            cv2.imwrite(out_path, frame)
+                    if video_out is None:
+                        raise IOError('Output video file could not be opened: {}'.format(dst_path))
+
+                video_out.write(frame)
+
+            else:
+                out_id = (frame_id - start_id)
+                if reverse == 1:
+                    out_id = total_frames - out_id + 1
+                elif reverse == 2:
+                    out_id2 = 2 * total_frames - out_id + 1
+                    out_path2 = os.path.join(dst_dir, out_fname_templ % out_id2 + ext)
+                    cv2.imwrite(out_path2, frame)
+
+                out_path = os.path.join(dst_dir, out_fname_templ % out_id + ext)
+                cv2.imwrite(out_path, frame)
 
             if show_img:
                 cv2.imshow('Frame', frame)
@@ -402,9 +432,9 @@ if __name__ == '__main__':
 
             if frame_id % print_diff == 0:
                 end_t = time.time()
-                fps = float(print_diff) / (end_t - start_t)
+                proc_fps = float(print_diff) / (end_t - start_t)
                 sys.stdout.write('\rDone {:d}/{:d} frames at {:.4f} fps'.format(
-                    (frame_id - start_id), n_frames, fps))
+                    (frame_id - start_id), n_frames, proc_fps))
                 sys.stdout.flush()
                 start_t = end_t
 
@@ -412,3 +442,5 @@ if __name__ == '__main__':
         sys.stdout.flush()
         dst_dir = ''
         n_frames = 0
+        if write_to_video:
+            video_out.release()

@@ -12,7 +12,7 @@ import skvideo.io
 import paramparse
 
 from Misc import sortKey, resizeAR
-from Misc import processArguments, trim
+from Misc import trim
 
 params = {
     'src_path': '.',
