@@ -134,8 +134,8 @@ if __name__ == '__main__':
             excluded_paths = [f for f in excluded_paths if f.endswith('.jpg')]
             # excluded_names = [title_from_exif(k) for k in excluded_paths]
             # zip_names = [title_from_exif(k) for k in zip_paths]
-            excluded_names = [to_epoch(k) for k in excluded_paths]
-            zip_names = [to_epoch(k) for k in zip_paths]
+            excluded_names = [to_epoch(k)[0] for k in excluded_paths]
+            zip_names = [to_epoch(k)[0] for k in zip_paths]
 
         else:
             excluded_names = [os.path.basename(k) for k in excluded_paths]
