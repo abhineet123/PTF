@@ -225,9 +225,9 @@ if __name__ == '__main__':
         with zipfile.ZipFile(out_path, mode="w") as archive:
             for zip_path in tqdm(zip_paths):
                 if relative:
-                    archive.write(zip_path, zip_path)
-                else:
                     archive.write(zip_path, os.path.basename(zip_path))
+                else:
+                    archive.write(zip_path, zip_path)
     else:
         zip_paths = ['"{}"'.format(k) for k in zip_paths]
 
