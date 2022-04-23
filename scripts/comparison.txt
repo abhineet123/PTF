@@ -1,0 +1,10 @@
+--- 
++++ 
+@@ -3,2 +3,7 @@
+ Z:\
++|   comparison.txt
++|   html_diff.py
++|   output.txt
++|   output2.txt
++|   
+ +---#

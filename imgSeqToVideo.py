@@ -8,6 +8,7 @@ from tqdm import tqdm
 import skvideo.io
 
 import paramparse
+# print(paramparse.__file__)
 
 from Misc import sortKey, resizeAR, sizeAR, move_or_del_files, putTextWithBackground
 from video_io import VideoWriterGPU
@@ -51,8 +52,8 @@ def main():
         'recursive': 0,
         'write_filename': 0,
     }
-
     paramparse.process_dict(params)
+
     _src_path = params['src_path']
     save_path = params['save_path']
     img_ext = params['img_ext']

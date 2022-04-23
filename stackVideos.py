@@ -1,6 +1,6 @@
 import cv2
 import sys
-import os, shutil
+import os
 from pprint import pprint
 from datetime import datetime
 from Misc import processArguments, sortKey, resizeAR, stackImages
