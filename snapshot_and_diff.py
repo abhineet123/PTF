@@ -4,6 +4,7 @@ import shutil
 from pathlib import Path
 from tqdm import tqdm
 from datetime import datetime, timezone
+import gzip
 
 import paramparse
 
@@ -57,48 +58,47 @@ def tree_to_file(src, dst, exclude_links, extra_info, verbose):
         for pointer, path in zip(pointers, contents):
             name = path.name
 
-            if extra_info:
-                try:
-                    is_file = path.is_file()
-                except OSError as e:
-                    pass
-                except BaseException as e:
-                    print(f'file access error :: {str(path)}: {e}')
-                    input('press any key to exit')
-                    exit()
-                else:
-                    if is_file:
-                        stat = path.stat()
-                        size = stat.st_size
-                        mtime = datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).strftime('%Y-%m-%d-%H:%M:%S:%f')
-                        ctime = datetime.fromtimestamp(stat.st_ctime, tz=timezone.utc).strftime('%Y-%m-%d-%H:%M:%S:%f')
-
-                        name = f'{name}\t{size}\t{mtime}\t{ctime}'
-
-            yield prefix + pointer + name
+            is_valid = False
 
             try:
                 is_dir = path.is_dir()
             except OSError as e:
                 if verbose:
                     print(f'skipping {str(path)}: {e}')
-                continue
             except BaseException as e:
-                print(f'file access error :: {str(path)}: {e}')
+                print(f'unhandled error :: {str(path)}: {e}')
                 input('press any key to exit')
                 exit()
             else:
-                if is_dir:  # extend the prefix and recurse:
-                    if exclude_links and path.is_symlink():
-                        continue
-                    extension = branch if pointer == tee else space
-                    # i.e. space because last, └── , above so no more |
-                    yield from recursive_tree(path, prefix=prefix + extension)
+                is_valid = True
 
-    with open(dst, 'w', encoding="utf-8") as fid:
+            if is_valid and extra_info and not is_dir:
+                stat = path.stat()
+                size = stat.st_size
+                mtime = datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).strftime('%Y-%m-%d-%H:%M:%S:%f')
+                ctime = datetime.fromtimestamp(stat.st_ctime, tz=timezone.utc).strftime('%Y-%m-%d-%H:%M:%S:%f')
+
+                name = f'{name}\t{size}\t{mtime}\t{ctime}'
+
+            yield prefix + pointer + name
+
+            if is_valid and is_dir:  # extend the prefix and recurse:
+                if exclude_links and path.is_symlink():
+                    continue
+                extension = branch if pointer == tee else space
+                # i.e. space because last, └── , above so no more |
+                yield from recursive_tree(path, prefix=prefix + extension)
+
+    # with open(dst, 'w', encoding="utf-8") as fid:
+
+    with gzip.open(dst, 'wb',
+                   # encoding="utf-8"
+                   ) as fid:
         # tree_str = ''
         for line in tqdm(recursive_tree(src), desc=dst):
-            fid.write(line + '\n')
+            out_line = line + '\n'
+            # fid.write(out_line)
+            fid.write(out_line.encode('utf-8'))
             # tree_str += line + '\n'
             # print(line)
 
@@ -110,10 +110,14 @@ def main():
     assert os.path.exists(params.src), "src does not exist: {}".format(params.src)
 
     f1 = params.dst
+    f1 += '.gz'
+
     cmp = params.dst + '.cmp'
 
-    if os.path.exists(params.dst):
+    if os.path.exists(f1):
         f2 = params.dst + '.backup'
+        f2 += '.gz'
+
         shutil.move(f1, f2)
     else:
         f2 = None
@@ -121,16 +125,23 @@ def main():
     # tree_cmd = 'tree {} /a /f > {}'.format(params.src, params.dst)
     # os.system(tree_cmd)
 
-    tree_to_file(params.src, params.dst, params.exclude_links, params.extra_info, params.verbose)
+    tree_to_file(params.src, f1, params.exclude_links, params.extra_info, params.verbose)
 
     if f2 is not None:
 
-        file1 = open(f1, 'r',
-                     encoding="utf-8"
-                     ).readlines()
-        file2 = open(f2, 'r',
-                     encoding="utf-8"
-                     ).readlines()
+        # file1 = open(f1, 'r',
+        #              encoding="utf-8"
+        #              ).readlines()
+        # file2 = open(f2, 'r',
+        #              encoding="utf-8"
+        #              ).readlines()
+
+        file1 = gzip.open(f1, 'rt',
+                          encoding="utf-8"
+                          ).readlines()
+        file2 = gzip.open(f2, 'rt',
+                          encoding="utf-8"
+                          ).readlines()
 
         diffs = difflib.unified_diff(file2, file1, n=0)
 
