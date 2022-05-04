@@ -1,3 +1,8 @@
+# import admin
+
+# if not admin.isUserAdmin():
+#     admin.runAsAdmin()
+
 import os
 import difflib
 import shutil
@@ -15,7 +20,7 @@ class Params:
         self.dst = ''
         self.exclude_links = 1
         self.extra_info = 1
-        self.verbose = 0
+        self.verbose = 1
 
 
 # def is_dir(path, verbose):
@@ -50,7 +55,8 @@ def tree_to_file(src, dst, exclude_links, extra_info, verbose):
         try:
             contents = list(dir_path.iterdir())
         except PermissionError as e:
-            print(f'\ndir access error: {str(dir_path)}: {e}')
+            print(f'\n{e}\n')
+            # input('press any key to continue')
             return
 
         # contents each get pointers that are ├── with a final └── :
@@ -64,16 +70,23 @@ def tree_to_file(src, dst, exclude_links, extra_info, verbose):
                 is_dir = path.is_dir()
             except OSError as e:
                 if verbose:
-                    print(f'skipping {str(path)}: {e}')
+                    print(f'\nskipping {str(path)}: {e}\n')
+                    # input('press any key to continue')
             except BaseException as e:
-                print(f'unhandled error :: {str(path)}: {e}')
-                input('press any key to exit')
+                print(f'\n{e}\n')
+                input('press any key to continue')
                 exit()
             else:
                 is_valid = True
 
             if is_valid and extra_info and not is_dir:
-                stat = path.stat()
+                try:
+                    stat = path.stat()
+                except FileNotFoundError as e:
+                    print(f'\n{e}\n')
+                    input('press any key to continue')
+                    continue
+
                 size = stat.st_size
                 mtime = datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).strftime('%Y-%m-%d-%H:%M:%S:%f')
                 ctime = datetime.fromtimestamp(stat.st_ctime, tz=timezone.utc).strftime('%Y-%m-%d-%H:%M:%S:%f')
@@ -84,7 +97,9 @@ def tree_to_file(src, dst, exclude_links, extra_info, verbose):
 
             if is_valid and is_dir:  # extend the prefix and recurse:
                 if exclude_links and path.is_symlink():
+                    print(f'\nexcluding symlink: {str(path)}\n')
                     continue
+
                 extension = branch if pointer == tee else space
                 # i.e. space because last, └── , above so no more |
                 yield from recursive_tree(path, prefix=prefix + extension)
@@ -169,7 +184,7 @@ def main():
                     outfile.write(diff)
 
             # subprocess.call("start " + cmp, shell=True)
-            os.startfile(cmp)
+            # os.startfile(cmp)
 
 
 if __name__ == '__main__':
