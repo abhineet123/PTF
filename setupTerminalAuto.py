@@ -169,7 +169,10 @@ if __name__ == '__main__':
     # app_t = application.Application().start("C:\\Program Files (x86)\\PowerCmd\\PowerCmd.exe")
     # app_t.window().maximize()
 
-    _ = input('Enter any key to continue')
+    if only_git:
+        _ = input('Enter any key to continue setting up git')
+    else:
+        _ = input('Enter any key to continue setting up terminals')
 
     start_t = time.time()
 
