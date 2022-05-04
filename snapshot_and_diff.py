@@ -184,7 +184,8 @@ def main():
                     outfile.write(diff)
 
             # subprocess.call("start " + cmp, shell=True)
-            # os.startfile(cmp)
+            input('press any key to show diffs')
+            os.startfile(cmp)
 
 
 if __name__ == '__main__':
