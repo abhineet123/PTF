@@ -319,9 +319,9 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
-    # try:
-    #     main()
-    # except BaseException as e:
-    #     print(f'\n{e}\n')
-    #     input('press any key to exit')
+    # main()
+    try:
+        main()
+    except BaseException as e:
+        print(f'\n{e}\n')
+        input('press any key to exit')
