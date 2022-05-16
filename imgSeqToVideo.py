@@ -35,6 +35,7 @@ def main():
         'del_src': 0,
         'start_id': 0,
         'n_frames': 0,
+        'size': '',
         'width': 0,
         'height': 0,
         'fps': 30,
@@ -61,6 +62,7 @@ def main():
     del_src = params['del_src']
     start_id = params['start_id']
     n_frames = params['n_frames']
+    size = params['size']
     __width = params['width']
     __height = params['height']
     fps = params['fps']
@@ -76,6 +78,9 @@ def main():
     placement_type = params['placement_type']
     recursive = params['recursive']
     write_filename = params['write_filename']
+
+    if size:
+        __width, __height = [int(x) for x in size.split('x')]
 
     img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
 
