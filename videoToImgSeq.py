@@ -49,7 +49,7 @@ params = {
     'recursive': 1,
     'tracker_type': 0,
     'filtering': 0,
-    'trim_images': 1,
+    'trim_images': 0,
 }
 
 if __name__ == '__main__':

@@ -284,7 +284,7 @@ def main():
         max_seg_sizes = None
 
         if seg_available:
-            print('reading segmentations from {}...'.format(seq_seg_path))
+            print('reading segmentation from {}...'.format(seq_seg_path))
             seq_seq_src_files = [k for k in os.listdir(seq_seg_path) if
                                  os.path.splitext(k.lower())[1] in img_exts]
             for seq_seq_src_file in tqdm(seq_seq_src_files, disable=_params.disable_tqdm):

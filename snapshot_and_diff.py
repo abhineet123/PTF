@@ -139,13 +139,13 @@ def main():
 
         if os.path.exists(f1):
             f2 = params.dst.replace(ext, '_backup' + ext)
-            shutil.move(f1, f2)
+            # shutil.move(f1, f2)
         else:
             f2 = None
-
-        cmd = f'Snap2HTMl -path:"{params.src}" -outfile:"{params.dst}" -title:"{title}" -hidden -system'
-        print(f'running: {cmd}')
-        os.system(cmd)
+        #
+        # cmd = f'Snap2HTMl -path:"{params.src}" -outfile:"{params.dst}" -title:"{title}" -hidden -system'
+        # print(f'running: {cmd}')
+        # os.system(cmd)
         #
         if f2 is not None:
             file1 = open(f1, 'r', encoding="utf-8").readlines()
@@ -270,7 +270,7 @@ def main():
                     lines_to_exclude.append(line_id_new)
 
                 # line_diffs.append([line_old, line_new, list_diff])
-                print()
+                # print()
 
             n_lines_to_exclude = len(lines_to_exclude)
             if n_lines_to_exclude == 2 * n_lines_old:
@@ -280,6 +280,47 @@ def main():
             all_lines_to_exclude += lines_to_exclude
 
         diffs = [diff for i, diff in enumerate(diffs) if i not in all_lines_to_exclude]
+
+        proc_diffs = []
+        proc_diffs_no_prefix = []
+
+        for diff in diffs:
+
+            if not (diff.startswith('+D.p') or diff.startswith('-D.p')):
+                # proc_diffs.append('')
+                continue
+
+            diff = diff.replace('D.p', '').replace('"', '').replace('([', '').replace('])', '')
+
+            diff_items = diff.split(',')
+
+            assert len(diff_items) >= 3, f"invalid diff_items: {diff_items}"
+            del diff_items[-1]
+            del diff_items[-1]
+
+            proc_diff_items = []
+            for diff_item in diff_items:
+                diff_item_list = diff_item.split('*')
+                proc_diff_items.append(diff_item_list[0])
+
+            root_path = Path(proc_diff_items[0][1:])
+            if params.exclude_links and (root_path.is_symlink() or any(k.is_symlink() for k in root_path.parents)):
+                continue
+
+            proc_diff = '\t'.join(proc_diff_items)
+
+            try:
+                idx = proc_diffs_no_prefix.index(proc_diff[1:])
+            except ValueError:
+                proc_diffs_no_prefix.append(proc_diff[1:])
+                proc_diff = proc_diff.replace('\t', '\n\t')
+                proc_diffs.append(proc_diff)
+            else:
+                del proc_diffs_no_prefix[idx]
+                del proc_diffs[idx]
+        #
+        diffs = proc_diffs
+
         # print()
 
         # vol_serial_number_lines = [k for k in diffs
@@ -311,7 +352,7 @@ def main():
                 for diff in diffs:
                     # if any(k in diff for k in excluded):
                     #     continue
-                    outfile.write(diff)
+                    outfile.write(diff + '\n')
 
             # subprocess.call("start " + cmp, shell=True)
             # input('press any key to show diffs')

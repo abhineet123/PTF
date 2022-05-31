@@ -31,6 +31,7 @@ params = {
     'grid_size': '',
     'resize_factor': 1.0,
     'recursive': 0,
+    'out_size': '',
 }
 
 processArguments(sys.argv[1:], params)
@@ -56,6 +57,8 @@ preserve_order = params['preserve_order']
 ann_fmt = params['ann_fmt']
 resize_factor = params['resize_factor']
 recursive = params['recursive']
+out_size = params['out_size']
+
 
 vid_exts = ['mkv', 'mp4', 'avi', 'mjpg', 'wmv']
 image_exts = ['jpg', 'bmp', 'png', 'tif']
@@ -99,6 +102,16 @@ else:
     grid_size = [int(x) for x in grid_size.split('x')]
     if len(grid_size) != 2 or grid_size[0] * grid_size[1] != n_videos:
         raise IOError('Invalid grid_size: {}'.format(grid_size))
+    print(f'using grid size: {grid_size[0]} x {grid_size[1]}')
+
+
+if out_size:
+    out_size = [int(x) for x in out_size.split('x')]
+    assert len(out_size) == 2, f'Invalid out_size: {out_size}'
+    print(f'resizing all images to {out_size[0]} x {out_size[1]}')
+
+else:
+    out_size = None
 
 n_frames_list = []
 cap_list = []
@@ -121,14 +134,10 @@ for src_file in src_files:
     if not cap.open(src_file):
         raise IOError('The video file ' + src_file + ' could not be opened')
 
-    if cv2.__version__.startswith('2'):
-        cv_prop = cv2.cv.CAP_PROP_FRAME_COUNT
-        h_prop = cv2.cv.CAP_PROP_FRAME_HEIGHT
-        w_prop = cv2.cv.CAP_PROP_FRAME_WIDTH
-    else:
-        cv_prop = cv2.CAP_PROP_FRAME_COUNT
-        h_prop = cv2.CAP_PROP_FRAME_HEIGHT
-        w_prop = cv2.CAP_PROP_FRAME_WIDTH
+
+    cv_prop = cv2.CAP_PROP_FRAME_COUNT
+    h_prop = cv2.CAP_PROP_FRAME_HEIGHT
+    w_prop = cv2.CAP_PROP_FRAME_WIDTH
 
     total_frames = int(cap.get(cv_prop))
     _height = int(cap.get(h_prop))
@@ -186,6 +195,9 @@ while True:
         if not ret:
             print('\nFrame {:d} could not be read'.format(frame_id + 1))
             continue
+        if out_size:
+            image = resizeAR(image, out_size[0], out_size[1])
+
         images.append(image)
         valid_caps.append(cap)
         if annotations:
