@@ -139,14 +139,13 @@ def main():
 
         if os.path.exists(f1):
             f2 = params.dst.replace(ext, '_backup' + ext)
-            # shutil.move(f1, f2)
+            shutil.move(f1, f2)
         else:
             f2 = None
-        #
-        # cmd = f'Snap2HTMl -path:"{params.src}" -outfile:"{params.dst}" -title:"{title}" -hidden -system'
-        # print(f'running: {cmd}')
-        # os.system(cmd)
-        #
+        cmd = f'Snap2HTMl -path:"{params.src}" -outfile:"{params.dst}" -title:"{title}" -hidden -system'
+        print(f'running: {cmd}')
+        os.system(cmd)
+
         if f2 is not None:
             file1 = open(f1, 'r', encoding="utf-8").readlines()
             file2 = open(f2, 'r', encoding="utf-8").readlines()
