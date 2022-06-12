@@ -4,6 +4,7 @@ import sys
 import time
 import imageio
 import numpy as np
+# from tqdm import tqdm
 from pprint import pformat
 from pykalman import KalmanFilter
 from PIL import Image

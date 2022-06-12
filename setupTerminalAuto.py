@@ -114,7 +114,7 @@ if __name__ == '__main__':
             self.auth_file = ''
             self.auth_root = ''
             self.config = 0
-            self.enable_mj = 1
+            self.enable_mj = 0
             self.enable_isaic = 0
             self.mj = ('mj', 'mj2')
             self.isaic = ('isc', 'isc2')

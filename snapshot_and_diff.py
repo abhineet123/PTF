@@ -131,14 +131,25 @@ def main():
     assert os.path.exists(params.src), "src does not exist: {}".format(params.src)
 
     f1 = params.dst
-    cmp = params.dst + '.cmp'
+    # cmp = params.dst + '.cmp'
     title, ext = os.path.splitext(os.path.basename(params.dst))
+    dst_dir = os.path.dirname(params.dst)
+
+    backup_dst_dir = os.path.join(dst_dir, 'backup')
+    cmp_dst_dir = os.path.join(dst_dir, 'cmp')
+
+    os.makedirs(backup_dst_dir, exist_ok=1)
+    os.makedirs(cmp_dst_dir, exist_ok=1)
+
+    cmp_fname = title + '.cmp'
+    cmp = os.path.join(cmp_dst_dir, cmp_fname)
 
     if params.dst.endswith('.html'):
         # f2 = params.dst.replace(ext, '_backup' + ext)
 
         if os.path.exists(f1):
-            f2 = params.dst.replace(ext, '_backup' + ext)
+            backup_fname = title + '_backup' + ext
+            f2 = os.path.join(backup_dst_dir, backup_fname)
             shutil.move(f1, f2)
         else:
             f2 = None
