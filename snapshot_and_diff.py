@@ -145,15 +145,15 @@ def main():
     cmp = os.path.join(cmp_dst_dir, cmp_fname)
 
     if params.dst.endswith('.html'):
-        # f2 = params.dst.replace(ext, '_backup' + ext)
-
         if os.path.exists(f1):
             backup_fname = title + '_backup' + ext
             f2 = os.path.join(backup_dst_dir, backup_fname)
             shutil.move(f1, f2)
         else:
             f2 = None
+
         cmd = f'Snap2HTMl -path:"{params.src}" -outfile:"{params.dst}" -title:"{title}" -hidden -system'
+
         print(f'running: {cmd}')
         os.system(cmd)
 
@@ -291,12 +291,22 @@ def main():
 
         diffs = [diff for i, diff in enumerate(diffs) if i not in all_lines_to_exclude]
 
-        proc_diffs = []
-        proc_diffs_no_prefix = []
+        # proc_diffs = []
+        # proc_diffs_no_prefix = []
+
+        pos_entries = {}
+        neg_entries = {}
+        all_entries = {}
+        entries_to_id = {}
+
+        diff_id = 0
 
         for diff in diffs:
-
-            if not (diff.startswith('+D.p') or diff.startswith('-D.p')):
+            if diff.startswith('+D.p'):
+                is_pos = True
+            elif diff.startswith('-D.p'):
+                is_pos = False
+            else:
                 # proc_diffs.append('')
                 continue
 
@@ -313,22 +323,68 @@ def main():
                 diff_item_list = diff_item.split('*')
                 proc_diff_items.append(diff_item_list[0])
 
-            root_path = Path(proc_diff_items[0][1:])
+            root_item = proc_diff_items[0][1:]
+            root_path = Path(root_item)
+
             if params.exclude_links and (root_path.is_symlink() or any(k.is_symlink() for k in root_path.parents)):
                 continue
 
-            proc_diff = '\t'.join(proc_diff_items)
+            if is_pos:
+                curr_pos_entries = proc_diff_items[1:]
+                try:
+                    curr_neg_entries = neg_entries[root_item]
+                except KeyError:
+                    pass
+                else:
+                    unique_pos_entries = list(set(curr_pos_entries) - set(curr_neg_entries))
+                    unique_neg_entries = list(set(curr_neg_entries) - set(curr_pos_entries))
 
-            try:
-                idx = proc_diffs_no_prefix.index(proc_diff[1:])
-            except ValueError:
-                proc_diffs_no_prefix.append(proc_diff[1:])
-                proc_diff = proc_diff.replace('\t', '\n\t')
-                proc_diffs.append(proc_diff)
+                    curr_pos_entries = unique_pos_entries
+                    neg_entries[root_item] = unique_neg_entries
+
+                    all_entries['-' + root_item] = unique_neg_entries
+
+                pos_entries[root_item] = curr_pos_entries
+
+                all_entries['+' + root_item] = curr_pos_entries
+                entries_to_id['+' + root_item] = diff_id
+
             else:
-                del proc_diffs_no_prefix[idx]
-                del proc_diffs[idx]
+                neg_entries[root_item] = proc_diff_items[1:]
+                entries_to_id['-' + root_item] = diff_id
+                all_entries['-' + root_item] = proc_diff_items[1:]
+
+            diff_id += 1
+
+            # try:
+            #     idx = proc_diffs_no_prefix.index(proc_diff[1:])
+            # except ValueError:
+            #     proc_diffs_no_prefix.append(proc_diff[1:])
+            #     proc_diff = proc_diff.replace('\t', '\n\t')
+            #     proc_diffs.append(proc_diff)
+            # else:
+            #     del proc_diffs_no_prefix[idx]
+            #     del proc_diffs[idx]
         #
+
+        proc_diffs = [None, ] * diff_id
+
+        for root_item in all_entries:
+            diff_id = entries_to_id[root_item]
+
+            assert proc_diffs[diff_id] is None, f"duplicate diff_id found: {diff_id}"
+
+            proc_diff_items = all_entries[root_item]
+
+            if not proc_diff_items:
+                continue
+
+            proc_diff_items.insert(0, root_item)
+            proc_diff = '\t'.join(proc_diff_items)
+            proc_diff = proc_diff.replace('\t', '\n\t')
+
+            proc_diffs[diff_id] = proc_diff
+
         diffs = proc_diffs
 
         # print()
@@ -362,6 +418,10 @@ def main():
                 for diff in diffs:
                     # if any(k in diff for k in excluded):
                     #     continue
+
+                    if diff is None:
+                        continue
+
                     outfile.write(diff + '\n')
 
             # subprocess.call("start " + cmp, shell=True)
