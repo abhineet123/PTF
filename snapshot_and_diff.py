@@ -16,6 +16,7 @@ import paramparse
 
 class Params:
     def __init__(self):
+        self.src_label = ''
         self.src = ''
         self.dst = ''
         self.exclude_links = 1
@@ -128,8 +129,6 @@ def main():
     # params = Params()
     params = paramparse.process(Params)  # type: Params
 
-    assert os.path.exists(params.src), "src does not exist: {}".format(params.src)
-
     f1 = params.dst
     # cmp = params.dst + '.cmp'
     title, ext = os.path.splitext(os.path.basename(params.dst))
@@ -143,6 +142,24 @@ def main():
 
     cmp_fname = title + '.cmp'
     cmp = os.path.join(cmp_dst_dir, cmp_fname)
+
+    if params.src_label:
+        import psutil
+        import win32api
+
+        partitions = psutil.disk_partitions()
+        for partition in partitions:
+            partition_info = win32api.GetVolumeInformation(partition.device)
+
+            partition_label = partition_info[0]
+
+            if partition_label == params.src_label:
+                params.src = partition.device
+                break
+        else:
+            raise AssertionError(f'src_label: {params.src_label} not found')
+
+    assert os.path.exists(params.src), "src does not exist: {}".format(params.src)
 
     if params.dst.endswith('.html'):
         if os.path.exists(f1):

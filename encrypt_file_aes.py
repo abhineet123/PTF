@@ -24,6 +24,7 @@ class Params:
         # self.auto_switch = 0
 
         self.press_enter = 1
+        self.wait_t = 1
 
     def process(self):
         if not self.root_dir_key:
@@ -171,14 +172,16 @@ def decrypt(filename, key):
 
 def type_string(out_txt,
                 # auto_switch,
-                press_enter=1):
+                press_enter=1,
+                wait_t=1):
     # if auto_switch:
     #     find_last_active_window()
 
     # else:
 
-    # print('waiting 1 second to change active app')
-    time.sleep(1)
+    if wait_t:
+        # print('waiting 1 second to change active app')
+        time.sleep(wait_t)
 
     import pyautogui
     pyautogui.write(out_txt)
@@ -244,7 +247,10 @@ def run(params):
             elif params.clipboard == 2:
                 type_string(out_txt,
                             # params.auto_switch,
-                            press_enter=params.press_enter)
+                            press_enter=params.press_enter,
+                            wait_t=params.wait_t,
+
+                            )
         else:
             # write the original file
             with open(params.out_file, "wb") as file:

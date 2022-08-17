@@ -24,9 +24,9 @@ import paramparse
 from Misc import resizeAR
 
 
-class FeatureExtractor(nn.Module):
+class VGG16FeatureExtractor(nn.Module):
     def __init__(self, model):
-        super(FeatureExtractor, self).__init__()
+        super(VGG16FeatureExtractor, self).__init__()
         # Extract VGG-16 Feature Layers
         self.features = list(model.features)
         self.features = nn.Sequential(*self.features)
@@ -62,7 +62,7 @@ def create_vgg16(crop=False):
     device = torch.device('cuda:0' if torch.cuda.is_available() else "cpu")
     model = model.to(device)
 
-    new_model = FeatureExtractor(model)
+    new_model = VGG16FeatureExtractor(model)
 
     transform_list = [
         transforms.ToPILImage(),
@@ -80,6 +80,53 @@ def create_vgg16(crop=False):
 
 
 def get_vgg16(img_path, model, transform, device):
+    img_cv = cv2.imread(img_path)
+
+    assert img_cv is not None, "invalid image path: {}".format(img_path)
+    img_cv = resizeAR(img_cv, 448, 448)
+
+    img = transform(img_cv)
+
+    img = img.reshape(1, 3, 448, 448)
+    img = img.to(device)
+
+    # img_disp = img.cpu().detach().numpy().squeeze().transpose([1, 2, 0])
+
+    # cv2.imshow('img_cv', img_cv)
+    # cv2.imshow('img_disp', img_disp)
+    # cv2.waitKey(0)
+
+    feature = model(img)
+
+    feature = feature.cpu().detach().numpy().reshape(-1)
+
+    return feature
+
+def create_resnext101(crop=False):
+    model = models.resnext101_32x8d(pretrained=True)
+    # model = models.resnet101(pretrained=True)
+
+    device = torch.device('cuda:0' if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
+
+    new_model = VGG16FeatureExtractor(model)
+
+    transform_list = [
+        transforms.ToPILImage(),
+    ]
+
+    if crop:
+        transform_list.append(transforms.CenterCrop(512))
+        transform_list.append(transforms.Resize(448))
+
+    transform_list.append(transforms.ToTensor())
+
+    transform = transforms.Compose(transform_list)
+
+    return new_model, transform, device
+
+
+def get_resnext101(img_path, model, transform, device):
     img_cv = cv2.imread(img_path)
 
     assert img_cv is not None, "invalid image path: {}".format(img_path)
@@ -140,7 +187,11 @@ def check_for_similar_images(files, paths, db_file, feature_type, methodName="He
         vgg16, transform, device = create_vgg16()
         get_features = functools.partial(get_vgg16, model=vgg16, transform=transform, device=device)
         cmp_features = euclidean_dist
-
+    elif feature_type == 2:
+        print('using resnext101 features')
+        resnext101, transform, device = create_resnext101()
+        get_features = functools.partial(get_resnext101, model=resnext101, transform=transform, device=device)
+        cmp_features = euclidean_dist
     else:
         raise AssertionError('invalid feature type: {}'.format(feature_type))
 
@@ -253,7 +304,7 @@ def check_for_similar_images(files, paths, db_file, feature_type, methodName="He
 
             print('Similar files found: ')
             for (i, (v, k)) in enumerate(results):
-                print('{} :: {}'.format(k, v))
+                print('{} : {} :: {}'.format(i, k, v))
                 curr_image = cv2.imread(k)
                 cv2.imshow('curr_image', curr_image)
                 k = cv2.waitKey(0)
@@ -401,6 +452,7 @@ class Params:
         self.files = ''
         self.root_dir = ['.']
         self.thresh = 0.1
+        self.n_results = 10
 
 
 def main():
@@ -408,7 +460,7 @@ def main():
     paramparse.process(params)
 
     check_for_similar_images(params.files, params.root_dir, params.db_file,
-                             params.feature_type, params.thresh)
+                             params.feature_type, thresh=params.thresh, n_results=params.n_results)
 
 
 if __name__ == "__main__":

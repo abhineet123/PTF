@@ -13,29 +13,51 @@ def linux_path(*args, **kwargs):
     return os.path.join(*args, **kwargs).replace(os.sep, '/')
 
 
-def run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port):
-    print('port: {}'.format(port))
+def run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port, log_file=''):
+    # print('dst_path: {}'.format(dst_path))
+    # print('pwd0: {}'.format(pwd0))
+    # print('scp_dst: {}'.format(scp_dst))
+    # print('scp_path: {}'.format(scp_path))
+    # print('k: {}'.format(k))
+    # print('mode: {}'.format(mode))
+    # print('port: {}'.format(port))
 
-    dst_full_path = '{}/{}'.format(dst_path, k).replace(os.sep, '/')
-    if mode == -1 or mode == -2:
-        scp_cmd = "scp -i {}".format(pwd0)
-    else:
-        scp_cmd = "pscp -pw {}".format(pwd0)
+    dst_full_path = linux_path(dst_path, k)
+
+    scp_cmd = "scp -r -i {}".format(pwd0)
+
+    # if mode == -1 or mode == -2:
+    #     scp_cmd = "scp -i {}".format(pwd0)
+    # else:
+    #     scp_cmd = "pscp -pw {}".format(pwd0)
 
     if port:
         scp_cmd = '{} -P {}'.format(scp_cmd, port)
 
-    if mode == 0:
-        scp_cmd = "{} {}:{}/{} {}".format(scp_cmd, scp_dst, scp_path, k, dst_full_path)
-    elif mode == 1:
-        scp_cmd = "{} {} {}:{}/".format(scp_cmd, dst_full_path, scp_dst, scp_path)
-    elif mode == -1:
-        scp_cmd = "{} {}:{}/{} {}".format(scp_cmd, scp_dst, scp_path, k, dst_path)
-    elif mode == -2:
-        scp_cmd = "{} {} {}:{}/{}".format(scp_cmd, dst_full_path, scp_dst, scp_path, k)
+    # if mode == 0:
+    #     scp_cmd = "{} {}:{}/{} {}".format(scp_cmd, scp_dst, scp_path, k, dst_full_path)
+    # if mode == 1:
+    #     scp_cmd = "{} {} {}:{}/".format(scp_cmd, dst_full_path, scp_dst, scp_path)
+    scp_full_path = linux_path(scp_path, k)
+
+    scp_full_path = scp_full_path.replace(' ', '\ ').replace(')', '\)').replace('(', '\(')
+    dst_full_path = dst_full_path.replace(' ', '\ ').replace(')', '\)').replace('(', '\(')
+
+    if mode == 0 or mode == -1:
+        scp_cmd = f'{scp_cmd} {scp_dst}:"{scp_full_path}" "{dst_path}"'
+    elif mode == 1 or mode == -2:
+        scp_cmd = f'{scp_cmd} "{dst_full_path}" "{scp_dst}:{scp_full_path}"'
 
     print('Running {}'.format(scp_cmd))
     os.system(scp_cmd)
+
+    if log_file:
+        from datetime import datetime
+        time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+
+        with open(log_file, 'a') as log_fid:
+            log_fid.write(f'# {time_stamp}\n')
+            log_fid.write(f'{k}\n')
 
     if mode == 1 or mode == -2:
         rm_cmd = 'rm {}'.format(dst_full_path)
@@ -52,69 +74,89 @@ def main():
         'scp_dst': '',
         'key_root': '',
         'key_dir': '',
-        'auth_root': '',
-        'auth_dir': '',
+        'info_root': '',
+        'info_dir': '',
+        'info_file': '',
         'auth_file': '',
-        'auth_path': '',
         'port': '',
         'dst_path': '.',
         'scp_path': '.',
-        'scp_name': 'grs',
+        'scp_name': '',
+        'log_file': '',
+        'ahk_cmd': 'paste_with_cat_1',
     }
     paramparse.process_dict(params)
 
     win_title = params['win_title']
     use_ahk = params['use_ahk']
     mode = params['mode']
-    wait_t = params['wait_t']
-    scp_dst = params['scp_dst']
     dst_path = params['dst_path']
     scp_path = params['scp_path']
     scp_name = params['scp_name']
     port = params['port']
 
-    key_root = params['key_root']
-    key_dir = params['key_dir']
-    auth_root = params['auth_root']
-    auth_dir = params['auth_dir']
     auth_file = params['auth_file']
 
-    # Window.get_all_windows()
+    key_root = params['key_root']
+    key_dir = params['key_dir']
+
+    info_root = params['info_root']
+    info_dir = params['info_dir']
+    info_file = params['info_file']
+    log_file = params['log_file']
+
+    ahk_cmd = params['ahk_cmd']
+
+    info_path = linux_path(info_root, info_dir, info_file)
+
+    info_data = open(info_path, 'r').readlines()
+    info_data = [k.strip() for k in info_data]
+
+    dst_info = {}
+
+    for datum in info_data:
+        info = datum.split(' ')
+        name0, name1, dst = info[:3]
+
+        ecr = key = port = None
+
+        if len(info) > 3:
+            ecr = info[3]
+
+        if len(info) > 4:
+            key = info[4]
+
+        if len(info) > 5:
+            port = info[5]
+
+        dst_info[name0] = [name0, name1, dst, ecr, key, port]
+
+    # print(f'dst_info:\n{dst_info}')
+
+    scp_dst = dst_info[scp_name][2]
+    port = dst_info[scp_name][5]
 
     if mode == -1 or mode == -2:
-        pwd0 = auth_file
+        """private key based"""
+        pwd = auth_file
     else:
-        auth_path = linux_path(auth_root, auth_dir, auth_file)
-        auth_data = open(auth_path, 'r').readlines()
-        auth_data = [k.strip() for k in auth_data]
-
-        dst_info = auth_data[0].split(' ')
-        name00, name01, ecr0, key0 = dst_info[:4]
-
-        if len(dst_info) > 4:
-            port = dst_info[4]
-
+        """password based"""
         encryption_params = encryption.Params()
         encryption_params.mode = 1
         encryption_params.root_dir = key_root
         encryption_params.parent_dir = key_dir
 
-        encryption_params.in_file = ecr0
-        encryption_params.key_file = key0
+        encryption_params.in_file = dst_info[scp_name][-3]
+        encryption_params.key_file = dst_info[scp_name][-2]
         encryption_params.process()
-        pwd0 = encryption.run(encryption_params)
+        pwd = encryption.run(encryption_params)
 
-    # Form1.SetFocus()
-    default_fmy_key = '0'
     if mode == 0 or mode == -1:
         data_type = 'filename (from {})'.format(scp_name)
-        highlight_key = '2'
     elif mode == 1 or mode == -2:
         data_type = 'filename (to {})'.format(scp_name)
-        highlight_key = '3'
     elif mode == 2:
         data_type = 'log'
-        highlight_key = '4'
 
     while True:
         k = input('\nEnter {}\n'.format(data_type))
@@ -138,9 +180,9 @@ def main():
             except BaseException as e:
                 print('Copying to clipboard failed: {}'.format(e))
             else:
-                os.system('paste_with_cat_1')
+                os.system(ahk_cmd)
 
-            run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port)
+            run_scp(dst_path, pwd, scp_dst, scp_path, k, mode, port, log_file)
 
             try:
                 import pyperclip
@@ -176,7 +218,7 @@ def main():
 
         if not target_title:
             print('Window with win_title: {} not found'.format(win_title))
-            run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port)
+            run_scp(dst_path, pwd, scp_dst, scp_path, k, mode, port)
             continue
 
         target_title = target_title[0]
@@ -186,13 +228,13 @@ def main():
             app = application.Application().connect(title=target_title, found_index=0)
         except BaseException as e:
             print('Failed to connect to app for window {}: {}'.format(target_title, e))
-            run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port)
+            run_scp(dst_path, pwd, scp_dst, scp_path, k, mode, port)
             continue
         try:
             app_win = app.window(title=target_title)
         except BaseException as e:
             print('Failed to access app window for {}: {}'.format(target_title, e))
-            run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port)
+            run_scp(dst_path, pwd, scp_dst, scp_path, k, mode, port)
             continue
 
         try:
@@ -232,7 +274,7 @@ def main():
             print('Failed to type entry in app : {}'.format(e))
             pass
 
-        run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port)
+        run_scp(dst_path, pwd, scp_dst, scp_path, k, mode, port)
 
 
 if __name__ == '__main__':
