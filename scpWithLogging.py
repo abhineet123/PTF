@@ -118,16 +118,18 @@ def main():
         info = datum.split(' ')
         name0, name1, dst = info[:3]
 
+        # print(f'info: {info}')
+
         ecr = key = port = None
 
         if len(info) > 3:
-            ecr = info[3]
+            port = info[3]
 
         if len(info) > 4:
-            key = info[4]
+            ecr = info[4]
 
         if len(info) > 5:
-            port = info[5]
+            key = info[5]
 
         dst_info[name0] = [name0, name1, dst, ecr, key, port]
 

@@ -115,8 +115,10 @@ if __name__ == '__main__':
             self.auth_root = ''
             self.config = 0
             self.enable_mj = 0
+            self.enable_mj2 = 0
             self.enable_isaic = 0
-            self.mj = ('mj', 'mj2')
+            self.mj = ('mj1', 'mj1_2')
+            self.mj2 = ('mj2', 'mj2_2')
             self.isaic = ('isc', 'isc2')
             self.enable_git = 0
             self.exe_path = 'fatty.exe'
@@ -148,8 +150,10 @@ if __name__ == '__main__':
     wait_t = params.wait_t
     n_git_panes = params.n_git_panes
     enable_mj = params.enable_mj
+    enable_mj2 = params.enable_mj2
     enable_isaic = params.enable_isaic
-    mj1, mj2 = params.mj
+    mj1_1, mj1_2 = params.mj
+    mj2_1, mj2_2 = params.mj2
     isaic1, isaic2 = params.isaic
     enable_git = params.enable_git
     git_postproc = params.git_postproc
@@ -184,11 +188,13 @@ if __name__ == '__main__':
         auth_data = open(auth_path, 'r').readlines()
         auth_data = [k.strip() for k in auth_data]
 
-        dst0_info = auth_data[0].split(' ')
-        name00, name01, _, ecr0, key0 = dst0_info[:5]
+        # name00, name01 = auth_data[0].split(' ')[:2]
+        # name10, name11 = auth_data[1].split(' ')[:2]
+        # name20, name21 = auth_data[2].split(' ')[:2]
 
-        name10, name11, _, ecr1, key1 = auth_data[1].split(' ')[:5]
-        name20, name21, _, ecr2, key2 = auth_data[2].split(' ')[:5]
+        name00, name01, _, _, ecr0, key0 = auth_data[0].split(' ')
+        name10, name11, _, _, ecr1, key1 = auth_data[1].split(' ')
+        name20, name21, _, _, ecr2, key2 = auth_data[2].split(' ')
 
         key0_path = linux_path(key_root, key_dir, key0)
         key1_path = linux_path(key_root, key_dir, key1)
@@ -352,8 +358,19 @@ if __name__ == '__main__':
 
                 time.sleep(wait_t)
 
-                servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % mj1)
-                servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % mj2)
+                servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % mj1_1)
+                servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % mj1_2)
+
+            if enable_mj2:
+                """connect to mj server"""
+                for _app in apps:
+                    _app.fatty.type_keys("^+t")
+                    _app.fatty.type_keys("sshm2~")
+
+                time.sleep(wait_t)
+
+                servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % mj2_1)
+                servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % mj2_2)
 
         if enable_git:
             if only_git:
@@ -520,6 +537,8 @@ if __name__ == '__main__':
                     _app.fatty.type_keys("^+w")
                 if enable_mj:
                     _app.fatty.type_keys("^+w")
+                if enable_mj2:
+                    _app.fatty.type_keys("^+w")
 
                 time.sleep(1)
 
@@ -596,8 +615,19 @@ if __name__ == '__main__':
 
                 time.sleep(wait_t)
 
-                servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % mj1)
-                servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % mj2)
+                servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % mj1_1)
+                servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % mj1_2)
+
+            if enable_mj2:
+                for _app in apps:
+                    """mj server"""
+                    _app.fatty.type_keys("^+t")
+                    _app.fatty.type_keys("sshm2~")
+
+                time.sleep(wait_t)
+
+                servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % mj2_1)
+                servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % mj2_2)
 
         elif config == 3:
 
