@@ -212,6 +212,7 @@ for src_id, src_path in enumerate(src_file_paths):
     else:
         if re_mode:
             src_substr = src_substrs[src_id]
+
         if include_ext:
             dst_fname = src_fname.replace(src_substr, dst_substr)
             if convert_to_lowercase:
@@ -223,6 +224,9 @@ for src_id, src_path in enumerate(src_file_paths):
             dst_fname_no_ext = src_fname_no_ext.replace(src_substr, dst_substr)
             if convert_to_lowercase:
                 dst_fname_no_ext = dst_fname_no_ext.lower()
+
+            # print(f'{src_substr} --> {dst_substr}\t{src_fname_no_ext} --> {dst_fname_no_ext}')
+
             dst_path = os.path.join(src_dir, '{:s}{:s}'.format(dst_fname_no_ext, src_ext))
             # dst_path = src_path.replace(src_substr, dst_substr)
 

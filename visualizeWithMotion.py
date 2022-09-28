@@ -21,7 +21,7 @@ import win32api
 # import ctypes
 # from pywinauto import application
 
-from pprint import pformat
+from tqdm import tqdm
 from datetime import datetime
 from threading import Event
 import threading
@@ -29,7 +29,7 @@ from subprocess import Popen, PIPE
 from multiprocessing import Process
 import multiprocessing
 import imageio
-from PIL import Image
+from PIL import Image, ImageEnhance
 import imutils
 
 from paramparse import process
@@ -40,8 +40,75 @@ import sft
 # from Misc import VideoCaptureGPU as VideoCapture
 VideoCapture = cv2.VideoCapture
 
-
 # from wand.image import Image as wandImage
+import os
+import struct
+
+
+class UnknownImageFormat(Exception):
+    pass
+
+
+def get_image_size(file_path):
+    """
+    Return (width, height) for a given img file content - no external
+    dependencies except the os and struct modules from core
+    """
+    size = os.path.getsize(file_path)
+
+    with open(file_path) as input:
+        height = -1
+        width = -1
+        data = input.read(25)
+
+        if (size >= 10) and data[:6] in ('GIF87a', 'GIF89a'):
+            # GIFs
+            w, h = struct.unpack("<HH", data[6:10])
+            width = int(w)
+            height = int(h)
+        elif ((size >= 24) and data.startswith('\211PNG\r\n\032\n')
+              and (data[12:16] == 'IHDR')):
+            # PNGs
+            w, h = struct.unpack(">LL", data[16:24])
+            width = int(w)
+            height = int(h)
+        elif (size >= 16) and data.startswith('\211PNG\r\n\032\n'):
+            # older PNGs?
+            w, h = struct.unpack(">LL", data[8:16])
+            width = int(w)
+            height = int(h)
+        elif (size >= 2) and data.startswith('\377\330'):
+            # JPEG
+            msg = " raised while trying to decode as JPEG."
+            input.seek(0)
+            input.read(2)
+            b = input.read(1)
+            try:
+                while (b and ord(b) != 0xDA):
+                    while (ord(b) != 0xFF): b = input.read(1)
+                    while (ord(b) == 0xFF): b = input.read(1)
+                    if (ord(b) >= 0xC0 and ord(b) <= 0xC3):
+                        input.read(3)
+                        h, w = struct.unpack(">HH", input.read(4))
+                        break
+                    else:
+                        input.read(int(struct.unpack(">H", input.read(2))[0]) - 2)
+                    b = input.read(1)
+                width = int(w)
+                height = int(h)
+            except struct.error:
+                raise UnknownImageFormat("StructError" + msg)
+            except ValueError:
+                raise UnknownImageFormat("ValueError" + msg)
+            except Exception as e:
+                raise UnknownImageFormat(e.__class__.__name__ + msg)
+        else:
+            raise UnknownImageFormat(
+                "Sorry, don't know how to get information from this file."
+            )
+
+    return width, height
+
 
 def copy_to_clipboard(out_txt):
     try:
@@ -101,6 +168,7 @@ class Params:
         self.borderless = 1
         self.bottom_border = 0
         self.check_images = 0
+        self.resizable = 0
         self.custom_grid_size = ''
         self.double_click_interval = 0.1
         self.dup_monitor_ids = []
@@ -111,6 +179,7 @@ class Params:
         self.frg_monitor_ids = []
         self.frg_win_titles = []
         self.fullscreen = 0
+        self.hide_border = 1
         self.height = 0
         self.images_as_video = 0
         self.keep_borders = 0
@@ -157,7 +226,9 @@ class Params:
         self.tall_position = 0
         self.top_border = 0
         self.transition_interval = 5
+        self.contrast_factor = 1.
         self.trim_images = 1
+        self.min_size = 0
         self.video_mode = 0
         self.wallpaper_dir = ''
         self.wallpaper_mode = 0
@@ -169,6 +240,7 @@ class Params:
         self.target_aspect_ratio = 0
         self.win_offset_x = 0
         self.win_offset_y = 0
+        self.write_filenames = 0
         self.log_file = 'vwm.log'
         self.sort_log_file = 'vwm_sort.log'
         self.del_log_file = 'vwm_sort.log'
@@ -222,6 +294,7 @@ def run(args, multi_exit_program=None,
     random_mode = params.random_mode
     recursive = params.recursive
     fullscreen = params.fullscreen
+    hide_border = params.hide_border
     reversed_pos = params.reversed_pos
     # blended_border = params.blended_border
 
@@ -239,11 +312,13 @@ def run(args, multi_exit_program=None,
     second_from_top = params.second_from_top
     n_wallpapers = params.n_wallpapers
     multi_mode = params.multi_mode
+    contrast_factor = params.contrast_factor
     trim_images = params.trim_images
     alpha = params.alpha
     show_window = params.show_window
     enable_hotkeys = params.enable_hotkeys
     custom_grid_size = params.custom_grid_size
+    resizable = params.resizable
     check_images = params.check_images
     top_border = params.top_border
     keep_borders = params.keep_borders
@@ -258,6 +333,7 @@ def run(args, multi_exit_program=None,
     frg_win_titles = params.frg_win_titles
     frg_monitor_ids = params.frg_monitor_ids
     only_maximized = params.only_maximized
+    min_size = params.min_size
     video_mode = params.video_mode
     lazy_video_load = params.lazy_video_load
     win_name = params.win_name
@@ -273,6 +349,7 @@ def run(args, multi_exit_program=None,
     _max_aspect_ratio = params.max_aspect_ratio
     id_probs = params.id_probs
     target_aspect_ratio = params.target_aspect_ratio
+    write_filenames = params.write_filenames
 
     if log_color:
         from colorlog import ColoredFormatter
@@ -583,10 +660,14 @@ def run(args, multi_exit_program=None,
     else:
         grid_size = None
         set_grid_size = 1
-    try:
-        cv_windowed_mode_flags = cv2.WINDOW_AUTOSIZE | cv2.WINDOW_GUI_NORMAL
-    except:
-        cv_windowed_mode_flags = cv2.WINDOW_AUTOSIZE
+
+    if resizable:
+        cv_windowed_mode_flags = cv2.WINDOW_NORMAL
+    else:
+        try:
+            cv_windowed_mode_flags = cv2.WINDOW_AUTOSIZE | cv2.WINDOW_GUI_NORMAL
+        except:
+            cv_windowed_mode_flags = cv2.WINDOW_AUTOSIZE
 
     if monitor_id < 0 and mousePos is not None:
         monitor_id = get_monitor_id(mousePos.x, mousePos.y)
@@ -835,6 +916,9 @@ def run(args, multi_exit_program=None,
 
     if auto_progress:
         _print('Auto progression enabled')
+
+    if contrast_factor != 1:
+        print(f'changing contrast by factor {contrast_factor}')
 
     exclude_dir_pattern = []
     src_files = {}
@@ -1133,7 +1217,6 @@ def run(args, multi_exit_program=None,
             _src_files = [os.path.abspath(k) for k in _src_files]
 
             _n_src_files = len(_src_files)
-            all_total_unique += _n_src_files
 
             processed_dirs.append(os.path.abspath(src_dir))
 
@@ -1143,7 +1226,17 @@ def run(args, multi_exit_program=None,
             elif excluded == 0:
                 if excluded_src_files:
                     _src_files = [k for k in _src_files if k not in excluded_src_files]
-                    _n_src_files = len(_src_files)
+
+                if min_size:
+                    # _src_dims = [cv2.imread(_src_file).shape[:2] for _src_file in tqdm(_src_files)]
+                    _src_dims = [Image.open(_src_file).size[:2] for _src_file in tqdm(_src_files)]
+                    # _src_dims = [get_image_size(_src_file) for _src_file in tqdm(_src_files)]
+                    _src_files = [_src_files[i] for i, _src_dim in enumerate(_src_dims)
+                                  if _src_dim[0] >= min_size or _src_dim[1] >= min_size]
+
+                _n_src_files = len(_src_files)
+
+                all_total_unique += _n_src_files
 
                 _total = int(_n_src_files * _counts[src_dir_id] / _samples[src_dir_id])
                 all_total += _total
@@ -1168,6 +1261,10 @@ def run(args, multi_exit_program=None,
             #     print()
 
         n_unique_frames = 0
+
+        cmb_src_files = []
+        cmb_total_frames = 0
+
         for _id in src_files:
             # if excluded_src_files:
             #     src_files[_id] = [k for k in src_files[_id] if k not in excluded_src_files]
@@ -1178,20 +1275,18 @@ def run(args, multi_exit_program=None,
             total_frames[_id] = len(src_files[_id])
             n_unique_frames += total_frames[_id]
 
-            try:
-                # nums = int(os.path.splitext(img_fname)[0].split('_')[-1])
-                src_files[_id].sort(key=img_sortKey)
-            except:
-                src_files[_id].sort()
+            src_files[_id].sort(key=img_sortKey)
 
             if not multi_mode:
-                if _id == 0:
-                    total_frames[0] = total_frames[_id] * _counts[_id]
-                    src_files[0] = src_files[_id] * _counts[_id]
-                else:
-                    total_frames[0] += total_frames[_id] * _counts[_id]
-                    src_files[0] += src_files[_id] * _counts[_id]
+                cmb_src_files += src_files[_id] * _counts[_id]
+                cmb_total_frames += total_frames[_id] * _counts[_id]
 
+                # if _id == 0:
+                #     total_frames[0] = total_frames[_id] * _counts[_id]
+                #     src_files[0] = src_files[_id] * _counts[_id]
+                # else:
+                #     total_frames[0] += total_frames[_id] * _counts[_id]
+                #     src_files[0] += src_files[_id] * _counts[_id]
             if random_mode:
                 src_files_rand[_id] = list(np.random.permutation(src_files[_id]))
             # print('src_file_list: {}'.format(src_file_list))
@@ -1207,10 +1302,13 @@ def run(args, multi_exit_program=None,
             img_id[_id] = 0
 
             if _total_frames <= 0:
-                raise IOError('No input frames found for _id: {}'.format(_id))
-            # print('Found {} frames'.format(_total_frames))
+                print('No input frames found for _id: {}'.format(_id))
 
         if not multi_mode:
+            total_frames[0] = cmb_total_frames
+            src_files[0] = cmb_src_files
+            img_id[0] = 0
+
             _print('odds:')
             for _id in totals:
                 odds = total_frames[0] / totals[_id][0]
@@ -1368,6 +1466,21 @@ def run(args, multi_exit_program=None,
                 sys.stdout.write('\r Set {}: Done {}/{}'.format(
                     _set_id + 1, _img_id + 1, _n_images))
 
+    if write_filenames:
+        time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
+
+        all_fname = f'vwm_files_{time_stamp}.txt'
+        for _src_id in src_files:
+            if not src_files[_src_id]:
+                continue
+            fname = f'{_src_id}_{time_stamp}.m3u'
+            # print(f'writing filenames for source ID {_src_id} to {fname}')
+            out_txt = '\n'.join(src_files[_src_id])
+            with open(fname, 'w', encoding="utf-8") as fid:
+                fid.write(out_txt)
+            with open(all_fname, 'a', encoding="utf-8") as fid:
+                fid.write(out_txt)
+
     def createWindow(_win_name):
         nonlocal mode, tall_position
 
@@ -1391,7 +1504,7 @@ def run(args, multi_exit_program=None,
                 #     cv2.namedWindow(_win_name2, cv_windowed_mode_flags)
 
                 # hideBorder()
-                if win_utils_available:
+                if hide_border and win_utils_available:
                     winUtils.hideBorder2(_win_name, on_top)
                     # winUtils.hideBorder(monitors[curr_monitor][0], monitors[curr_monitor][1],
                     #                     width, height, _win_name)
@@ -1410,7 +1523,7 @@ def run(args, multi_exit_program=None,
             #     winUtils.hideBorder(monitors[2][0], monitors[2][1], width, height, _win_name)
             # else:
             # hideBorder()
-            if win_utils_available:
+            if hide_border and win_utils_available:
                 winUtils.hideBorder2(_win_name, on_top)
                 # winUtils.loseFocus(_win_name)
             if frg_win_titles:
@@ -1624,9 +1737,14 @@ def run(args, multi_exit_program=None,
                                     img_sequences[_load_id][img_fname] = src_img
                         else:
                             src_img = np.copy(img_fname)
+
                     if trim_images:
                         # print('trimming...')
                         src_img = np.asarray(trim(Image.fromarray(src_img)))
+
+                    if contrast_factor != 1:
+                        enhancer = ImageEnhance.Contrast(Image.fromarray(src_img))
+                        src_img = np.asarray(enhancer.enhance(contrast_factor))
 
                     if horz_flip_images:
                         src_img = np.fliplr(src_img)
@@ -1664,6 +1782,10 @@ def run(args, multi_exit_program=None,
                     if trim_images:
                         src_img = np.asarray(trim(Image.fromarray(src_img)))
                         # src_img = wandImage(src_img).trim(color=None, fuzz=0) ()
+
+                    if contrast_factor != 1:
+                        enhancer = ImageEnhance.Contrast(Image.fromarray(src_img))
+                        src_img = np.asarray(enhancer.enhance(contrast_factor))
 
                     if horz_flip_images:
                         src_img = np.fliplr(src_img)
