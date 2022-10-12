@@ -116,6 +116,7 @@ if __name__ == '__main__':
             self.config = 0
             self.enable_mj = 0
             self.enable_mj2 = 0
+            self.enable_nrw = 0
             self.enable_isaic = 0
             self.mj = ('mj1', 'mj1_2')
             self.mj2 = ('mj2', 'mj2_2')
@@ -151,6 +152,7 @@ if __name__ == '__main__':
     n_git_panes = params.n_git_panes
     enable_mj = params.enable_mj
     enable_mj2 = params.enable_mj2
+    enable_nrw = params.enable_nrw
     enable_isaic = params.enable_isaic
     mj1_1, mj1_2 = params.mj
     mj2_1, mj2_2 = params.mj2
@@ -372,6 +374,17 @@ if __name__ == '__main__':
                 servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % mj2_1)
                 servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % mj2_2)
 
+            if enable_nrw:
+                """connect to mj server"""
+                for _app in apps:
+                    _app.fatty.type_keys("^+t")
+                    _app.fatty.type_keys("sshnrw~")
+
+                time.sleep(wait_t)
+
+                servers_app.fatty.type_keys("tmux{VK_SPACE}a~")
+                servers_app2.fatty.type_keys("tmux{VK_SPACE}a~")
+
         if enable_git:
             if only_git:
                 print('waiting {} secs for git init'.format(git_wait_init))
@@ -539,6 +552,8 @@ if __name__ == '__main__':
                     _app.fatty.type_keys("^+w")
                 if enable_mj2:
                     _app.fatty.type_keys("^+w")
+                if enable_nrw:
+                    _app.fatty.type_keys("^+w")
 
                 time.sleep(1)
 
@@ -628,6 +643,17 @@ if __name__ == '__main__':
 
                 servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % mj2_1)
                 servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % mj2_2)
+
+            if enable_nrw:
+                for _app in apps:
+                    """mj server"""
+                    _app.fatty.type_keys("^+t")
+                    _app.fatty.type_keys("sshnrw~")
+
+                time.sleep(wait_t)
+
+                servers_app.fatty.type_keys("tmux{VK_SPACE}a~")
+                servers_app2.fatty.type_keys("tmux{VK_SPACE}a~")
 
         elif config == 3:
 
