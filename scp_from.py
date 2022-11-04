@@ -33,7 +33,7 @@ if __name__ == '__main__':
     if src_fname_abs.startswith(home_path):
         # src_fname_rel = os.path.relpath(src_fname, home_path)
         # scp_fname = os.path.join('~', src_fname_rel)
-        src_fname_rel = src_fname_abs.replace(home_path, '~')
+        src_fname_rel = scp_fname = src_fname_abs.replace(home_path, '~')
     else:
         src_fname_rel = src_fname
         if abs_path:
