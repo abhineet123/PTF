@@ -24,7 +24,7 @@ if __name__ == '__main__':
     # src_fname = os.path.realpath(src_fname)
     # src_fname_abs = os.popen(f'realpath -s {src_fname}').read()
     # src_fname_abs = os.path.abspath(src_fname)
-    src_dir_abs = str(os.popen('pwd').read())
+    src_dir_abs = str(os.popen('pwd').read().strip())
     src_fname_abs = os.path.join(src_dir_abs, src_fname)
 
     src_fname_no_ext, src_fname_ext = os.path.splitext(os.path.basename(src_fname))
