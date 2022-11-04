@@ -1,12 +1,12 @@
 from pywinauto import application, mouse
 import time
-import os, sys
+import sys
 import win32api
 import pyautogui
 
 import paramparse
 
-from Misc import processArguments, linux_path
+from Misc import linux_path
 import encrypt_file_aes as encryption
 
 
@@ -114,6 +114,7 @@ if __name__ == '__main__':
             self.auth_file = ''
             self.auth_root = ''
             self.config = 0
+            self.enable_orca = 0
             self.enable_mj = 0
             self.enable_mj2 = 0
             self.enable_nrw = 0
@@ -150,6 +151,7 @@ if __name__ == '__main__':
     config = params.config
     wait_t = params.wait_t
     n_git_panes = params.n_git_panes
+    enable_orca = params.enable_orca
     enable_mj = params.enable_mj
     enable_mj2 = params.enable_mj2
     enable_nrw = params.enable_nrw
@@ -292,24 +294,25 @@ if __name__ == '__main__':
             servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name00)
             servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name01)
 
-            """connect to orca"""
-            for _app in apps:
-                _app.fatty.type_keys("^+t")
-                # _app.fatty.type_keys("sstg2~")
-                # time.sleep(2)
-                _app.fatty.type_keys("sstz~")
-                # time.sleep(2)
-                _app.fatty.type_keys("sudo{VK_SPACE}-s~")
-                # time.sleep(2)
-                # _app.fatty.type_keys("%s~" % pwd1)
+            if enable_orca:
+                """connect to orca"""
+                for _app in apps:
+                    _app.fatty.type_keys("^+t")
+                    # _app.fatty.type_keys("sstg2~")
+                    # time.sleep(2)
+                    _app.fatty.type_keys("sstz~")
+                    # time.sleep(2)
+                    _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+                    # time.sleep(2)
+                    # _app.fatty.type_keys("%s~" % pwd1)
 
-                time.sleep(pwd_wait)
-                pyautogui.write(pwd1)
-                pyautogui.press('enter')
+                    time.sleep(pwd_wait)
+                    pyautogui.write(pwd1)
+                    pyautogui.press('enter')
 
-            time.sleep(wait_t)
-            servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name10)
-            servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name11)
+                time.sleep(wait_t)
+                servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name10)
+                servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name11)
 
             # time.sleep(1)
 
@@ -382,7 +385,9 @@ if __name__ == '__main__':
 
                 time.sleep(wait_t)
 
-                servers_app.fatty.type_keys("tmux{VK_SPACE}a~")
+                servers_app.fatty.type_keys("tmux{VK_SPACE}new~")
+                servers_app.fatty.type_keys("^br")
+                time.sleep(5)
                 servers_app2.fatty.type_keys("tmux{VK_SPACE}a~")
 
         if enable_git:
@@ -545,7 +550,8 @@ if __name__ == '__main__':
             for _app in apps:
                 """grs"""
                 _app.fatty.type_keys("^+w")
-                _app.fatty.type_keys("^+w")
+                if enable_orca:
+                    _app.fatty.type_keys("^+w")
                 if enable_isaic:
                     _app.fatty.type_keys("^+w")
                 if enable_mj:
@@ -570,22 +576,23 @@ if __name__ == '__main__':
             servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name00)
             servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name01)
 
-            for _app in apps:
-                """orca"""
-                _app.fatty.type_keys("^+t")
-                _app.fatty.type_keys("sstg2~")
-                _app.fatty.type_keys("sstz~")
-                _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+            if enable_orca:
+                for _app in apps:
+                    """orca"""
+                    _app.fatty.type_keys("^+t")
+                    _app.fatty.type_keys("sstg2~")
+                    _app.fatty.type_keys("sstz~")
+                    _app.fatty.type_keys("sudo{VK_SPACE}-s~")
 
-                time.sleep(pwd_wait)
-                # _app.fatty.type_keys("%s~" % pwd1)
-                pyautogui.write(pwd1)
-                pyautogui.press('enter')
+                    time.sleep(pwd_wait)
+                    # _app.fatty.type_keys("%s~" % pwd1)
+                    pyautogui.write(pwd1)
+                    pyautogui.press('enter')
 
-            time.sleep(wait_t)
+                time.sleep(wait_t)
 
-            servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name10)
-            servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name11)
+                servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name10)
+                servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name11)
 
             # time.sleep(1)
 
@@ -652,7 +659,9 @@ if __name__ == '__main__':
 
                 time.sleep(wait_t)
 
-                servers_app.fatty.type_keys("tmux{VK_SPACE}a~")
+                servers_app.fatty.type_keys("tmux{VK_SPACE}new~")
+                servers_app.fatty.type_keys("^br")
+                time.sleep(5)
                 servers_app2.fatty.type_keys("tmux{VK_SPACE}a~")
 
         elif config == 3:

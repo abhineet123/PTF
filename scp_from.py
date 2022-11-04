@@ -20,8 +20,10 @@ if __name__ == '__main__':
     file_mode = params['file_mode']
     abs_path = params['abs_path']
 
+
     # src_fname = os.path.realpath(src_fname)
-    src_fname_abs = os.path.abspath(src_fname)
+    src_fname_abs = os.popen(f'realpath -s {src_fname}').read()
+    # src_fname_abs = os.path.abspath(src_fname)
 
     src_fname_no_ext, src_fname_ext = os.path.splitext(os.path.basename(src_fname))
 
@@ -52,7 +54,7 @@ if __name__ == '__main__':
         print('Creating folder: {}'.format(src_dir))
         os.makedirs(src_dir, exist_ok=1)
 
-    switches = '-r -v --progress'
+    switches = '-r -v --progress --no-links'
     if not overwrite:
         switches += ' --ignore-existing'
 
