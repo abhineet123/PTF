@@ -83,6 +83,7 @@ def main():
         'dst_path': '.',
         'scp_path': '.',
         'scp_name': '',
+        'src_info': '',
         'log_file': '',
         'ahk_cmd': 'paste_with_cat_1',
     }
@@ -94,6 +95,7 @@ def main():
     dst_path = params['dst_path']
     scp_path = params['scp_path']
     scp_name = params['scp_name']
+    src_info = params['src_info']
     port = params['port']
 
     auth_file = params['auth_file']
@@ -107,6 +109,9 @@ def main():
     log_file = params['log_file']
 
     ahk_cmd = params['ahk_cmd']
+
+    if not src_info:
+        src_info = scp_name
 
     info_path = linux_path(info_root, info_dir, info_file)
 
@@ -155,9 +160,9 @@ def main():
         pwd = encryption.run(encryption_params)
 
     if mode == 0 or mode == -1:
-        data_type = 'filename (from {})'.format(scp_name)
+        data_type = 'filename (from {})'.format(src_info)
     elif mode == 1 or mode == -2:
-        data_type = 'filename (to {})'.format(scp_name)
+        data_type = 'filename (to {})'.format(src_info)
     elif mode == 2:
         data_type = 'log'
 
@@ -210,10 +215,9 @@ def main():
             print(f'transferring {n_files} files:\n{files_to_transfer_txt}')
 
             if mode == 0 or mode == -1:
-                clip_txt = '{} from {}'.format(files_to_transfer_txt, scp_name)
+                clip_txt = f'from {src_info}:\n{files_to_transfer_txt}'
             elif mode == 1 or mode == -2:
-                clip_txt = '{} to {}'.format(files_to_transfer_txt, scp_name)
-
+                clip_txt = f'to {src_info}:\n{files_to_transfer_txt}'
             try:
                 import pyperclip
 
@@ -306,7 +310,7 @@ def main():
             app_win.type_keys("{RIGHT}{LEFT}~")
             app_win.type_keys("^v")
             if mode == 1:
-                app_win.type_keys("{LEFT}{RIGHT}{VK_SPACE}to{VK_SPACE}%s" % scp_name)
+                app_win.type_keys("{LEFT}{RIGHT}{VK_SPACE}to{VK_SPACE}%s" % src_info)
             # app_win.type_keys("^+a")
             # app_win.type_keys("^{}".format(highlight_key))
             # app_win.type_keys("{LEFT}{RIGHT}~")
