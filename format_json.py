@@ -1,8 +1,12 @@
-from tqdm import tqdm
 import json
 
-in_file = "/data/youtube_vis19/train.json"
-# in_file = "/data/youtube_vis19/valid.json"
+import paramparse
+
+
+class Params:
+    in_file = "/data/youtube_vis19/train.json"
+    # in_file = "/data/youtube_vis19/valid.json"
+
 
 # def hook(obj):
 #     for key, value in obj.items():
@@ -13,20 +17,30 @@ in_file = "/data/youtube_vis19/train.json"
 #     return obj
 
 
-# Opening JSON file
-f = open(in_file)
+def main():
+    params = Params()
+    paramparse.process(params)
 
-print('loading json...')
-data = json.load(f,
-                 # object_hook=hook
-                 )
+    in_file = params.in_file
 
-print()
+    # Opening JSON file
+    f = open(in_file)
 
-print('dumping json...')
-output_json = json.dumps(data, indent=4)
+    print('loading json...')
+    data = json.load(f,
+                     # object_hook=hook
+                     )
 
-out_file = in_file + '.out'
-with open(out_file, 'w') as f:
-    print('saving to file...')
-    f.write(output_json)
+    print()
+
+    print('dumping json...')
+    output_json = json.dumps(data, indent=4)
+
+    out_file = in_file + '.out'
+    with open(out_file, 'w') as f:
+        print('saving to file...')
+        f.write(output_json)
+
+
+if __name__ == '__main__':
+    main()

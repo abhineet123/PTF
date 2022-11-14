@@ -3,6 +3,7 @@ import ctypes
 import win32gui
 import win32api
 from pywinauto import application, mouse
+from datetime import datetime
 
 import paramparse
 
@@ -13,7 +14,7 @@ def linux_path(*args, **kwargs):
     return os.path.join(*args, **kwargs).replace(os.sep, '/')
 
 
-def run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port, log_file=''):
+def run_scp(dst_path, pwd0, scp_dst, scp_path, file_to_transfer, mode, port, log_file=''):
     # print('dst_path: {}'.format(dst_path))
     # print('pwd0: {}'.format(pwd0))
     # print('scp_dst: {}'.format(scp_dst))
@@ -22,7 +23,7 @@ def run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port, log_file=''):
     # print('mode: {}'.format(mode))
     # print('port: {}'.format(port))
 
-    dst_full_path = linux_path(dst_path, k)
+    dst_full_path = linux_path(dst_path, file_to_transfer)
 
     scp_cmd = "scp -r -i {}".format(pwd0)
 
@@ -38,7 +39,7 @@ def run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port, log_file=''):
     #     scp_cmd = "{} {}:{}/{} {}".format(scp_cmd, scp_dst, scp_path, k, dst_full_path)
     # if mode == 1:
     #     scp_cmd = "{} {} {}:{}/".format(scp_cmd, dst_full_path, scp_dst, scp_path)
-    scp_full_path = linux_path(scp_path, k)
+    scp_full_path = linux_path(scp_path, file_to_transfer)
 
     scp_full_path = scp_full_path.replace(' ', '\ ').replace(')', '\)').replace('(', '\(')
     dst_full_path = dst_full_path.replace(' ', '\ ').replace(')', '\)').replace('(', '\(')
@@ -57,7 +58,7 @@ def run_scp(dst_path, pwd0, scp_dst, scp_path, k, mode, port, log_file=''):
 
         with open(log_file, 'a') as log_fid:
             log_fid.write(f'# {time_stamp}\n')
-            log_fid.write(f'{k}\n')
+            log_fid.write(f'{file_to_transfer}\n')
 
     if mode == 1 or mode == -2:
         rm_cmd = 'rm {}'.format(dst_full_path)
@@ -169,10 +170,49 @@ def main():
         x, y = win32api.GetCursorPos()
         # EnumWindows(EnumWindowsProc(foreach_window), 0)
         if use_ahk:
+            if log_file:
+                already_transferred = open(log_file, 'r').readlines()
+                already_transferred = [_line.strip() for _line in already_transferred
+                                       if not _line.startswith('#') and _line.strip()]
+            else:
+                already_transferred = []
+
+            if k == '__all__':
+                assert log_file, "log_file must be provided to transfer all files"
+
+                timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
+                temp_fname = f'~/scp_with_logging_{timestamp}.txt'
+
+                ls_cmd = f'ssh {scp_dst} ls {scp_path} > {temp_fname}'
+
+                print(f'running: {ls_cmd}')
+                os.system(ls_cmd)
+
+                all_downloads = open(temp_fname, 'r').readlines()
+                all_downloads = [_line.strip() for _line in all_downloads]
+
+                files_to_transfer = list(set(all_downloads) - set(already_transferred))
+
+                # os.system(f'rm {temp_fname}')
+            else:
+                if k in already_transferred:
+                    k2 = input(f'{k} has already been transferred. Transfer again ?\n')
+                    if k2.lower() != 'y':
+                        continue
+
+                files_to_transfer = [k, ]
+
+            n_files = len(files_to_transfer)
+            if n_files == 0:
+                print('no files to transfer')
+
+            files_to_transfer_txt = '\n'.join(files_to_transfer)
+            print(f'transferring {n_files} files:\n{files_to_transfer_txt}')
+
             if mode == 0 or mode == -1:
-                clip_txt = '{} from {}'.format(k, scp_name)
+                clip_txt = '{} from {}'.format(files_to_transfer_txt, scp_name)
             elif mode == 1 or mode == -2:
-                clip_txt = '{} to {}'.format(k, scp_name)
+                clip_txt = '{} to {}'.format(files_to_transfer_txt, scp_name)
 
             try:
                 import pyperclip
@@ -184,7 +224,10 @@ def main():
             else:
                 os.system(ahk_cmd)
 
-            run_scp(dst_path, pwd, scp_dst, scp_path, k, mode, port, log_file)
+            for file_id, file_to_transfer in enumerate(files_to_transfer):
+                print(f'{file_id + 1} / {n_files} : {file_to_transfer}')
+
+                run_scp(dst_path, pwd, scp_dst, scp_path, file_to_transfer, mode, port, log_file)
 
             try:
                 import pyperclip

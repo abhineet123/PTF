@@ -168,6 +168,7 @@ if __name__ == '__main__':
     git_cmds = params.git_cmds
     git_half = params.git_half
     pwd_wait = params.pwd_wait
+    sudo = params.sudo
 
     # app_t = application.Application().start("cmd.exe")
     # app_t = application.Application().start("C:\\Users\\Tommy\\Desktop\\startup_progs\\t.lnk")
@@ -204,25 +205,28 @@ if __name__ == '__main__':
         key1_path = linux_path(key_root, key_dir, key1)
         key2_path = linux_path(key_root, key_dir, key2)
 
-        encryption_params = encryption.Params()
-        encryption_params.mode = 1
-        encryption_params.root_dir = key_root
-        encryption_params.parent_dir = key_dir
+        if sudo:
+            encryption_params = encryption.Params()
+            encryption_params.mode = 1
+            encryption_params.root_dir = key_root
+            encryption_params.parent_dir = key_dir
 
-        encryption_params.in_file = ecr0
-        encryption_params.key_file = key0
-        encryption_params.process()
-        pwd0 = encryption.run(encryption_params)
+            encryption_params.in_file = ecr0
+            encryption_params.key_file = key0
+            encryption_params.process()
+            pwd0 = encryption.run(encryption_params)
 
-        encryption_params.in_file = ecr1
-        encryption_params.key_file = key1
-        encryption_params.process()
-        pwd1 = encryption.run(encryption_params)
+            encryption_params.in_file = ecr1
+            encryption_params.key_file = key1
+            encryption_params.process()
+            pwd1 = encryption.run(encryption_params)
 
-        encryption_params.in_file = ecr2
-        encryption_params.key_file = key2
-        encryption_params.process()
-        pwd2 = encryption.run(encryption_params)
+            encryption_params.in_file = ecr2
+            encryption_params.key_file = key2
+            encryption_params.process()
+            pwd2 = encryption.run(encryption_params)
+        else:
+            pwd0 = pwd1 = pwd2 = None
 
         print('Setting up system 0 with tmux sessions {}, {}'.format(name00, name01))
         print('Setting up system 1 with tmux sessions {}, {}'.format(name10, name11))
@@ -258,14 +262,15 @@ if __name__ == '__main__':
                 # _app.fatty.type_keys("f~")
                 # _app.fatty.type_keys("^+t")
                 _app.fatty.type_keys("sstg{VK_SPACE}tb~")
-                _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+                if sudo:
+                    _app.fatty.type_keys("sudo{VK_SPACE}-s~")
 
-                # _app.fatty.type_keys("%s~" % pwd0)
-                time.sleep(pwd_wait)
-                pyautogui.write(pwd0)
-                pyautogui.press('enter')
+                    # _app.fatty.type_keys("%s~" % pwd0)
+                    time.sleep(pwd_wait)
+                    pyautogui.write(pwd0)
+                    pyautogui.press('enter')
 
-                # time.sleep(1)
+                    # time.sleep(1)
 
         if enable_git:
             git_app = application.Application().start(exe_path)
@@ -301,14 +306,16 @@ if __name__ == '__main__':
                     # _app.fatty.type_keys("sstg2~")
                     # time.sleep(2)
                     _app.fatty.type_keys("sstz~")
-                    # time.sleep(2)
-                    _app.fatty.type_keys("sudo{VK_SPACE}-s~")
-                    # time.sleep(2)
-                    # _app.fatty.type_keys("%s~" % pwd1)
 
-                    time.sleep(pwd_wait)
-                    pyautogui.write(pwd1)
-                    pyautogui.press('enter')
+                    if sudo:
+                        # time.sleep(2)
+                        _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+                        # time.sleep(2)
+                        # _app.fatty.type_keys("%s~" % pwd1)
+
+                        time.sleep(pwd_wait)
+                        pyautogui.write(pwd1)
+                        pyautogui.press('enter')
 
                 time.sleep(wait_t)
                 servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name10)
@@ -327,14 +334,16 @@ if __name__ == '__main__':
                 # time.sleep(2)
 
                 _app.fatty.type_keys("sstx~")
-                # time.sleep(2)
 
-                _app.fatty.type_keys("sudo{VK_SPACE}-s~")
-                # time.sleep(2)
+                if sudo:
+                    # time.sleep(2)
 
-                time.sleep(pwd_wait)
-                pyautogui.write(pwd2)
-                pyautogui.press('enter')
+                    _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+                    # time.sleep(2)
+
+                    time.sleep(pwd_wait)
+                    pyautogui.write(pwd2)
+                    pyautogui.press('enter')
 
                 # _app.fatty.type_keys("%s~" % pwd2)
 
@@ -472,9 +481,10 @@ if __name__ == '__main__':
         servers_app.fatty.type_keys("f~")
         servers_app.fatty.type_keys("^+t")
         servers_app.fatty.type_keys("sstg{VK_SPACE}tb~")
-        servers_app.fatty.type_keys("sudo{VK_SPACE}-s~")
-        servers_app.fatty.type_keys("%s~" % pwd0)
-        time.sleep(2)
+        if sudo:
+            servers_app.fatty.type_keys("sudo{VK_SPACE}-s~")
+            servers_app.fatty.type_keys("%s~" % pwd0)
+            time.sleep(2)
 
         if config == 0:
             servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}grs~")
@@ -484,10 +494,11 @@ if __name__ == '__main__':
         servers_app.fatty.type_keys("^+t")
         servers_app.fatty.type_keys("sstg2~")
         servers_app.fatty.type_keys("sstz~")
-        servers_app.fatty.type_keys("sudo{VK_SPACE}-s~")
-        servers_app.fatty.type_keys("%s~" % pwd1)
+        if sudo:
+            servers_app.fatty.type_keys("sudo{VK_SPACE}-s~")
+            servers_app.fatty.type_keys("%s~" % pwd1)
 
-        time.sleep(wait_t)
+            time.sleep(wait_t)
 
         if config == 0:
             servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}orca~")
@@ -564,12 +575,13 @@ if __name__ == '__main__':
                 time.sleep(1)
 
                 _app.fatty.type_keys("sstg{VK_SPACE}tb~")
-                _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+                if sudo:
+                    _app.fatty.type_keys("sudo{VK_SPACE}-s~")
 
-                time.sleep(pwd_wait)
-                # _app.fatty.type_keys("%s~" % pwd0)
-                pyautogui.write(pwd0)
-                pyautogui.press('enter')
+                    time.sleep(pwd_wait)
+                    # _app.fatty.type_keys("%s~" % pwd0)
+                    pyautogui.write(pwd0)
+                    pyautogui.press('enter')
 
             time.sleep(wait_t)
 
@@ -582,12 +594,13 @@ if __name__ == '__main__':
                     _app.fatty.type_keys("^+t")
                     _app.fatty.type_keys("sstg2~")
                     _app.fatty.type_keys("sstz~")
-                    _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+                    if sudo:
+                        _app.fatty.type_keys("sudo{VK_SPACE}-s~")
 
-                    time.sleep(pwd_wait)
-                    # _app.fatty.type_keys("%s~" % pwd1)
-                    pyautogui.write(pwd1)
-                    pyautogui.press('enter')
+                        time.sleep(pwd_wait)
+                        # _app.fatty.type_keys("%s~" % pwd1)
+                        pyautogui.write(pwd1)
+                        pyautogui.press('enter')
 
                 time.sleep(wait_t)
 
@@ -605,12 +618,13 @@ if __name__ == '__main__':
                 _app.fatty.type_keys("^+t")
                 _app.fatty.type_keys("sstg3~")
                 _app.fatty.type_keys("sstx~")
-                _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+                if sudo:
+                    _app.fatty.type_keys("sudo{VK_SPACE}-s~")
 
-                time.sleep(pwd_wait)
-                # _app.fatty.type_keys("%s~" % pwd2)
-                pyautogui.write(pwd2)
-                pyautogui.press('enter')
+                    time.sleep(pwd_wait)
+                    # _app.fatty.type_keys("%s~" % pwd2)
+                    pyautogui.write(pwd2)
+                    pyautogui.press('enter')
 
             time.sleep(wait_t)
 

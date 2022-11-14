@@ -128,6 +128,7 @@ if __name__ == "__main__":
         'method': 0,
         'file_type': '',
         'show_img': 0,
+        'delete': 0,
     }
     processArguments(sys.argv[1:], params)
     root_dir = params['root_dir']
@@ -135,6 +136,7 @@ if __name__ == "__main__":
     method = params['method']
     file_type = params['file_type']
     show_img = params['show_img']
+    delete = params['delete']
 
     img_exts = ('.jpg', '.bmp', '.jpeg', '.png', '.tif', '.tiff')
 
@@ -171,6 +173,8 @@ if __name__ == "__main__":
                     else:
                         print('\nFound corrupt file: {:s}\n'.format(file_path))
 
+
+
                     # print "{0}: {1}".format(f, status)
             else:
                 code, output, error = checkImage(file_path)
@@ -178,5 +182,6 @@ if __name__ == "__main__":
                     n_corrupt_files += 1
                     log_file.write(file_path + '\n')
                     print("Damaged image found: {} :: {}".format(file_path, error))
+
 
             pbar.set_description(f'{dirpath} (corrupt: {n_corrupt_files} / {n_total_files})')
