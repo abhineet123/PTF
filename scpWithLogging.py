@@ -186,19 +186,25 @@ def main():
                 assert log_file, "log_file must be provided to transfer all files"
 
                 timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
-                temp_fname = f'~/scp_with_logging_{timestamp}.txt'
+                list_fname = f'~/scp_with_logging_{timestamp}.txt'
 
-                ls_cmd = f'ssh {scp_dst} ls {scp_path} > {temp_fname}'
+                ls_cmd = f'ssh {scp_dst} ls {scp_path} > {list_fname}'
 
                 print(f'running: {ls_cmd}')
                 os.system(ls_cmd)
 
-                all_downloads = open(temp_fname, 'r').readlines()
+                all_downloads = open(list_fname, 'r').readlines()
                 all_downloads = [_line.strip() for _line in all_downloads]
 
                 files_to_transfer = list(set(all_downloads) - set(already_transferred))
 
-                # os.system(f'rm {temp_fname}')
+                # os.system(f'rm {list_fname}')
+            elif k == '__list__':
+                list_fname = f'~/scp_with_logging.txt'
+                if not os.path.exists(list_fname):
+                    print(f'list file does not exist: {list_fname}')
+                files_to_transfer = open(list_fname, 'r').readlines()
+                files_to_transfer = [_line.strip() for _line in files_to_transfer]
             else:
                 if k in already_transferred:
                     k2 = input(f'{k} has already been transferred. Transfer again ?\n')
