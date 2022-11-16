@@ -6,11 +6,12 @@ from Misc import processArguments, sortKey
 
 params = {
     'dst_path': '.',
-    'file_ext': 'jpg',
+    'file_ext': '',
     'out_file': 'mfsf_log.txt',
     'folder_name': '.',
     'prefix': '',
     'include_folders': 0,
+    'rename_to_subfolder': 0,
     'exceptions': [],
 }
 processArguments(sys.argv[1:], params)
@@ -20,6 +21,7 @@ out_file = params['out_file']
 folder_name = params['folder_name']
 prefix = params['prefix']
 include_folders = params['include_folders']
+rename_to_subfolder = params['rename_to_subfolder']
 exceptions = params['exceptions']
 
 dst_path = os.path.abspath(dst_path)
@@ -72,7 +74,17 @@ for subfolder in subfolders:
     src_files.sort(key=sortKey)
     n_files = len(src_files)
 
-    dst_files = ['{}_{}'.format(subfolder, f) for f in src_files]
+    if n_files == 0:
+        continue
+
+    if rename_to_subfolder:
+        if n_files > 1:
+            print(f"multiple files found in {subfolder}: {src_files}")
+            continue
+        file_ext = os.path.splitext(src_files[0])[1]
+        dst_files = [f'{subfolder}.{file_ext}', ]
+    else:
+        dst_files = [f'{subfolder}_{f}' for f in src_files]
 
     for i in range(n_files):
         src_path = os.path.join(subfolders_path, src_files[i])

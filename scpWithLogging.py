@@ -41,8 +41,13 @@ def run_scp(dst_path, pwd0, scp_dst, scp_path, file_to_transfer, mode, port, log
     #     scp_cmd = "{} {} {}:{}/".format(scp_cmd, dst_full_path, scp_dst, scp_path)
     scp_full_path = linux_path(scp_path, file_to_transfer)
 
-    scp_full_path = scp_full_path.replace(' ', '\ ').replace(')', '\)').replace('(', '\(')
-    dst_full_path = dst_full_path.replace(' ', '\ ').replace(')', '\)').replace('(', '\(')
+    invalid_chars = [' ', ')', '(', '&']
+    for invalid_char in invalid_chars:
+        scp_full_path = scp_full_path.replace(invalid_char, f'\\{invalid_char}')
+        dst_full_path = dst_full_path.replace(invalid_char, f'\\{invalid_char}')
+
+    # scp_full_path = scp_full_path.replace(' ', '\ ').replace(')', '\)').replace('(', '\(')
+    # dst_full_path = dst_full_path.replace(' ', '\ ').replace(')', '\)').replace('(', '\(')
 
     if mode == 0 or mode == -1:
         scp_cmd = f'{scp_cmd} {scp_dst}:"{scp_full_path}" "{dst_path}"'
@@ -51,6 +56,30 @@ def run_scp(dst_path, pwd0, scp_dst, scp_path, file_to_transfer, mode, port, log
 
     print('Running {}'.format(scp_cmd))
     os.system(scp_cmd)
+
+    dst_path_full = linux_path(dst_path, file_to_transfer)
+    # dst_path_full = f'"{dst_full_path}"'
+    print(f'checking dst path: {dst_path_full}')
+
+    # os.stat(dst_path_full)
+
+    # from pathlib import Path
+    # my_file = Path(dst_full_path)
+    # if not my_file.exists():
+
+    test_cmd = f'test -e "{dst_path_full}"'
+    print('Running {}'.format(test_cmd))
+
+    ret = os.system(test_cmd)
+
+    # print('ret {}'.format(ret))
+
+    if ret:
+        # if not os.path.exists(dst_path_full):
+        print(f'\n\ntransfer failed:\n{file_to_transfer}\n\n')
+        return
+    # else:
+    #     print(f'transfer succeeded')
 
     if log_file:
         from datetime import datetime
@@ -176,9 +205,9 @@ def main():
         # EnumWindows(EnumWindowsProc(foreach_window), 0)
         if use_ahk:
             if log_file:
-                already_transferred = open(log_file, 'r').readlines()
-                already_transferred = [_line.strip() for _line in already_transferred
-                                       if not _line.startswith('#') and _line.strip()]
+                already_transferred = open(log_file, 'r').read().splitlines()
+                already_transferred = [_line for _line in already_transferred
+                                       if not _line.startswith('#') and _line]
             else:
                 already_transferred = []
 
@@ -186,25 +215,23 @@ def main():
                 assert log_file, "log_file must be provided to transfer all files"
 
                 timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
-                list_fname = f'~/scp_with_logging_{timestamp}.txt'
+                list_fname = linux_path(f'{src_info}_{timestamp}.txt')
 
                 ls_cmd = f'ssh {scp_dst} ls {scp_path} > {list_fname}'
 
                 print(f'running: {ls_cmd}')
                 os.system(ls_cmd)
 
-                all_downloads = open(list_fname, 'r').readlines()
-                all_downloads = [_line.strip() for _line in all_downloads]
+                all_downloads = open(list_fname, 'r').read().splitlines()
 
                 files_to_transfer = list(set(all_downloads) - set(already_transferred))
 
                 # os.system(f'rm {list_fname}')
             elif k == '__list__':
-                list_fname = f'~/scp_with_logging.txt'
+                list_fname = f'{src_info}.txt'
                 if not os.path.exists(list_fname):
                     print(f'list file does not exist: {list_fname}')
-                files_to_transfer = open(list_fname, 'r').readlines()
-                files_to_transfer = [_line.strip() for _line in files_to_transfer]
+                files_to_transfer = open(list_fname, 'r').read().splitlines()
             else:
                 if k in already_transferred:
                     k2 = input(f'{k} has already been transferred. Transfer again ?\n')
@@ -217,6 +244,8 @@ def main():
             if n_files == 0:
                 print('no files to transfer')
 
+            files_to_transfer.sort()
+
             files_to_transfer_txt = '\n'.join(files_to_transfer)
             print(f'transferring {n_files} files:\n{files_to_transfer_txt}')
 
@@ -224,6 +253,7 @@ def main():
                 clip_txt = f'from {src_info}:\n{files_to_transfer_txt}'
             elif mode == 1 or mode == -2:
                 clip_txt = f'to {src_info}:\n{files_to_transfer_txt}'
+
             try:
                 import pyperclip
 

@@ -134,6 +134,7 @@ if __name__ == '__main__':
             self.key_root = ''
             self.n_git_panes = 8
             self.only_git = 0
+            self.sudo = 0
             self.pwd_wait = 2
             self.wait_t = 3
 
@@ -197,15 +198,23 @@ if __name__ == '__main__':
         # name10, name11 = auth_data[1].split(' ')[:2]
         # name20, name21 = auth_data[2].split(' ')[:2]
 
-        name00, name01, _, _, ecr0, key0 = auth_data[0].split(' ')
-        name10, name11, _, _, ecr1, key1 = auth_data[1].split(' ')
-        name20, name21, _, _, ecr2, key2 = auth_data[2].split(' ')
+        auth_data0 = auth_data[0].split(' ')
+        auth_data1 = auth_data[1].split(' ')
+        auth_data2 = auth_data[2].split(' ')
 
-        key0_path = linux_path(key_root, key_dir, key0)
-        key1_path = linux_path(key_root, key_dir, key1)
-        key2_path = linux_path(key_root, key_dir, key2)
+        name00, name01 = auth_data0[:2]
+        name10, name11 = auth_data1[:2]
+        name20, name21 = auth_data2[:2]
 
         if sudo:
+            ecr0, key0 = auth_data0[-2:]
+            ecr1, key1 = auth_data1[-2:]
+            ecr2, key2 = auth_data2[-2:]
+
+            # key0_path = linux_path(key_root, key_dir, key0)
+            # key1_path = linux_path(key_root, key_dir, key1)
+            # key2_path = linux_path(key_root, key_dir, key2)
+
             encryption_params = encryption.Params()
             encryption_params.mode = 1
             encryption_params.root_dir = key_root
