@@ -1,4 +1,6 @@
 import os
+# import inspect
+import shutil
 import ctypes
 import win32gui
 import win32api
@@ -59,7 +61,7 @@ def run_scp(dst_path, pwd0, scp_dst, scp_path, file_to_transfer, mode, port, log
 
     dst_path_full = linux_path(dst_path, file_to_transfer)
     # dst_path_full = f'"{dst_full_path}"'
-    print(f'checking dst path: {dst_path_full}')
+    # print(f'checking dst path: {dst_path_full}')
 
     # os.stat(dst_path_full)
 
@@ -68,7 +70,7 @@ def run_scp(dst_path, pwd0, scp_dst, scp_path, file_to_transfer, mode, port, log
     # if not my_file.exists():
 
     test_cmd = f'test -e "{dst_path_full}"'
-    print('Running {}'.format(test_cmd))
+    # print('Running {}'.format(test_cmd))
 
     ret = os.system(test_cmd)
 
@@ -125,7 +127,7 @@ def main():
     scp_path = params['scp_path']
     scp_name = params['scp_name']
     src_info = params['src_info']
-    port = params['port']
+    # port = params['port']
 
     auth_file = params['auth_file']
 
@@ -138,6 +140,14 @@ def main():
     log_file = params['log_file']
 
     ahk_cmd = params['ahk_cmd']
+
+    # script_filename = inspect.getframeinfo(inspect.currentframe()).filename
+    # script_path = os.path.dirname(os.path.abspath(script_filename))
+    #
+    # log_dir = os.path.join(script_path, 'log')
+    # if not os.path.isdir(log_dir):
+    #     os.makedirs(log_dir)
+    # print('Saving log to {}'.format(log_dir))
 
     if not src_info:
         src_info = scp_name
@@ -205,7 +215,7 @@ def main():
         # EnumWindows(EnumWindowsProc(foreach_window), 0)
         if use_ahk:
             if log_file:
-                already_transferred = open(log_file, 'r').read().splitlines()
+                already_transferred = open(log_file, 'r', encoding="utf-8").read().splitlines()
                 already_transferred = [_line for _line in already_transferred
                                        if not _line.startswith('#') and _line]
             else:
@@ -214,15 +224,20 @@ def main():
             if k == '__all__':
                 assert log_file, "log_file must be provided to transfer all files"
 
+                list_dir = os.path.dirname(log_file)
+
                 timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
                 list_fname = linux_path(f'{src_info}_{timestamp}.txt')
 
-                ls_cmd = f'ssh {scp_dst} ls {scp_path} > {list_fname}'
+                list_path = os.path.join(list_dir, list_fname)
 
+                ls_cmd = f'ssh {scp_dst} ls {scp_path} > {list_fname}'
                 print(f'running: {ls_cmd}')
                 os.system(ls_cmd)
 
-                all_downloads = open(list_fname, 'r').read().splitlines()
+                shutil.move(list_fname, list_path)
+
+                all_downloads = open(list_path, 'r', encoding="utf-8").read().splitlines()
 
                 files_to_transfer = list(set(all_downloads) - set(already_transferred))
 
@@ -231,7 +246,7 @@ def main():
                 list_fname = f'{src_info}.txt'
                 if not os.path.exists(list_fname):
                     print(f'list file does not exist: {list_fname}')
-                files_to_transfer = open(list_fname, 'r').read().splitlines()
+                files_to_transfer = open(list_fname, 'r', encoding="utf-8").read().splitlines()
             else:
                 if k in already_transferred:
                     k2 = input(f'{k} has already been transferred. Transfer again ?\n')
