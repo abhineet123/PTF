@@ -87,7 +87,7 @@ def main():
             msg = f'no matching dst file found for {src_file_name} : {src_file_path}'
             if not allow_missing:
                 raise AssertionError(msg)
-            print(msg)
+            # print(msg)
             n_missing += 1
 
             with open(log_path, 'a') as log_fid:
