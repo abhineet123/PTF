@@ -7,7 +7,7 @@ class Params:
     def __init__(self):
         self.src_dir = ''
         self.dst_dir = ''
-        self.recursive = 0
+        self.recursive = 1
         self.remove_suffix = 1
         self.suffix_sep = '__'
 
@@ -20,7 +20,6 @@ def main():
     dst_dir = params.dst_dir
     recursive = params.recursive
     remove_suffix = params.remove_suffix
-
 
     print(f'src_dir: {src_dir}')
     print(f'dst_dir: {dst_dir}')
@@ -89,6 +88,7 @@ def main():
             log_fid.write(msg + '\n')
 
         # shutil.copy(src_file_path, dst_file_path)
+
 
 if __name__ == '__main__':
     main()
