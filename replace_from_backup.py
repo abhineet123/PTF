@@ -103,7 +103,7 @@ def main():
         with open(log_path, 'a') as log_fid:
             log_fid.write(msg + '\n')
 
-        # shutil.copy(src_file_path, dst_file_path)
+        shutil.copy(src_file_path, dst_file_path)
 
         pbar.set_description(f'n_missing: {n_missing}')
 
