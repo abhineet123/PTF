@@ -89,13 +89,17 @@ def main():
                 raise AssertionError(msg)
             print(msg)
             n_missing += 1
+
+            with open(log_path, 'a') as log_fid:
+                log_fid.write(src_file_path + '\n')
+
             continue
 
         dst_file_path = dst_file_paths[dst_file_id]
 
         msg = f'{src_file_path}\t{dst_file_path}'
 
-        print(msg)
+        # print(msg)
         with open(log_path, 'a') as log_fid:
             log_fid.write(msg + '\n')
 
