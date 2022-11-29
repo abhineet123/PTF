@@ -73,7 +73,11 @@ def main():
 
     print(f'log_path: {log_path}')
 
-    for src_file_id, src_file_name in enumerate(tqdm.tqdm(src_file_names)):
+    pbar = tqdm.tqdm(src_file_names, ncols=100)
+
+    n_missing = 0
+
+    for src_file_id, src_file_name in enumerate(pbar):
 
         src_file_path = src_file_paths[src_file_id]
 
@@ -84,6 +88,7 @@ def main():
             if not allow_missing:
                 raise AssertionError(msg)
             print(msg)
+            n_missing += 1
             continue
 
         dst_file_path = dst_file_paths[dst_file_id]
@@ -95,6 +100,8 @@ def main():
             log_fid.write(msg + '\n')
 
         # shutil.copy(src_file_path, dst_file_path)
+
+        pbar.set_description(f'n_missing: {n_missing}')
 
 
 if __name__ == '__main__':
