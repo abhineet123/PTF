@@ -1,5 +1,6 @@
 import os
 import shutil
+import tqdm
 import paramparse
 
 
@@ -9,6 +10,7 @@ class Params:
         self.dst_dir = ''
         self.recursive = 1
         self.remove_suffix = 1
+        self.allow_missing = 1
         self.suffix_sep = '__'
 
 
@@ -20,6 +22,7 @@ def main():
     dst_dir = params.dst_dir
     recursive = params.recursive
     remove_suffix = params.remove_suffix
+    allow_missing = params.allow_missing
 
     print(f'src_dir: {src_dir}')
     print(f'dst_dir: {dst_dir}')
@@ -49,7 +52,7 @@ def main():
     print(f'n_dst_files: {n_dst_files}')
 
     assert n_src_files > 0, "no src_files found"
-    assert n_dst_files >= n_src_files, "insufficient dst_files found"
+    assert allow_missing or n_dst_files >= n_src_files, "insufficient dst_files found"
 
     src_file_names = [os.path.basename(src_file_path) for src_file_path in src_file_paths]
     dst_file_names = [os.path.basename(dst_file_path) for dst_file_path in dst_file_paths]
@@ -70,14 +73,18 @@ def main():
 
     print(f'log_path: {log_path}')
 
-    for src_file_id, src_file_name in enumerate(src_file_names):
+    for src_file_id, src_file_name in enumerate(tqdm.tqdm(src_file_names)):
 
         src_file_path = src_file_paths[src_file_id]
 
         try:
             dst_file_id = dst_file_names.index(src_file_name)
         except ValueError:
-            raise AssertionError(f'no matching dst file found for {src_file_name} : {src_file_path}')
+            msg = f'no matching dst file found for {src_file_name} : {src_file_path}'
+            if not allow_missing:
+                raise AssertionError(msg)
+            print(msg)
+            continue
 
         dst_file_path = dst_file_paths[dst_file_id]
 
