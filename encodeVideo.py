@@ -161,14 +161,16 @@ for src_id, _src_path in enumerate(src_files):
     if not cap.open(src_path):
         raise IOError('The video file ' + src_path + ' could not be opened')
 
-    if cv2.__version__.startswith('3'):
-        cv_prop = cv2.CAP_PROP_FRAME_COUNT
-        h_prop = cv2.CAP_PROP_FRAME_HEIGHT
-        w_prop = cv2.CAP_PROP_FRAME_WIDTH
-    else:
-        cv_prop = cv2.cv.CAP_PROP_FRAME_COUNT
-        h_prop = cv2.cv.CAP_PROP_FRAME_HEIGHT
-        w_prop = cv2.cv.CAP_PROP_FRAME_WIDTH
+    # if cv2.__version__.startswith('3'):
+
+    cv_prop = cv2.CAP_PROP_FRAME_COUNT
+    h_prop = cv2.CAP_PROP_FRAME_HEIGHT
+    w_prop = cv2.CAP_PROP_FRAME_WIDTH
+
+    # else:
+    #     cv_prop = cv2.cv.CAP_PROP_FRAME_COUNT
+    #     h_prop = cv2.cv.CAP_PROP_FRAME_HEIGHT
+    #     w_prop = cv2.cv.CAP_PROP_FRAME_WIDTH
 
     total_frames = int(cap.get(cv_prop))
     _height = int(cap.get(h_prop))
@@ -244,6 +246,9 @@ for src_id, _src_path in enumerate(src_files):
             else:
                 video_out.write(header_img)
 
+    if reverse:
+        print('reading images...')
+
     for frame_id in tqdm(range(total_frames)):
 
         ret, image = cap.read()
@@ -303,7 +308,8 @@ for src_id, _src_path in enumerate(src_files):
     cap.release()
 
     if reverse:
-        for frame in frames[::-1]:
+        print('\nWriting framesw to video')
+        for frame in tqdm(frames[::-1]):
             if show_img:
                 cv2.imshow(seq_name, frame)
                 k = cv2.waitKey(1 - pause_after_frame) & 0xFF

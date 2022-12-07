@@ -240,6 +240,7 @@ class Params:
         self.target_aspect_ratio = 0
         self.win_offset_x = 0
         self.win_offset_y = 0
+        self.monitor_scale = 1.25
         self.write_filenames = 0
         self.log_file = 'vwm.log'
         self.sort_log_file = 'vwm_sort.log'
@@ -350,6 +351,7 @@ def run(args, multi_exit_program=None,
     id_probs = params.id_probs
     target_aspect_ratio = params.target_aspect_ratio
     write_filenames = params.write_filenames
+    monitor_scale = params.monitor_scale
 
     if log_color:
         from colorlog import ColoredFormatter
@@ -1512,8 +1514,10 @@ def run(args, multi_exit_program=None,
             if frg_win_titles:
                 cv2.moveWindow(_win_name, frg_positions[frg_win_id][0], frg_positions[frg_win_id][1])
             else:
-                cv2.moveWindow(_win_name, win_offset_x + monitors[monitor_id][0],
-                               win_offset_y + monitors[monitor_id][1])
+                cv2.moveWindow(_win_name,
+                               int((win_offset_x + monitors[monitor_id][0]) / monitor_scale),
+                               int((win_offset_y + monitors[monitor_id][1]) / monitor_scale)
+                               )
         else:
             cv2.namedWindow(_win_name, cv_windowed_mode_flags)
 
@@ -1530,19 +1534,28 @@ def run(args, multi_exit_program=None,
                 cv2.moveWindow(_win_name, frg_positions[frg_win_id][0], frg_positions[frg_win_id][1])
             else:
                 if widescreen_mode:
-                    cv2.moveWindow(_win_name, win_offset_x + widescreen_monitor[0],
-                                   win_offset_y + widescreen_monitor[1])
+                    cv2.moveWindow(_win_name,
+                                   int((win_offset_x + widescreen_monitor[0]) / monitor_scale),
+                                   int((win_offset_y + widescreen_monitor[1]) / monitor_scale)
+                                   )
                 else:
                     if tall_position == 2:
                         # cv2.moveWindow(_win_name, win_offset_x + monitors[4][0], win_offset_y + monitors[4][1] + 20)
-                        cv2.moveWindow(_win_name, win_offset_x + monitors[4][0],
-                                       win_offset_y + monitors[4][1] + top_offset)
+                        cv2.moveWindow(_win_name,
+                                       int((win_offset_x + monitors[4][0]) / monitor_scale),
+                                       int((win_offset_y + monitors[4][1] + top_offset) / monitor_scale)
+                                       )
                     elif tall_position == 1:
-                        cv2.moveWindow(_win_name, win_offset_x + monitors[5][0], win_offset_y + monitors[5][1])
+                        cv2.moveWindow(_win_name,
+                                       int((win_offset_x + monitors[5][0]) / monitor_scale),
+                                       int((win_offset_y + monitors[5][1]) / monitor_scale)
+                                       )
                     elif tall_position == 0:
                         # cv2.moveWindow(_win_name, win_offset_x + monitors[2][0], win_offset_y + monitors[2][1] + 20)
-                        cv2.moveWindow(_win_name, win_offset_x + monitors[2][0],
-                                       win_offset_y + monitors[2][1] + top_offset)
+                        cv2.moveWindow(_win_name,
+                                       int((win_offset_x + monitors[2][0]) / monitor_scale),
+                                       int((win_offset_y + monitors[2][1] + top_offset) / monitor_scale)
+                                       )
 
             # if fullscreen:
             # cv2.namedWindow(_win_name, cv2.WND_PROP_FULLSCREEN)
@@ -1566,12 +1579,15 @@ def run(args, multi_exit_program=None,
             width = 5760
             height = 2160
         else:
-            width = 1920
+            width = 1920 
             mode = 1 - mode
             if mode == 0:
                 height = 1060
             else:
                 height = 2160 - top_offset - bottom_offset
+
+        height = int(height / monitor_scale)
+        width = int(width / monitor_scale)
 
         _print('changeMode :: height: ', height)
         _print('changeMode :: width: ', width)
@@ -3617,8 +3633,10 @@ def run(args, multi_exit_program=None,
                     _i = dup_win_names.index(active_win_name)
                     dup_monitor_ids[_i] = _monitor_id
                 _print('moving window {}'.format(active_win_name))
-                cv2.moveWindow(active_win_name, win_offset_x + monitors[_monitor_id][0],
-                               win_offset_y + monitors[_monitor_id][1])
+                cv2.moveWindow(active_win_name,
+                               int((win_offset_x + monitors[_monitor_id][0]) / monitor_scale),
+                               int((win_offset_y + monitors[_monitor_id][1]) / monitor_scale)
+                               )
                 # createWindow()
             # elif k == ord('2'):
             #     monitor_id = 1

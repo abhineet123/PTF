@@ -242,11 +242,13 @@ def main():
                 files_to_transfer = list(set(all_downloads) - set(already_transferred))
 
                 # os.system(f'rm {list_fname}')
-            elif k == '__list__':
+            elif k == '__list__' or k == '__l__':
                 list_fname = f'{src_info}.txt'
                 if not os.path.exists(list_fname):
                     print(f'list file does not exist: {list_fname}')
+                    continue
                 files_to_transfer = open(list_fname, 'r', encoding="utf-8").read().splitlines()
+                files_to_transfer = [os.path.basename(k.strip('\"')) for k in files_to_transfer]
             else:
                 if k in already_transferred:
                     k2 = input(f'{k} has already been transferred. Transfer again ?\n')
