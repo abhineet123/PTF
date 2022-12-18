@@ -5,5 +5,5 @@
 
 set -x
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
-python $DIR/../printDateTime.py  file_path=$1 prefix=$2
+python3 $DIR/../printDateTime.py  file_path=$1 prefix=$2
 

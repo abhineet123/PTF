@@ -1,3 +1,3 @@
 @echo on
 
-python2 "%~dp0\..\auto_restart.py" vpn_path=D:\Users\Tommy\Documents\IMDB\New\tors\PureVPN.lnk tor_path=D:\Users\Tommy\Documents\IMDB\New\tors\uTorrent.lnk settings_path=%1
+python3 "%~dp0\..\auto_restart.py" vpn_path=D:\Users\Tommy\Documents\IMDB\New\tors\PureVPN.lnk tor_path=D:\Users\Tommy\Documents\IMDB\New\tors\uTorrent.lnk settings_path=%1

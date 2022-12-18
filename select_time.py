@@ -7,6 +7,7 @@ except ImportError:
     from tkinter import Tk
     # import tkinter as Tk
 
+
 def is_date(line):
     date_obj = None
     try:
@@ -47,32 +48,55 @@ def is_time(line):
     return line, time_found, time_obj
 
 
+class Params:
+
+    def __init__(self):
+        self.add_comment = 1
+        self.add_date = 1
+        self.add_diff = 1
+        self.categories = 1
+        self.categories_out = 1
+        self.category_sep = ' :: '
+        self.date_sep = ' – '
+        self.first_and_last = 0
+        self.horz = 1
+        self.included_cats = []
+        self.min_start_time = '03:00:00'
+        self.pairwise = 1
+
+
 def main():
-    _params = {
-        'horz': 1,
-        'categories_out': 1,
-        'categories': 1,
-        'category_sep': ' :: ',
-        'date_sep': ' – ',
-        'pairwise': 1,
-        'first_and_last': 0,
-        'add_date': 1,
-        'add_diff': 1,
-        'add_comment': 1,
-        'min_start_time': '03:00:00',
-    }
-    paramparse.process_dict(_params)
-    horz = _params['horz']
-    categories_out = _params['categories_out']
-    categories = _params['categories']
-    category_sep = _params['category_sep']
-    date_sep = _params['date_sep']
-    first_and_last = _params['first_and_last']
-    pairwise = _params['pairwise']
-    add_date = _params['add_date']
-    add_diff = _params['add_diff']
-    add_comment = _params['add_comment']
-    min_start_time = _params['min_start_time']
+    # _params = {
+    #     'horz': 1,
+    #     'categories_out': 1,
+    #     'categories': 1,
+    #     'category_sep': ' :: ',
+    #     'date_sep': ' – ',
+    #     'pairwise': 1,
+    #     'included_cats': 0,
+    #     'first_and_last': 0,
+    #     'add_date': 1,
+    #     'add_diff': 1,
+    #     'add_comment': 1,
+    #     'min_start_time': '03:00:00',
+    # }
+
+    _params = Params()
+    paramparse.process(_params)
+
+    horz = _params.horz
+    categories_out = _params.categories_out
+    categories = _params.categories
+    category_sep = _params.category_sep
+    date_sep = _params.date_sep
+    first_and_last = _params.first_and_last
+    pairwise = _params.pairwise
+    add_date = _params.add_date
+    add_diff = _params.add_diff
+    add_comment = _params.add_comment
+    min_start_time = _params.min_start_time
+    included_cats = _params.included_cats
+
     try:
         in_txt = Tk().clipboard_get()  # type: str
     except BaseException as e:
@@ -172,17 +196,21 @@ def main():
 
     out_comments.append(curr_comments_str)
 
-    sort_idx = [i[0] for i in sorted(enumerate(out_date_times), key=lambda x: x[1])]
+    sort_ids = [i[0] for i in sorted(enumerate(out_date_times), key=lambda x: x[1])]
 
-    # out_date_times = [out_date_times[i] for i in sort_idx]
-    # # out_date_time_str = [out_date_time_str[i] for i in sort_idx]
-    # out_times = [out_times[i] for i in sort_idx]
-    # out_lines = [out_lines[i] for i in sort_idx]
-    # out_comments = [out_comments[i] for i in sort_idx]
+    # out_date_times = [out_date_times[i] for i in sort_ids]
+    # # out_date_time_str = [out_date_time_str[i] for i in sort_ids]
+    # out_times = [out_times[i] for i in sort_ids]
+    # out_lines = [out_lines[i] for i in sort_ids]
+    # out_comments = [out_comments[i] for i in sort_ids]
 
     if first_and_last and len(out_lines) > 2:
-        out_date_times = [out_date_times[sort_idx[0]], out_date_times[sort_idx[-1]]]
-        out_lines = [out_lines[sort_idx[0]], out_lines[sort_idx[-1]]]
+        out_date_times = [out_date_times[sort_ids[0]], out_date_times[sort_ids[-1]]]
+        out_lines = [out_lines[sort_ids[0]], out_lines[sort_ids[-1]]]
+
+    if included_cats:
+        included_cats = [str(k) for k in included_cats]
+        print(f'including only categories: {included_cats}')
 
     n_out_lines = len(out_lines)
     if pairwise:
@@ -191,16 +219,23 @@ def main():
         out_txt2 = ''
         out_txt3 = ''
         for _line_id in range(n_out_lines - 1):
+
+            curr_sort_id, next_sort_id = sort_ids[_line_id], sort_ids[_line_id + 1]
+
+            if categories and included_cats and out_categories[next_sort_id] not in included_cats:
+                print(f'skipping entry with category {out_categories[next_sort_id]}')
+                continue
+
             if horz:
-                _out_txt = '{}\t{}'.format(out_lines[sort_idx[_line_id]], out_lines[sort_idx[_line_id + 1]])
+                _out_txt = '{}\t{}'.format(out_lines[curr_sort_id], out_lines[next_sort_id])
 
                 if add_date:
                     _out_txt = '{}\t{}'.format(date_str, _out_txt)
                 if categories_out:
-                    _out_txt += '\t{}'.format(out_categories[sort_idx[_line_id + 1]])
+                    _out_txt += '\t{}'.format(out_categories[next_sort_id])
 
                 if add_diff:
-                    time_diff = out_date_times[sort_idx[_line_id + 1]] - out_date_times[sort_idx[_line_id]]
+                    time_diff = out_date_times[next_sort_id] - out_date_times[curr_sort_id]
                     time_diff_str = str(time_diff)
 
                     if ',' in time_diff_str:
@@ -214,16 +249,16 @@ def main():
 
                 if add_comment:
                     """out_comments has an annoying extra entry at top"""
-                    _out_txt = '{}\t{}'.format(_out_txt, out_comments[sort_idx[_line_id + 1] + 1])
+                    _out_txt = '{}\t{}'.format(_out_txt, out_comments[next_sort_id + 1])
 
                 out_txt += _out_txt + '\n'
             else:
-                out_txt += '{}\t'.format(out_lines[sort_idx[_line_id]])
-                out_txt2 += '{}\t'.format(out_lines[sort_idx[_line_id + 1]])
+                out_txt += '{}\t'.format(out_lines[curr_sort_id])
+                out_txt2 += '{}\t'.format(out_lines[next_sort_id])
                 if add_date:
                     out_txt0 = '{}\t'.format(date_str)
                 if categories_out:
-                    out_txt3 += '{}\t'.format(out_categories[sort_idx[_line_id + 1]])
+                    out_txt3 += '{}\t'.format(out_categories[next_sort_id])
         if not horz:
             out_txt += '\n' + out_txt2
             if add_date:

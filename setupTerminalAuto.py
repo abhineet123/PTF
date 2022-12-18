@@ -114,13 +114,11 @@ if __name__ == '__main__':
             self.auth_file = ''
             self.auth_root = ''
             self.config = 0
-            self.enable_orca = 0
+            self.enable_e5g = 0
             self.enable_mj = 0
             self.enable_mj2 = 0
             self.enable_nrw = 0
             self.enable_isaic = 0
-            self.mj = ('mj1', 'mj1_2')
-            self.mj2 = ('mj2', 'mj2_2')
             self.isaic = ('isc', 'isc2')
             self.enable_git = 0
             self.exe_path = 'fatty.exe'
@@ -152,13 +150,11 @@ if __name__ == '__main__':
     config = params.config
     wait_t = params.wait_t
     n_git_panes = params.n_git_panes
-    enable_orca = params.enable_orca
+    enable_e5g = params.enable_e5g
     enable_mj = params.enable_mj
     enable_mj2 = params.enable_mj2
     enable_nrw = params.enable_nrw
     enable_isaic = params.enable_isaic
-    mj1_1, mj1_2 = params.mj
-    mj2_1, mj2_2 = params.mj2
     isaic1, isaic2 = params.isaic
     enable_git = params.enable_git
     git_postproc = params.git_postproc
@@ -191,61 +187,50 @@ if __name__ == '__main__':
 
     if not only_git:
         auth_path = linux_path(auth_root, auth_dir, auth_file)
-        auth_data = open(auth_path, 'r').readlines()
-        auth_data = [k.strip() for k in auth_data]
+        auth_data = open(auth_path, 'r').read().splitlines()
 
-        # name00, name01 = auth_data[0].split(' ')[:2]
-        # name10, name11 = auth_data[1].split(' ')[:2]
-        # name20, name21 = auth_data[2].split(' ')[:2]
+        auth_data = [k.split(' ') for k in auth_data]
 
-        auth_data0 = auth_data[0].split(' ')
-        auth_data1 = auth_data[1].split(' ')
-        auth_data2 = auth_data[2].split(' ')
+        auth_data = {
+            k[0]: k for k in auth_data
+        }
 
-        name00, name01 = auth_data0[:2]
-        name10, name11 = auth_data1[:2]
-        name20, name21 = auth_data2[:2]
+        grs_1, grs_2 = auth_data['grs'][:2]
+        x99_1, x99_2 = auth_data['x99'][:2]
+        e5g_1, e5g_2 = auth_data['e5g'][:2]
+        nrw_1, nrw_2 = auth_data['nrw'][:2]
+        mj1_1, mj1_2 = auth_data['mj1'][:2]
+        mj2_1, mj2_2 = auth_data['mj2'][:2]
+
+        pwd0 = pwd1 = pwd2 = None
 
         if sudo:
-            ecr0, key0 = auth_data0[-2:]
-            ecr1, key1 = auth_data1[-2:]
-            ecr2, key2 = auth_data2[-2:]
-
-            # key0_path = linux_path(key_root, key_dir, key0)
-            # key1_path = linux_path(key_root, key_dir, key1)
-            # key2_path = linux_path(key_root, key_dir, key2)
+            ecr = {
+                k: v[-2] for k, v in auth_data.items()
+            }
+            key = {
+                k: v[-1] for k, v in auth_data.items()
+            }
 
             encryption_params = encryption.Params()
             encryption_params.mode = 1
             encryption_params.root_dir = key_root
             encryption_params.parent_dir = key_dir
 
-            encryption_params.in_file = ecr0
-            encryption_params.key_file = key0
-            encryption_params.process()
-            pwd0 = encryption.run(encryption_params)
-
-            encryption_params.in_file = ecr1
-            encryption_params.key_file = key1
-            encryption_params.process()
-            pwd1 = encryption.run(encryption_params)
-
-            encryption_params.in_file = ecr2
-            encryption_params.key_file = key2
-            encryption_params.process()
-            pwd2 = encryption.run(encryption_params)
-        else:
-            pwd0 = pwd1 = pwd2 = None
-
-        print('Setting up system 0 with tmux sessions {}, {}'.format(name00, name01))
-        print('Setting up system 1 with tmux sessions {}, {}'.format(name10, name11))
-        print('Setting up system 2 with tmux sessions {}, {}'.format(name20, name21))
-
-        # print(pwd0)
-        # print(pwd1)
-        # print(pwd2)
-
-        # exit()
+            # encryption_params.in_file = ecr0
+            # encryption_params.key_file = key0
+            # encryption_params.process()
+            # pwd0 = encryption.run(encryption_params)
+            #
+            # encryption_params.in_file = ecr1
+            # encryption_params.key_file = key1
+            # encryption_params.process()
+            # pwd1 = encryption.run(encryption_params)
+            #
+            # encryption_params.in_file = ecr2
+            # encryption_params.key_file = key2
+            # encryption_params.process()
+            # pwd2 = encryption.run(encryption_params)
 
         servers_app = application.Application().start(exe_path)
         servers_app.window().maximize()
@@ -305,16 +290,16 @@ if __name__ == '__main__':
 
         if not only_git:
             time.sleep(wait_t)
-            servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name00)
-            servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name01)
+            servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % grs_1)
+            servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % grs_2)
 
-            if enable_orca:
-                """connect to orca"""
+            if enable_e5g:
+                """connect to e5g"""
                 for _app in apps:
                     _app.fatty.type_keys("^+t")
                     # _app.fatty.type_keys("sstg2~")
                     # time.sleep(2)
-                    _app.fatty.type_keys("sstz~")
+                    _app.fatty.type_keys("sste~")
 
                     if sudo:
                         # time.sleep(2)
@@ -327,8 +312,8 @@ if __name__ == '__main__':
                         pyautogui.press('enter')
 
                 time.sleep(wait_t)
-                servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name10)
-                servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name11)
+                servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % e5g_1)
+                servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % e5g_2)
 
             # time.sleep(1)
 
@@ -358,8 +343,8 @@ if __name__ == '__main__':
 
             time.sleep(wait_t)
 
-            servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name20)
-            servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name21)
+            servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % x99_1)
+            servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % x99_2)
 
             if enable_isaic:
                 """connect to isaic"""
@@ -403,10 +388,13 @@ if __name__ == '__main__':
 
                 time.sleep(wait_t)
 
-                servers_app.fatty.type_keys("tmux{VK_SPACE}new~")
-                servers_app.fatty.type_keys("^br")
-                time.sleep(5)
-                servers_app2.fatty.type_keys("tmux{VK_SPACE}a~")
+                # servers_app.fatty.type_keys("tmux{VK_SPACE}a~")
+                # servers_app.fatty.type_keys("^br")
+                # time.sleep(5)
+                # servers_app2.fatty.type_keys("tmux{VK_SPACE}a~")
+
+                servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % nrw_1)
+                servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % nrw_2)
 
         if enable_git:
             if only_git:
@@ -570,7 +558,7 @@ if __name__ == '__main__':
             for _app in apps:
                 """grs"""
                 _app.fatty.type_keys("^+w")
-                if enable_orca:
+                if enable_e5g:
                     _app.fatty.type_keys("^+w")
                 if enable_isaic:
                     _app.fatty.type_keys("^+w")
@@ -594,15 +582,15 @@ if __name__ == '__main__':
 
             time.sleep(wait_t)
 
-            servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name00)
-            servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name01)
+            servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % grs_1)
+            servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % grs_2)
 
-            if enable_orca:
+            if enable_e5g:
                 for _app in apps:
-                    """orca"""
+                    """e5g"""
                     _app.fatty.type_keys("^+t")
-                    _app.fatty.type_keys("sstg2~")
-                    _app.fatty.type_keys("sstz~")
+                    # _app.fatty.type_keys("sstg2~")
+                    _app.fatty.type_keys("sste~")
                     if sudo:
                         _app.fatty.type_keys("sudo{VK_SPACE}-s~")
 
@@ -613,8 +601,8 @@ if __name__ == '__main__':
 
                 time.sleep(wait_t)
 
-                servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name10)
-                servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name11)
+                servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % e5g_1)
+                servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % e5g_2)
 
             # time.sleep(1)
 
@@ -625,7 +613,7 @@ if __name__ == '__main__':
             for _app in apps:
                 """x99"""
                 _app.fatty.type_keys("^+t")
-                _app.fatty.type_keys("sstg3~")
+                # _app.fatty.type_keys("sstg3~")
                 _app.fatty.type_keys("sstx~")
                 if sudo:
                     _app.fatty.type_keys("sudo{VK_SPACE}-s~")
@@ -637,8 +625,8 @@ if __name__ == '__main__':
 
             time.sleep(wait_t)
 
-            servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name20)
-            servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % name21)
+            servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % x99_1)
+            servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % x99_2)
 
             if enable_isaic:
                 for _app in apps:
@@ -682,11 +670,13 @@ if __name__ == '__main__':
 
                 time.sleep(wait_t)
 
-                servers_app.fatty.type_keys("tmux{VK_SPACE}new~")
-                servers_app.fatty.type_keys("^br")
-                time.sleep(5)
-                servers_app2.fatty.type_keys("tmux{VK_SPACE}a~")
+                # servers_app.fatty.type_keys("tmux{VK_SPACE}a~")
+                # servers_app.fatty.type_keys("^br")
+                # time.sleep(5)
+                # servers_app2.fatty.type_keys("tmux{VK_SPACE}a~")
 
+                servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % nrw_1)
+                servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % nrw_2)
         elif config == 3:
 
             servers_app.fatty.type_keys("^+w")

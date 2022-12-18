@@ -1,2 +1,2 @@
 @echo off
-python2 "%~dp0\..\unzipRecursive.py" seq_name=%1
+python3 "%~dp0\..\unzipRecursive.py" seq_name=%1
