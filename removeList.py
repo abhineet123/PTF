@@ -1,5 +1,6 @@
 import os, sys, glob, re
 
+
 from Misc import processArguments, sortKey
 
 if __name__ == '__main__':
@@ -19,9 +20,11 @@ if __name__ == '__main__':
 
     if nano_ext:
         ls_cmd = f'ls *.{nano_ext} > {list_file}'
+        print(f'running: {ls_cmd}')
         os.system(ls_cmd)
 
         nano_cmd = f'nano {list_file}'
+        print(f'running: {nano_cmd}')
         os.system(nano_cmd)
 
     if list_file:
@@ -39,7 +42,7 @@ if __name__ == '__main__':
     if ext:
         rm_paths = ['{}.{}'.format(name, ext) for name in rm_paths]
 
-    for zip_path in rm_paths:
-        print('removing: {}'.format(zip_path))
-        rm_cmd = 'rm -rf {:s}'.format(zip_path)
-        # os.system(rm_cmd)
+    for rm_path in rm_paths:
+        print('removing: {}'.format(rm_path))
+        rm_cmd = 'rm -rf {:s}'.format(rm_path)
+        os.system(rm_cmd)
