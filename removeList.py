@@ -8,12 +8,21 @@ if __name__ == '__main__':
         'file_name': '',
         'root_dir': '.',
         'ext': '',
+        'nano_ext': '',
     }
     processArguments(sys.argv[1:], params)
     list_file = params['list_file']
     root_dir = params['root_dir']
     file_name = params['file_name']
     ext = params['ext']
+    nano_ext = params['nano_ext']
+
+    if nano_ext:
+        ls_cmd = f'ls *.{nano_ext} > {list_file}'
+        os.system(ls_cmd)
+
+        nano_cmd = f'nano {list_file}'
+        os.system(nano_cmd)
 
     if list_file:
         if os.path.isdir(list_file):
@@ -32,5 +41,5 @@ if __name__ == '__main__':
 
     for zip_path in rm_paths:
         print('removing: {}'.format(zip_path))
-        zip_cmd = 'rm -rf {:s}'.format(zip_path)
-        os.system(zip_cmd)
+        rm_cmd = 'rm -rf {:s}'.format(zip_path)
+        # os.system(rm_cmd)

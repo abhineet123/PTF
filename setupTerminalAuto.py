@@ -50,62 +50,6 @@ if __name__ == '__main__':
     # exit()
 
     class Params(paramparse.CFG):
-        """
-        :ivar auth_dir:
-        :type auth_dir: str
-
-        :ivar auth_file:
-        :type auth_file: str
-
-        :ivar auth_root:
-        :type auth_root: str
-
-        :ivar config:
-        :type config: int
-
-        :ivar enable_git:
-        :type enable_git: int
-
-        :ivar exe_path:
-        :type exe_path: str
-
-        :ivar git_cmds:
-        :type git_cmds: str
-
-        :ivar git_half:
-        :type git_half: int
-
-        :ivar git_postproc:
-        :type git_postproc: int
-
-        :ivar git_wait:
-        :type git_wait: float
-
-        :ivar git_wait_init:
-        :type git_wait_init: int
-
-        :ivar git_wait_restore:
-        :type git_wait_restore: int
-
-        :ivar key_dir:
-        :type key_dir: str
-
-        :ivar key_root:
-        :type key_root: str
-
-        :ivar n_git_panes:
-        :type n_git_panes: int
-
-        :ivar only_git:
-        :type only_git: int
-
-        :ivar pwd_wait:
-        :type pwd_wait: int
-
-        :ivar wait_t:
-        :type wait_t: int
-
-        """
 
         def __init__(self):
             super().__init__()
@@ -235,7 +179,7 @@ if __name__ == '__main__':
         servers_app = application.Application().start(exe_path)
         servers_app.window().maximize()
 
-        half_sized_window(half_type=2)
+        # half_sized_window(half_type=2)
 
     if config == -1:
 
@@ -246,16 +190,16 @@ if __name__ == '__main__':
             apps = [servers_app, ]
             servers_app2 = application.Application().start(exe_path)
             servers_app2.window().maximize()
-            half_sized_window(half_type=1)
+            # half_sized_window(half_type=1)
 
             apps.append(servers_app2)
 
-            for _app in apps:
+            for _app_id, _app in enumerate(apps):
                 # _app.fatty.type_keys("t~")
                 # _app.fatty.type_keys("^+t")
                 # _app.fatty.type_keys("f~")
                 # _app.fatty.type_keys("^+t")
-                _app.fatty.type_keys("sstg{VK_SPACE}tb~")
+                _app.fatty.type_keys(f"sstg{_app_id}~")
                 if sudo:
                     _app.fatty.type_keys("sudo{VK_SPACE}-s~")
 
@@ -295,11 +239,11 @@ if __name__ == '__main__':
 
             if enable_e5g:
                 """connect to e5g"""
-                for _app in apps:
+                for _app_id, _app in enumerate(apps):
                     _app.fatty.type_keys("^+t")
                     # _app.fatty.type_keys("sstg2~")
                     # time.sleep(2)
-                    _app.fatty.type_keys("sste~")
+                    _app.fatty.type_keys(f"sste{_app_id}~")
 
                     if sudo:
                         # time.sleep(2)
@@ -322,12 +266,9 @@ if __name__ == '__main__':
             # app2.fatty.type_keys("+{RIGHT}")
 
             """connect to x99"""
-            for _app in apps:
+            for _app_id, _app in enumerate(apps):
                 _app.fatty.type_keys("^+t")
-                # _app.fatty.type_keys("sstg3~")
-                # time.sleep(2)
-
-                _app.fatty.type_keys("sstx~")
+                _app.fatty.type_keys(f"sstx{_app_id}~")
 
                 if sudo:
                     # time.sleep(2)
@@ -360,9 +301,9 @@ if __name__ == '__main__':
 
             if enable_mj:
                 """connect to mj server"""
-                for _app in apps:
+                for _app_id, _app in enumerate(apps):
                     _app.fatty.type_keys("^+t")
-                    _app.fatty.type_keys("sshm~")
+                    _app.fatty.type_keys(f"sshm{_app_id}~")
 
                 time.sleep(wait_t)
 
@@ -371,9 +312,9 @@ if __name__ == '__main__':
 
             if enable_mj2:
                 """connect to mj server"""
-                for _app in apps:
+                for _app_id, _app in enumerate(apps):
                     _app.fatty.type_keys("^+t")
-                    _app.fatty.type_keys("sshm2~")
+                    _app.fatty.type_keys(f"sshm2{_app_id}~")
 
                 time.sleep(wait_t)
 
@@ -477,7 +418,7 @@ if __name__ == '__main__':
         servers_app.fatty.type_keys("^+t")
         servers_app.fatty.type_keys("f~")
         servers_app.fatty.type_keys("^+t")
-        servers_app.fatty.type_keys("sstg{VK_SPACE}tb~")
+        servers_app.fatty.type_keys("sstg~")
         if sudo:
             servers_app.fatty.type_keys("sudo{VK_SPACE}-s~")
             servers_app.fatty.type_keys("%s~" % pwd0)
@@ -555,7 +496,7 @@ if __name__ == '__main__':
 
         if config == -1:
 
-            for _app in apps:
+            for _app_id, _app in enumerate(apps):
                 """grs"""
                 _app.fatty.type_keys("^+w")
                 if enable_e5g:
@@ -571,7 +512,7 @@ if __name__ == '__main__':
 
                 time.sleep(1)
 
-                _app.fatty.type_keys("sstg{VK_SPACE}tb~")
+                _app.fatty.type_keys(f"sstg{_app_id}~")
                 if sudo:
                     _app.fatty.type_keys("sudo{VK_SPACE}-s~")
 
@@ -586,11 +527,10 @@ if __name__ == '__main__':
             servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % grs_2)
 
             if enable_e5g:
-                for _app in apps:
+                for _app_id, _app in enumerate(apps):
                     """e5g"""
                     _app.fatty.type_keys("^+t")
-                    # _app.fatty.type_keys("sstg2~")
-                    _app.fatty.type_keys("sste~")
+                    _app.fatty.type_keys(f"sste{_app_id}~")
                     if sudo:
                         _app.fatty.type_keys("sudo{VK_SPACE}-s~")
 
@@ -610,11 +550,10 @@ if __name__ == '__main__':
             # app.fatty.type_keys("+{RIGHT}")
             # app2.fatty.type_keys("+{RIGHT}")
 
-            for _app in apps:
+            for _app_id, _app in enumerate(apps):
                 """x99"""
                 _app.fatty.type_keys("^+t")
-                # _app.fatty.type_keys("sstg3~")
-                _app.fatty.type_keys("sstx~")
+                _app.fatty.type_keys(f"sstx{_app_id}~")
                 if sudo:
                     _app.fatty.type_keys("sudo{VK_SPACE}-s~")
 
@@ -641,10 +580,10 @@ if __name__ == '__main__':
                 servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % isaic2)
 
             if enable_mj:
-                for _app in apps:
+                for _app_id, _app in enumerate(apps):
                     """mj server"""
                     _app.fatty.type_keys("^+t")
-                    _app.fatty.type_keys("sshm~")
+                    _app.fatty.type_keys(f"sshm{_app_id}~")
 
                 time.sleep(wait_t)
 
@@ -652,10 +591,10 @@ if __name__ == '__main__':
                 servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % mj1_2)
 
             if enable_mj2:
-                for _app in apps:
+                for _app_id, _app in enumerate(apps):
                     """mj server"""
                     _app.fatty.type_keys("^+t")
-                    _app.fatty.type_keys("sshm2~")
+                    _app.fatty.type_keys(f"sshm2{_app_id}~")
 
                 time.sleep(wait_t)
 
