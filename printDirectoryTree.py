@@ -70,4 +70,8 @@ try:
     spam = pyperclip.paste()
 except pyperclip.PyperclipException as e:
     print('Copying to clipboard failed: {}'.format(e))
+else:
+    print('Directory tree copied to clipboard')
+    
+
 
