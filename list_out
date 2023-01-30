@@ -1,8 +1,0 @@
-model	FPR_DET
-inv-cvnxt-large	17.715232
-inv-idol-inc	40.877056
-inv-seqformer-inc	30.730479
-inv-swi-epoch_3273	26.373626
-inv-vita-swin-inc	49.009901
-inv-vita-swin-retrain-inc-0079999	53.393665
-inv-vita-swin-retrain-inc-0104999	49.445325

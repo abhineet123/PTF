@@ -472,7 +472,7 @@ if __name__ == '__main__':
     print('setup time: {}'.format(end_t - start_t))
 
     if only_git:
-        k = input('Enter any key to terminate tmux-git')
+        k = input(f'Press enter to terminate tmux-git')
 
         git_app.fatty.type_keys("^b")
         git_app.fatty.type_keys("{d}")
@@ -487,10 +487,11 @@ if __name__ == '__main__':
 
         sys.exit()
 
+    iter_id = -1
     while True:
-        k = input('Enter any key to restore ssh connections')
-        # print('Enter any key to restore ssh connections')
-        # os.system("pause")
+        iter_id += 1
+
+        k = input(f'{iter_id} : Press enter to restore ssh connections')
 
         mouse_x, mouse_y = win32api.GetCursorPos()
 
