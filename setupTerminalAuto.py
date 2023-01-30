@@ -10,6 +10,38 @@ from Misc import linux_path
 import encrypt_file_aes as encryption
 
 
+class Params(paramparse.CFG):
+
+    def __init__(self):
+        super().__init__()
+        self.cfg = ()
+        self.auth_dir = ''
+        self.auth_file = ''
+        self.auth_root = ''
+        self.config = 0
+        self.enable_e5g = 0
+        self.enable_mj = 0
+        self.enable_mj2 = 0
+        self.enable_nrw = 0
+        self.enable_isaic = 0
+        self.isaic = ('isc', 'isc2')
+        self.enable_git = 0
+        self.exe_path = 'fatty.exe'
+        self.git_cmds = ''
+        self.git_half = 1
+        self.git_postproc = 0
+        self.git_wait = 0.5
+        self.git_wait_init = 10
+        self.git_wait_restore = 20
+        self.key_dir = ''
+        self.key_root = ''
+        self.n_git_panes = 8
+        self.only_git = 0
+        self.sudo = 0
+        self.pwd_wait = 2
+        self.wait_t = 3
+
+
 def half_sized_window(half_type):
     pyautogui.keyDown('ctrlleft')
     pyautogui.keyDown('winleft')
@@ -25,62 +57,7 @@ def half_sized_window(half_type):
     pyautogui.keyUp('altleft')
 
 
-if __name__ == '__main__':
-    # params = {
-    #     'exe_path': 'fatty.exe',
-    #     'key_root': '',
-    #     'key_dir': '',
-    #     'auth_root': '',
-    #     'auth_dir': '',
-    #     'auth_file': '',
-    #     'config': 0,
-    #     'pwd_wait': 2,
-    #     'wait_t': 3,
-    #     'n_git_panes': 8,
-    #     'git_half': 1,
-    #     'git_wait': 0.5,
-    #     'git_wait_init': 10,
-    #     'git_wait_restore': 20,
-    #     'only_git': 0,
-    #     'enable_git': 0,
-    #     'git_postproc': 0,
-    #     'git_cmds': '',
-    # }
-    # paramparse.from_dict(params, to_clipboard=1)
-    # exit()
-
-    class Params(paramparse.CFG):
-
-        def __init__(self):
-            super().__init__()
-            self.cfg = ()
-            self.auth_dir = ''
-            self.auth_file = ''
-            self.auth_root = ''
-            self.config = 0
-            self.enable_e5g = 0
-            self.enable_mj = 0
-            self.enable_mj2 = 0
-            self.enable_nrw = 0
-            self.enable_isaic = 0
-            self.isaic = ('isc', 'isc2')
-            self.enable_git = 0
-            self.exe_path = 'fatty.exe'
-            self.git_cmds = ''
-            self.git_half = 1
-            self.git_postproc = 0
-            self.git_wait = 0.5
-            self.git_wait_init = 10
-            self.git_wait_restore = 20
-            self.key_dir = ''
-            self.key_root = ''
-            self.n_git_panes = 8
-            self.only_git = 0
-            self.sudo = 0
-            self.pwd_wait = 2
-            self.wait_t = 3
-
-
+def main():
     params = Params()
     paramparse.process(params)
 
@@ -642,3 +619,7 @@ if __name__ == '__main__':
             servers_app.fatty.type_keys("tmux{VK_SPACE}new~")
 
         mouse.move(coords=(mouse_x, mouse_y))
+
+
+if __name__ == '__main__':
+    main()
