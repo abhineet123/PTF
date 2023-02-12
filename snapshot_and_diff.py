@@ -14,12 +14,15 @@ import subprocess
 
 import paramparse
 
+from Misc import linux_path
+
 
 class Params:
     def __init__(self):
         self.src_label = ''
         self.src = ''
         self.dst = ''
+        self.excluded_names = []
         self.exclude_links = 1
         self.extra_info = 1
         self.verbose = 1
@@ -38,6 +41,45 @@ class Params:
 #         input('press any key to exit')
 #         return None
 #     return False
+
+def recursive_listdir(src, verbose, err_file, exclude_links, excluded_names):
+    try:
+        contents = list(Path(src).iterdir())
+    except PermissionError as e:
+        print(f'\n{e}\n')
+        # input('press any key to continue')
+        return
+
+    for path in contents:
+        is_valid = False
+
+        try:
+            is_dir = path.is_dir()
+        except OSError as e:
+            if verbose:
+                print(f'\nskipping {str(path)}: {e}\n')
+
+                # input('press any key to continue')
+        except BaseException as e:
+            with open(err_file, 'a') as err_fid:
+                err_fid.write(f'{e}')
+            input('press any key to continue')
+            exit()
+        else:
+            is_valid = True
+
+        yield str(path)
+
+        if is_valid and is_dir:  # extend the prefix and recurse:
+            if excluded_names and any(k in str(path) for k in excluded_names):
+                print(f'\nexcluding: {str(path)}\n')
+                continue
+
+            if exclude_links and is_link(str(path)):
+                print(f'\nexcluding symlink: {str(path)}\n')
+                continue
+
+            yield from recursive_listdir(path, verbose, err_file, exclude_links, excluded_names)
 
 
 def tree_to_file(src, dst, exclude_links, extra_info, err_file, verbose):
@@ -156,17 +198,18 @@ def main():
     # cmp = params.dst + '.cmp'
     title, ext = os.path.splitext(os.path.basename(params.dst))
     dst_dir = os.path.dirname(params.dst)
+    dst_parent_dir = os.path.dirname(dst_dir)
 
-    err_file = params.dst + '.errors'
+    err_file = params.dst.replace(ext,  '.errors')
 
-    backup_dst_dir = os.path.join(dst_dir, 'backup')
-    cmp_dst_dir = os.path.join(dst_dir, 'cmp')
+    backup_dst_dir = linux_path(dst_parent_dir, 'backup')
+    cmp_dst_dir = linux_path(dst_parent_dir, 'cmp')
 
     os.makedirs(backup_dst_dir, exist_ok=1)
     os.makedirs(cmp_dst_dir, exist_ok=1)
 
     cmp_fname = title + '.cmp'
-    cmp = os.path.join(cmp_dst_dir, cmp_fname)
+    cmp = linux_path(cmp_dst_dir, cmp_fname)
 
     if params.src_label:
         import psutil
@@ -189,7 +232,7 @@ def main():
     if params.dst.endswith('.html'):
         if os.path.exists(f1):
             backup_fname = title + '_backup' + ext
-            f2 = os.path.join(backup_dst_dir, backup_fname)
+            f2 = linux_path(backup_dst_dir, backup_fname)
             shutil.move(f1, f2)
         else:
             f2 = None
@@ -209,20 +252,74 @@ def main():
         # f1 += '.gz'
 
         cmp = params.dst + '.cmp'
+        backup_fname = title + '_backup' + ext
+        f2 = linux_path(backup_dst_dir, backup_fname)
 
         if os.path.exists(f1):
-            f2 = params.dst.replace(ext, '_backup' + ext)
-            # f2 += '.gz'
-
+            backup_fname = title + '_backup' + ext
+            f2 = linux_path(backup_dst_dir, backup_fname)
             shutil.move(f1, f2)
-        else:
+            # f2 += '.gz'
+        elif not os.path.exists(f2):
             f2 = None
 
-        # tree_cmd = 'tree {} /a /f > {}'.format(params.src, params.dst)
-        # os.system(tree_cmd)
+        if params.dst.endswith('.bin'):
+
+            # tree_cmd = 'tree {} /a /f > {}'.format(params.src, params.dst)
+            # os.system(tree_cmd)
+
+            exclude_links = params.exclude_links
+            excluded_names = params.excluded_names
+            verbose = params.verbose
+            files_list = []
+
+            pbar = tqdm(recursive_listdir(params.src, verbose, err_file, exclude_links, excluded_names), position=0, leave=True)
+
+            for path in tqdm(pbar):
+                pbar.set_description(f"{path[:40]}...")
+                files_list.append(path)
+
+            # files_gen = [[os.path.join(dirpath, f) for f in filenames ]
+            #                   for (dirpath, dirnames, filenames) in
+            #              tqdm(os.walk(params.src, followlinks=True), desc='gen')]
+            # files_list = [item for sublist in files_gen for item in tqdm(sublist, desc='list')]
+
+            print(f'{title} :: {len(files_list)} files')
+
+            import pickle
+            with open(params.dst, 'wb') as f:
+                pickle.dump(files_list, f, pickle.HIGHEST_PROTOCOL)
+
+            if f2 is not None:
+                with open(f2, 'rb') as f:
+                    prev_files_list = pickle.load(f)
+
+                print(f'{title} :: {len(prev_files_list)} prev_files')
+
+                new_files = list(set(files_list) - set(prev_files_list))
+                deleted_files = list(set(prev_files_list) - set(files_list))
+
+                print(f'{title} :: {len(new_files)} new_files')
+                print(f'{title} :: {len(deleted_files)} deleted_files')
+
+                if new_files or deleted_files:
+                    with open(cmp, 'w',
+                              encoding="utf-8"
+                              ) as outfile:
+                        if new_files:
+                            outfile.write('new_files:\n\n')
+                            outfile.write('\n'.join(new_files) + '\n')
+
+                        if deleted_files:
+                            outfile.write('deleted_files:\n\n')
+                            outfile.write('\n'.join(deleted_files) + '\n')
+
+                    os.startfile(cmp)
+            return
 
         tree_to_file(params.src, f1, params.exclude_links, params.extra_info,
                      err_file, params.verbose)
+
         if f2 is not None:
             file1 = open(f1, 'r',
                          encoding="utf-8"
@@ -239,16 +336,20 @@ def main():
             #                   ).readlines()
         # excluded = []
 
-    if f2 is not None:
-        diffs = difflib.unified_diff(file2, file1, n=0)
+    if f2 is None:
+        return
 
-        # diffs = [diff for diff in diffs if diff[1:].startswith('D.p')]
+    diffs = difflib.unified_diff(file2, file1, n=0)
 
-        # htmlDiffer = difflib.HtmlDiff()
-        # htmldiffs = htmlDiffer.make_file(file1, file2)
+    # diffs = [diff for diff in diffs if diff[1:].startswith('D.p')]
 
-        diffs = list(diffs)
-        n_diffs = len(diffs)
+    # htmlDiffer = difflib.HtmlDiff()
+    # htmldiffs = htmlDiffer.make_file(file1, file2)
+
+    diffs = list(diffs)
+    n_diffs = len(diffs)
+
+    if params.dst.endswith('.html'):
 
         block_start_ids = [i for i, diff in enumerate(diffs) if diff.startswith('@@ ')]
         block_start_ids.insert(0, 0)
@@ -451,27 +552,27 @@ def main():
         #     '+++',
         #     '@@',
         # ]
-        """only diff lines corresponding to stats info remain"""
-        # if all(any(diff.strip().startswith(k) for k in dummy_starts) for diff in diffs):
-        #     diffs = []
+    """only diff lines corresponding to stats info remain"""
+    # if all(any(diff.strip().startswith(k) for k in dummy_starts) for diff in diffs):
+    #     diffs = []
 
-        if diffs:
-            with open(cmp, 'w',
-                      encoding="utf-8"
-                      ) as outfile:
-                # outfile.write('{}\t{}\n'.format(f2, f1))
-                for diff in diffs:
-                    # if any(k in diff for k in excluded):
-                    #     continue
+    if diffs:
+        with open(cmp, 'w',
+                  encoding="utf-8"
+                  ) as outfile:
+            # outfile.write('{}\t{}\n'.format(f2, f1))
+            for diff in diffs:
+                # if any(k in diff for k in excluded):
+                #     continue
 
-                    if diff is None:
-                        continue
+                if diff is None:
+                    continue
 
-                    outfile.write(diff + '\n')
+                outfile.write(diff + '\n')
 
-            # subprocess.call("start " + cmp, shell=True)
-            # input('press any key to show diffs')
-            os.startfile(cmp)
+        # subprocess.call("start " + cmp, shell=True)
+        # input('press any key to show diffs')
+        os.startfile(cmp)
 
 
 if __name__ == '__main__':

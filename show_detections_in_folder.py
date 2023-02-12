@@ -6,6 +6,8 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 
+from Misc import resizeAR
+
 """BGR values for different colors"""
 col_bgr = {
     'snow': (250, 250, 255),
@@ -169,11 +171,78 @@ def show_filtered_detections(img, all_detections, thresh, show_all_classes, win_
     if not show_all_classes:
         valid_detections = [k for k in valid_detections if k[4] == 1]
 
-    img_disp = np.copy(img)
+    print(f'showing {len(valid_detections)} / {len(all_detections)} detections')
 
-    draw_detections(img_disp, valid_detections, _id=None, color='black', thickness=1,
+    img_disp, resize_factor, start_row, start_col = resizeAR(img, height=int(1080 // 1.25), return_factors=1)
+
+    boxes = [k[:4] for k in valid_detections]
+
+    boxes = np.asarray(boxes, dtype=np.float32)
+    boxes *= resize_factor
+
+    mask_img = np.zeros_like(img_disp)
+
+    draw_detections(img_disp, boxes, _id=None, color='green', thickness=2,
                     is_dotted=0, transparency=0.)
+
+    draw_detections(mask_img, boxes, _id=None, color='white', thickness=-1,
+                    is_dotted=0, transparency=0.)
+
+    convex_hull_img = np.zeros_like(mask_img)
+    circular_hull_img = np.zeros_like(mask_img)
+
+    if len(mask_img.shape) == 3:
+        mask_img = mask_img[..., 0]
+
+    from skimage.morphology import convex_hull_image
+
+    mask_img_bool = mask_img.astype(bool)
+    convex_hull = convex_hull_image(mask_img_bool)
+
+    contours, hierarchy = cv2.findContours(convex_hull.astype(np.uint8), 1, 2)
+    (x, y), radius = cv2.minEnclosingCircle(contours[0])
+
+    n_convex_hull = np.count_nonzero(convex_hull)
+
+    convex_hull_img[convex_hull] = [0, 255, 0]
+    convex_hull_img[mask_img_bool] = [255, 255, 255]
+
+    cv2.circle(circular_hull_img, (int(x), int(y)), int(radius), [0, 255, 0], -1)
+    n_circular_hull = np.count_nonzero(circular_hull_img[..., 1])
+    n_circular_hull2 = int(np.pi * radius * radius)
+
+    circular_hull_img[mask_img_bool] = [255, 255, 255]
+
+    cv2.circle(img_disp, (int(x), int(y)), int(radius), [0, 255, 0], 2)
+
+    n_box_pix = np.count_nonzero(mask_img)
+    n_box_pix2 = np.count_nonzero(circular_hull_img[..., 0])
+
+    box_percent = (n_box_pix / mask_img.size) * 100
+    box_percent_hull = (n_box_pix / n_convex_hull) * 100
+    box_percent_circular_hull = (n_box_pix / n_circular_hull) * 100
+
+    print(f'n_box_pix: {n_box_pix}')
+    print(f'n_box_pix2: {n_box_pix2}')
+    print(f'n_convex_hull: {n_convex_hull}')
+    print(f'n_circular_hull: {n_circular_hull}')
+    print(f'n_circular_hull2: {n_circular_hull2}')
+
+    print(f'box_percent: {box_percent}')
+    print(f'box_percent_hull: {box_percent_hull}')
+    print(f'box_percent_circular_hull: {box_percent_circular_hull}')
+
     cv2.imshow(win_name, img_disp)
+    cv2.imshow('mask_img', mask_img)
+    cv2.imshow('convex_hull', convex_hull_img)
+    cv2.imshow('circular_hull', circular_hull_img)
+
+    cv2.imwrite('img_disp.png', img_disp)
+    cv2.imwrite('mask_img.png', mask_img)
+    cv2.imwrite('circular_hull_img.png', circular_hull_img)
+    cv2.imwrite('convex_hull_img.png', convex_hull_img)
+
+    # cv2.waitKey(0)
     return valid_detections
 
 
@@ -330,15 +399,16 @@ def main():
         show_all_classes = int(x)
         show_filtered_detections(img, all_detections, thresh, show_all_classes, win_name)
 
-    cv2.createTrackbar('threshold', win_name, int(thresh*100), 100, update_thresh)
-    cv2.createTrackbar('show_all_classes', win_name, show_all_classes, 2, update_show_all_classes)
+    # cv2.createTrackbar('threshold', win_name, int(thresh*100), 100, update_thresh)
+    # cv2.createTrackbar('show_all_classes', win_name, show_all_classes, 2, update_show_all_classes)
 
     exit_program = 0
     while not exit_program:
         if sleep > 0:
             time.sleep(sleep)
 
-        _src_files = [k for k in os.listdir(src_path) if
+        file_list = os.listdir(src_path)
+        _src_files = [k for k in file_list if
                       os.path.splitext(k.lower())[1] in img_exts]
 
         for _src_file in _src_files:
@@ -350,20 +420,31 @@ def main():
             height, width = img.shape[:2]
 
             csv_src_path = os.path.join(src_path, '{}.{}'.format(_src_file_no_ext, csv_ext))
-            df = pd.read_csv(csv_src_path)
 
-            n_detections = len(df.index)
-            all_detections = []
-            for i in range(n_detections):
-                df_bbox = df.iloc[i]
-                xmin = df_bbox.loc['x1']
-                ymin = df_bbox.loc['y1']
-                xmax = df_bbox.loc['x2']
-                ymax = df_bbox.loc['y2']
-                class_id = df_bbox.loc['class_id']
-                score = df_bbox.loc['score']
+            if csv_ext == 'roi':
+                all_lines = open(csv_src_path, "r").read().splitlines()
+                all_rois = [line.split('\t') for line in all_lines if line]
+                n_rois = len(all_rois)
+                all_detections = []
+                for i in range(n_rois):
+                    roi = all_rois[i]
+                    xmin, ymin, xmax, ymax = [float(x) for x in roi]
+                    all_detections.append([xmin, ymin, xmax, ymax, 1, 1])
+            else:
+                df = pd.read_csv(csv_src_path)
 
-                all_detections.append([xmin, ymin, xmax, ymax, class_id, score])
+                n_detections = len(df.index)
+                all_detections = []
+                for i in range(n_detections):
+                    df_bbox = df.iloc[i]
+                    xmin = df_bbox.loc['x1']
+                    ymin = df_bbox.loc['y1']
+                    xmax = df_bbox.loc['x2']
+                    ymax = df_bbox.loc['y2']
+                    class_id = df_bbox.loc['class_id']
+                    score = df_bbox.loc['score']
+
+                    all_detections.append([xmin, ymin, xmax, ymax, class_id, score])
 
             show_filtered_detections(img, all_detections, thresh, show_all_classes, win_name)
 
@@ -400,12 +481,12 @@ def main():
             # classes_text.append(class_name)
             # class_ids.append(class_id)
 
-        img_dst_path = os.path.join(read_img_path, _src_file_no_ext + time_stamp + _src_file_ext)
-        csv_dst_path = os.path.join(read_img_path, _src_file_no_ext + time_stamp + '.' + csv_ext)
-        print(f'{img_src_path} -> {img_dst_path}')
-
-        shutil.move(img_src_path, img_dst_path)
-        shutil.move(csv_src_path, csv_dst_path)
+        # img_dst_path = os.path.join(read_img_path, _src_file_no_ext + time_stamp + _src_file_ext)
+        # csv_dst_path = os.path.join(read_img_path, _src_file_no_ext + time_stamp + '.' + csv_ext)
+        # print(f'{img_src_path} -> {img_dst_path}')
+        #
+        # shutil.move(img_src_path, img_dst_path)
+        # shutil.move(csv_src_path, csv_dst_path)
 
 
 if __name__ == '__main__':
