@@ -58,7 +58,7 @@ for subfolder in subfolders:
     if exceptions:
         src_files = [f for f in src_files if not any([k in f for k in exceptions])]
 
-    src_files.sort(key=sortKey)
+    src_files.sort()
     n_files = len(src_files)
 
     assert n_files > 1, "only one file found in {}".format(subfolders_path)
