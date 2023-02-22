@@ -1796,6 +1796,7 @@ def run(args, multi_exit_program=None,
                         assert src_img is not None, f"Failed to read image: {src_img_fname}"
 
                     if trim_images:
+                        print('trimming...')
                         src_img = np.asarray(trim(Image.fromarray(src_img)))
                         # src_img = wandImage(src_img).trim(color=None, fuzz=0) ()
 
@@ -3587,11 +3588,14 @@ def run(args, multi_exit_program=None,
                 #     else:
                 #         print('Auto progression disabled')
             elif k == ord('b'):
-                borderless = 1 - borderless
-                if borderless:
-                    _print('Borderless stitching enabled')
+                if n_images > 1:
+                    borderless = 1 - borderless
+                    if borderless:
+                        _print('Borderless stitching enabled')
+                    else:
+                        _print('Borderless stitching disabled')
                 else:
-                    _print('Borderless stitching disabled')
+                    trim_images = 1 - trim_images
                 loadImage()
             elif k == ord('n'):
                 max_switches -= 1
