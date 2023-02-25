@@ -25,8 +25,6 @@ if __name__ == '__main__':
     assert file_list, "file_list must be provided"
 
     file_list_name = os.path.splitext(os.path.basename(file_list))[0]
-    if not dst_path:
-        dst_path = f'{file_list_name}.csv'
 
     if file_list:
         if os.path.isdir(file_list):
@@ -40,8 +38,7 @@ if __name__ == '__main__':
             if root_dir:
                 src_paths = [os.path.join(root_dir, name) for name in src_paths]
 
-    if root_dir:
-        dst_path = os.path.join(root_dir, dst_path)
+
 
     n_src_paths = len(src_paths)
 
@@ -72,6 +69,11 @@ if __name__ == '__main__':
 
         all_dfs.append(df)
 
+    if not dst_path:
+        dst_path = f'{file_list_name}.csv'
+    if root_dir:
+        dst_path = os.path.join(root_dir, dst_path)
+        
+    print(f'saving combined csv to {dst_path}')
     combined_df = pd.concat(all_dfs, axis=0)
-
     combined_df.to_csv(dst_path, columns=out_df_cols, index=False)
