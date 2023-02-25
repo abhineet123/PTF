@@ -9,10 +9,9 @@ import pandas as pd
 class Params:
 
     def __init__(self):
-        self.dst_path = 'combined.csv'
-        self.file_list = 'E:/mojow/mojow_rock/rock_dataset4/rockmaps/100.txt'
-        self.root_dir = 'C:/UofA/PhD/ipsc_cell_tracking/ipsc_segmentation/swin_detection/work_dirs' \
-                        '/db3_2_to_17_except_6-large_huge/db4_rockmaps/csv'
+        self.dst_path = ''
+        self.file_list = ''
+        self.root_dir = ''
 
 
 if __name__ == '__main__':
@@ -24,6 +23,10 @@ if __name__ == '__main__':
     dst_path = params.dst_path
 
     assert file_list, "file_list must be provided"
+
+    file_list_name = os.path.splitext(os.path.basename(file_list))[0]
+    if not dst_path:
+        dst_path = f'{file_list_name}.csv'
 
     if file_list:
         if os.path.isdir(file_list):
@@ -72,4 +75,3 @@ if __name__ == '__main__':
     combined_df = pd.concat(all_dfs, axis=0)
 
     combined_df.to_csv(dst_path, columns=out_df_cols, index=False)
-
