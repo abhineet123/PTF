@@ -22,7 +22,7 @@ class Params:
         self.src_label = ''
         self.src = ''
         self.dst = ''
-        self.excluded_names = []
+        self.excluded_names = ''
         self.exclude_links = 1
         self.extra_info = 1
         self.verbose = 1
@@ -273,6 +273,10 @@ def main():
             verbose = params.verbose
             files_list = []
 
+            if excluded_names:
+                assert os.path.isfile(excluded_names), f"invalid excluded_names file: {excluded_names}"
+                excluded_names = open(excluded_names, 'r').read().splitlines()
+
             pbar = tqdm(recursive_listdir(params.src, verbose, err_file, exclude_links, excluded_names), position=0, leave=True)
 
             for path in tqdm(pbar):
@@ -299,19 +303,20 @@ def main():
                 new_files = list(set(files_list) - set(prev_files_list))
                 deleted_files = list(set(prev_files_list) - set(files_list))
 
-                print(f'{title} :: {len(new_files)} new_files')
-                print(f'{title} :: {len(deleted_files)} deleted_files')
-
                 if new_files or deleted_files:
+
                     with open(cmp, 'w',
                               encoding="utf-8"
                               ) as outfile:
+                        outfile.write(f'{title} :: {len(new_files)} new_files\n')
+                        outfile.write(f'{title} :: {len(deleted_files)} deleted_files\n')
+
                         if new_files:
                             outfile.write('new_files:\n\n')
                             outfile.write('\n'.join(new_files) + '\n')
 
                         if deleted_files:
-                            outfile.write('deleted_files:\n\n')
+                            outfile.write('\n\ndeleted_files:\n\n')
                             outfile.write('\n'.join(deleted_files) + '\n')
 
                     os.startfile(cmp)

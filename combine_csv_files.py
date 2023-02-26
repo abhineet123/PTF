@@ -39,7 +39,6 @@ if __name__ == '__main__':
                 src_paths = [os.path.join(root_dir, name) for name in src_paths]
 
 
-
     n_src_paths = len(src_paths)
 
     all_dfs = []
@@ -73,7 +72,7 @@ if __name__ == '__main__':
         dst_path = f'{file_list_name}.csv'
     if root_dir:
         dst_path = os.path.join(root_dir, dst_path)
-        
+
     print(f'saving combined csv to {dst_path}')
     combined_df = pd.concat(all_dfs, axis=0)
     combined_df.to_csv(dst_path, columns=out_df_cols, index=False)
