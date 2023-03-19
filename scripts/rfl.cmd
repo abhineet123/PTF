@@ -1,2 +1,2 @@
 @echo off
-python3 "%~dp0\..\renameFilesFromList.py" %1 %2 %3 %4 %5
+python3 "%~dp0\..\renameFilesFromList.py" src_names_fname=%1 invert_list=%2 src_root_dir=%3 dst_root_dir=%4

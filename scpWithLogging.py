@@ -97,49 +97,54 @@ def run_scp(dst_path, pwd0, scp_dst, scp_path, file_to_transfer, mode, port, log
         os.system(rm_cmd)
 
 
+class Params:
+
+    def __init__(self):
+        self.cfg = ()
+        self.ahk_cmd = 'paste_with_cat_1'
+        self.auth_file = ''
+        self.dst_path = '.'
+        self.info_dir = ''
+        self.info_file = ''
+        self.info_root = ''
+        self.key_dir = ''
+        self.key_root = ''
+        self.log_file = ''
+        self.mode = 0
+        self.port = ''
+        self.scp_dst = ''
+        self.scp_name = ''
+        self.scp_path = '.'
+        self.src_info = ''
+        self.use_ahk = 1
+        self.wait_t = 10
+        self.win_title = 'The Journal 8'
+
+
 def main():
-    params = {
-        'win_title': 'The Journal 8',
-        'use_ahk': 1,
-        'mode': 0,
-        'wait_t': 10,
-        'scp_dst': '',
-        'key_root': '',
-        'key_dir': '',
-        'info_root': '',
-        'info_dir': '',
-        'info_file': '',
-        'auth_file': '',
-        'port': '',
-        'dst_path': '.',
-        'scp_path': '.',
-        'scp_name': '',
-        'src_info': '',
-        'log_file': '',
-        'ahk_cmd': 'paste_with_cat_1',
-    }
-    paramparse.process_dict(params)
+    params = Params()
+    paramparse.process(params)
 
-    win_title = params['win_title']
-    use_ahk = params['use_ahk']
-    mode = params['mode']
-    dst_path = params['dst_path']
-    scp_path = params['scp_path']
-    scp_name = params['scp_name']
-    src_info = params['src_info']
-    # port = params['port']
+    win_title = params.win_title
+    use_ahk = params.use_ahk
+    mode = params.mode
+    dst_path = params.dst_path
+    scp_path = params.scp_path
+    scp_name = params.scp_name
+    src_info = params.src_info
+    # port = params.port
 
-    auth_file = params['auth_file']
+    auth_file = params.auth_file
 
-    key_root = params['key_root']
-    key_dir = params['key_dir']
+    key_root = params.key_root
+    key_dir = params.key_dir
 
-    info_root = params['info_root']
-    info_dir = params['info_dir']
-    info_file = params['info_file']
-    log_file = params['log_file']
+    info_root = params.info_root
+    info_dir = params.info_dir
+    info_file = params.info_file
+    log_file = params.log_file
 
-    ahk_cmd = params['ahk_cmd']
+    ahk_cmd = params.ahk_cmd
 
     # script_filename = inspect.getframeinfo(inspect.currentframe()).filename
     # script_path = os.path.dirname(os.path.abspath(script_filename))
@@ -221,7 +226,7 @@ def main():
             else:
                 already_transferred = []
 
-            if k == '__all__':
+            if k == '__all__' or k == '__a__':
                 assert log_file, "log_file must be provided to transfer all files"
 
                 list_dir = os.path.dirname(log_file)
@@ -249,6 +254,16 @@ def main():
                     continue
                 files_to_transfer = open(list_fname, 'r', encoding="utf-8").read().splitlines()
                 files_to_transfer = [os.path.basename(k.strip('\"')) for k in files_to_transfer]
+                already_transferred_in_list = [k for k in files_to_transfer if k in already_transferred]
+
+                if already_transferred_in_list:
+                    already_transferred_in_list_str = '\n'.join(already_transferred_in_list)
+                    open('already_transferred_in_list.txt', 'w').write(already_transferred_in_list_str)
+
+                    print('not transferring {} already transferred files:\n{:s}'.format(
+                        len(already_transferred_in_list), already_transferred_in_list_str))
+
+                    files_to_transfer = list(set(files_to_transfer) - set(already_transferred_in_list))
             else:
                 if k in already_transferred:
                     k2 = input(f'{k} has already been transferred. Transfer again ?\n')

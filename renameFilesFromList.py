@@ -2,29 +2,22 @@ import os
 import shutil
 import sys
 
-src_names_fname = 'list.txt'
-# dst_names_fname = 'dst_list.txt'
-src_root_dir = '.'
-dst_root_dir = '.'
-invert_list = 0
+import paramparse
 
-arg_id = 1
-if len(sys.argv) > arg_id:
-    invert_list = int(sys.argv[arg_id])
-    arg_id += 1
-if len(sys.argv) > arg_id:
-    src_names_fname = sys.argv[arg_id]
-    arg_id += 1
-# if len(sys.argv) > arg_id:
-#     dst_names_fname = sys.argv[arg_id]
-#     arg_id += 1
-if len(sys.argv) > arg_id:
-    src_root_dir = sys.argv[arg_id]
-    arg_id += 1
-if len(sys.argv) > arg_id:
-    dst_root_dir = sys.argv[arg_id]
-    arg_id += 1
+class Params:
+    src_names_fname = 'list.txt'
+    # dst_names_fname = 'dst_list.txt'
+    src_root_dir = '.'
+    dst_root_dir = '.'
+    invert_list = 0
 
+params = Params()
+paramparse.process(params)
+
+src_names_fname = params.src_names_fname
+src_root_dir = params.src_root_dir
+dst_root_dir = params.dst_root_dir
+invert_list = params.invert_list
 
 # if not os.path.isfile(dst_names_fname):
 #     raise SyntaxError('File containing the source file list not found')
@@ -56,7 +49,7 @@ if n_files != len(dst_lines):
 for file_id in range(n_files):
     src_file = src_lines[file_id].strip()
     src_fname, src_ext = os.path.splitext(src_file)
-    src_path = unicode('{:s}/{:s}'.format(src_root_dir, src_file), 'utf-8-sig')
+    src_path = '{:s}/{:s}'.format(src_root_dir, src_file)
 
     if not os.path.isfile(src_path) and not os.path.isdir(src_path):
         raise SyntaxError('Original file/folder {:s} does not exist'.format(src_path))
@@ -64,7 +57,7 @@ for file_id in range(n_files):
     dst_file = dst_lines[file_id].strip()
     dst_fname, dst_ext = os.path.splitext(dst_file)
 
-    dst_path = unicode(dst_file + src_ext, 'utf-8-sig')
+    dst_path = dst_file + src_ext
 
     # print 'dst_fname: {:s}, dst_ext: {:s}'.format(dst_fname, dst_ext)
 
@@ -75,7 +68,7 @@ for file_id in range(n_files):
     # else:
     #     dst_path = '{:s}/{:s}'.format(dst_root_dir, dst_file)
 
-    # print 'Renaming {:s} to {:s}'.format(src_path, dst_file)
+    print('{:s} --> {:s}'.format(src_path, dst_file))
     shutil.move(src_path, dst_path)
 
 

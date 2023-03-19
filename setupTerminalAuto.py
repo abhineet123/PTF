@@ -207,6 +207,7 @@ def main():
                 # pyautogui.keyUp('winleft')
                 # pyautogui.keyUp('altleft')
 
+            git_app.fatty.type_keys("cd{VK_SPACE}/~")
             git_app.fatty.type_keys("tmux{VK_SPACE}new~")
 
         if not only_git:
@@ -421,6 +422,7 @@ def main():
             servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}orca2~")
 
     elif config == 2:
+        git_app.fatty.type_keys("cd /")
         servers_app.fatty.type_keys("tmux{VK_SPACE}new~")
         time.sleep(wait_t)
         servers_app.fatty.type_keys("^b^r")

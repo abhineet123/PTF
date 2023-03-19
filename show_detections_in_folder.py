@@ -242,7 +242,7 @@ def show_filtered_detections(img, all_detections, thresh, show_all_classes, win_
     cv2.imwrite('circular_hull_img.png', circular_hull_img)
     cv2.imwrite('convex_hull_img.png', convex_hull_img)
 
-    # cv2.waitKey(0)
+    cv2.waitKey(0)
     return valid_detections
 
 
@@ -426,10 +426,24 @@ def main():
                 all_rois = [line.split('\t') for line in all_lines if line]
                 n_rois = len(all_rois)
                 all_detections = []
+                all_n_pix = []
+                all_sizes = []
                 for i in range(n_rois):
                     roi = all_rois[i]
                     xmin, ymin, xmax, ymax = [float(x) for x in roi]
                     all_detections.append([xmin, ymin, xmax, ymax, 1, 1])
+
+                    w, h = xmax - xmin, ymax - ymin
+                    n_pix = w * h
+                    all_n_pix.append(n_pix)
+                    all_sizes.append((w, h))
+
+                sort_idx = np.argsort(all_n_pix)
+                all_sizes_sorted = [all_sizes[k] for k in sort_idx]
+                all_n_pix_sorted = [all_n_pix[k] for k in sort_idx]
+
+                for _size, n_pix in zip(all_sizes_sorted, all_n_pix_sorted):
+                    print(f'{_size[0]} x {_size[1]}: {n_pix}')
             else:
                 df = pd.read_csv(csv_src_path)
 
