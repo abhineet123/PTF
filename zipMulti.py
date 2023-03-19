@@ -151,9 +151,12 @@ if __name__ == '__main__':
             print('Including only files matching patterns: {}'.format(inclusions))
             switches2 = ''
             for inclusion in inclusions:
+                if inclusion.startswith('__a__'):
+                    inclusion = f'*{inclusion}*'
+
                 switches2 += ' -i "{}"'.format(zip_cmd, inclusion)
             zip_cmd = '{:s} {:s}'.format(zip_cmd, switches2)
-
+            
         if include_ext:
             print('Including only files with extensions: {}'.format(include_ext))
             switches2 = ''
