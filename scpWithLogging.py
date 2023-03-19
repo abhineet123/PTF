@@ -253,7 +253,7 @@ def main():
                     print(f'list file does not exist: {list_fname}')
                     continue
                 files_to_transfer = open(list_fname, 'r', encoding="utf-8").read().splitlines()
-                files_to_transfer = [os.path.basename(k.strip('\"')) for k in files_to_transfer]
+                files_to_transfer = [os.path.basename(k.strip('\"').strip()) for k in files_to_transfer]
                 already_transferred_in_list = [k for k in files_to_transfer if k in already_transferred]
 
                 if already_transferred_in_list:

@@ -4,38 +4,46 @@ import shutil
 
 from datetime import datetime
 
-from Misc import processArguments
+import paramparse
+
+
+class Params:
+
+    def __init__(self):
+        self.cfg = ()
+        self.add_time_stamp = 1
+        self.dir_names = []
+        self.exclude_ext = []
+        self.exclusions = []
+        self.include_ext = []
+        self.inclusions = []
+        self.move_to_home = 1
+        self.out_name = ''
+        self.postfix = ''
+        self.relative = 0
+        self.scp_dst = ''
+        self.scp_port = ''
+        self.switches = '-r'
+
 
 if __name__ == '__main__':
-    params = {
-        'dir_names': [],
-        'exclusions': [],
-        'exclude_ext': [],
-        'include_ext': [],
-        'out_name': '',
-        'postfix': '',
-        'scp_dst': '',
-        'scp_port': '',
-        'inclusion': '',
-        'switches': '-r',
-        'relative': 0,
-        'add_time_stamp': 1,
-        'move_to_home': 1,
-    }
-    processArguments(sys.argv[1:], params)
-    _dir_names = params['dir_names']
-    inclusion = params['inclusion']
-    exclusions = params['exclusions']
-    exclude_ext = params['exclude_ext']
-    include_ext = params['include_ext']
-    _out_name = params['out_name']
-    postfix = params['postfix']
-    switches = params['switches']
-    scp_dst = params['scp_dst']
-    scp_port = params['scp_port']
-    relative = params['relative']
-    add_time_stamp = params['add_time_stamp']
-    move_to_home = params['move_to_home']
+
+    params = Params()
+    paramparse.process(params)
+
+    _dir_names = params.dir_names
+    inclusions = params.inclusions
+    exclusions = params.exclusions
+    exclude_ext = params.exclude_ext
+    include_ext = params.include_ext
+    _out_name = params.out_name
+    postfix = params.postfix
+    switches = params.switches
+    scp_dst = params.scp_dst
+    scp_port = params.scp_port
+    relative = params.relative
+    add_time_stamp = params.add_time_stamp
+    move_to_home = params.move_to_home
 
     print('_dir_names: ', _dir_names)
 
@@ -139,9 +147,12 @@ if __name__ == '__main__':
                 switches2 += ' -x "{}"'.format(exclusion)
             zip_cmd = '{:s} {:s}'.format(zip_cmd, switches2)
 
-        if inclusion:
-            print('Including only files matching pattern: {}'.format(inclusion))
-            zip_cmd = '{:s} -i "{}"'.format(zip_cmd, inclusion)
+        if inclusions:
+            print('Including only files matching patterns: {}'.format(inclusions))
+            switches2 = ''
+            for inclusion in inclusions:
+                switches2 += ' -i "{}"'.format(zip_cmd, inclusion)
+            zip_cmd = '{:s} {:s}'.format(zip_cmd, switches2)
 
         if include_ext:
             print('Including only files with extensions: {}'.format(include_ext))
