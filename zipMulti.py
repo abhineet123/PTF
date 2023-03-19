@@ -155,7 +155,8 @@ if __name__ == '__main__':
                     inclusion = inclusion.replace('__a__')
                     inclusion = f'*{inclusion}*'
 
-                switches2 += ' -i "{}"'.format(zip_cmd, inclusion)
+                switches2 += ' -i "{}"'.format(switches2, inclusion)
+
             zip_cmd = '{:s} {:s}'.format(zip_cmd, switches2)
 
         if include_ext:
