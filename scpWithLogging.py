@@ -43,7 +43,7 @@ def run_scp(dst_path, pwd0, scp_dst, scp_path, file_to_transfer, mode, port, log
     #     scp_cmd = "{} {} {}:{}/".format(scp_cmd, dst_full_path, scp_dst, scp_path)
     scp_full_path = linux_path(scp_path, file_to_transfer)
 
-    invalid_chars = [' ', ')', '(', '&']
+    invalid_chars = [' ', ')', '(', '&', "'"]
     for invalid_char in invalid_chars:
         scp_full_path = scp_full_path.replace(invalid_char, f'\\{invalid_char}')
         dst_full_path = dst_full_path.replace(invalid_char, f'\\{invalid_char}')

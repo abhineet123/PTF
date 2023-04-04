@@ -153,6 +153,7 @@ if __name__ == '__main__':
             for inclusion in inclusions:
                 if inclusion.startswith('__a__'):
                     inclusion = inclusion.replace('__a__','')
+                else:
                     inclusion = f'*{inclusion}*'
 
                 switches2 += f' -i "{inclusion}"'

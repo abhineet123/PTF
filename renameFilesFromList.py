@@ -4,12 +4,14 @@ import sys
 
 import paramparse
 
+
 class Params:
     src_names_fname = 'list.txt'
     # dst_names_fname = 'dst_list.txt'
     src_root_dir = '.'
     dst_root_dir = '.'
     invert_list = 0
+
 
 params = Params()
 paramparse.process(params)
@@ -28,10 +30,14 @@ if not os.path.exists(src_root_dir):
 if not os.path.exists(dst_root_dir):
     os.mkdir(dst_root_dir)
 
-src_lines = open(src_names_fname, 'r').readlines()
+in_lines = open(src_names_fname, 'r').readlines()
 
-src_lines = [src_line.split('\t') for src_line in src_lines]
-src_lines, dst_lines = zip(*src_lines)
+if '\t' in in_lines[0]:
+    src_lines = [in_line.split('\t') for in_line in in_lines]
+    src_lines, dst_lines = zip(*src_lines)
+else:
+    dst_lines = in_lines
+    src_lines = sorted(k for k in os.listdir(src_root_dir) if k != src_names_fname)
 
 # dst_data_file = open(dst_names_fname, 'r')
 # dst_lines = dst_data_file.readlines()
@@ -43,8 +49,9 @@ if invert_list:
 n_files = len(src_lines)
 
 if n_files != len(dst_lines):
-    raise SyntaxError('No. of lines in the source file list {:d} does not match that in the destination one {:d}'.format(
-        n_files, len(dst_lines)))
+    raise AssertionError(
+        'No. of lines in the source file list {:d} does not match that in the destination one {:d}'.format(
+            n_files, len(dst_lines)))
 
 for file_id in range(n_files):
     src_file = src_lines[file_id].strip()
@@ -70,5 +77,3 @@ for file_id in range(n_files):
 
     print('{:s} --> {:s}'.format(src_path, dst_file))
     shutil.move(src_path, dst_path)
-
-
