@@ -181,6 +181,8 @@ if __name__ == '__main__':
 
     # os.system('unzip -l {}'.format(out_path))
 
+    out_size = os.path.getsize(out_path) / 1000
+
     if scp_dst:
         scp_cmd = 'scp'
         if scp_port:
@@ -198,6 +200,12 @@ if __name__ == '__main__':
         print('\nrunning: {}\n'.format(mv_cmd))
         os.system(mv_cmd)
 
+    if out_size > 1000:
+        out_size /= 1000
+        print('out_size:\n {} MB'.format(out_size))
+    else:
+        print('out_size:\n {} KB'.format(out_size))
+        
     print('out_name:\n {}'.format(out_name))
 
     # import pyperclip
