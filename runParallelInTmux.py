@@ -145,7 +145,7 @@ def main():
 
                     # pane_to_commands[pane_id].append('tmux send-keys -t {}'.format(pane_id))
                     continue
-                elif _line.startswith('# '):
+                elif _line.startswith('#'):
                     continue
                 elif _line.startswith('__'):
                     continue
