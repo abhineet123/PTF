@@ -149,6 +149,8 @@ def main():
                     continue
                 elif _line.startswith('__'):
                     continue
+                elif _line.startswith('<a'):
+                    continue
 
                 if server and pane_id and not pane_id.startswith(server):
                     # write('skipping {} with invalid server'.format(pane_id))
