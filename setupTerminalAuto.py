@@ -451,7 +451,7 @@ def main():
     print('setup time: {}'.format(end_t - start_t))
 
     if only_git:
-        k = input(f'Press enter to terminate tmux-git')
+        k = input(f'Press enter to terminate tmux-git\n')
 
         git_app.fatty.type_keys("^b")
         git_app.fatty.type_keys("{d}")
@@ -470,7 +470,31 @@ def main():
     while True:
         iter_id += 1
 
-        k = input(f'{iter_id} : Press enter to restore ssh connections')
+        k = input(f'{iter_id} : Enter Q to terminate ssh\n')
+
+        print(f'k: {k}')
+
+        # break
+
+        if k in ['q', 'Q', ord('q'), ord('Q')]:
+            print('terminating ssh...')
+            for _app_id, _app in enumerate(apps):
+                """grs"""
+                _app.fatty.type_keys("^+w")
+                """x99"""
+                _app.fatty.type_keys("^+w")
+                if enable_e5g:
+                    _app.fatty.type_keys("^+w")
+                if enable_isaic:
+                    _app.fatty.type_keys("^+w")
+                if enable_mj:
+                    _app.fatty.type_keys("^+w")
+                if enable_mj2:
+                    _app.fatty.type_keys("^+w")
+                if enable_nrw:
+                    _app.fatty.type_keys("^+w")
+
+            break
 
         mouse_x, mouse_y = win32api.GetCursorPos()
 
