@@ -115,24 +115,27 @@ if __name__ == '__main__':
             out_name = '{}_{}'.format(out_name, time_stamp)
         out_name = '{}.zip'.format(out_name)
 
-        if os.path.isdir(zip_path):
-            zip_root_path = zip_path
-            zip_file = '*'
-        elif os.path.isfile(zip_path):
-            zip_root_path = os.path.dirname(zip_path)
-            zip_file = os.path.basename(zip_path)
-        else:
-            raise IOError('zip_path is neither a folder nor a file')
+        # if os.path.isdir(zip_path):
+        #     zip_root_path = zip_path
+        #     zip_file = '*'
+        # elif os.path.isfile(zip_path):
+        #     zip_root_path = os.path.dirname(zip_path)
+        #     zip_file = os.path.basename(zip_path)
+        # else:
+        #     raise IOError('zip_path is neither a folder nor a file')
 
+        zip_root_path = os.path.dirname(zip_path)
+        zip_file = os.path.basename(zip_path)
+        
         if _out_name:
             out_name = _out_name
 
         if relative:
-            zip_cmd = 'cd "{}" && zip {} "{}" "{}"'.format(zip_root_path, switches, out_name, zip_file)
+            zip_cmd = f'cd "{zip_root_path}" && zip {switches} "{out_name}" "{zip_file}"'
             out_path = os.path.join(zip_root_path, out_name)
             exclude_root = zip_file
         else:
-            zip_cmd = 'zip {:s} "{:s}" "{:s}"'.format(switches, out_name, zip_path)
+            zip_cmd = f'zip {switches} "{out_name:s}" "{zip_path:s}"'
             out_path = out_name
             exclude_root = zip_path
 

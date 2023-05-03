@@ -181,7 +181,7 @@ def copy_to_clipboard(out_txt, print_txt=0):
     # win32clipboard.CloseClipboard()
 
 
-def process_ogg(ogg_paths, lines, category, is_path, cmd, pause_for_input):
+def process_ogg(ogg_paths, lines, category, is_path, cmd, down_to_end):
     """
 
     :param ogg_paths:
@@ -209,8 +209,8 @@ def process_ogg(ogg_paths, lines, category, is_path, cmd, pause_for_input):
 
     in_txt = '\n'.join(lines)
     print(in_txt)
-    if pause_for_input:
-        input('press any key')
+    # if pause_for_input:
+    #     input('press any key')
 
     print('is_path: {}'.format(is_path))
     print('paste: {}'.format(cmd.paste))
@@ -229,7 +229,7 @@ def process_ogg(ogg_paths, lines, category, is_path, cmd, pause_for_input):
             os.system(cmd.link)
             time.sleep(0.5)
 
-        if is_path and cmd.down and cmd.enter:
+        if down_to_end and is_path and cmd.down and cmd.enter:
             for _ in range(len(lines)):
                 os.system(cmd.down)
                 os.system(cmd.down)
@@ -270,15 +270,16 @@ def main():
 
         if is_ogg:
             process_ogg(stripped_lines, lines, params.category, is_path, params.cmd,
-                        pause_for_input=1)
+                        down_to_end=0)
             return
         elif is_folder:
+            n_stripped_lines = len(stripped_lines)
             stripped_lines.sort()
-            for folder in stripped_lines:
+            for folder_id, folder in enumerate(stripped_lines):
                 ogg_paths = ['{}'.format(os.path.join(folder, k)) for k in os.listdir(folder) if k.endswith('.ogg')]
                 ogg_lines = ['"{}"'.format(k) for k in ogg_paths]
                 process_ogg(ogg_paths, ogg_lines, params.category, is_path, params.cmd,
-                            pause_for_input=0)
+                            down_to_end=folder_id < n_stripped_lines - 1)
             return
         else:
             try:

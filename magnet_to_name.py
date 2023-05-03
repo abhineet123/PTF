@@ -8,6 +8,7 @@ except ImportError:
     from tkinter import Tk
     # import tkinter as Tk
 
+
 class Params:
 
     def __init__(self):
@@ -25,6 +26,17 @@ class Params:
         self.pairwise = 1
 
 
+def run(line):
+    line_parts = line.split("&dn=")
+    line_parts2 = line_parts[1].split("&tr=")
+
+    name_str = line_parts2[0].replace("%20", " ")
+
+    name_str2 = unquote(line_parts2[0])
+    # print(name_str)
+    return name_str2
+
+
 def main():
     _params = Params()
     paramparse.process(_params)
@@ -39,14 +51,7 @@ def main():
 
     names = []
     for line in lines:
-        line_parts = line.split("&dn=")
-        line_parts2 = line_parts[1].split("&tr=")
-
-        name_str = line_parts2[0].replace("%20", " ")
-
-        name_str2 = unquote(line_parts2[0])
-        print(name_str)
-
+        name_str2 = run(line)
         names.append(name_str2)
 
     out_txt = '\n'.join(names)

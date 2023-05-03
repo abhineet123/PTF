@@ -272,6 +272,10 @@ def main():
 
                 files_to_transfer = [k, ]
 
+            import magnet_to_name
+            files_to_transfer = [magnet_to_name.run(k) if k.startswith('magnet?') else k
+                                 for k in files_to_transfer]
+
             n_files = len(files_to_transfer)
             if n_files == 0:
                 print('no files to transfer')
