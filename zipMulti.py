@@ -126,7 +126,7 @@ if __name__ == '__main__':
 
         zip_root_path = os.path.dirname(zip_path)
         zip_file = os.path.basename(zip_path)
-        
+
         if _out_name:
             out_name = _out_name
 
