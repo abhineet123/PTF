@@ -1,64 +1,73 @@
 import cv2
 import sys
 import os
+import numpy as np
 from pprint import pprint
 from datetime import datetime
+
+import paramparse
+
 from Misc import processArguments, sortKey, resizeAR, stackImages
 from ImageSequenceIO import ImageSequenceCapture, ImageSequenceWriter
 
-params = {
-    'src_paths': [],
-    'annotations': [],
-    'root_dir': '',
-    'save_path': '',
-    'img_ext': 'jpg',
-    'show_img': 1,
-    'del_src': 0,
-    'start_id': 0,
-    'n_frames': 0,
-    'ann_size': 2,
-    # font_type,loc(x,y),size,thickness,col(r,g,b),bgr_col(r,g,b)
-    'ann_fmt': (0, 5, 45, 3, 2, 255, 255, 255, 0, 0, 0),
-    'preserve_order': 1,
-    'borderless': 0,
-    'only_height': 1,
-    'width': 0,
-    'height': 0,
-    'sep_size': 0,
-    'fps': 30,
-    'codec': 'H264',
-    'ext': 'jpg',
-    'grid_size': '',
-    'resize_factor': 1.0,
-    'recursive': 0,
-    'out_size': '',
-}
 
-processArguments(sys.argv[1:], params)
-_src_path = params['src_paths']
-annotations = params['annotations']
-root_dir = params['root_dir']
-save_path = params['save_path']
-img_ext = params['img_ext']
-show_img = params['show_img']
-del_src = params['del_src']
-start_id = params['start_id']
-n_frames = params['n_frames']
-width = params['width']
-height = params['height']
-fps = params['fps']
-codec = params['codec']
-ext = params['ext']
-grid_size = params['grid_size']
-sep_size = params['sep_size']
-only_height = params['only_height']
-borderless = params['borderless']
-preserve_order = params['preserve_order']
-ann_fmt = params['ann_fmt']
-resize_factor = params['resize_factor']
-recursive = params['recursive']
-out_size = params['out_size']
+class Params:
 
+    def __init__(self):
+        self.cfg = ()
+        self.ann_fmt = (0, 5, 45, 3, 2, 255, 255, 255, 0, 0, 0)
+        self.ann_size = 2
+        self.annotations = []
+        self.borderless = 0
+        self.codec = 'H264'
+        self.del_src = 0
+        self.ext = 'jpg'
+        self.fps = 30
+        self.grid_size = ''
+        self.height = 0
+        self.img_ext = 'jpg'
+        self.n_frames = 0
+        self.only_height = 1
+        self.out_size = ''
+        self.preserve_order = 1
+        self.recursive = 0
+        self.resize_factor = 1.0
+        self.root_dir = ''
+        self.save_path = ''
+        self.sep_size = 0
+        self.show_img = 1
+        self.src_paths = []
+        self.start_id = 0
+        self.width = 0
+
+
+params = Params()
+
+paramparse.process(params)
+
+_src_path = params.src_paths
+annotations = params.annotations
+root_dir = params.root_dir
+save_path = params.save_path
+img_ext = params.img_ext
+show_img = params.show_img
+del_src = params.del_src
+start_id = params.start_id
+n_frames = params.n_frames
+width = params.width
+height = params.height
+fps = params.fps
+codec = params.codec
+ext = params.ext
+grid_size = params.grid_size
+sep_size = params.sep_size
+only_height = params.only_height
+borderless = params.borderless
+preserve_order = params.preserve_order
+ann_fmt = params.ann_fmt
+resize_factor = params.resize_factor
+recursive = params.recursive
+out_size = params.out_size
 
 vid_exts = ['mkv', 'mp4', 'avi', 'mjpg', 'wmv']
 image_exts = ['jpg', 'bmp', 'png', 'tif']
@@ -104,7 +113,6 @@ else:
         raise IOError('Invalid grid_size: {}'.format(grid_size))
     print(f'using grid size: {grid_size[0]} x {grid_size[1]}')
 
-
 if out_size:
     out_size = [int(x) for x in out_size.split('x')]
     assert len(out_size) == 2, f'Invalid out_size: {out_size}'
@@ -134,7 +142,6 @@ for src_file in src_files:
     if not cap.open(src_file):
         raise IOError('The video file ' + src_file + ' could not be opened')
 
-
     cv_prop = cv2.CAP_PROP_FRAME_COUNT
     h_prop = cv2.CAP_PROP_FRAME_HEIGHT
     w_prop = cv2.CAP_PROP_FRAME_WIDTH
@@ -146,6 +153,8 @@ for src_file in src_files:
     cap_list.append(cap)
     n_frames_list.append(total_frames)
     size_list.append((_width, _height))
+
+n_sources = len(src_files)
 
 frame_id = start_id
 pause_after_frame = 0
@@ -184,6 +193,7 @@ if show_img == 2:
     print('Running in visualization only mode')
 else:
     vis_only = False
+prev_images = [None, ] * n_sources
 
 while True:
 
@@ -193,12 +203,18 @@ while True:
     for cap_id, cap in enumerate(cap_list):
         ret, image = cap.read()
         if not ret:
-            print('\nFrame {:d} could not be read'.format(frame_id + 1))
-            continue
-        if out_size:
-            image = resizeAR(image, out_size[0], out_size[1])
+            # print('\nFrame {:d} could not be read'.format(frame_id + 1))
+            assert prev_images[cap_id] is not None, f"source {src_files[cap_id]} has no valid frames"
+
+            image = np.zeros_like(prev_images[cap_id])
+        else:
+            if out_size:
+                image = resizeAR(image, out_size[0], out_size[1])
 
         images.append(image)
+
+        prev_images[cap_id] = image
+
         valid_caps.append(cap)
         if annotations:
             valid_annotations.append(annotations[cap_id])
