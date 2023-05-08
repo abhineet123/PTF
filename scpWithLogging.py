@@ -56,7 +56,7 @@ def run_scp(dst_path, pwd0, scp_dst, scp_path, file_to_transfer, mode, port, log
     elif mode == 1 or mode == -2:
         scp_cmd = f'{scp_cmd} "{dst_full_path}" "{scp_dst}:{scp_full_path}"'
 
-    print('Running {}'.format(scp_cmd))
+    # print('Running {}'.format(scp_cmd))
     os.system(scp_cmd)
 
     dst_path_full = linux_path(dst_path, file_to_transfer)
@@ -226,7 +226,7 @@ def main():
             else:
                 already_transferred = []
 
-            if k == '__all__' or k == '__a__':
+            if k in ['__all__','__a__']:
                 assert log_file, "log_file must be provided to transfer all files"
 
                 list_dir = os.path.dirname(log_file)
@@ -237,7 +237,7 @@ def main():
                 list_path = os.path.join(list_dir, list_fname)
 
                 ls_cmd = f'ssh {scp_dst} ls {scp_path} > {list_fname}'
-                print(f'running: {ls_cmd}')
+                # print(f'running: {ls_cmd}')
                 os.system(ls_cmd)
 
                 shutil.move(list_fname, list_path)

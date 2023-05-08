@@ -15,6 +15,7 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
                        second_from_top, monitors, vwm_win_name, dup_win_names,
                        monitor_id, dup_monitor_ids, duplicate_window,
                        only__maximized, frg_win_handles, frg_monitor_ids,
+                       monitor_scale,
                        # global_prev_active_handle,
                        # global_prev_active_name,
                        other_vars=None
@@ -37,8 +38,8 @@ def second_from_top_fn(active_monitor_id, active_win_handle, exit_program,
 
     centroids = []
     for curr_id, monitor in enumerate(monitors):
-        _centroid_x = (monitor[0] + monitor[0] + 1920) / 2.0
-        _centroid_y = (monitor[1] + monitor[1] + 1080) / 2.0
+        _centroid_x = (int(monitor[0] / monitor_scale) + int(monitor[0] / monitor_scale) + 1920) / 2.0
+        _centroid_y = (int(monitor[1] / monitor_scale) + int(monitor[1] / monitor_scale) + 1080) / 2.0
 
         centroids.append((_centroid_x, _centroid_y))
 

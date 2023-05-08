@@ -548,13 +548,14 @@ def run(args, multi_exit_program=None,
                             ctypes.byref(ext_rect),
                             ctypes.sizeof(ext_rect)
                         )
-                        # border = [0, 0, 0, 0]
 
                         border = [ext_rect.left - rect[0], ext_rect.top - rect[1],
                                   rect[2] - ext_rect.right, rect[3] - ext_rect.bottom]
 
                         rect = [rect[0] + border[0], rect[1] + border[1],
                                 rect[2] - border[2], rect[3] - border[3]]
+
+                        # border = [0, 0, 0, 0]
 
                         win_border.append(border)
 
@@ -614,6 +615,7 @@ def run(args, multi_exit_program=None,
             frg_target_win_handle = frg_win_handles[frg_win_id]
 
             _print('Using window: {} at {} as foreground'.format(frg_target_title, frg_target_position))
+            _print('monitor_scale: {}'.format(monitor_scale))
 
             monitor_id = get_monitor_id(frg_target_position[0], frg_target_position[1])
 
@@ -1512,7 +1514,9 @@ def run(args, multi_exit_program=None,
                     #                     width, height, _win_name)
 
             if frg_win_titles:
-                cv2.moveWindow(_win_name, frg_positions[frg_win_id][0], frg_positions[frg_win_id][1])
+                cv2.moveWindow(_win_name,
+                               int(frg_positions[frg_win_id][0] / monitor_scale),
+                               int(frg_positions[frg_win_id][1] / monitor_scale))
             else:
                 cv2.moveWindow(_win_name,
                                int((win_offset_x + monitors[monitor_id][0]) / monitor_scale),
@@ -1531,7 +1535,9 @@ def run(args, multi_exit_program=None,
                 winUtils.hideBorder2(_win_name, on_top)
                 # winUtils.loseFocus(_win_name)
             if frg_win_titles:
-                cv2.moveWindow(_win_name, frg_positions[frg_win_id][0], frg_positions[frg_win_id][1])
+                cv2.moveWindow(_win_name,
+                               int(frg_positions[frg_win_id][0] / monitor_scale),
+                               int(frg_positions[frg_win_id][1] / monitor_scale))
             else:
                 if widescreen_mode:
                     cv2.moveWindow(_win_name,
@@ -2954,7 +2960,9 @@ def run(args, multi_exit_program=None,
     def moveWindow(_monitor_id, _win_name, _reversed_pos):
         nonlocal frg_positions
         if frg_win_titles:
-            cv2.moveWindow(_win_name, frg_positions[frg_win_id][0] - 1, frg_positions[frg_win_id][1] - 1)
+            cv2.moveWindow(_win_name,
+                           int(frg_positions[frg_win_id][0] / monitor_scale - 1),
+                           int(frg_positions[frg_win_id][1] / monitor_scale - 1))
             return
 
         if isinstance(_reversed_pos, int):
@@ -2984,7 +2992,9 @@ def run(args, multi_exit_program=None,
         elif _reversed_pos[0] == 2:
             _x_offset = win_offset_x + int(monitors[_curr_monitor][0] + width - dst_img.shape[1])
 
-        cv2.moveWindow(_win_name, _x_offset, _y_offset)
+        cv2.moveWindow(_win_name,
+                       int(_x_offset / monitor_scale),
+                       int(_y_offset / monitor_scale))
 
     img_id[0] += n_images - 1
     loadImage(set_grid_size=set_grid_size)
@@ -3135,6 +3145,7 @@ def run(args, multi_exit_program=None,
                                                second_from_top, monitors, win_name,
                                                dup_win_names, monitor_id, dup_monitor_ids,
                                                duplicate_window, only_maximized, frg_win_handles, frg_monitor_ids,
+                                               monitor_scale,
                                                # sft_prev_active_win_handle,
                                                # sft_other_vars
                                                ))
@@ -3206,6 +3217,8 @@ def run(args, multi_exit_program=None,
         except cv2.error as e:
             _print('Resizing error: {}'.format(e))
             temp_height, temp_width, _ = temp.shape
+            _print('height: ', height)
+            _print('width: ', width)
             _print('temp_height: ', temp_height)
             _print('temp_width: ', temp_width)
             if temp_height:
@@ -3213,6 +3226,7 @@ def run(args, multi_exit_program=None,
                 _print('temp_aspect_ratio: ', temp_aspect_ratio)
             _print('_col_offset: ', _col_offset)
             _print('_row_offset: ', _row_offset)
+            exit()
 
         # if mode == 0 and not fullscreen:
         if not fullscreen:
@@ -3280,7 +3294,8 @@ def run(args, multi_exit_program=None,
                 # print('frg_reversed_pos: {}'.format(frg_reversed_pos))
                 # print('reversed_pos: {}'.format(reversed_pos))
                 __w, __h = x2 - x1, y2 - y1
-                dst_img = resizeAR(dst_img, __w, __h, placement_type=reversed_pos)
+                dst_img = resizeAR(dst_img, int(__w  / monitor_scale), int(__h / monitor_scale),
+                                   placement_type=reversed_pos)
                 # print('__w: ', __w)
                 # print('__h: ', __h)
 
@@ -3290,6 +3305,7 @@ def run(args, multi_exit_program=None,
                 first_img = False
 
             moveWindow(monitor_id, win_name, reversed_pos)
+
             # if mode == 0:
             #     _curr_monitor = monitor_id
             # elif mode == 1:
@@ -3679,8 +3695,9 @@ def run(args, multi_exit_program=None,
                     if fullscreen or mode == 1:
                         loadImage(0)
                     elif not reversed_pos:
-                        cv2.moveWindow(win_name, win_offset_x + monitors[monitor_id][0],
-                                       win_offset_y + monitors[monitor_id][1])
+                        cv2.moveWindow(win_name,
+                                       int((win_offset_x + monitors[monitor_id][0]) / monitor_scale),
+                                       int((win_offset_y + monitors[monitor_id][1]) / monitor_scale))
                 elif active_win_name in dup_win_names:
                     _i = dup_win_names.index(active_win_name)
                     _monitor_id2 = dup_monitor_ids[_i]
@@ -3692,8 +3709,9 @@ def run(args, multi_exit_program=None,
                     if fullscreen or mode == 1:
                         loadImage(0)
                     elif not _dup_reversed_pos:
-                        cv2.moveWindow(active_win_name, win_offset_x + monitors[_monitor_id2][0],
-                                       win_offset_y + monitors[_monitor_id2][1])
+                        cv2.moveWindow(active_win_name,
+                                       int((win_offset_x + monitors[_monitor_id2][0]) / monitor_scale),
+                                       int((win_offset_y + monitors[_monitor_id2][1]) / monitor_scale))
             elif k == ord('p'):
                 try:
                     active_win_name = win32gui.GetWindowText(win32gui.GetForegroundWindow())
@@ -3706,8 +3724,10 @@ def run(args, multi_exit_program=None,
                     if fullscreen or mode == 1:
                         loadImage(0)
                     elif not reversed_pos:
-                        cv2.moveWindow(active_win_name, win_offset_x + monitors[monitor_id][0],
-                                       win_offset_y + monitors[monitor_id][1])
+                        cv2.moveWindow(win_name,
+                                       int((win_offset_x + monitors[monitor_id][0]) / monitor_scale),
+                                       int((win_offset_y + monitors[monitor_id][1]) / monitor_scale))
+
                 elif active_win_name in dup_win_names:
                     _i = dup_win_names.index(active_win_name)
                     _monitor_id2 = dup_monitor_ids[_i]
@@ -3719,8 +3739,9 @@ def run(args, multi_exit_program=None,
                     if fullscreen or mode == 1:
                         loadImage(0)
                     elif not _dup_reversed_pos:
-                        cv2.moveWindow(active_win_name, win_offset_x + monitors[_monitor_id2][0],
-                                       win_offset_y + monitors[_monitor_id2][1])
+                        cv2.moveWindow(active_win_name,
+                                       int((win_offset_x + monitors[_monitor_id2][0]) / monitor_scale),
+                                       int((win_offset_y + monitors[_monitor_id2][1]) / monitor_scale))
 
             elif k == ord('B'):
                 # winUtils.setBehindTopMost(win_name, prev_active_win_name)

@@ -95,7 +95,7 @@ def main():
                 print(f"multiple files found in {subfolder}: {src_files}")
                 continue
             file_ext = os.path.splitext(src_files[0])[1]
-            dst_files = [f'{subfolder}.{file_ext}', ]
+            dst_files = [f'{subfolder}{file_ext}', ]
         else:
             dst_files = [f'{subfolder}_{f}' for f in src_files]
 
