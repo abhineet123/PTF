@@ -110,6 +110,7 @@ class Params:
         self.key_dir = ''
         self.key_root = ''
         self.log_file = ''
+        self.empty_as_all = 0
         self.mode = 0
         self.port = ''
         self.scp_dst = ''
@@ -145,6 +146,7 @@ def main():
     log_file = params.log_file
 
     ahk_cmd = params.ahk_cmd
+    empty_as_all = params.empty_as_all
 
     # script_filename = inspect.getframeinfo(inspect.currentframe()).filename
     # script_path = os.path.dirname(os.path.abspath(script_filename))
@@ -214,7 +216,10 @@ def main():
         k = input('\nEnter {}\n'.format(data_type))
 
         if not k:
-            continue
+            if empty_as_all:
+                k = '__a__'
+            else:
+                continue
 
         x, y = win32api.GetCursorPos()
         # EnumWindows(EnumWindowsProc(foreach_window), 0)

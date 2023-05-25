@@ -23,7 +23,8 @@ class Params:
         self.relative = 0
         self.scp_dst = ''
         self.scp_port = ''
-        self.switches = '-r'
+        self.switches = ''
+        self.recursive = 1
 
 
 if __name__ == '__main__':
@@ -44,6 +45,7 @@ if __name__ == '__main__':
     relative = params.relative
     add_time_stamp = params.add_time_stamp
     move_to_home = params.move_to_home
+    recursive = params.recursive
 
     print('_dir_names: ', _dir_names)
 
@@ -130,6 +132,9 @@ if __name__ == '__main__':
         if _out_name:
             out_name = _out_name
 
+        if recursive:
+            switches += ' -r'
+
         if relative:
             zip_cmd = f'cd "{zip_root_path}" && zip {switches} "{out_name}" "{zip_file}"'
             out_path = os.path.join(zip_root_path, out_name)
@@ -208,7 +213,7 @@ if __name__ == '__main__':
         print('out_size:\n {} MB'.format(out_size))
     else:
         print('out_size:\n {} KB'.format(out_size))
-        
+
     print('out_name:\n {}'.format(out_name))
 
     # import pyperclip

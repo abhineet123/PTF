@@ -45,6 +45,96 @@ import os
 import struct
 
 
+class Params:
+    def __init__(self):
+        # self.cfg_root = 'cfg'
+        self.cfg = ('',)
+        self.alpha = 1.0
+        self.auto_progress = 0
+        self.auto_progress_video = 0
+        self.borderless = 1
+        self.bottom_border = 0
+        self.check_images = 0
+        self.resizable = 0
+        self.custom_grid_size = ''
+        self.double_click_interval = 0.1
+        self.dup_monitor_ids = []
+        self.dup_reversed_pos = []
+        self.duplicate_window = 0
+        self.enable_hotkeys = 0
+        self.fps = 40
+        self.frg_monitor_ids = []
+        self.frg_win_titles = []
+        self.fullscreen = 0
+        self.hide_border = 1
+        self.height = 0
+        self.images_as_video = 0
+        self.keep_borders = 0
+        self.lazy_video_load = 1
+        self.log_color = ''
+        self.max_buffer_ram = 1.6e10
+        self.max_switches = 1
+        self.min_height_ratio = 0.4
+        self.mode = 0
+        self.top_offset = 0
+        self.bottom_offset = 0
+        self.monitor_id = -1
+        self.multi_mode = 0
+        self.n_images = 1
+        self.n_wallpapers = 1000
+        self.on_top = 1
+        self.only_maximized = 1
+        self.other_win_name = ''
+        self.parallel_read = 4
+        self.preserve_order = 1
+        self.quality = 3
+        self.random_mode = 0
+        self.recursive = 1
+        self.resize = 0
+        self.reverse_video = 0
+        self.reversed_pos = 1
+        self.second_from_top = 0
+        self.set_wallpaper = 0
+        self.show_img = 0
+        self.show_window = 1
+        self.smooth_blending = 0
+        self.save_magnified = 0
+        self.auto_aspect_ratio = 0
+        self.auto_min_aspect_ratio = 0.45
+        self.min_aspect_ratio = 0
+        self.max_aspect_ratio = 1.5
+        self.magnified_height_ratio = 0
+        self.max_magnified_height_ratio = 3
+        self.speed = 0.5
+        self.src_dirs = ''
+        self.exclude_src_dirs = ''
+        self.src_path = '.'
+        self.src_root_dir = '.'
+        self.tall_position = 0
+        self.top_border = 0
+        self.transition_interval = 5
+        self.contrast_factor = 1.
+        self.trim_images = 1
+        self.min_size = 0
+        self.video_mode = 0
+        self.wallpaper_dir = ''
+        self.wallpaper_mode = 0
+        self.widescreen_mode = 0
+        # self.blended_border = 0
+        self.width = 0
+        self.win_name = ''
+        self.id_probs = ''
+        self.target_aspect_ratio = 0
+        self.win_offset_x = 0
+        self.win_offset_y = 0
+        self.monitor_scale = 1.25
+        self.write_filenames = 0
+        self.log_file = 'vwm.log'
+        self.sort_log_file = 'vwm_sort.log'
+        self.del_log_file = 'vwm_sort.log'
+
+
+
 class UnknownImageFormat(Exception):
     pass
 
@@ -157,95 +247,6 @@ def hideBorder(_win_name, on_top):
 # except ImportError as e:
 #     print('Hotkeys cannot be registered: {}'.format(e))
 #     hotkeys_available = 0
-
-class Params:
-    def __init__(self):
-        # self.cfg_root = 'cfg'
-        self.cfg = ('',)
-        self.alpha = 1.0
-        self.auto_progress = 0
-        self.auto_progress_video = 0
-        self.borderless = 1
-        self.bottom_border = 0
-        self.check_images = 0
-        self.resizable = 0
-        self.custom_grid_size = ''
-        self.double_click_interval = 0.1
-        self.dup_monitor_ids = []
-        self.dup_reversed_pos = []
-        self.duplicate_window = 0
-        self.enable_hotkeys = 0
-        self.fps = 40
-        self.frg_monitor_ids = []
-        self.frg_win_titles = []
-        self.fullscreen = 0
-        self.hide_border = 1
-        self.height = 0
-        self.images_as_video = 0
-        self.keep_borders = 0
-        self.lazy_video_load = 1
-        self.log_color = ''
-        self.max_buffer_ram = 1.6e10
-        self.max_switches = 1
-        self.min_height_ratio = 0.4
-        self.mode = 0
-        self.top_offset = 0
-        self.bottom_offset = 0
-        self.monitor_id = -1
-        self.multi_mode = 0
-        self.n_images = 1
-        self.n_wallpapers = 1000
-        self.on_top = 1
-        self.only_maximized = 1
-        self.other_win_name = ''
-        self.parallel_read = 4
-        self.preserve_order = 1
-        self.quality = 3
-        self.random_mode = 0
-        self.recursive = 1
-        self.resize = 0
-        self.reverse_video = 0
-        self.reversed_pos = 1
-        self.second_from_top = 0
-        self.set_wallpaper = 0
-        self.show_img = 0
-        self.show_window = 1
-        self.smooth_blending = 0
-        self.save_magnified = 0
-        self.auto_aspect_ratio = 0
-        self.auto_min_aspect_ratio = 0.45
-        self.min_aspect_ratio = 0
-        self.max_aspect_ratio = 1.5
-        self.magnified_height_ratio = 0
-        self.max_magnified_height_ratio = 3
-        self.speed = 0.5
-        self.src_dirs = ''
-        self.exclude_src_dirs = ''
-        self.src_path = '.'
-        self.src_root_dir = '.'
-        self.tall_position = 0
-        self.top_border = 0
-        self.transition_interval = 5
-        self.contrast_factor = 1.
-        self.trim_images = 1
-        self.min_size = 0
-        self.video_mode = 0
-        self.wallpaper_dir = ''
-        self.wallpaper_mode = 0
-        self.widescreen_mode = 0
-        # self.blended_border = 0
-        self.width = 0
-        self.win_name = ''
-        self.id_probs = ''
-        self.target_aspect_ratio = 0
-        self.win_offset_x = 0
-        self.win_offset_y = 0
-        self.monitor_scale = 1.25
-        self.write_filenames = 0
-        self.log_file = 'vwm.log'
-        self.sort_log_file = 'vwm_sort.log'
-        self.del_log_file = 'vwm_sort.log'
-
 
 def run(args, multi_exit_program=None,
         # sft_vars=None
@@ -1802,7 +1803,7 @@ def run(args, multi_exit_program=None,
                         assert src_img is not None, f"Failed to read image: {src_img_fname}"
 
                     if trim_images:
-                        print('trimming...')
+                        # print('trimming...')
                         src_img = np.asarray(trim(Image.fromarray(src_img)))
                         # src_img = wandImage(src_img).trim(color=None, fuzz=0) ()
 

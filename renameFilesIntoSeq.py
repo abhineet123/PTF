@@ -19,7 +19,7 @@ def has_hidden_attribute2(filepath):
 def has_hidden_attribute(filepath):
     # print('filepath: {}'.format(filepath))
     try:
-        attrs = ctypes.windll.kernel32.GetFileAttributesW(unicode(filepath))
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(filepath))
         assert attrs != -1
         result = bool(attrs & 2)
     except (UnicodeDecodeError,):
