@@ -1,28 +1,38 @@
-import sys
 import os
-
-in_fname = 'filtered.txt'
-out_fname = 'filtered_unique.txt'
-retain_filtered = 1
-arg_id = 1
-if len(sys.argv) > arg_id:
-    in_fname = sys.argv[arg_id]
-    arg_id += 1
-if len(sys.argv) > arg_id:
-    out_fname = sys.argv[arg_id]
-    arg_id += 1
+import paramparse
 
 
-if not os.path.isfile(in_fname):
-    print 'Input file {:s} does not exist'.format(in_fname)
-    exit(0)
+class Params:
+    def __init__(self):
+        self.in_fname = ''
+        self.out_fname = ''
+        self.check_exist = 0
 
-print('Removing duplicate lines in {:s} to {:s}'.format(in_fname, out_fname))
-lines_seen = set() # holds lines already seen
-outfile = open(out_fname, "w")
-for line in open(in_fname, "r"):
-    if line not in lines_seen: # not a duplicate
-        outfile.write(line)
-        lines_seen.add(line)
-print('Found {} unique lines'.format(len(lines_seen)))
-outfile.close()
+
+def main():
+    params = Params()
+    paramparse.process(params, verbose=1)
+
+    out_fname = params.out_fname
+
+    assert params.in_fname, "in_fname must be provided"
+    assert os.path.isfile(params.in_fname), f'Input file {params.in_fname:s} does not exist'
+
+    if not out_fname:
+        out_fname = f'{params.in_fname}.unique'
+
+    print(f'Removing duplicate lines in {params.in_fname:s} to {out_fname:s}')
+
+    lines = open(params.in_fname, "r").readlines()
+
+    print(f'Found {len(lines)} unique lines')
+
+    if params.check_exist:
+        lines = [line for line in lines if os.path.exists(line.strip())]
+    print(f'Found {len(lines)} unique and existent lines')
+
+    open(out_fname, "w").write(''.join(lines))
+
+
+if __name__ == '__main__':
+    main()

@@ -3,6 +3,7 @@ import cv2
 import sys
 import time
 import imageio
+import paramparse
 import numpy as np
 # from tqdm import tqdm
 from pprint import pformat
@@ -10,6 +11,7 @@ from pykalman import KalmanFilter
 from PIL import Image
 
 from Misc import sortKey, processArguments, drawBox, trim
+
 
 # def processArguments(args, params):
 #     # arguments specified as 'arg_name=argv_val'
@@ -28,56 +30,60 @@ from Misc import sortKey, processArguments, drawBox, trim
 #             return
 
 
-params = {
-    'db_root_dir': '',
-    'actor': '',
-    'seq_name': '.',
-    'vid_fmt': '',
-    'dst_dir': '',
-    'show_img': 0,
-    'n_frames': 0,
-    'evenly_spaced': 0,
-    'crop': 0,
-    'reverse': 0,
-    'roi': [],
-    'resize_factor': 1.0,
-    'start_id': 0,
-    'out_fname_templ': 'image%06d',
-    'codec': 'H264',
-    'fps': 30,
-    'ext': '.jpg',
-    'mode': 0,
-    'recursive': 1,
-    'tracker_type': 0,
-    'filtering': 0,
-    'trim_images': 0,
-}
+class Params:
+    def __init__(self):
+        self.cfg = ()
+        self.actor = ''
+        self.codec = 'H264'
+        self.crop = 0
+        self.db_root_dir = ''
+        self.dst_dir = ''
+        self.evenly_spaced = 0
+        self.ext = '.jpg'
+        self.filtering = 0
+        self.fps = 30
+        self.mode = 0
+        self.n_frames = 0
+        self.out_fname_templ = 'image%06d'
+        self.recursive = 1
+        self.resize_factor = 1.0
+        self.reverse = 0
+        self.roi = []
+        self.seq_name = '.'
+        self.show_img = 0
+        self.start_id = 0
+        self.tracker_type = 0
+        self.trim_images = 0
+        self.vid_fmt = ''
+
 
 if __name__ == '__main__':
-    processArguments(sys.argv[1:], params)
+    params = Params()
 
-    db_root_dir = params['db_root_dir']
-    actor = params['actor']
-    _seq_name = params['seq_name']
-    show_img = params['show_img']
-    vid_fmt = params['vid_fmt']
-    n_frames = params['n_frames']
-    evenly_spaced = params['evenly_spaced']
-    roi = params['roi']
-    resize_factor = params['resize_factor']
-    dst_dir = params['dst_dir']
-    start_id = params['start_id']
-    out_fname_templ = params['out_fname_templ']
-    crop = params['crop']
-    reverse = params['reverse']
-    ext = params['ext']
-    mode = params['mode']
-    recursive = params['recursive']
-    tracker_type = params['tracker_type']
-    filtering = params['filtering']
-    trim_images = params['trim_images']
-    codec = params['codec']
-    fps = params['fps']
+    paramparse.process(params)
+
+    db_root_dir = params.db_root_dir
+    actor = params.actor
+    _seq_name = params.seq_name
+    show_img = params.show_img
+    vid_fmt = params.vid_fmt
+    n_frames = params.n_frames
+    evenly_spaced = params.evenly_spaced
+    roi = params.roi
+    resize_factor = params.resize_factor
+    dst_dir = params.dst_dir
+    start_id = params.start_id
+    out_fname_templ = params.out_fname_templ
+    crop = params.crop
+    reverse = params.reverse
+    ext = params.ext
+    mode = params.mode
+    recursive = params.recursive
+    tracker_type = params.tracker_type
+    filtering = params.filtering
+    trim_images = params.trim_images
+    codec = params.codec
+    fps = params.fps
 
     vid_exts = ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv', '.gif', '.webm']
     img_exts = ['.jpg', '.jpeg', '.png', '.bmp', '.tif']
@@ -228,6 +234,7 @@ if __name__ == '__main__':
                 print('Using evenly spaced sampling with frame_gap: {} to sample {} frames'.format(
                     frame_gap, n_frames
                 ))
+            print(f'saving only {n_frames} / {total_frames} frames')
 
         frame_id = -1
         all_frame_id = 0
@@ -428,6 +435,7 @@ if __name__ == '__main__':
                     break
                 elif _k == 32:
                     _pause = 1 - _pause
+
             if n_frames > 0 and (frame_id - start_id) >= n_frames:
                 break
 

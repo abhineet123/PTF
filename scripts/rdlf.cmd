@@ -1,2 +1,1 @@
-@echo off
-python3 "%~dp0\..\removeDuplicateLinesInFile.py" %1 %2
+python3 "%~dp0\..\removeDuplicateLinesInFile.py" in_fname=%1

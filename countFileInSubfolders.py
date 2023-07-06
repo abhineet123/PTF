@@ -50,6 +50,7 @@ try:
 except:
     subfolders.sort()
 
+seq_info_file = open('seq_info.txt', 'w')
 counts_file = open('file_counts.txt', 'w')
 
 if sort_by_count:
@@ -92,9 +93,13 @@ for i, _idx in enumerate(sort_idx):
     else:
         n_non_empty += 1
         files += [os.path.join(subfolders_path, f) for f in src_files]
-        text = '{}\t{}\t{}\t{}'.format(n_non_empty, subfolders_path, n_files, total_files)
-        print(text)
-        counts_file.write(text + '\n')
+        counts_text = f'{n_non_empty}\t{subfolders_path}\t{n_files}\t{total_files}'
+        print(counts_text)
+        counts_file.write(counts_text + '\n')
+
+        subfolders_name = os.path.basename(subfolders_path)
+        seq_info_text = f"{i}: ('{subfolders_name}', {n_files}),"
+        seq_info_file.write(seq_info_text + '\n')
 
 print('total_files: {}'.format(total_files))
 if empty_folders:
@@ -107,6 +112,7 @@ if empty_folders:
         print('empty_folders:\n{}'.format('\n'.join(empty_folders)))
 
 counts_file.close()
+seq_info_file.close()
 
 if shuffle_files:
     shuffle(files)
