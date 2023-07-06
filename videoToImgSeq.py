@@ -10,7 +10,7 @@ from pprint import pformat
 from pykalman import KalmanFilter
 from PIL import Image
 
-from Misc import sortKey, processArguments, drawBox, trim
+from Misc import sortKey, drawBox, trim
 
 
 # def processArguments(args, params):
@@ -141,7 +141,9 @@ if __name__ == '__main__':
     if reverse:
         print('Reversing videos')
 
-    for seq_name in seq_names:
+    n_seq_names = len(seq_names)
+
+    for seq_name_id, seq_name in enumerate(seq_names):
         src_path = seq_name
         if vid_fmt:
             src_path = src_path + '.' + vid_fmt
@@ -154,10 +156,6 @@ if __name__ == '__main__':
 
         if mode == 0 and not os.path.isfile(src_path):
             raise IOError('Invalid video file: {}'.format(src_path))
-
-        print('seq_name: ', seq_name)
-        print('start_id: ', start_id)
-        print('Reading video file: {:s}'.format(src_path))
 
         if not dst_dir:
             out_seq_name = os.path.splitext(os.path.basename(src_path))[0]
@@ -248,6 +246,15 @@ if __name__ == '__main__':
         else:
             _pause = 0
         measurements = []
+
+        print(f'seq {seq_name_id+1} / {n_seq_names}: {seq_name}')
+        print(f'start_id: {start_id}')
+        print(f'n_frames: {n_frames}')
+        print(f'total_frames: {total_frames}')
+        print(f'start_id: {start_id}')
+        print(f'Reading video file: {src_path:s}')
+
+
         while True:
 
             if _src_files:
