@@ -457,6 +457,7 @@ if __name__ == '__main__':
         sys.stdout.write('\n\n')
         sys.stdout.flush()
         dst_dir = ''
-        n_frames = 0
+        n_frames = params.n_frames
+
         if write_to_video:
             video_out.release()
