@@ -90,15 +90,17 @@ for i, _idx in enumerate(sort_idx):
 
     if n_files == 0:
         empty_folders.append(subfolders_path)
+        print(f'empty_folder: {subfolders_path}')
     else:
         n_non_empty += 1
+
         files += [os.path.join(subfolders_path, f) for f in src_files]
         counts_text = f'{n_non_empty}\t{subfolders_path}\t{n_files}\t{total_files}'
         print(counts_text)
         counts_file.write(counts_text + '\n')
 
         subfolders_name = os.path.basename(subfolders_path)
-        seq_info_text = f"{i}: ('{subfolders_name}', {n_files}),"
+        seq_info_text = f"{n_non_empty - 1}: ('{subfolders_name}', {n_files}),"
         seq_info_file.write(seq_info_text + '\n')
 
 print('total_files: {}'.format(total_files))
