@@ -225,13 +225,12 @@ if __name__ == '__main__':
         if n_frames <= 0:
             n_frames = total_frames
         else:
-            if total_frames > 0 and n_frames > total_frames:
-                raise AssertionError('Invalid n_frames {} for video with {} frames'.format(n_frames, total_frames))
+            if n_frames > total_frames > 0:
+                raise AssertionError(f'Invalid n_frames {n_frames} for video with {total_frames} frames')
+
             if evenly_spaced:
                 frame_gap = total_frames / n_frames
-                print('Using evenly spaced sampling with frame_gap: {} to sample {} frames'.format(
-                    frame_gap, n_frames
-                ))
+                print(f'Using evenly spaced sampling with frame_gap: {frame_gap} to sample {n_frames} frames')
             print(f'saving only {n_frames} / {total_frames} frames')
 
         frame_id = -1
@@ -254,9 +253,7 @@ if __name__ == '__main__':
         print(f'start_id: {start_id}')
         print(f'Reading video file: {src_path:s}')
 
-
         while True:
-
             if _src_files:
                 frame = _src_files[frame_id]
                 if isinstance(frame, str):
@@ -443,7 +440,7 @@ if __name__ == '__main__':
                 elif _k == 32:
                     _pause = 1 - _pause
 
-            if n_frames > 0 and (frame_id - start_id) >= n_frames:
+            if (frame_id - start_id + 1) >= n_frames > 0:
                 break
 
             if frame_id % print_diff == 0:
