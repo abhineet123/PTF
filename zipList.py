@@ -240,7 +240,7 @@ if __name__ == '__main__':
         else:
             zip_cmd = 'zip {:s} {:s} {:s}'.format(switches, out_name, zip_cmd)
 
-        # print('\nrunning: {}\n'.format(zip_cmd))
+        print('\nrunning: {}\n'.format(zip_cmd))
 
         os.system(zip_cmd)
 
