@@ -224,10 +224,19 @@ if __name__ == '__main__':
         print('writing {} files to {}'.format(n_paths, out_path))
         with zipfile.ZipFile(out_path, mode="w") as archive:
             for zip_path in tqdm(zip_paths):
-                if relative:
-                    archive.write(zip_path, os.path.basename(zip_path))
+                if os.path.isdir(zip_path):
+                    for dirpath, dirs, files in os.walk(zip_path):
+                        for f in files:
+                            fn = os.path.join(dirpath, f)
+                            if relative:
+                                archive.write(fn, os.path.basename(fn))
+                            else:
+                                archive.write(fn, fn)
                 else:
-                    archive.write(zip_path, zip_path)
+                    if relative:
+                        archive.write(zip_path, os.path.basename(zip_path))
+                    else:
+                        archive.write(zip_path, zip_path)
     else:
         zip_paths = ['"{}"'.format(k) for k in zip_paths]
 
