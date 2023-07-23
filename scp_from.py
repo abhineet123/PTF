@@ -66,7 +66,7 @@ def main():
 
     switches = '-r -v --progress'
     if copy_links:
-        switches += ' -l'
+        switches += ' --copy-links'
     else:
         switches += ' --no-links'
 
