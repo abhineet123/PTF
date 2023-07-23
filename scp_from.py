@@ -1,25 +1,32 @@
-import os, sys
-from os.path import expanduser
+import os
 
-from Misc import processArguments
+import paramparse
 
-if __name__ == '__main__':
-    params = {
-        'src_fname': '',
-        'scp_port': '',
-        'scp_dst': '',
-        'overwrite': 0,
-        'file_mode': 0,
-        'abs_path': 1,
-    }
-    processArguments(sys.argv[1:], params)
-    src_fname = params['src_fname']
-    scp_dst = params['scp_dst']
-    scp_port = params['scp_port']
-    overwrite = params['overwrite']
-    file_mode = params['file_mode']
-    abs_path = params['abs_path']
 
+class Params:
+
+    def __init__(self):
+        self.cfg = ()
+        self.abs_path = 1
+        self.copy_links = 0
+        self.file_mode = 0
+        self.overwrite = 0
+        self.scp_dst = ''
+        self.scp_port = ''
+        self.src_fname = ''
+
+
+def main():
+    params = Params()
+    paramparse.process(params)
+
+    src_fname = params.src_fname
+    scp_dst = params.scp_dst
+    scp_port = params.scp_port
+    overwrite = params.overwrite
+    file_mode = params.file_mode
+    abs_path = params.abs_path
+    copy_links = params.copy_links
 
     # src_fname = os.path.realpath(src_fname)
     # src_fname_abs = os.popen(f'realpath -s {src_fname}').read()
@@ -29,7 +36,7 @@ if __name__ == '__main__':
 
     src_fname_no_ext, src_fname_ext = os.path.splitext(os.path.basename(src_fname))
 
-    home_path = os.path.abspath(expanduser("~"))
+    home_path = os.path.abspath(os.path.expanduser("~"))
     if src_fname_abs.startswith(home_path):
         # src_fname_rel = os.path.relpath(src_fname, home_path)
         # scp_fname = os.path.join('~', src_fname_rel)
@@ -57,7 +64,12 @@ if __name__ == '__main__':
         print('Creating folder: {}'.format(src_dir))
         os.makedirs(src_dir, exist_ok=1)
 
-    switches = '-r -v --progress --no-links'
+    switches = '-r -v --progress'
+    if copy_links:
+        switches += ' -l'
+    else:
+        switches += ' --no-links'
+
     if not overwrite:
         switches += ' --ignore-existing'
 
@@ -73,3 +85,5 @@ if __name__ == '__main__':
     os.system(rsync_cmd)
 
 
+if __name__ == '__main__':
+    main()
