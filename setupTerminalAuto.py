@@ -451,20 +451,21 @@ def main():
     print('setup time: {}'.format(end_t - start_t))
 
     if only_git:
-        k = input(f'Press enter to terminate tmux-git\n')
+        k = input(f'Enter Q to terminate tmux-git\n')
 
-        git_app.fatty.type_keys("^b")
-        git_app.fatty.type_keys("{d}")
-        time.sleep(1)
-        git_app.fatty.type_keys("tmux{VK_SPACE}kill-server")
-        git_app.fatty.type_keys("{ENTER}")
-        git_app.fatty.type_keys("taskkill{VK_SPACE}/F{VK_SPACE}/IM{VK_SPACE}bash.exe")
-        git_app.fatty.type_keys("{ENTER}")
+        if k in ['q', 'Q', ord('q'), ord('Q')]:
+            git_app.fatty.type_keys("^b")
+            git_app.fatty.type_keys("{d}")
+            time.sleep(1)
+            git_app.fatty.type_keys("tmux{VK_SPACE}kill-server")
+            git_app.fatty.type_keys("{ENTER}")
+            git_app.fatty.type_keys("taskkill{VK_SPACE}/F{VK_SPACE}/IM{VK_SPACE}bash.exe")
+            git_app.fatty.type_keys("{ENTER}")
 
-        time.sleep(2)
-        git_app.window().close()
+            time.sleep(2)
+            git_app.window().close()
 
-        sys.exit()
+            sys.exit()
 
     iter_id = -1
     while True:
