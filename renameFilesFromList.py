@@ -54,14 +54,14 @@ if n_files != len(dst_lines):
             n_files, len(dst_lines)))
 
 for file_id in range(n_files):
-    src_file = src_lines[file_id].strip()
+    src_file = src_lines[file_id].rstrip()
     src_fname, src_ext = os.path.splitext(src_file)
     src_path = '{:s}/{:s}'.format(src_root_dir, src_file)
 
     if not os.path.isfile(src_path) and not os.path.isdir(src_path):
         raise SyntaxError('Original file/folder {:s} does not exist'.format(src_path))
 
-    dst_file = dst_lines[file_id].strip()
+    dst_file = dst_lines[file_id].rstrip()
     dst_fname, dst_ext = os.path.splitext(dst_file)
 
     dst_path = dst_file + src_ext

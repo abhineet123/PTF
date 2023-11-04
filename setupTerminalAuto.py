@@ -194,19 +194,6 @@ def main():
             if git_half:
                 half_sized_window(git_half)
 
-                # pyautogui.keyDown('ctrlleft')
-                # pyautogui.keyDown('winleft')
-                # pyautogui.keyDown('altleft')
-                #
-                # if git_half == 2:
-                #     pyautogui.press('left')
-                # else:
-                #     pyautogui.press('right')
-                #
-                # pyautogui.keyUp('ctrlleft')
-                # pyautogui.keyUp('winleft')
-                # pyautogui.keyUp('altleft')
-
             git_app.fatty.type_keys("cd{VK_SPACE}/~")
             git_app.fatty.type_keys("tmux{VK_SPACE}new~")
 
@@ -471,7 +458,7 @@ def main():
     while True:
         iter_id += 1
 
-        k = input(f'{iter_id} : Enter Q to terminate ssh\n')
+        k = input(f'{iter_id} : Press Enter Q to terminate ssh\n')
 
         print(f'k: {k}')
 

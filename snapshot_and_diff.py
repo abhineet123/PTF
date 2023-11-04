@@ -303,17 +303,31 @@ def main():
                 new_files = list(set(files_list) - set(prev_files_list))
                 deleted_files = list(set(prev_files_list) - set(files_list))
 
-                if new_files or deleted_files:
+                new_file_names = [os.path.basename(file) for file in new_files]
+                # deleted_file_names = [os.path.basename(file) for file in deleted_files]
 
+                moved_files = [file for file in deleted_files if os.path.basename(file) in new_file_names]
+                deleted_files = list(set(deleted_files) - set(moved_files))
+
+                new_files.sort()
+                moved_files.sort()
+                deleted_files.sort()
+
+                if new_files or deleted_files or moved_files:
                     with open(cmp, 'w',
                               encoding="utf-8"
                               ) as outfile:
                         outfile.write(f'{title} :: {len(new_files)} new_files\n')
+                        outfile.write(f'{title} :: {len(moved_files)} moved_files\n')
                         outfile.write(f'{title} :: {len(deleted_files)} deleted_files\n')
 
                         if new_files:
                             outfile.write('new_files:\n\n')
                             outfile.write('\n'.join(new_files) + '\n')
+
+                        if moved_files:
+                            outfile.write('\n\nmoved_files:\n\n')
+                            outfile.write('\n'.join(moved_files) + '\n')
 
                         if deleted_files:
                             outfile.write('\n\ndeleted_files:\n\n')
