@@ -7,6 +7,9 @@ class Params:
         self.in_path = '.'
         self.in_ext = '.html'
 
+        self.start_token = 'https://'
+        self.end_token = '.JPG>'
+
         self.recursive = 1
 
 
@@ -14,24 +17,21 @@ def linux_path(*args, **kwargs):
     return os.path.join(*args, **kwargs).replace(os.sep, '/')
 
 
-def process(in_txt):
+def process(in_txt, start_token, end_token):
     lines = in_txt.split('\n')
     lines = [line for line in lines if line.strip()]
 
-    start_token = 'href="magnet:?'
-    end_token = '2Fannounce"'
-
     for line in lines:
-        if start_token not in line:
+        if start_token not in line or end_token not in line:
             continue
         start_idx = line.find(start_token)
         end_idx = line.find(end_token)
 
-        magnet_txt = line[start_idx + 6:end_idx + len(end_token) - 1]
+        img_txt = line[start_idx:end_idx + len(end_token) - 1]
 
-        magnet_txt = magnet_txt.replace("&amp;", "&")
+        # img_txt = img_txt.replace("&amp;", "&")
 
-        return magnet_txt
+        return img_txt
 
     return None
 
@@ -87,26 +87,26 @@ def main():
     files.sort(key=os.path.getmtime)
     n_files = len(files)
 
-    magnet_links = []
+    img_links = []
     for file_id, file in enumerate(files):
         print('reading file {} / {}: {}'.format(file_id + 1, n_files, file))
 
         # file = dst_file
 
         in_txt = open(file, 'r', encoding="utf8").read()
-        magnet_link = process(in_txt)
+        img_link = process(in_txt, params.start_token, params.end_token)
 
-        if magnet_link is None:
-            print(f'\nno magnet link found in {file}\n')
+        if img_link is None:
+            print(f'\nno image link found in {file}\n')
             continue
 
-        magnet_links.append(magnet_link)
+        img_links.append(img_link)
 
-    magnet_links_str = '\n\n'.join(magnet_links)
+    img_links_str = '\n\n'.join(img_links)
 
-    out_file = linux_path(params.in_path, "magnet_links.txt")
+    out_file = linux_path(params.in_path, "img_links.txt")
     with open(out_file, 'w') as fid:
-        fid.write(magnet_links_str)
+        fid.write(img_links_str)
 
 
 if __name__ == '__main__':
