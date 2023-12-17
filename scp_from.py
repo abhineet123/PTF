@@ -76,7 +76,11 @@ def main():
     # if overwrite:
     #     rsync_cmd = 'scp -r {}:{} {}'.format(scp_dst, scp_fname, src_fname)
 
-    rsync_cmd = 'rsync {} {}:{} {}'.format(switches, scp_dst, scp_fname, src_fname)
+    if '*' in src_fname:
+        dst_fname = './'
+    else:
+        dst_fname = src_fname
+    rsync_cmd = 'rsync {} {}:{} {}'.format(switches, scp_dst, scp_fname, dst_fname)
 
     if scp_port:
         rsync_cmd = "{} -e 'ssh -p {}'".format(rsync_cmd, scp_port)

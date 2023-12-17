@@ -185,7 +185,7 @@ for src_id, _src_path in enumerate(src_files):
 
     if height <= 0 or width <= 0:
         if rotate in (1, -1):
-            dst_height, dst_width = _height, _width
+            dst_height, dst_width = _width, _height
         else:
             dst_height, dst_width = _height, _width
         enable_resize = 0
