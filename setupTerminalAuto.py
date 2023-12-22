@@ -202,28 +202,6 @@ def main():
             servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % grs_1)
             servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % grs_2)
 
-            if enable_e5g:
-                """connect to e5g"""
-                for _app_id, _app in enumerate(apps):
-                    _app.fatty.type_keys("^+t")
-                    # _app.fatty.type_keys("sstg2~")
-                    # time.sleep(2)
-                    _app.fatty.type_keys(f"sste{_app_id}~")
-
-                    if sudo:
-                        # time.sleep(2)
-                        _app.fatty.type_keys("sudo{VK_SPACE}-s~")
-                        # time.sleep(2)
-                        # _app.fatty.type_keys("%s~" % pwd1)
-
-                        time.sleep(pwd_wait)
-                        pyautogui.write(pwd1)
-                        pyautogui.press('enter')
-
-                time.sleep(wait_t)
-                servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % e5g_1)
-                servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % e5g_2)
-
             # time.sleep(1)
 
             # time.sleep(1)
@@ -251,6 +229,28 @@ def main():
 
             servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % x99_1)
             servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % x99_2)
+
+            if enable_e5g:
+                """connect to e5g"""
+                for _app_id, _app in enumerate(apps):
+                    _app.fatty.type_keys("^+t")
+                    # _app.fatty.type_keys("sstg2~")
+                    # time.sleep(2)
+                    _app.fatty.type_keys(f"sste{_app_id}~")
+
+                    if sudo:
+                        # time.sleep(2)
+                        _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+                        # time.sleep(2)
+                        # _app.fatty.type_keys("%s~" % pwd1)
+
+                        time.sleep(pwd_wait)
+                        pyautogui.write(pwd1)
+                        pyautogui.press('enter')
+
+                time.sleep(wait_t)
+                servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % e5g_1)
+                servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % e5g_2)
 
             if enable_isaic:
                 """connect to isaic"""
@@ -519,24 +519,6 @@ def main():
             servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % grs_1)
             servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % grs_2)
 
-            if enable_e5g:
-                for _app_id, _app in enumerate(apps):
-                    """e5g"""
-                    _app.fatty.type_keys("^+t")
-                    _app.fatty.type_keys(f"sste{_app_id}~")
-                    if sudo:
-                        _app.fatty.type_keys("sudo{VK_SPACE}-s~")
-
-                        time.sleep(pwd_wait)
-                        # _app.fatty.type_keys("%s~" % pwd1)
-                        pyautogui.write(pwd1)
-                        pyautogui.press('enter')
-
-                time.sleep(wait_t)
-
-                servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % e5g_1)
-                servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % e5g_2)
-
             # time.sleep(1)
 
             # time.sleep(1)
@@ -560,6 +542,24 @@ def main():
             servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % x99_1)
             servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % x99_2)
 
+            if enable_e5g:
+                for _app_id, _app in enumerate(apps):
+                    """e5g"""
+                    _app.fatty.type_keys("^+t")
+                    _app.fatty.type_keys(f"sste{_app_id}~")
+                    if sudo:
+                        _app.fatty.type_keys("sudo{VK_SPACE}-s~")
+
+                        time.sleep(pwd_wait)
+                        # _app.fatty.type_keys("%s~" % pwd1)
+                        pyautogui.write(pwd1)
+                        pyautogui.press('enter')
+
+                time.sleep(wait_t)
+
+                servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % e5g_1)
+                servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % e5g_2)
+                
             if enable_isaic:
                 for _app in apps:
                     """isaic"""
