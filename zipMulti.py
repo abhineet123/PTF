@@ -161,7 +161,7 @@ if __name__ == '__main__':
 
             if inclusions[0] == '__pt__':
                 print('Including only the last pytorch checkpoint')
-                ckpt_files = sorted(list(glob.glob("*.pt")))
+                ckpt_files = sorted([file for file in os.listdir(zip_path) if file.endswith(".pt")])
                 if len(ckpt_files) > 1:
                     excluded_ckpt_files = ckpt_files[:-1]
                     excluded_ckpt_names = [os.path.splitext(os.path.basename(k))[0] for k in excluded_ckpt_files]
@@ -170,7 +170,7 @@ if __name__ == '__main__':
 
             elif inclusions[0] == '__tf__':
                 print('Including only the last TF checkpoint')
-                ckpt_files = sorted(list(glob.glob("*.index")))
+                ckpt_files = sorted([file for file in os.listdir(zip_path) if file.endswith(".index")])
                 if len(ckpt_files) > 1:
                     excluded_ckpt_files = ckpt_files[:-1]
                     excluded_ckpt_names = [os.path.splitext(os.path.basename(k))[0] for k in excluded_ckpt_files]
