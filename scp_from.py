@@ -62,7 +62,7 @@ def main():
     src_dir = os.path.dirname(src_fname_abs)
     if src_dir and not os.path.isdir(src_dir):
         print('Creating folder: {}'.format(src_dir))
-        os.makedirs(src_dir, exist_ok=1)
+        os.makedirs(src_dir, exist_ok=True)
 
     switches = '-r -v --progress'
     if copy_links:

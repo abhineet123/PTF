@@ -1,5 +1,6 @@
 import os
 import sys
+import glob
 import shutil
 
 from datetime import datetime
@@ -156,15 +157,34 @@ if __name__ == '__main__':
             zip_cmd = '{:s} {:s}'.format(zip_cmd, switches2)
 
         if inclusions:
-            print('Including only files matching patterns: {}'.format(inclusions))
             switches2 = ''
-            for inclusion in inclusions:
-                if inclusion.startswith('__a__'):
-                    inclusion = inclusion.replace('__a__','')
-                else:
-                    inclusion = f'*{inclusion}*'
 
-                switches2 += f' -i "{inclusion}"'
+            if inclusions == '__pt__':
+                print('Including only the last pytorch checkpoint')
+                ckpt_files = sorted(list(glob.glob("*.pt")))
+                if len(ckpt_files) > 1:
+                    excluded_ckpt_files = ckpt_files[:-1]
+                    excluded_ckpt_names = [os.path.splitext(os.path.basename(k))[0] for k in excluded_ckpt_files]
+                    for excluded_ckpt_name in excluded_ckpt_names:
+                        switches2 += ' -i "{}.*"'.format(excluded_ckpt_name)
+
+            if inclusions == '__tf__':
+                print('Including only the last TF checkpoint')
+                ckpt_files = sorted(list(glob.glob("*.index")))
+                if len(ckpt_files) > 1:
+                    excluded_ckpt_files = ckpt_files[:-1]
+                    excluded_ckpt_names = [os.path.splitext(os.path.basename(k))[0] for k in excluded_ckpt_files]
+                    for excluded_ckpt_name in excluded_ckpt_names:
+                        switches2 += ' -i "{}.*"'.format(excluded_ckpt_name)
+            else:
+                print('Including only files matching patterns: {}'.format(inclusions))
+                for inclusion in inclusions:
+                    if inclusion.startswith('__a__'):
+                        inclusion = inclusion.replace('__a__', '')
+                    else:
+                        inclusion = f'*{inclusion}*'
+
+                    switches2 += f' -i "{inclusion}"'
 
             zip_cmd = '{:s} {:s}'.format(zip_cmd, switches2)
 
