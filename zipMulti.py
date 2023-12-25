@@ -159,7 +159,7 @@ if __name__ == '__main__':
         if inclusions:
             switches2 = ''
 
-            if inclusions == '__pt__':
+            if inclusions[0] == '__pt__':
                 print('Including only the last pytorch checkpoint')
                 ckpt_files = sorted(list(glob.glob("*.pt")))
                 if len(ckpt_files) > 1:
@@ -168,7 +168,7 @@ if __name__ == '__main__':
                     for excluded_ckpt_name in excluded_ckpt_names:
                         switches2 += ' -i "{}.*"'.format(excluded_ckpt_name)
 
-            if inclusions == '__tf__':
+            elif inclusions[0] == '__tf__':
                 print('Including only the last TF checkpoint')
                 ckpt_files = sorted(list(glob.glob("*.index")))
                 if len(ckpt_files) > 1:
