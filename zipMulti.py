@@ -166,7 +166,7 @@ if __name__ == '__main__':
                     excluded_ckpt_files = ckpt_files[:-1]
                     excluded_ckpt_names = [os.path.splitext(os.path.basename(k))[0] for k in excluded_ckpt_files]
                     for excluded_ckpt_name in excluded_ckpt_names:
-                        switches2 += ' -i "{}.*"'.format(excluded_ckpt_name)
+                        switches2 += ' -x "{}.*"'.format(excluded_ckpt_name)
 
             elif inclusions[0] == '__tf__':
                 print('Including only the last TF checkpoint')
@@ -176,7 +176,7 @@ if __name__ == '__main__':
                     excluded_ckpt_files = ckpt_files[:-1]
                     excluded_ckpt_names = [os.path.splitext(os.path.basename(k))[0] for k in excluded_ckpt_files]
                     for excluded_ckpt_name in excluded_ckpt_names:
-                        switches2 += ' -i "{}.*"'.format(excluded_ckpt_name)
+                        switches2 += ' -x "{}.*"'.format(excluded_ckpt_name)
             else:
                 print('Including only files matching patterns: {}'.format(inclusions))
                 for inclusion in inclusions:
