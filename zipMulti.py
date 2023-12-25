@@ -171,6 +171,7 @@ if __name__ == '__main__':
             elif inclusions[0] == '__tf__':
                 print('Including only the last TF checkpoint')
                 ckpt_files = sorted([file for file in os.listdir(zip_path) if file.endswith(".index")])
+                print(f'ckpt_files:\n{ckpt_files}')
                 if len(ckpt_files) > 1:
                     excluded_ckpt_files = ckpt_files[:-1]
                     excluded_ckpt_names = [os.path.splitext(os.path.basename(k))[0] for k in excluded_ckpt_files]
