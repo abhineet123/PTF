@@ -225,7 +225,7 @@ def main():
         # EnumWindows(EnumWindowsProc(foreach_window), 0)
         if use_ahk:
             if log_file:
-                already_transferred = open(log_file, 'r', encoding="utf-8").read().splitlines()
+                already_transferred = open(log_file, 'r', encoding="ansi").read().splitlines()
                 already_transferred = [_line for _line in already_transferred
                                        if not _line.startswith('#') and _line]
             else:
