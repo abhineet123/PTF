@@ -26,7 +26,8 @@ class Params(paramparse.CFG):
         self.enable_isaic = 0
         self.isaic = ('isc', 'isc2')
         self.enable_git = 0
-        self.exe_path = 'fatty.exe'
+        self.exe_path = ''
+        self.backend = 'win32'
         self.git_cmds = ''
         self.git_half = 1
         self.git_postproc = 0
@@ -153,7 +154,7 @@ def main():
             # encryption_params.process()
             # pwd2 = encryption.run(encryption_params)
 
-        servers_app = application.Application().start(exe_path)
+        servers_app = application.Application(backend=params.backend).start(exe_path)
         servers_app.window().maximize()
 
         # half_sized_window(half_type=2)
@@ -165,8 +166,8 @@ def main():
         if not only_git:
             """connect to grs"""
             apps = [servers_app, ]
-            servers_app2 = application.Application().start(exe_path)
-            servers_app2.window().maximize()
+            servers_app2 = application.Application(backend=params.backend).start(exe_path)
+            # servers_app2.window().maximize()
             # half_sized_window(half_type=1)
 
             apps.append(servers_app2)
@@ -559,7 +560,7 @@ def main():
 
                 servers_app.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % e5g_1)
                 servers_app2.fatty.type_keys("tmux{VK_SPACE}attach{VK_SPACE}-d{VK_SPACE}-t{VK_SPACE}%s~" % e5g_2)
-                
+
             if enable_isaic:
                 for _app in apps:
                     """isaic"""
