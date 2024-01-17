@@ -468,12 +468,12 @@ def run(args, multi_exit_program=None,
         speed = 0
         is_paused = 1
         monitors = [
-            [1920, 0],
+            [-1920, 0],
+            [-3840, 0],
+            [-1920, -1080],
             [0, 0],
-            [1920, -1080],
-            [3840, 0],
-            [3840, -1080],
             [0, -1080],
+            [-3840, -1080],
         ]
 
         def get_monitor_id(x, y):
