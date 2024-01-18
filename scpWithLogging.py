@@ -161,7 +161,7 @@ def main():
 
     if not info_dir:
         info_dir = dst_path
-        
+
     if not src_info:
         src_info = scp_name
 
@@ -220,6 +220,8 @@ def main():
         data_type = 'filename (to {})'.format(src_info)
     elif mode == 2:
         data_type = 'log'
+
+    os.system('cls' if os.name == 'nt' else 'clear')
 
     while True:
         k = input('\nEnter {}\n'.format(data_type))
