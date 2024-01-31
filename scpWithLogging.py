@@ -17,7 +17,7 @@ def linux_path(*args, **kwargs):
 
 
 def run_scp(dst_path, pwd0, scp_dst, scp_path, file_to_transfer, mode, port, log_file=''):
-    # print('dst_path: {}'.format(dst_path))
+    # print(f'dst_path: {dst_path}')
     # print('pwd0: {}'.format(pwd0))
     # print('scp_dst: {}'.format(scp_dst))
     # print('scp_path: {}'.format(scp_path))
@@ -155,9 +155,14 @@ def main():
     # if not os.path.isdir(log_dir):
     #     os.makedirs(log_dir)
     # print('Saving log to {}'.format(log_dir))
+    # print(f'dst_path: {dst_path}')
 
     if not dst_path:
         dst_path = scp_path
+
+    # print(f'dst_path: {dst_path}')
+
+    # exit()
 
     if not info_dir:
         info_dir = dst_path

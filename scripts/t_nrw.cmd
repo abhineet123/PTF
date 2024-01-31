@@ -1,3 +1,3 @@
-python3x32 "%~dp0\..\scpWithLogging.py" win_title="The Journal 8" info_root="Z:/cygwin64" info_dir="home/Tommy" info_file="dgPolWm53WNOJ8PEioAL" auth_file="~/.ssh/id_rsa" dst_path="/home/Tommy" scp_path=/home/asingh1 mode=-2 scp_name=nrw
+python3x32 "%~dp0\..\scpWithLogging.py" info_root="Z:/cygwin64" info_dir="home/Tommy" info_file="dgPolWm53WNOJ8PEioAL" auth_file="~/.ssh/id_rsa" dst_path="/home/Tommy" scp_path=/home/asingh1 mode=-2 scp_name=nrw
   
 
