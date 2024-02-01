@@ -87,7 +87,7 @@ def run_scp(dst_path, pwd0, scp_dst, scp_path, file_to_transfer, mode, port, log
         from datetime import datetime
         time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
 
-        with open(log_file, 'a') as log_fid:
+        with open(log_file, 'a', encoding="utf-8") as log_fid:
             log_fid.write(f'# {time_stamp}\n')
             log_fid.write(f'{file_to_transfer}\n')
 
