@@ -14,6 +14,7 @@ class Params:
         self.scp_dst = ''
         self.scp_port = ''
         self.src_fname = ''
+        self.inverse = 0
 
 
 def main():
@@ -80,12 +81,15 @@ def main():
         dst_fname = './'
     else:
         dst_fname = src_fname
-    rsync_cmd = 'rsync {} {}:{} {}'.format(switches, scp_dst, scp_fname, dst_fname)
+    if params.inverse:
+        rsync_cmd = f'rsync {switches} {dst_fname} {scp_dst}:{scp_fname}'
+    else:
+        rsync_cmd = f'rsync {switches} {scp_dst}:{scp_fname} {dst_fname}'
 
     if scp_port:
-        rsync_cmd = "{} -e 'ssh -p {}'".format(rsync_cmd, scp_port)
+        rsync_cmd = f"{rsync_cmd} -e 'ssh -p {scp_port}'"
 
-    print('\nrunning: {}\n'.format(rsync_cmd))
+    print(f'\nrunning: {rsync_cmd}\n')
     os.system(rsync_cmd)
 
 

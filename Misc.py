@@ -1110,7 +1110,7 @@ def getGroundTruthUpdates(filename):
     return updates
 
 
-def plotPCA(data):
+def plotPCA(X):
     try:
         from sklearn.decomposition import PCA
     except ImportError as e:
@@ -1894,7 +1894,7 @@ def lineIntersection(line1, line2):
     theta2 = line2[1]
 
     if theta1 == theta2:
-        raise StandardError('Lines are parallel')
+        raise AssertionError('Lines are parallel')
     elif theta1 == 0:
         x = r1
         y = -x * (math.cos(theta2) / math.sin(theta2)) + (r2 / math.sin(theta2))
@@ -1928,7 +1928,7 @@ def lineIntersection(line1, line2):
 def getIntersectionPoints(lines_arr):
     no_of_lines = len(lines_arr)
     if no_of_lines != 4:
-        raise StandardError('Invalid number of lines provided: ' + str(no_of_lines))
+        raise AssertionError('Invalid number of lines provided: ' + str(no_of_lines))
     # line1 = lines_arr[0, :]
     # theta_diff = np.fabs(line1[1] - lines_arr[:, 1])
 
@@ -2106,7 +2106,7 @@ def readReinitGT(gt_path, reinit_frame_id):
         n_gt_frames = struct.unpack('i', gt_fid.read(4))[0]
     except struct.error:
         gt_fid.close()
-        raise StandardError("Reinit GT file is invalid")
+        raise AssertionError("Reinit GT file is invalid")
     print('Reading reinit gt for frame {:d}'.format(reinit_frame_id + 1))
     start_pos = reinit_frame_id * (2 * n_gt_frames - reinit_frame_id + 1) * 4 * 8 + 4
     gt_fid.seek(start_pos)
@@ -2116,7 +2116,7 @@ def readReinitGT(gt_path, reinit_frame_id):
             curr_gt = struct.unpack('dddddddd', gt_fid.read(64))
         except struct.error:
             gt_fid.close()
-            raise StandardError("Reinit GT file is invalid")
+            raise AssertionError("Reinit GT file is invalid")
         reinit_gt.append([
             curr_gt[0], curr_gt[4],
             curr_gt[1], curr_gt[5],
@@ -3946,6 +3946,518 @@ def addBorder(img, border_size, border_type):
     out_img[start_row:start_row + img_h, start_col:start_col + img_w, :] = img
     return out_img
 
+
+class CVText:
+    def __init__(self, color='white', bkg_color='black', location=0, font=5,
+                 size=0.8, thickness=1, line_type=2, offset=(5, 25)):
+        self.color = color
+        self.bkg_color = bkg_color
+        self.location = location
+        self.font = font
+        self.size = size
+        self.thickness = thickness
+        self.line_type = line_type
+        self.offset = offset
+
+        self.help = {
+            'font': 'Available fonts: '
+                    '0: cv2.FONT_HERSHEY_SIMPLEX, '
+                    '1: cv2.FONT_HERSHEY_PLAIN, '
+                    '2: cv2.FONT_HERSHEY_DUPLEX, '
+                    '3: cv2.FONT_HERSHEY_COMPLEX, '
+                    '4: cv2.FONT_HERSHEY_TRIPLEX, '
+                    '5: cv2.FONT_HERSHEY_COMPLEX_SMALL, '
+                    '6: cv2.FONT_HERSHEY_SCRIPT_SIMPLEX ,'
+                    '7: cv2.FONT_HERSHEY_SCRIPT_COMPLEX; ',
+            'location': '0: top left, 1: top right, 2: bottom right, 3: bottom left; ',
+            'bkg_color': 'should be empty for no background',
+        }
+
+class CVConstants:
+    similarity_types = {
+        0: cv2.TM_CCOEFF_NORMED,
+        1: cv2.TM_SQDIFF_NORMED,
+        2: cv2.TM_CCORR_NORMED,
+        3: cv2.TM_CCOEFF,
+        4: cv2.TM_SQDIFF,
+        5: cv2.TM_CCORR
+    }
+    interp_types = {
+        0: cv2.INTER_NEAREST,
+        1: cv2.INTER_LINEAR,
+        2: cv2.INTER_AREA,
+        3: cv2.INTER_CUBIC,
+        4: cv2.INTER_LANCZOS4
+    }
+    fonts = {
+        0: cv2.FONT_HERSHEY_SIMPLEX,
+        1: cv2.FONT_HERSHEY_PLAIN,
+        2: cv2.FONT_HERSHEY_DUPLEX,
+        3: cv2.FONT_HERSHEY_COMPLEX,
+        4: cv2.FONT_HERSHEY_TRIPLEX,
+        5: cv2.FONT_HERSHEY_COMPLEX_SMALL,
+        6: cv2.FONT_HERSHEY_SCRIPT_SIMPLEX,
+        7: cv2.FONT_HERSHEY_SCRIPT_COMPLEX
+    }
+    line_types = {
+        0: cv2.LINE_4,
+        1: cv2.LINE_8,
+        2: cv2.LINE_AA,
+    }
+
+def resize_ar(src_img, width=0, height=0, return_factors=False,
+              placement_type=0, only_border=0, only_shrink=0):
+    src_height, src_width = src_img.shape[:2]
+    src_aspect_ratio = float(src_width) / float(src_height)
+
+    if len(src_img.shape) == 3:
+        n_channels = src_img.shape[2]
+    else:
+        n_channels = 1
+
+    if width <= 0 and height <= 0:
+        raise AssertionError('Both width and height cannot be zero')
+    elif height <= 0:
+        if only_shrink and width > src_width:
+            width = src_width
+        if only_border:
+            height = src_height
+        else:
+            height = int(width / src_aspect_ratio)
+    elif width <= 0:
+        if only_shrink and height > src_height:
+            height = src_height
+        if only_border:
+            width = src_width
+        else:
+            width = int(height * src_aspect_ratio)
+
+    aspect_ratio = float(width) / float(height)
+
+    if only_border:
+        dst_width = width
+        dst_height = height
+        if placement_type == 0:
+            start_row = start_col = 0
+        elif placement_type == 1:
+            start_row = int((dst_height - src_height) / 2.0)
+            start_col = int((dst_width - src_width) / 2.0)
+        elif placement_type == 2:
+            start_row = int(dst_height - src_height)
+            start_col = int(dst_width - src_width)
+        else:
+            raise AssertionError('Invalid placement_type: {}'.format(placement_type))
+    else:
+
+        if src_aspect_ratio == aspect_ratio:
+            dst_width = src_width
+            dst_height = src_height
+            start_row = start_col = 0
+        elif src_aspect_ratio > aspect_ratio:
+            dst_width = src_width
+            dst_height = int(src_width / aspect_ratio)
+            start_row = int((dst_height - src_height) / 2.0)
+            if placement_type == 0:
+                start_row = 0
+            elif placement_type == 1:
+                start_row = int((dst_height - src_height) / 2.0)
+            elif placement_type == 2:
+                start_row = int(dst_height - src_height)
+            else:
+                raise AssertionError('Invalid placement_type: {}'.format(placement_type))
+            start_col = 0
+        else:
+            dst_height = src_height
+            dst_width = int(src_height * aspect_ratio)
+            start_col = int((dst_width - src_width) / 2.0)
+            if placement_type == 0:
+                start_col = 0
+            elif placement_type == 1:
+                start_col = int((dst_width - src_width) / 2.0)
+            elif placement_type == 2:
+                start_col = int(dst_width - src_width)
+            else:
+                raise AssertionError('Invalid placement_type: {}'.format(placement_type))
+            start_row = 0
+
+    dst_img = np.zeros((dst_height, dst_width, n_channels), dtype=src_img.dtype)
+    dst_img = dst_img.squeeze()
+
+    dst_img[start_row:start_row + src_height, start_col:start_col + src_width, ...] = src_img
+    if not only_border:
+        dst_img = cv2.resize(dst_img, (width, height))
+
+    if return_factors:
+        resize_factor = float(height) / float(dst_height)
+        return dst_img, resize_factor, start_row, start_col
+    else:
+        return dst_img
+
+def stack_images(img_list, grid_size=None, stack_order=0, borderless=1,
+                 preserve_order=0, return_idx=0,
+                 only_height=0, placement_type=0):
+    n_images = len(img_list)
+
+    if grid_size is None or not grid_size:
+        n_cols = n_rows = int(np.ceil(np.sqrt(n_images)))
+    else:
+        n_rows, n_cols = grid_size
+
+        if n_rows < 0:
+            n_rows = int(np.ceil(n_images / n_cols))
+        elif n_cols < 0:
+            n_cols = int(np.ceil(n_images / n_rows))
+
+    target_ar = 1920.0 / 1080.0
+    if n_cols <= n_rows:
+        target_ar /= 2.0
+    shape_img_id = 0
+    min_ar_diff = np.inf
+    img_heights = np.zeros((n_images,), dtype=np.int32)
+    for _img_id in range(n_images):
+        height, width = img_list[_img_id].shape[:2]
+        img_heights[_img_id] = height
+        img_ar = float(n_cols * width) / float(n_rows * height)
+        ar_diff = abs(img_ar - target_ar)
+        if ar_diff < min_ar_diff:
+            min_ar_diff = ar_diff
+            shape_img_id = _img_id
+
+    img_heights_sort_idx = np.argsort(-img_heights)
+    row_start_idx = img_heights_sort_idx[:n_rows]
+    img_idx = img_heights_sort_idx[n_rows:]
+    img_size = img_list[shape_img_id].shape
+    height, width = img_size[:2]
+
+    if only_height:
+        width = 0
+
+    stacked_img = None
+    list_ended = False
+    img_idx_id = 0
+    inner_axis = 1 - stack_order
+    stack_idx = []
+    stack_locations = []
+    start_row = 0
+    # curr_ann = ''
+    for row_id in range(n_rows):
+        start_id = n_cols * row_id
+        curr_row = None
+        start_col = 0
+        for col_id in range(n_cols):
+            img_id = start_id + col_id
+            if img_id >= n_images:
+                curr_img = np.zeros(img_size, dtype=np.uint8)
+                list_ended = True
+            else:
+                if preserve_order:
+                    _curr_img_id = img_id
+                elif col_id == 0:
+                    _curr_img_id = row_start_idx[row_id]
+                else:
+                    _curr_img_id = img_idx[img_idx_id]
+                    img_idx_id += 1
+
+                curr_img = img_list[_curr_img_id]
+                stack_idx.append(_curr_img_id)
+                if not borderless:
+                    curr_img = resize_ar(curr_img, width, height)
+                if img_id == n_images - 1:
+                    list_ended = True
+            if curr_row is None:
+                curr_row = curr_img
+            else:
+                if borderless:
+                    if curr_row.shape[0] < curr_img.shape[0]:
+                        curr_row = resize_ar(curr_row, 0, curr_img.shape[0])
+                    elif curr_img.shape[0] < curr_row.shape[0]:
+                        curr_img = resize_ar(curr_img, 0, curr_row.shape[0])
+                curr_row = np.concatenate((curr_row, curr_img), axis=inner_axis)
+
+            curr_h, curr_w = curr_img.shape[:2]
+            stack_locations.append((start_row, start_col, start_row + curr_h, start_col + curr_w))
+            start_col += curr_w
+
+        if stacked_img is None:
+            stacked_img = curr_row
+        else:
+            if borderless:
+                resize_factor = float(curr_row.shape[1]) / float(stacked_img.shape[1])
+                if curr_row.shape[1] < stacked_img.shape[1]:
+                    curr_row = resize_ar(curr_row, stacked_img.shape[1], 0, placement_type=placement_type)
+                elif curr_row.shape[1] > stacked_img.shape[1]:
+                    stacked_img = resize_ar(stacked_img, curr_row.shape[1], 0)
+
+                new_start_col = 0
+                for _i in range(n_cols):
+                    _start_row, _start_col, _end_row, _end_col = stack_locations[_i - n_cols]
+                    _w, _h = _end_col - _start_col, _end_row - _start_row
+                    w_resized, h_resized = _w / resize_factor, _h / resize_factor
+                    stack_locations[_i - n_cols] = (
+                        _start_row, new_start_col, _start_row + h_resized, new_start_col + w_resized)
+                    new_start_col += w_resized
+            stacked_img = np.concatenate((stacked_img, curr_row), axis=stack_order)
+
+        curr_h, curr_w = curr_row.shape[:2]
+        start_row += curr_h
+
+        if list_ended:
+            break
+    if return_idx:
+        return stacked_img, stack_idx, stack_locations
+    else:
+        return stacked_img
+
+def stack_images_with_resize(img_list, grid_size=None, stack_order=0, borderless=1,
+                             preserve_order=0, return_idx=0,
+                             # annotations=None,
+                             # ann_fmt=(0, 5, 15, 1, 1, 255, 255, 255, 0, 0, 0),
+                             only_height=0, only_border=1):
+    n_images = len(img_list)
+    # print('grid_size: {}'.format(grid_size))
+
+    if grid_size is None:
+        n_cols = n_rows = int(np.ceil(np.sqrt(n_images)))
+    else:
+        n_rows, n_cols = grid_size
+
+        if n_rows < 0:
+            n_rows = int(np.ceil(n_images / n_cols))
+        elif n_cols < 0:
+            n_cols = int(np.ceil(n_images / n_rows))
+
+    target_ar = 1920.0 / 1080.0
+    if n_cols <= n_rows:
+        target_ar /= 2.0
+    shape_img_id = 0
+    min_ar_diff = np.inf
+    img_heights = np.zeros((n_images,), dtype=np.int32)
+    for _img_id in range(n_images):
+        height, width = img_list[_img_id].shape[:2]
+        img_heights[_img_id] = height
+        img_ar = float(n_cols * width) / float(n_rows * height)
+        ar_diff = abs(img_ar - target_ar)
+        if ar_diff < min_ar_diff:
+            min_ar_diff = ar_diff
+            shape_img_id = _img_id
+
+    img_heights_sort_idx = np.argsort(-img_heights)
+    row_start_idx = img_heights_sort_idx[:n_rows]
+    img_idx = img_heights_sort_idx[n_rows:]
+    # print('img_heights: {}'.format(img_heights))
+    # print('img_heights_sort_idx: {}'.format(img_heights_sort_idx))
+    # print('img_idx: {}'.format(img_idx))
+
+    # grid_size = [n_rows, n_cols]
+    img_size = img_list[shape_img_id].shape
+    height, width = img_size[:2]
+
+    if only_height:
+        width = 0
+    # grid_size = [n_rows, n_cols]
+    # print 'img_size: ', img_size
+    # print 'n_images: ', n_images
+    # print 'grid_size: ', grid_size
+
+    # print()
+    stacked_img = None
+    list_ended = False
+    img_idx_id = 0
+    inner_axis = 1 - stack_order
+    stack_idx = []
+    stack_locations = []
+    start_row = 0
+    # curr_ann = ''
+    for row_id in range(n_rows):
+        start_id = n_cols * row_id
+        curr_row = None
+        start_col = 0
+        for col_id in range(n_cols):
+            img_id = start_id + col_id
+            if img_id >= n_images:
+                curr_img = np.zeros(img_size, dtype=np.uint8)
+                list_ended = True
+            else:
+                if preserve_order:
+                    _curr_img_id = img_id
+                elif col_id == 0:
+                    _curr_img_id = row_start_idx[row_id]
+                else:
+                    _curr_img_id = img_idx[img_idx_id]
+                    img_idx_id += 1
+
+                curr_img = img_list[_curr_img_id]
+                # if annotations:
+                #     curr_ann = annotations[_curr_img_id]
+                stack_idx.append(_curr_img_id)
+                # print(curr_img.shape[:2])
+
+                # if curr_ann:
+                #     putTextWithBackground(curr_img, curr_ann, fmt=ann_fmt)
+
+                if not borderless:
+                    curr_img = resize_ar(curr_img, width, height, only_border=only_border)
+                if img_id == n_images - 1:
+                    list_ended = True
+            if curr_row is None:
+                curr_row = curr_img
+            else:
+                if borderless:
+                    if curr_row.shape[0] < curr_img.shape[0]:
+                        curr_row = resize_ar(curr_row, 0, curr_img.shape[0], only_border=only_border)
+                    elif curr_img.shape[0] < curr_row.shape[0]:
+                        curr_img = resize_ar(curr_img, 0, curr_row.shape[0], only_border=only_border)
+                # print('curr_row.shape: ', curr_row.shape)
+                # print('curr_img.shape: ', curr_img.shape)
+                curr_row = np.concatenate((curr_row, curr_img), axis=inner_axis)
+
+            curr_h, curr_w = curr_img.shape[:2]
+            stack_locations.append((start_row, start_col, start_row + curr_h, start_col + curr_w))
+            start_col += curr_w
+
+        if stacked_img is None:
+            stacked_img = curr_row
+        else:
+            if borderless:
+                resize_factor = float(curr_row.shape[1]) / float(stacked_img.shape[1])
+                if curr_row.shape[1] < stacked_img.shape[1]:
+                    curr_row = resize_ar(curr_row, stacked_img.shape[1], 0, only_border=only_border)
+                elif curr_row.shape[1] > stacked_img.shape[1]:
+                    stacked_img = resize_ar(stacked_img, curr_row.shape[1], 0, only_border=only_border)
+
+                new_start_col = 0
+                for _i in range(n_cols):
+                    _start_row, _start_col, _end_row, _end_col = stack_locations[_i - n_cols]
+                    _w, _h = _end_col - _start_col, _end_row - _start_row
+                    w_resized, h_resized = _w / resize_factor, _h / resize_factor
+                    stack_locations[_i - n_cols] = (
+                        _start_row, new_start_col, _start_row + h_resized, new_start_col + w_resized)
+                    new_start_col += w_resized
+            # print('curr_row.shape: ', curr_row.shape)
+            # print('stacked_img.shape: ', stacked_img.shape)
+            stacked_img = np.concatenate((stacked_img, curr_row), axis=stack_order)
+
+        curr_h, curr_w = curr_row.shape[:2]
+        start_row += curr_h
+
+        if list_ended:
+            break
+    if return_idx:
+        return stacked_img, stack_idx, stack_locations
+    else:
+        return stacked_img
+
+def annotate(
+        img_list,
+        img_labels,
+        text=None,
+        fmt=None,
+        grid_size=(-1, 1),
+):
+    """
+
+    :param np.ndarray | list | tuple img_list:
+    :param str text:
+    :param CVText fmt:
+    :param tuple(int) grid_size:
+    :return:
+    """
+
+    if not isinstance(img_list, (list, tuple)):
+        img_list = [img_list, ]
+
+    if not isinstance(img_labels, (list, tuple)):
+        img_labels = [img_labels, ]
+
+    assert len(img_labels) == len(img_list), "img_labels and img_list must have same length"
+
+    if fmt is None:
+        """use default format"""
+        fmt = CVText()
+
+    size = fmt.size
+
+    color = col_rgb[fmt.color]
+    font = CVConstants.fonts[fmt.font]
+    line_type = CVConstants.line_types[fmt.line_type]
+
+    out_img_list = []
+
+    for _id, _img in enumerate(img_list):
+        if len(_img.shape) == 2:
+            _img = np.stack([_img, ] * 3, axis=2)
+
+        img_label = img_labels[_id]
+        (text_width, text_height) = cv2.getTextSize(
+            img_label, font,
+            fontScale=fmt.size,
+            thickness=fmt.thickness)[0]
+
+        text_height += fmt.offset[1]
+        text_width += fmt.offset[0]
+        label_img = np.zeros((text_height, text_width), dtype=np.uint8)
+        cv2.putText(label_img, img_label, tuple(fmt.offset),
+                    font, size, color, fmt.thickness, line_type)
+
+        if len(_img.shape) == 3:
+            label_img = np.stack([label_img, ] * 3, axis=2)
+
+        if text_width < _img.shape[1]:
+            label_img = resize_ar(label_img, width=_img.shape[1], height=text_height,
+                                  only_border=2, placement_type=1)
+
+        # border_img = np.full((5, _img.shape[0], 3), 255, dtype=np.uint8)
+        img_list_label = [label_img,
+                          # border_img,
+                          _img]
+
+        _img = stack_images(img_list_label, grid_size=(-1, 1), preserve_order=1)
+
+        # border_img = np.full((_img.shape[1], 5, 3), 255, dtype=np.uint8)
+        # _img = stack_images([_img, border_img], grid_size=(1, -1), preserve_order=1)
+
+        out_img_list.append(_img)
+
+    img_stacked = stack_images(out_img_list, grid_size=grid_size, preserve_order=1)
+
+    if text is not None:
+        if '\n' in text:
+            text_list = text.split('\n')
+        else:
+            text_list = [text, ]
+
+        max_text_width = 0
+        text_height = 0
+        text_heights = []
+
+        for _text in text_list:
+            (_text_width, _text_height) = cv2.getTextSize(_text, font, fontScale=fmt.size, thickness=fmt.thickness)[0]
+            if _text_width > max_text_width:
+                max_text_width = _text_width
+            text_height += _text_height + 5
+            text_heights.append(_text_height)
+
+        text_width = max_text_width + 10
+        text_height += 30
+
+        text_img = np.zeros((text_height, text_width, 3), dtype=np.uint8)
+        location = list(fmt.offset)
+
+        for _id, _text in enumerate(text_list):
+            cv2.putText(text_img, _text, tuple(location), font, size, color, fmt.thickness, line_type)
+            location[1] += text_heights[_id] + 5
+
+        if text_width < img_stacked.shape[1]:
+            text_img = resize_ar(text_img, width=img_stacked.shape[1], height=text_height,
+                                 only_border=2, placement_type=1)
+
+        border_img = np.full((5, img_stacked.shape[1], 3), 255, dtype=np.uint8)
+
+        img_list_txt = [text_img, border_img, img_stacked]
+
+        img_stacked = stack_images_with_resize(img_list_txt, grid_size=(-1, 1), preserve_order=1)
+
+    return img_stacked
 
 def putTextWithBackground(img, text, fmt=None):
     font_types = {

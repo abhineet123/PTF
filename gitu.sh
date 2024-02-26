@@ -1,12 +1,12 @@
 #!/bin/bash
-git add --all .
+git.exe add --all .
 if [ "$#" -ne 1 ]; then
-   git commit
+   git.exe commit
 else
 	if [ "$1" == "f" ]; then
-		git commit -m "minor fix"
+		git.exe commit -m "minor fix"
 	else
-		git commit -m "$1"
+		git.exe commit -m "$1"
 	fi
 fi
-git push origin master
+git.exe push origin master

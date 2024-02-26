@@ -10,7 +10,7 @@ import skvideo.io
 import paramparse
 # print(paramparse.__file__)
 
-from Misc import sortKey, resizeAR, sizeAR, move_or_del_files, putTextWithBackground
+from Misc import sortKey, resizeAR, sizeAR, move_or_del_files, putTextWithBackground, annotate
 from video_io import VideoWriterGPU
 
 
@@ -125,6 +125,8 @@ def main():
 
     if write_filename:
         print('Writing filename as header')
+        if write_filename==2:
+            print('Moving the header to be above the image')
 
     exit_prog = 0
 
@@ -285,7 +287,10 @@ def main():
             if write_filename:
                 ann_fmt = (0, 5, 15, 1, 1, 255, 255, 255, 0, 0, 0)
                 filename_no_ext = os.path.splitext(filename)[0]
-                putTextWithBackground(image, filename_no_ext, fmt=ann_fmt)
+                if write_filename==2:
+                    annotate(image, filename_no_ext)
+                else:
+                    putTextWithBackground(image, filename_no_ext, fmt=ann_fmt)
 
             if use_skv:
                 video_out.writeFrame(image[:, :, ::-1])  # write the frame as RGB not BGR
