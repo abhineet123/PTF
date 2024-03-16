@@ -1,4 +1,0 @@
-#!/bin/bash
-
-zip -r settings_z370.zip .bashrc .tmux .tmux.conf scripts .ssh
-

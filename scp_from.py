@@ -65,7 +65,7 @@ def main():
         print('Creating folder: {}'.format(src_dir))
         os.makedirs(src_dir, exist_ok=True)
 
-    switches = '-r -v --progress'
+    switches = '-r -v --progress --mkpath'
     if copy_links:
         switches += ' --copy-links'
     else:

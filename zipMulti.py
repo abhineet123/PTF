@@ -18,7 +18,7 @@ class Params:
         self.exclusions = []
         self.include_ext = []
         self.inclusions = []
-        self.move_to_home = 1
+        self.move_to_dir = '~'
         self.out_name = ''
         self.postfix = ''
         self.relative = 0
@@ -45,7 +45,7 @@ if __name__ == '__main__':
     scp_port = params.scp_port
     relative = params.relative
     add_time_stamp = params.add_time_stamp
-    move_to_home = params.move_to_home
+    move_to_dir = params.move_to_dir
     recursive = params.recursive
 
     print('_dir_names: ', _dir_names)
@@ -224,8 +224,8 @@ if __name__ == '__main__':
         rm_cmd = 'rm "{}"'.format(out_path)
         print('\nrunning: {}\n'.format(rm_cmd))
         os.system(rm_cmd)
-    elif move_to_home:
-        mv_cmd = 'mv "{:s}" ~'.format(out_path)
+    elif move_to_dir:
+        mv_cmd = 'mv "{:s}" {:s}'.format(out_path, move_to_dir)
         print('\nrunning: {}\n'.format(mv_cmd))
         os.system(mv_cmd)
 
