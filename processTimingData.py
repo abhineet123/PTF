@@ -21,7 +21,7 @@ titles = []
 
 class Params(paramparse.CFG):
     def __init__(self):
-        super().__init__()
+        paramparse.CFG.__init__(self)
 
         self.win_titles = ['Timing', 'Google Chrome']
         self.txt_path = 'C:/Users/Tommy/Documents/Backup/txtpad'
@@ -42,6 +42,7 @@ class Params(paramparse.CFG):
 
     class CMD:
         def __init__(self):
+            self.type = ''
             self.paste = ''
             self.link = ''
             self.down = ''
@@ -204,30 +205,43 @@ def process_ogg(ogg_paths, lines, category, is_path, cmd, down_to_end):
 
     out_txt = '\n'.join(out_lines)
 
-    copy_to_clipboard(out_txt, print_txt=1)
-    time.sleep(1.0)
+    if cmd.type:
+        # type_file = cmd.type.replace('exe', 'txt')
+        type_file = cmd.type + '.txt'
+        with open(type_file, 'w') as fid:
+            fid.write(out_txt)
+        os.system(cmd.type)
+    else:
+        copy_to_clipboard(out_txt, print_txt=1)
+        time.sleep(1.0)
+        os.system(cmd.paste)
 
-    in_txt = '\n'.join(lines)
-    print(in_txt)
+    # in_txt = '\n'.join(lines)
+    # print(in_txt)
     # if pause_for_input:
     #     input('press any key')
 
-    print('is_path: {}'.format(is_path))
-    print('paste: {}'.format(cmd.paste))
-    print('link: {}'.format(cmd.link))
-    print('down: {}'.format(cmd.down))
-    print('enter: {}'.format(cmd.enter))
+    # print('is_path: {}'.format(is_path))
+    # print('paste: {}'.format(cmd.paste))
+    # print('link: {}'.format(cmd.link))
+    # print('down: {}'.format(cmd.down))
+    # print('enter: {}'.format(cmd.enter))
 
-    if is_path and cmd.paste and cmd.link:
-        os.system(cmd.paste)
+    if is_path and cmd.link:
         for _path in lines[::-1]:
             print(_path)
-            copy_to_clipboard(_path, print_txt=1)
-            time.sleep(0.5)
-
-            # input('press any key')
-            os.system(cmd.link)
-            time.sleep(0.5)
+            if cmd.type:
+                # type_file = cmd.link.replace('exe', 'txt')
+                type_file = cmd.link + '.txt'
+                with open(type_file, 'w') as fid:
+                    fid.write(_path)
+                os.system(cmd.link)
+            else:
+                copy_to_clipboard(_path, print_txt=1)
+                time.sleep(0.5)
+                # input('press any key')
+                os.system(cmd.link)
+                time.sleep(0.5)
 
         if down_to_end and is_path and cmd.down and cmd.enter:
             for _ in range(len(lines)):
