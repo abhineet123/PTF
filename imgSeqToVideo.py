@@ -125,7 +125,7 @@ def main():
 
     if write_filename:
         print('Writing filename as header')
-        if write_filename==2:
+        if write_filename == 2:
             print('Moving the header to be above the image')
 
     exit_prog = 0
@@ -238,21 +238,26 @@ def main():
                 print('save_path: {}'.format(save_path))
                 # sys.exit()
 
-        if use_skv:
-            video_out = skvideo.io.FFmpegWriter(save_path, outputdict={
-                '-vcodec': 'libx264',  # use the h.264 codec
-                '-crf': '0',  # set the constant rate factor to 0, which is lossless
-                '-preset': 'veryslow'  # the slower the better compression, in princple, try
-                # other options see https://trac.ffmpeg.org/wiki/Encode/H.264
-            })
-        elif codec == 'H265':
-            video_out = VideoWriterGPU(save_path, fps, (_width, _height))
+        gif_mode = False
+        if ext == 'gif':
+            gif_mode = True
+            video_out = []
         else:
-            fourcc = cv2.VideoWriter_fourcc(*codec)
-            video_out = cv2.VideoWriter(save_path, fourcc, fps, (_width, _height))
+            if use_skv:
+                video_out = skvideo.io.FFmpegWriter(save_path, outputdict={
+                    '-vcodec': 'libx264',  # use the h.264 codec
+                    '-crf': '0',  # set the constant rate factor to 0, which is lossless
+                    '-preset': 'veryslow'  # the slower the better compression, in princple, try
+                    # other options see https://trac.ffmpeg.org/wiki/Encode/H.264
+                })
+            elif codec == 'H265':
+                video_out = VideoWriterGPU(save_path, fps, (_width, _height))
+            else:
+                fourcc = cv2.VideoWriter_fourcc(*codec)
+                video_out = cv2.VideoWriter(save_path, fourcc, fps, (_width, _height))
 
-        if video_out is None:
-            raise IOError('Output video file could not be opened: {}'.format(save_path))
+            if video_out is None:
+                raise IOError('Output video file could not be opened: {}'.format(save_path))
 
         print('Saving {}x{} output video to {}'.format(_width, _height, save_path))
 
@@ -287,12 +292,14 @@ def main():
             if write_filename:
                 ann_fmt = (0, 5, 15, 1, 1, 255, 255, 255, 0, 0, 0)
                 filename_no_ext = os.path.splitext(filename)[0]
-                if write_filename==2:
+                if write_filename == 2:
                     annotate(image, filename_no_ext)
                 else:
                     putTextWithBackground(image, filename_no_ext, fmt=ann_fmt)
 
-            if use_skv:
+            if gif_mode:
+                video_out.append(image[:, :, ::-1])
+            elif use_skv:
                 video_out.writeFrame(image[:, :, ::-1])  # write the frame as RGB not BGR
             else:
                 video_out.write(image)
@@ -320,7 +327,10 @@ def main():
         sys.stdout.write('\n')
         sys.stdout.flush()
 
-        if use_skv:
+        if gif_mode:
+            import imageio
+            imageio.mimsave(save_path, video_out)
+        elif use_skv:
             video_out.close()  # close the writer
         else:
             video_out.release()

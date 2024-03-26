@@ -14,29 +14,32 @@ def write(_str):
     print(_str)
 
 
+class Params:
+    def __init__(self):
+        self.cfg = ()
+        self.enable_logging = 0
+        self.end_id = -1
+        self.in_fname = ''
+        self.log_dir = 'log/tee'
+        self.pane_id = '12.0'
+        self.pane_id_sep = '>'
+        self.server = ''
+        self.start_id = 0
+
+
 def main():
-    params = {
-        'in_fname': '',
-        'start_id': 0,
-        'end_id': -1,
-        'server': '',
-        'pane_id': '12.0',
-        'pane_id_sep': '>',
-        'log_dir': 'log/tee',
-        'enable_logging': 0,
-    }
-    paramparse.process_dict(params)
+    params: Params = paramparse.process(Params)
 
     # processArguments(sys.argv[1:], params)
 
-    _in_fname = params['in_fname']
-    start_id = params['start_id']
-    end_id = params['end_id']
-    server = params['server']
-    pane_id_sep = params['pane_id_sep']
-    pane_id_default = params['pane_id']
-    log_dir = params['log_dir']
-    enable_logging = params['enable_logging']
+    _in_fname = params.in_fname
+    start_id = params.start_id
+    end_id = params.end_id
+    server = params.server
+    pane_id_sep = params.pane_id_sep
+    pane_id_default = params.pane_id
+    log_dir = params.log_dir
+    enable_logging = params.enable_logging
 
     prev_in_fname = None
     while True:
@@ -199,16 +202,19 @@ def main():
                 # else:
                 #     _multi_token_lines = [_line, ]
 
-
                 # print(_multi_token_lines)
 
                 for __line in _multi_token_lines:
                     if enable_logging:
                         time_stamp = datetime.now().strftime("%y%m%d_%H%M%S_%f")
-                        log_fname = '{}.ansi'.format(time_stamp)
+                        log_fname = f'{time_stamp}'
+                        if server:
+                            log_fname = f'{log_fname}_{server}'
+                        log_fname = f'{log_fname}.ansi'
+                        
                         log_path = os.path.join(log_dir, log_fname)
-                        tee_log_id = '{}:{}'.format(pane_id, time_stamp)
-                        __line = '{} @ tee_log={} 2>&1 | tee {}'.format(__line, tee_log_id, log_path)
+                        tee_log_id = f'{pane_id}:{time_stamp}'
+                        __line = f'{__line} @ tee_log={tee_log_id} 2>&1 | tee {log_path}'
 
                         """disable python output buffering to ensure in-order output in the logging fine"""
                         if __line.startswith('python '):
@@ -220,12 +226,8 @@ def main():
                         elif __line.startswith('python2 '):
                             __line = __line.replace('python2 ', 'python2 -u ', 1)
                         pane_to_log[pane_id].append(log_fname)
-                        
-                    pane_to_commands[pane_id].append('tmux send-keys -t {} "{}" Enter Enter'.format(
-                        pane_id,
-                        # pane_to_commands[pane_id][-1],
-                        __line)
-                    )
+
+                    pane_to_commands[pane_id].append(f'tmux send-keys -t {pane_id} "{__line}" Enter Enter')
 
             # write('pane_to_commands: {}'.format(pformat(pane_to_commands)))
             lines = None
@@ -250,7 +252,7 @@ def main():
                         txt += ' with logging in {}'.format(zip_path)
 
                     write(txt)
-                    all_pane_ids .append(pane_id)
+                    all_pane_ids.append(pane_id)
 
             # all_pane_ids += list(pane_to_commands.keys())
 
