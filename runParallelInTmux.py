@@ -211,7 +211,7 @@ def main():
                         if server:
                             log_fname = f'{log_fname}_{server}'
                         log_fname = f'{log_fname}.ansi'
-                        
+
                         log_path = os.path.join(log_dir, log_fname)
                         tee_log_id = f'{pane_id}:{time_stamp}'
                         __line = f'{__line} @ tee_log={tee_log_id} 2>&1 | tee {log_path}'
@@ -247,9 +247,10 @@ def main():
                         zip_fname = log_fname.replace('.ansi', '.zip')
                         zip_path = os.path.join(log_dir, zip_fname)
 
-                        zip_cmd = '(cd {} && zip -rm {} {})'.format(log_dir, zip_fname, log_fname)
-                        os.system('tmux send-keys -t {} "{}" Enter'.format(pane_id, zip_cmd))
-                        txt += ' with logging in {}'.format(zip_path)
+                        zip_cmd = f'(cd {log_dir} && zip -rm {zip_fname} {log_fname})'
+                        os.system(f'tmux send-keys -t {pane_id} "{zip_cmd}" Enter')
+                        txt += f' with logging in {zip_path}'
+                        print(zip_path)
 
                     write(txt)
                     all_pane_ids.append(pane_id)
