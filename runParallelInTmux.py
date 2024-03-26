@@ -249,6 +249,7 @@ def main():
 
                         zip_cmd = f'(cd {log_dir} && zip -rm {zip_fname} {log_fname})'
                         os.system(f'tmux send-keys -t {pane_id} "{zip_cmd}" Enter')
+                        os.system(f'tmux send-keys -t {pane_id} "echo {zip_path}" Enter')
                         txt += f' with logging in {zip_path}'
                         print(zip_path)
 
