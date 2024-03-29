@@ -32,7 +32,5 @@ if is_wsl and src_dir_abs.startswith('/mnt/'):
     assert os.path.isdir(src_dir_abs), f"nonexistent dir: {src_dir_abs}"
     print(f'src_dir_abs: {src_dir_abs}')
 
-    os.system(f"cd {src_dir_abs}")
-    os.chdir(src_dir_abs)
-
+    os.system(f'tmux send-keys "cd {src_dir_abs}" Enter')
 
