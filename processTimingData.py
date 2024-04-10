@@ -27,6 +27,7 @@ class Params(paramparse.CFG):
         self.txt_path = 'C:/Users/Tommy/Documents/Backup/txtpad'
         self.txt_proc_list = 'processed.log'
         self.recursive = 1
+        self.ogg_log_path = 'log/ptd_ogg.txt'
         self.category = 2
 
         self.ffs = Params.FFS()
@@ -182,7 +183,7 @@ def copy_to_clipboard(out_txt, print_txt=0):
     # win32clipboard.CloseClipboard()
 
 
-def process_ogg(ogg_paths, lines, category, is_path, cmd, down_to_end):
+def process_ogg(ogg_paths, lines, category, is_path, cmd, down_to_end, ogg_log_path):
     """
 
     :param ogg_paths:
@@ -190,7 +191,6 @@ def process_ogg(ogg_paths, lines, category, is_path, cmd, down_to_end):
     :param category:
     :param is_path:
     :type cmd: Params.CMD
-    :param pause_for_input:
     :return:
     """
     base_names = [os.path.basename(line) for line in ogg_paths]
@@ -227,9 +227,15 @@ def process_ogg(ogg_paths, lines, category, is_path, cmd, down_to_end):
     # print('down: {}'.format(cmd.down))
     # print('enter: {}'.format(cmd.enter))
 
+    ogg_log_dir = os.path.dirname(ogg_log_path)
+    os.makedirs(ogg_log_dir, exist_ok=True)
+
+    log_fid = open(ogg_log_path, 'a')
+
     if is_path and cmd.link:
         for _path in lines[::-1]:
             print(_path)
+            log_fid.write(_path + '\n')
             if cmd.type:
                 # type_file = cmd.link.replace('exe', 'txt')
                 type_file = cmd.link + '.txt'
@@ -242,12 +248,24 @@ def process_ogg(ogg_paths, lines, category, is_path, cmd, down_to_end):
                 # input('press any key')
                 os.system(cmd.link)
                 time.sleep(0.5)
+        log_fid.close()
 
         if down_to_end and is_path and cmd.down and cmd.enter:
             for _ in range(len(lines)):
                 os.system(cmd.down)
                 os.system(cmd.down)
             os.system(cmd.enter)
+
+
+def filter_ogg(ogg_log_path, ogg_paths, ogg_lines):
+    if os.path.exists(ogg_log_path):
+        processed_ogg = open(ogg_log_path, 'r').readlines()
+        processed_ogg = [line.strip() for line in processed_ogg]
+        valid_ogg_ids = [i for i, line in enumerate(ogg_lines) if line not in processed_ogg]
+        ogg_paths = [ogg_paths[i] for i in valid_ogg_ids]
+        ogg_lines = [ogg_lines[i] for i in valid_ogg_ids]
+
+    return ogg_paths, ogg_lines
 
 
 def main():
@@ -283,8 +301,9 @@ def main():
         # input('press any key')
 
         if is_ogg:
+            stripped_lines, lines = filter_ogg(params.ogg_log_path, stripped_lines, lines)
             process_ogg(stripped_lines, lines, params.category, is_path, params.cmd,
-                        down_to_end=0)
+                        down_to_end=0, ogg_log_path=params.ogg_log_path)
             return
         elif is_folder:
             n_stripped_lines = len(stripped_lines)
@@ -292,8 +311,10 @@ def main():
             for folder_id, folder in enumerate(stripped_lines):
                 ogg_paths = ['{}'.format(os.path.join(folder, k)) for k in os.listdir(folder) if k.endswith('.ogg')]
                 ogg_lines = ['"{}"'.format(k) for k in ogg_paths]
+
+                ogg_paths, ogg_lines = filter_ogg(params.ogg_log_path, ogg_paths, ogg_lines)
                 process_ogg(ogg_paths, ogg_lines, params.category, is_path, params.cmd,
-                            down_to_end=folder_id < n_stripped_lines - 1)
+                            down_to_end=folder_id < n_stripped_lines - 1, ogg_log_path=params.ogg_log_path)
             return
         else:
             try:
@@ -443,6 +464,7 @@ def main():
     #     out_fid.write(out_txt)
 
     copy_to_clipboard(out_txt, print_txt=1)
+
 
 if __name__ == '__main__':
     main()
