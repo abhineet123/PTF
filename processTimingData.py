@@ -203,18 +203,18 @@ def process_ogg(ogg_paths, lines, category, is_path, cmd, down_to_end, ogg_log_p
     out_lines = [out_lines[k] for k in sort_idx]
     lines = [lines[k] for k in sort_idx]
 
-    out_txt = '\n'.join(out_lines)
-
-    if cmd.type:
-        # type_file = cmd.type.replace('exe', 'txt')
-        type_file = cmd.type + '.txt'
-        with open(type_file, 'w') as fid:
-            fid.write(out_txt)
-        os.system(cmd.type)
-    else:
-        copy_to_clipboard(out_txt, print_txt=1)
-        time.sleep(1.0)
-        os.system(cmd.paste)
+    if out_lines:
+        out_txt = '\n'.join(out_lines)
+        if cmd.type:
+            # type_file = cmd.type.replace('exe', 'txt')
+            type_file = cmd.type + '.txt'
+            with open(type_file, 'w') as fid:
+                fid.write(out_txt)
+            os.system(cmd.type)
+        else:
+            copy_to_clipboard(out_txt, print_txt=1)
+            time.sleep(1.0)
+            os.system(cmd.paste)
 
     # in_txt = '\n'.join(lines)
     # print(in_txt)
@@ -230,9 +230,10 @@ def process_ogg(ogg_paths, lines, category, is_path, cmd, down_to_end, ogg_log_p
     ogg_log_dir = os.path.dirname(ogg_log_path)
     os.makedirs(ogg_log_dir, exist_ok=True)
 
-    log_fid = open(ogg_log_path, 'a')
-
-    if is_path and cmd.link:
+    if is_path and cmd.link and lines:
+        log_fid = open(ogg_log_path, 'a')
+        timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
+        log_fid.write(f'\n# {timestamp}\n')
         for _path in lines[::-1]:
             print(_path)
             log_fid.write(_path + '\n')
@@ -260,7 +261,7 @@ def process_ogg(ogg_paths, lines, category, is_path, cmd, down_to_end, ogg_log_p
 def filter_ogg(ogg_log_path, ogg_paths, ogg_lines):
     if os.path.exists(ogg_log_path):
         processed_ogg = open(ogg_log_path, 'r').readlines()
-        processed_ogg = [line.strip() for line in processed_ogg]
+        processed_ogg = [line.strip() for line in processed_ogg if line.strip() and not line.startswith('#')]
         valid_ogg_ids = [i for i, line in enumerate(ogg_lines) if line not in processed_ogg]
         ogg_paths = [ogg_paths[i] for i in valid_ogg_ids]
         ogg_lines = [ogg_lines[i] for i in valid_ogg_ids]
