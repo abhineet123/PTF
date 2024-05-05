@@ -474,6 +474,8 @@ def run(args, multi_exit_program=None,
             [0, 0],
             [0, -1080],
             [-3840, -1080],
+            [1920, 0],
+            [-5760, 0],
         ]
 
         def get_monitor_id(x, y):
@@ -3630,7 +3632,7 @@ def run(args, multi_exit_program=None,
                     _print('duplicate window disabled')
             elif k == ord('N'):
                 max_switches += 1
-            elif ord('1') <= k <= ord('6'):
+            elif ord('1') <= k <= ord('8'):
                 _monitor_id = k - ord('1')
                 try:
                     active_win_name = win32gui.GetWindowText(win32gui.GetForegroundWindow())

@@ -4,6 +4,7 @@ import paramparse
 
 from Misc import linux_path
 
+
 class Params:
 
     def __init__(self):
@@ -16,6 +17,7 @@ class Params:
         self.scp_port = ''
         self.src_fname = 'nazio'
         self.inverse = 0
+        self.remove_src = 0
 
 
 def main():
@@ -29,6 +31,7 @@ def main():
     file_mode = params.file_mode
     abs_path = params.abs_path
     copy_links = params.copy_links
+    remove_src = params.remove_src
 
     import platform
 
@@ -93,6 +96,9 @@ def main():
         os.makedirs(src_dir, exist_ok=True)
 
     switches = '-r -v --progress --mkpath'
+
+    # switches += ' --dry-run'
+
     if copy_links:
         switches += ' --copy-links'
     else:
@@ -100,6 +106,9 @@ def main():
 
     if not overwrite:
         switches += ' --ignore-existing'
+
+    if remove_src:
+        switches += ' --remove-source-files'
 
     # if overwrite:
     #     rsync_cmd = 'scp -r {}:{} {}'.format(scp_dst, scp_fname, src_fname)

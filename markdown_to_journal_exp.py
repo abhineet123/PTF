@@ -28,9 +28,11 @@ class Params(paramparse.CFG):
     class CMD:
         def __init__(self):
             self.type = ''
+            self.type_3 = ''
             self.paste = ''
             self.paste_3 = ''
             self.task = ''
+            self.task_time = ''
 
 
 def copy_from_clipboard():
@@ -60,7 +62,7 @@ def copy_to_clipboard(out_txt, print_txt=0):
     except BaseException as e:
         print('Copying to clipboard failed: {}'.format(e))
         return
-    time.sleep(0.5)
+    time.sleep(0.1)
     # win32clipboard.CloseClipboard()
 
 
@@ -73,13 +75,19 @@ def main():
     lines = in_txt.split('\n')
     lines = [line.strip() for line in lines if line.strip()]
 
+    is_first = True
+
     for line in lines:
         if line.startswith('<a'):
             continue
         if line.startswith('#'):
             line = line.lstrip('#').strip()
             open(params.cmd.task + '.txt', 'w').write(line)
-            os.system(params.cmd.task)
+            if is_first:
+                os.system(params.cmd.task_time)
+                is_first = False
+            else:
+                os.system(params.cmd.type_3)
             # exit()
         elif line.startswith('`'):
             line = line.strip('`')
