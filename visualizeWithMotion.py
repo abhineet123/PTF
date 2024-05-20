@@ -116,7 +116,10 @@ class Params:
         self.contrast_factor = 1.
         self.trim_images = 1
         self.min_size = 0
+
         self.video_mode = 0
+        self.show_image_id = 1
+
         self.wallpaper_dir = ''
         self.wallpaper_mode = 0
         self.widescreen_mode = 0
@@ -315,6 +318,7 @@ def run(args, multi_exit_program=None,
     n_wallpapers = params.n_wallpapers
     multi_mode = params.multi_mode
     contrast_factor = params.contrast_factor
+    show_image_id = params.show_image_id
     trim_images = params.trim_images
     alpha = params.alpha
     show_window = params.show_window
@@ -1762,6 +1766,10 @@ def run(args, multi_exit_program=None,
                                     img_sequences[_load_id][img_fname] = src_img
                         else:
                             src_img = np.copy(img_fname)
+
+                    if show_image_id:
+                        cv2.putText(src_img, f'image {_img_id}', (25, 25),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
 
                     if trim_images:
                         # print('trimming...')
