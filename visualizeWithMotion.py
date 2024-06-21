@@ -478,8 +478,8 @@ def run(args, multi_exit_program=None,
             [0, 0],
             [0, -1080],
             [-3840, -1080],
-            [1920, 0],
             [-5760, 0],
+            [1920, 0],
         ]
 
         def get_monitor_id(x, y):

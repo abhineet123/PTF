@@ -15,7 +15,8 @@ class Params:
         self.overwrite = 0
         self.scp_dst = ''
         self.scp_port = ''
-        self.src_fname = 'nazio'
+        self.src_ext = ''
+        self.src_fname = ''
         self.inverse = 0
         self.remove_src = 0
 
@@ -32,6 +33,7 @@ def main():
     abs_path = params.abs_path
     copy_links = params.copy_links
     remove_src = params.remove_src
+    src_ext = params.src_ext
 
     import platform
 
@@ -96,6 +98,8 @@ def main():
         os.makedirs(src_dir, exist_ok=True)
 
     switches = '-r -v --progress --mkpath'
+    if src_ext:
+        switches = f' --include="*/" --include="*.{src_ext}" --exclude="*" {switches}'
 
     # switches += ' --dry-run'
 
@@ -117,6 +121,7 @@ def main():
         dst_fname = './'
     else:
         dst_fname = src_fname
+        
     if params.inverse:
         rsync_cmd = f'rsync {switches} {dst_fname} {scp_dst}:{scp_fname}'
     else:

@@ -61,7 +61,7 @@ class Params:
         self.first_and_last = 0
         self.horz = 1
         self.included_cats = []
-        self.min_start_time = '04:00:00'
+        self.min_start_time = '02:00:00'
         self.pairwise = 1
 
 
