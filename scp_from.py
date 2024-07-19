@@ -20,6 +20,7 @@ class Params:
         self.src_fname = ''
         self.inverse = 0
         self.remove_src = 0
+        self.verbose = 1
 
 
 def main():
@@ -27,17 +28,20 @@ def main():
     paramparse.process(params)
 
     if params.src_list:
+        from tqdm import tqdm
         print(f'reading sources from {params.src_list}')
         srcs = open(params.src_list, 'r').readlines()
-        for src in srcs:
+        params.verbose=0
+        pbar = tqdm(srcs, total=len(srcs))
+        for src in pbar:
+            pbar.set_description(src)
             params.src_fname = src.strip()
             run(params)
     else:
         run(params)
 
-def run(params):
 
-
+def run(params: Params):
     src_fname = params.src_fname
     scp_dst = params.scp_dst
     scp_port = params.scp_port
@@ -110,7 +114,11 @@ def run(params):
         print('Creating folder: {}'.format(src_dir))
         os.makedirs(src_dir, exist_ok=True)
 
-    switches = '-r -v --progress --mkpath'
+    switches = '-r --mkpath'
+
+    if params.verbose:
+        switches = f'{switches} -v --progress'
+
     if src_ext:
         switches = f' --include="*/" --include="*.{src_ext}" --exclude="*" {switches}'
 
