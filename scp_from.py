@@ -34,8 +34,9 @@ def main():
         params.verbose=0
         pbar = tqdm(srcs, total=len(srcs))
         for src in pbar:
+            src = src.strip()
             pbar.set_description(src)
-            params.src_fname = src.strip()
+            params.src_fname = src
             run(params)
     else:
         run(params)
