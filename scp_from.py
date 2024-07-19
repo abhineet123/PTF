@@ -12,6 +12,7 @@ class Params:
         self.abs_path = 1
         self.copy_links = 0
         self.file_mode = 0
+        self.src_list = ''
         self.overwrite = 0
         self.scp_dst = ''
         self.scp_port = ''
@@ -24,6 +25,18 @@ class Params:
 def main():
     params = Params()
     paramparse.process(params)
+
+    if params.src_list:
+        print(f'reading sources from {params.src_list}')
+        srcs = open(params.src_list, 'r').readlines()
+        for src in srcs:
+            params.src_fname = src.strip()
+            run(params)
+    else:
+        run(params)
+
+def run(params):
+
 
     src_fname = params.src_fname
     scp_dst = params.scp_dst
@@ -121,7 +134,7 @@ def main():
         dst_fname = './'
     else:
         dst_fname = src_fname
-        
+
     if params.inverse:
         rsync_cmd = f'rsync {switches} {dst_fname} {scp_dst}:{scp_fname}'
     else:
