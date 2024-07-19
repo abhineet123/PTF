@@ -62,7 +62,8 @@ def run(params: Params):
     # src_fname_abs = os.path.abspath(src_fname)
     src_dir_abs = str(os.popen('pwd').read().strip())
 
-    print(f'src_dir_abs: {src_dir_abs}')
+    if params.verbose:
+        print(f'src_dir_abs: {src_dir_abs}')
 
     if is_wsl and src_dir_abs.startswith('/mnt/'):
         _src_dir = src_dir_abs
@@ -104,15 +105,17 @@ def run(params: Params):
         src_fname += '/'
         scp_fname += '/'
 
-    print('src_fname_abs: {}'.format(src_fname_abs))
-    print('src_fname: {}'.format(src_fname))
-    print('home_path: {}'.format(home_path))
-    print('src_fname_rel: {}'.format(src_fname_rel))
-    print('scp_fname: {}'.format(scp_fname))
+    if params.verbose:
+        print('src_fname_abs: {}'.format(src_fname_abs))
+        print('src_fname: {}'.format(src_fname))
+        print('home_path: {}'.format(home_path))
+        print('src_fname_rel: {}'.format(src_fname_rel))
+        print('scp_fname: {}'.format(scp_fname))
 
     src_dir = os.path.dirname(src_fname_abs)
     if src_dir and not os.path.isdir(src_dir):
-        print('Creating folder: {}'.format(src_dir))
+        if params.verbose:
+            print('Creating folder: {}'.format(src_dir))
         os.makedirs(src_dir, exist_ok=True)
 
     switches = '-r --mkpath'
@@ -152,7 +155,9 @@ def run(params: Params):
     if scp_port:
         rsync_cmd = f"{rsync_cmd} -e 'ssh -p {scp_port}'"
 
-    print(f'\nrunning: {rsync_cmd}\n')
+    if params.verbose:
+        print(f'\nrunning: {rsync_cmd}\n')
+        
     os.system(rsync_cmd)
 
 
