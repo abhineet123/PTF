@@ -37,7 +37,10 @@ def main():
             src = src.strip()
             pbar.set_description(src)
             params.src_fname = src
-            run(params)
+            try:
+                run(params)
+            except KeyboardInterrupt:
+                break
     else:
         run(params)
 
@@ -157,7 +160,7 @@ def run(params: Params):
 
     if params.verbose:
         print(f'\nrunning: {rsync_cmd}\n')
-        
+
     os.system(rsync_cmd)
 
 
