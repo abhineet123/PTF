@@ -145,6 +145,7 @@ def run(params: Params):
         raise e
     return status
 
+
 def main():
     params = Params()
     paramparse.process(params)
@@ -153,7 +154,7 @@ def main():
         from tqdm import tqdm
         print(f'reading sources from {params.src_list}')
         srcs = open(params.src_list, 'r').readlines()
-        params.verbose=0
+        params.verbose = 0
         pbar = tqdm(srcs, total=len(srcs))
         for src in pbar:
             src = src.strip()
@@ -167,6 +168,7 @@ def main():
                 break
     else:
         run(params)
+
 
 if __name__ == '__main__':
     main()
