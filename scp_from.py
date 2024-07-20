@@ -23,28 +23,6 @@ class Params:
         self.verbose = 1
 
 
-def main():
-    params = Params()
-    paramparse.process(params)
-
-    if params.src_list:
-        from tqdm import tqdm
-        print(f'reading sources from {params.src_list}')
-        srcs = open(params.src_list, 'r').readlines()
-        params.verbose=0
-        pbar = tqdm(srcs, total=len(srcs))
-        for src in pbar:
-            src = src.strip()
-            pbar.set_description(src)
-            params.src_fname = src
-            try:
-                run(params)
-            except KeyboardInterrupt:
-                break
-    else:
-        run(params)
-
-
 def run(params: Params):
     src_fname = params.src_fname
     scp_dst = params.scp_dst
@@ -162,10 +140,33 @@ def run(params: Params):
         print(f'\nrunning: {rsync_cmd}\n')
 
     try:
-        os.system(rsync_cmd)
+        status = os.system(rsync_cmd)
     except KeyboardInterrupt as e:
         raise e
+    return status
 
+def main():
+    params = Params()
+    paramparse.process(params)
+
+    if params.src_list:
+        from tqdm import tqdm
+        print(f'reading sources from {params.src_list}')
+        srcs = open(params.src_list, 'r').readlines()
+        params.verbose=0
+        pbar = tqdm(srcs, total=len(srcs))
+        for src in pbar:
+            src = src.strip()
+            pbar.set_description(src)
+            params.src_fname = src
+            try:
+                status = run(params)
+            except KeyboardInterrupt:
+                break
+            if status != 0:
+                break
+    else:
+        run(params)
 
 if __name__ == '__main__':
     main()
