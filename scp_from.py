@@ -161,7 +161,10 @@ def run(params: Params):
     if params.verbose:
         print(f'\nrunning: {rsync_cmd}\n')
 
-    os.system(rsync_cmd)
+    try:
+        os.system(rsync_cmd)
+    except KeyboardInterrupt as e:
+        raise e
 
 
 if __name__ == '__main__':
