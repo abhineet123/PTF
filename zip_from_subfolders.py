@@ -15,7 +15,7 @@ if __name__ == '__main__':
         'scp_dst': '',
         'include_all': 1,
         'relative': 0,
-        'delete': 0,
+        'delete': 1,
     }
     paramparse.process_dict(params)
     _root_dir = params['root_dir']
