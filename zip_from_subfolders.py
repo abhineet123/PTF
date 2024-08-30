@@ -56,7 +56,7 @@ if __name__ == '__main__':
         dir_name = os.path.basename(_dir)
         out_name = '{}.zip'.format(dir_name)
         if relative:
-            zip_cmd = f'cd {_dir:s} && zip {switches:s} {out_name:s} *'
+            zip_cmd = f'cd {root_dir:s} && zip {switches:s} {out_name:s} {dir_name:s}/*'
         else:
             zip_cmd = f'cd {root_dir:s} && zip {switches:s} {out_name:s} {dir_name:s}'
         os.system(zip_cmd)
