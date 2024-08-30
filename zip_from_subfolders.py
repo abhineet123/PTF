@@ -65,5 +65,3 @@ if __name__ == '__main__':
 
         if delete:
             shutil.rmtree(_dir)
-
-        exit()
