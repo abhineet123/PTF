@@ -2,6 +2,7 @@ import os
 import shutil
 import paramparse
 import sys
+from tqdm import tqdm
 
 if __name__ == '__main__':
     params = {
@@ -51,7 +52,7 @@ if __name__ == '__main__':
     sub_dirs = filter_func(sub_dirs)
 
     all_matching_files = []
-    for _dir in sub_dirs:
+    for _dir in tqdm(sub_dirs, ncols=100):
         zip_paths = _dir
         dir_name = os.path.basename(_dir)
         out_name = '{}.zip'.format(dir_name)
