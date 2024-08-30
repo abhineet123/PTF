@@ -53,9 +53,15 @@ if __name__ == '__main__':
     all_matching_files = []
     for _dir in sub_dirs:
         zip_paths = _dir
-        out_name = '{}.zip'.format(_dir)
-        zip_cmd = 'cd {:s} && zip {:s} {:s} *'.format(root_dir, switches, out_name, zip_paths)
+        dir_name = os.path.basename(_dir)
+        out_name = '{}.zip'.format(dir_name)
+        if relative:
+            zip_cmd = f'cd {_dir:s} && zip {switches:s} {out_name:s} *'
+        else:
+            zip_cmd = f'cd {root_dir:s} && zip {switches:s} {out_name:s} {dir_name:s}'
         os.system(zip_cmd)
 
         if delete:
             shutil.rmtree(_dir)
+
+        exit()
