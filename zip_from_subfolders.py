@@ -14,8 +14,9 @@ if __name__ == '__main__':
         'switches': '-rq',
         'scp_dst': '',
         'include_all': 1,
-        'relative': 0,
-        'delete': 1,
+        'relative': 1,
+        'delete': 0,
+        'level': 3,
     }
     paramparse.process_dict(params)
     _root_dir = params['root_dir']
@@ -28,6 +29,7 @@ if __name__ == '__main__':
     include_all = params['include_all']
     relative = params['relative']
     delete = params['delete']
+    level = params['level']
 
     if not file_pattern:
         file_pattern = '*'
@@ -47,16 +49,22 @@ if __name__ == '__main__':
         filter_func = lambda _sub_dirs: _sub_dirs
 
     print('root_dir: {}'.format(root_dir))
-    sub_dirs = [os.path.join(root_dir, f) for f in os.listdir(root_dir)
-                if os.path.isdir(os.path.join(root_dir, f))]
+    sub_dirs = [root_dir,]
+    # sub_dirs = [os.path.join(root_dir, f) for f in os.listdir(root_dir)
+    #             if os.path.isdir(os.path.join(root_dir, f))]
+    for _ in range(level):
+        sub_dirs = [os.path.join(sub_dir, f) for sub_dir in sub_dirs for f in os.listdir(sub_dir)
+                    if os.path.isdir(os.path.join(sub_dir, f))]
+
     sub_dirs = filter_func(sub_dirs)
 
     all_matching_files = []
     for _dir in tqdm(sub_dirs, ncols=100):
         zip_paths = _dir
         dir_name = os.path.basename(_dir)
+        parent_dir = os.path.dirname(_dir)
         out_name = '{}.zip'.format(dir_name)
-        out_path = os.path.join(root_dir, out_name)
+        out_path = os.path.join(parent_dir, out_name)
 
         if relative:
             zip_cmd = f'cd {dir_name:s} && zip {switches:s} {out_path:s} *'
