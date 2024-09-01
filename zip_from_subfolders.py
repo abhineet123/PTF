@@ -61,13 +61,13 @@ if __name__ == '__main__':
     all_matching_files = []
     for _dir in tqdm(sub_dirs, ncols=100):
         zip_paths = _dir
-        dir_name = os.path.basename(_dir)
+        dir_name = os.path.relpath(_dir, root_dir)
         parent_dir = os.path.dirname(_dir)
         out_name = '{}.zip'.format(dir_name)
         out_path = os.path.join(parent_dir, out_name)
 
         if relative:
-            zip_cmd = f'cd {dir_name:s} && zip {switches:s} {out_path:s} *'
+            zip_cmd = f'cd {_dir:s} && zip {switches:s} {out_path:s} *'
         else:
             zip_cmd = f'cd {root_dir:s} && zip {switches:s} {out_path:s} {dir_name:s}'
         os.system(zip_cmd)
