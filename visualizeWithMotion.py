@@ -118,7 +118,7 @@ class Params:
         self.min_size = 0
 
         self.video_mode = 0
-        self.show_image_id = 1
+        self.show_image_id = 0
 
         self.wallpaper_dir = ''
         self.wallpaper_mode = 0
@@ -478,8 +478,8 @@ def run(args, multi_exit_program=None,
             [0, 0],
             [0, -1080],
             [-3840, -1080],
-            [-5760, 0],
             [1920, 0],
+            [1920, -1080],
         ]
 
         def get_monitor_id(x, y):
@@ -1552,7 +1552,12 @@ def run(args, multi_exit_program=None,
                                    int((win_offset_y + widescreen_monitor[1]) / monitor_scale)
                                    )
                 else:
-                    if tall_position == 2:
+                    if tall_position == 3:
+                        cv2.moveWindow(_win_name,
+                                       int((win_offset_x + monitors[7][0]) / monitor_scale),
+                                       int((win_offset_y + monitors[7][1] + top_offset) / monitor_scale)
+                                       )
+                    elif tall_position == 2:
                         # cv2.moveWindow(_win_name, win_offset_x + monitors[4][0], win_offset_y + monitors[4][1] + 20)
                         cv2.moveWindow(_win_name,
                                        int((win_offset_x + monitors[4][0]) / monitor_scale),
@@ -3445,6 +3450,14 @@ def run(args, multi_exit_program=None,
             elif k == 13:
                 """enter"""
                 changeMode()
+            elif k == ord('='):  # \ --> tall ext
+                if mode == 1:
+                    widescreen_mode = 1 - widescreen_mode
+                elif tall_position == 3:
+                    tall_position = 0
+                else:
+                    tall_position = 3
+                changeMode()
             elif k == 92:  # \ --> tall right
                 """ctrl+enter"""
                 if mode == 1:
@@ -4055,10 +4068,10 @@ def run(args, multi_exit_program=None,
                 if n_images < 1:
                     n_images = 1
                 loadImage(1, 1)
-            elif k == ord('='):
-                predef_n_image_id = (predef_n_image_id + 1) % n_predef_n_images
-                n_images = predef_n_images[predef_n_image_id]
-                loadImage(1, 1, 1)
+            # elif k == ord('='):
+            #     predef_n_image_id = (predef_n_image_id + 1) % n_predef_n_images
+            #     n_images = predef_n_images[predef_n_image_id]
+            #     loadImage(1, 1, 1)
             elif k == ord('_'):
                 predef_n_image_id -= 1
                 if predef_n_image_id < 0:

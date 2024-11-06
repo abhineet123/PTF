@@ -21,7 +21,7 @@ params = {
     # 2: only log
     'write_log': 1,
 
-    're_mode': 1,
+    're_mode': 0,
     'exclude_src': 0,
     'print_only': 0,
 }

@@ -48,9 +48,10 @@ def is_time(line):
     return line, time_found, time_obj
 
 
-class Params:
+class Params(paramparse.CFG):
 
     def __init__(self):
+        paramparse.CFG.__init__(self)
         self.add_comment = 1
         self.add_date = 1
         self.add_diff = 1
@@ -61,26 +62,11 @@ class Params:
         self.first_and_last = 0
         self.horz = 1
         self.included_cats = []
-        self.min_start_time = '03:00:00'
+        self.min_start_time = '06:00:00'
         self.pairwise = 1
 
 
 def main():
-    # _params = {
-    #     'horz': 1,
-    #     'categories_out': 1,
-    #     'categories': 1,
-    #     'category_sep': ' :: ',
-    #     'date_sep': ' – ',
-    #     'pairwise': 1,
-    #     'included_cats': 0,
-    #     'first_and_last': 0,
-    #     'add_date': 1,
-    #     'add_diff': 1,
-    #     'add_comment': 1,
-    #     'min_start_time': '03:00:00',
-    # }
-
     _params = Params()
     paramparse.process(_params)
 
@@ -104,6 +90,9 @@ def main():
         return
 
     lines = [k.strip() for k in in_txt.split('\n') if k.strip()]
+
+    print(f'min_start_time: {min_start_time}')
+    # k = input('press any key')
 
     min_start_time_obj = datetime.strptime(min_start_time, '%H:%M:%S').time()
     midnight_time_obj = datetime.strptime('00:00:00', '%H:%M:%S').time()
