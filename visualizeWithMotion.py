@@ -576,6 +576,7 @@ def run(args, multi_exit_program=None,
             #     print(titles[i])
 
             for frg_win_title in frg_win_titles:
+
                 if frg_win_title.startswith('!!!'):
                     frg_win_title = frg_win_title.lstrip('!')
                     _reversed_pos = 2
@@ -587,17 +588,23 @@ def run(args, multi_exit_program=None,
                     _reversed_pos = 0
                 else:
                     _reversed_pos = reversed_pos
+
+                if '--' in frg_win_title:
+                    frg_win_title_elems = frg_win_title.split('--')
+                    frg_win_title = frg_win_title_elems[0]
+                else:
+                    frg_win_title_elems = [frg_win_title, ]
                 # target_id = [i for i, k in enumerate(titles) if frg_win_title in k[1]]
                 # target_id = [i for i, k in enumerate(titles) if
                 #              k[1].startswith(frg_win_title) or findWholeWord(frg_win_title)(k[1])]
 
-                target_id = [i for i, k in enumerate(titles) if f' {k[1]} '.startswith(f'{frg_win_title}')]
+                target_id = [i for i, k in enumerate(titles) if f'{k[1]}'.startswith(f'{frg_win_title}')]
 
                 # target_title = [k[1] for k in titles if k[1].startswith(frg_win_titles)]
                 # target_pos = [k[1] for k in win_pos if k[1].startswith(frg_win_titles)]
 
                 if not target_id:
-                    target_id = [i for i, k in enumerate(titles) if f' {frg_win_title} ' in f' {k[1]} ']
+                    target_id = [i for i, k in enumerate(titles) if all(f'{elem}' in f'{k[1]}' for elem in frg_win_title_elems)]
 
                 if not target_id:
                     _print(f'\nWindow with frg_win_title {frg_win_title} not found\n')
