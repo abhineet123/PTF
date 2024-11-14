@@ -193,7 +193,7 @@ if __name__ == '__main__':
         _ext = os.path.splitext(src_path)[1]
         if mode == 0:
             if _ext == '.gif':
-                gif = imageio.mimread(src_path)
+                gif = imageio.mimread(src_path, memtest=False)
                 meta_data = [img.meta for img in gif]
                 print('gif meta_data: {}'.format(pformat(meta_data)))
                 _src_files = [cv2.cvtColor(img, cv2.COLOR_RGB2BGR) if img.shape[2] == 3

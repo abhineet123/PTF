@@ -130,7 +130,7 @@ class Params:
         self.target_aspect_ratio = 0
         self.win_offset_x = 0
         self.win_offset_y = 0
-        self.monitor_scale = 1.25
+        self.monitor_scale = 1.5
         self.write_filenames = 0
         self.log_file = 'vwm.log'
         self.sort_log_file = 'vwm_sort.log'
@@ -478,8 +478,9 @@ def run(args, multi_exit_program=None,
             [0, 0],
             [0, -1080],
             [-3840, -1080],
+            [1920, 1080],
             [1920, 0],
-            [1920, -1080],
+            # [1920, -1080],
         ]
 
         def get_monitor_id(x, y):
@@ -604,10 +605,13 @@ def run(args, multi_exit_program=None,
                 # target_pos = [k[1] for k in win_pos if k[1].startswith(frg_win_titles)]
 
                 if not target_id:
-                    target_id = [i for i, k in enumerate(titles) if all(f'{elem}' in f'{k[1]}' for elem in frg_win_title_elems)]
+                    target_id = [i for i, k in enumerate(titles) if
+                                 all(f'{elem}' in f'{k[1]}' for elem in frg_win_title_elems)]
 
                 if not target_id:
                     _print(f'\nWindow with frg_win_title {frg_win_title} not found\n')
+                    _print('titles:]\n{}\n'.format(titles))
+
 
                 for _target_id in target_id:
                     frg_titles.append(titles[_target_id][1])
