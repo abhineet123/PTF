@@ -41,7 +41,7 @@ def main():
         'fps': 30,
         # 'codec': 'FFV1',
         # 'ext': 'avi',
-        'codec': 'mp4v',
+        'codec': 'avc1',
         'ext': 'mp4',
         'out_postfix': '',
         'reverse': 0,
