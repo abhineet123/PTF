@@ -1,4 +1,0 @@
-#!/bin/bash
-
-python3 "/mnt/c/UofA/MSc/Code/PTF/scpWithLogging.py" info_file="dgPolWm53WNOJ8PEioAL" auth_file="~/.ssh/id_rsa" key_root="/mnt/z" key_dir="UofA/admin" scp_path="/home/abhineet/" dst_path="/mnt/z/cygwin64/home/Tommy" mode=-1 scp_name=d3
-
