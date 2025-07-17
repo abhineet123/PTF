@@ -75,6 +75,7 @@ def run(params: Params):
 
     if src_dir:
         scp_fname = linux_path(src_dir, src_fname)
+        src_fname_rel = src_fname
     elif src_fname_abs.startswith(home_path):
         # src_fname_rel = os.path.relpath(src_fname, home_path)
         # scp_fname = linux_path('~', src_fname_rel)
