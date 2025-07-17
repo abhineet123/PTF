@@ -139,6 +139,8 @@ for src_id, _src_path in enumerate(src_files):
             if n_frames > 0:
                 dst_seq_name = '{}_{}'.format(dst_seq_name, start_id + n_frames)
             dst_seq_name = '{}_{}'.format(dst_seq_name, fps)
+            if res:
+                dst_seq_name = '{}_{}'.format(dst_seq_name, res)
             if reverse:
                 dst_seq_name = '{}_r{}'.format(dst_seq_name, reverse)
             if out_postfix:
@@ -308,7 +310,7 @@ for src_id, _src_path in enumerate(src_files):
     cap.release()
 
     if reverse:
-        print('\nWriting framesw to video')
+        print('\nWriting frames to video')
         for frame in tqdm(frames[::-1]):
             if show_img:
                 cv2.imshow(seq_name, frame)

@@ -23,7 +23,7 @@ class Params:
         self.del_src = 0
         self.ext = 'jpg'
         self.fps = 30
-        self.grid_size = ''
+        self.grid_size = '1'
         self.height = 0
         self.img_ext = 'jpg'
         self.n_frames = 0
@@ -36,7 +36,7 @@ class Params:
         self.save_path = ''
         self.sep_size = 0
         self.show_img = 1
-        self.src_paths = []
+        self.src_paths = ['.',]
         self.start_id = 0
         self.width = 0
 
@@ -87,6 +87,9 @@ else:
 if root_dir:
     src_files = [os.path.join(root_dir, name) for name in src_files]
 
+print(f'_src_path: {_src_path}')
+print(f'src_files: {src_files}')
+
 if not save_path:
     dst_path = os.path.join(os.path.dirname(src_files[0]), 'stacked',
                             '{}.{}'.format(datetime.now().strftime("%y%m%d_%H%M%S"), ext))
@@ -109,6 +112,8 @@ if not grid_size:
     grid_size = None
 else:
     grid_size = [int(x) for x in grid_size.split('x')]
+    if len(grid_size) == 1 and grid_size[0] == 1:
+        grid_size = [1, n_videos]
     if len(grid_size) != 2 or grid_size[0] * grid_size[1] != n_videos:
         raise IOError('Invalid grid_size: {}'.format(grid_size))
     print(f'using grid size: {grid_size[0]} x {grid_size[1]}')

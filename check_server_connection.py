@@ -54,7 +54,15 @@ def connect_to_remote(info_file, remote, proxy):
     ssh = paramiko.SSHClient()
 
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(server, username=username, port=port, timeout=5)
+    try:
+        ssh.connect(server, username=username, port=port, timeout=5)
+    except paramiko.ssh_exception.NoValidConnectionsError:
+        print(f'unable to connect to {server}')
+        return None
+    except BaseException:
+        print(f'unable to connect to {server}')
+        return None
+
 
     ssh_main = None
 
@@ -76,7 +84,14 @@ def connect_to_remote(info_file, remote, proxy):
 
         proxy_ssh = paramiko.SSHClient()
         proxy_ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        proxy_ssh.connect(proxy_server, username=proxy_username, sock=vmchannel)
+        try:
+            proxy_ssh.connect(proxy_server, username=proxy_username, sock=vmchannel)
+        except paramiko.ssh_exception.NoValidConnectionsError:
+            print(f'unable to connect to {proxy_server}')
+            return None
+        except BaseException:
+            print(f'unable to connect to {proxy_server}')
+            return None
 
         ssh_main = ssh
         ssh = proxy_ssh

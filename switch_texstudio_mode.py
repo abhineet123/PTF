@@ -10,6 +10,7 @@ class Params:
     light_gui_style = '1'
     dark_invert_status = 'true'
     light_invert_status = 'false'
+    pdf_viewer = 0
 
 
 def main():
@@ -54,7 +55,7 @@ def main():
             assert is_dark_x11 is None or is_dark_gui == is_dark_x11, "gui and x11 mismatch"
             assert is_dark_invert is None or is_dark_gui == is_dark_invert, "gui and invert mismatch"
 
-        elif line.startswith('Preview\Invert%20Colors'):
+        elif params.pdf_viewer and line.startswith('Preview\Invert%20Colors'):
             invert_status = line.split('=')[1]
             invert_id = line_id
             if invert_status == params.dark_invert_status:

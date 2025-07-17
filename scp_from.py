@@ -18,6 +18,7 @@ class Params:
         self.scp_port = ''
         self.src_ext = ''
         self.src_fname = ''
+        self.src_dir = ''
         self.inverse = 0
         self.remove_src = 0
         self.verbose = 1
@@ -25,6 +26,7 @@ class Params:
 
 def run(params: Params):
     src_fname = params.src_fname
+    src_dir = params.src_dir
     scp_dst = params.scp_dst
     scp_port = params.scp_port
     overwrite = params.overwrite
@@ -70,7 +72,10 @@ def run(params: Params):
     src_fname_no_ext, src_fname_ext = os.path.splitext(os.path.basename(src_fname))
 
     home_path = os.path.abspath(os.path.expanduser("~"))
-    if src_fname_abs.startswith(home_path):
+
+    if src_dir:
+        scp_fname = linux_path(src_dir, src_fname)
+    elif src_fname_abs.startswith(home_path):
         # src_fname_rel = os.path.relpath(src_fname, home_path)
         # scp_fname = linux_path('~', src_fname_rel)
         src_fname_rel = scp_fname = src_fname_abs.replace(home_path, '~')
@@ -136,14 +141,14 @@ def run(params: Params):
     if scp_port:
         rsync_cmd = f"{rsync_cmd} -e 'ssh -p {scp_port}'"
 
-    if params.verbose:
-        print(f'\nrunning: {rsync_cmd}\n')
+    # if params.verbose:
+    print(f'\nrunning: {rsync_cmd}\n')
 
-    try:
-        status = os.system(rsync_cmd)
-    except KeyboardInterrupt as e:
-        raise e
-    return status
+    # try:
+    #     status = os.system(rsync_cmd)
+    # except KeyboardInterrupt as e:
+    #     raise e
+    # return status
 
 
 def main():

@@ -939,6 +939,11 @@ def run(args, multi_exit_program=None,
     if auto_progress:
         _print('Auto progression enabled')
 
+    if auto_progress_video:
+        _print('Video auto progression enabled')
+    else:
+        _print('Video auto progression disabled')
+
     if contrast_factor != 1:
         print(f'changing contrast by factor {contrast_factor}')
 
@@ -1723,10 +1728,13 @@ def run(args, multi_exit_program=None,
                 #     # else:
                 #     img_id -= 1
 
+                # print(f'{_img_id} / {_total_frames}')
+
                 if _img_id >= _total_frames:
                     if video_mode and auto_progress_video:
                         vid_id = (vid_id + 1) % n_videos
                         src_path = video_files_list[vid_id]
+                        print(f'loading vid {vid_id}: {src_path}')
                         load_video(_load_id)
                         _img_id = 0
                     else:
@@ -1746,12 +1754,15 @@ def run(args, multi_exit_program=None,
                         # end_t = time.time()
                         # print(f'fps: {1.0 / (end_t - start_t)}')
                         if not ret:
-                            src_files[_load_id].set(cv2.CAP_PROP_POS_FRAMES, 0)
-                            # src_files[_load_id].release()
-                            # if auto_progress_video:
-                            #     vid_id = (vid_id + 1) % n_videos
-                            # src_path = video_files_list[vid_id]
-                            # loadVideo(_load_id)
+                            if auto_progress_video:
+                                # src_files[_load_id].release()
+                                vid_id = (vid_id + 1) % n_videos
+                                src_path = video_files_list[vid_id]
+                                print(f'loading vid {vid_id}: {src_path}')
+                                load_video(_load_id)
+                            else:
+                                src_files[_load_id].set(cv2.CAP_PROP_POS_FRAMES, 0)
+
                             _img_id = 0
                             ret, src_img = src_files[_load_id].read()
                     else:
