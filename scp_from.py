@@ -142,14 +142,14 @@ def run(params: Params):
     if scp_port:
         rsync_cmd = f"{rsync_cmd} -e 'ssh -p {scp_port}'"
 
-    # if params.verbose:
-    print(f'\nrunning: {rsync_cmd}\n')
+    if params.verbose:
+        print(f'\nrunning: {rsync_cmd}\n')
 
-    # try:
-    #     status = os.system(rsync_cmd)
-    # except KeyboardInterrupt as e:
-    #     raise e
-    # return status
+    try:
+        status = os.system(rsync_cmd)
+    except KeyboardInterrupt as e:
+        raise e
+    return status
 
 
 def main():
