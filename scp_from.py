@@ -18,7 +18,7 @@ class Params:
         self.scp_port = ''
         self.src_ext = ''
         self.src_fname = ''
-        self.src_dir = ''
+        self.scp_src_dir = ''
         self.inverse = 0
         self.remove_src = 0
         self.verbose = 1
@@ -26,7 +26,7 @@ class Params:
 
 def run(params: Params):
     src_fname = params.src_fname
-    src_dir = params.src_dir
+    scp_src_dir = params.scp_src_dir
     scp_dst = params.scp_dst
     scp_port = params.scp_port
     overwrite = params.overwrite
@@ -73,8 +73,8 @@ def run(params: Params):
 
     home_path = os.path.abspath(os.path.expanduser("~"))
 
-    if src_dir:
-        scp_fname = linux_path(src_dir, src_fname)
+    if scp_src_dir:
+        scp_fname = linux_path(scp_src_dir, src_fname)
         src_fname_rel = src_fname
     elif src_fname_abs.startswith(home_path):
         # src_fname_rel = os.path.relpath(src_fname, home_path)
