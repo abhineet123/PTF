@@ -113,7 +113,7 @@ def run(params: Params):
         switches = f'{switches} -v --progress'
 
     if exclude_ext:
-        switches = f'--exclude="{exclude_ext}" {switches}'
+        switches = f'--exclude="*.{exclude_ext}" {switches}'
 
     if src_ext:
         switches = f' --include="*/" --include="*.{src_ext}" --exclude="*" {switches}'
