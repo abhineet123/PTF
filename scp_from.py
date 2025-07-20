@@ -17,6 +17,7 @@ class Params:
         self.scp_dst = ''
         self.scp_port = ''
         self.src_ext = ''
+        self.exclude_ext = ''
         self.src_fname = ''
         self.scp_src_dir = ''
         self.inverse = 0
@@ -35,6 +36,7 @@ def run(params: Params):
     copy_links = params.copy_links
     remove_src = params.remove_src
     src_ext = params.src_ext
+    exclude_ext = params.exclude_ext
 
     import platform
 
@@ -109,6 +111,9 @@ def run(params: Params):
 
     if params.verbose:
         switches = f'{switches} -v --progress'
+
+    if exclude_ext:
+        switches = f'--exclude="{exclude_ext}" {switches}'
 
     if src_ext:
         switches = f' --include="*/" --include="*.{src_ext}" --exclude="*" {switches}'
