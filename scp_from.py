@@ -19,6 +19,7 @@ class Params:
         self.src_ext = ''
         self.exclude_name = ''
         self.exclude_ext = ''
+        self.include_name = ''
         self.src_fname = ''
         self.scp_src_dir = ''
         self.inverse = 0
@@ -39,6 +40,7 @@ def run(params: Params):
     src_ext = params.src_ext
     exclude_ext = params.exclude_ext
     exclude_name = params.exclude_name
+    include_name = params.include_name
 
     import platform
 
@@ -120,6 +122,9 @@ def run(params: Params):
         else:
             switches = f'--exclude="*.{exclude_ext}" {switches}'
 
+    if include_name:
+        switches = f'--include="*{include_name}*"  --exclude="*" {switches}'
+
     if src_ext:
         switches = f' --include="*/" --include="*.{src_ext}" --exclude="*" {switches}'
 
@@ -155,11 +160,11 @@ def run(params: Params):
     if params.verbose:
         print(f'\nrunning: {rsync_cmd}\n')
 
-    try:
-        status = os.system(rsync_cmd)
-    except KeyboardInterrupt as e:
-        raise e
-    return status
+    # try:
+    #     status = os.system(rsync_cmd)
+    # except KeyboardInterrupt as e:
+    #     raise e
+    # return status
 
 
 def main():
