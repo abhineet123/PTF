@@ -158,7 +158,7 @@ def run(params: Params):
         rsync_cmd = f"{rsync_cmd} -e 'ssh -p {scp_port}'"
 
     if params.verbose:
-        print(f'\nrunning: {rsync_cmd}\n')
+        print(f'\nrunning:\n{rsync_cmd}\n')
 
     # try:
     #     status = os.system(rsync_cmd)
