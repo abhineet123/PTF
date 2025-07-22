@@ -123,7 +123,7 @@ def run(params: Params):
             switches = f'--exclude="*.{exclude_ext}" {switches}'
 
     if include_name:
-        switches = f'--include="*{include_name}*"  --exclude="*" {switches}'
+        switches = f' --include="*{include_name}*"  --exclude="*" {switches}'
 
     if src_ext:
         switches = f' --include="*/" --include="*.{src_ext}" --exclude="*" {switches}'
