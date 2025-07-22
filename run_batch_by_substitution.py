@@ -16,9 +16,13 @@ def main():
 
     for cmd in cmds:
         cmd = cmd.strip()
+        if not cmd:
+            continue
         print(f'cmd: {cmd}')
         for sub in subs:
             sub = sub.strip()
+            if not sub:
+                continue
             cmd_sub = cmd.replace('__var__', sub)
             print(f'sub: {sub}:\n{cmd_sub}')
             os.system(cmd_sub)
