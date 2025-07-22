@@ -21,7 +21,7 @@ def main():
             sub = sub.strip()
             cmd_sub = cmd.replace('__var__', sub)
             print(f'sub: {sub}:\n{cmd_sub}')
-            os.system(cmd_sub)
+            # os.system(cmd_sub)
 
 
 if __name__ == '__main__':
