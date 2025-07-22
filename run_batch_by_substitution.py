@@ -3,7 +3,7 @@ import paramparse
 
 
 class Params:
-    cmds = 'cmd.txt'
+    cmds = 'cmds.txt'
     subs = 'subs.txt'
 
 
