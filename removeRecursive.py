@@ -41,7 +41,7 @@ if __name__ == '__main__':
         for _match in matches:
             rm_cmd = 'rm {:s} {:s}'.format(switches, _match)
             print('running: {}\n'.format(rm_cmd))
-            os.system(rm_cmd)
+            # os.system(rm_cmd)
 
         # rm_cmd = 'cd {:s} && rm {:s} {:s}'.format(root_dir, switches, current_path)
         # print('running: {}\n'.format(rm_cmd))
