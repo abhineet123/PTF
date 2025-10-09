@@ -3,6 +3,9 @@ import re
 
 
 def from_diagonals(diagonals, shape, dtype):
+    """reconstruct array from diagonals
+    adapted from: https://stackoverflow.com/a/78605058
+    """
     arr = np.empty(shape, dtype)
     height, width = shape
     for h in range(height):
@@ -25,18 +28,26 @@ def add_marker(diags_str, diags_idx, sep, marker, search_len):
     return diags_marked
 
 
-def find_linear_occurrences(arr, sep, marker, search_str, search_len):
+def find_all_occurrences_with_overlap(diags_str, search_str):
+    """
+    adapted from:
+    https://stackoverflow.com/a/4664889
+    """
+    diags_idx = [m.start() for m in re.finditer(f'(?={search_str}|{search_str[::-1]})', diags_str)]
+    return diags_idx
+
+
+def find_linear_occurrences(arr, sep, marker, search_term):
     arr_1d = np.array([''.join(word) for word in arr])
     arr_str = sep.join(arr_1d)
-    arr_idx = [m.start() for m in re.finditer(f'(?={search_str})', arr_str)]
-    # arr_idx += [m.start() for m in re.finditer(f'(?={search_str[::-1]})', arr_str)]
+    arr_idx = find_all_occurrences_with_overlap(arr_str, search_term)
 
-    str_marked = add_marker(arr_str, arr_idx, sep, marker, search_len)
+    str_marked = add_marker(arr_str, arr_idx, sep, marker, len(search_term))
     arr_marked = np.array([list(word) for word in str_marked])
     return arr_idx, arr_marked
 
 
-def find_diagonal_occurences(arr, sep, marker, search_str, search_len):
+def find_diagonal_occurences(arr, sep, marker, search_term):
     h, w = arr.shape
     diags = [''.join(arr.diagonal(offset=k)) for k in range(w - 1, -h, -1)]
 
@@ -44,10 +55,10 @@ def find_diagonal_occurences(arr, sep, marker, search_str, search_len):
     assert np.array_equal(arr, arr_rec)
 
     diags_str = sep.join(diags)
-    diags_idx = [m.start() for m in re.finditer(f'(?={search_str})', diags_str)]
-    # diags_idx += [m.start() for m in re.finditer(f'(?={search_str[::-1]})', diags_str)]
 
-    diags_marked = add_marker(diags_str, diags_idx, sep, marker, search_len)
+    diags_idx = find_all_occurrences_with_overlap(diags_str, search_term)
+
+    diags_marked = add_marker(diags_str, diags_idx, sep, marker, len(search_term))
     arr_marked = from_diagonals(diags_marked, arr.shape, arr.dtype)
 
     return diags_idx, arr_marked
@@ -55,11 +66,9 @@ def find_diagonal_occurences(arr, sep, marker, search_str, search_len):
 
 def main():
     search_term = 'XMAS'
-    search_len = len(search_term)
     input_file = "ceres_input.txt"
     # input_file = "ceres_input_small.txt"
-    # search_str = search_term
-    search_str = f'{search_term}|{search_term[::-1]}'
+
     sep = '-'
     marker = '.'
 
@@ -68,18 +77,18 @@ def main():
     input_t_2d = input_2d.transpose()
 
     """horizontal"""
-    horz_idx, horz_marked = find_linear_occurrences(input_2d, sep, marker, search_str, search_len)
+    horz_idx, horz_marked = find_linear_occurrences(input_2d, sep, marker, search_term)
 
     """vertical"""
-    vert_idx, vert_marked = find_linear_occurrences(input_t_2d, sep, marker, search_str, search_len)
+    vert_idx, vert_marked = find_linear_occurrences(input_t_2d, sep, marker, search_term)
     vert_marked = vert_marked.transpose()
 
     """left-to-right diagonals"""
-    lr_idx, lr_marked = find_diagonal_occurences(input_2d, sep, marker, search_str, search_len)
+    lr_idx, lr_marked = find_diagonal_occurences(input_2d, sep, marker, search_term)
 
     """right-to-left diagonals"""
     input_flip_2d = np.fliplr(input_2d)
-    rl_idx, rl_marked = find_diagonal_occurences(input_flip_2d, sep, marker, search_str, search_len)
+    rl_idx, rl_marked = find_diagonal_occurences(input_flip_2d, sep, marker, search_term)
     rl_marked = np.fliplr(rl_marked)
 
     all_marked = np.full_like(input_2d, '.')
