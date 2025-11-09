@@ -340,7 +340,7 @@ def main():
                 os.rename(dst_path, temp_path)
                 subprocess.run(f'ffmpeg -y -i "{temp_path}" -i "{src_path}" -c copy "{dst_path}"')
                 os.remove(temp_path)
-                
+
         if show_img:
             cv2.destroyWindow(seq_name)
 
