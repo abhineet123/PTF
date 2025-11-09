@@ -30,8 +30,7 @@ def main():
     src_images = [cv2.imread(image) for image in image_paths]
     grid_size = [1, n_images]
 
-    stacked_img, _, _ = stackImages(src_images, grid_size, borderless=1,
-                                    return_idx=1, preserve_order=1)
+    stacked_img, _, _ = stackImages(src_images, grid_size, borderless=1, return_idx=1, preserve_order=1)
 
     in_img_path = image_paths[0]
     in_img_dir = os.path.dirname(in_img_path)
