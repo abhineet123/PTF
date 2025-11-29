@@ -3,7 +3,7 @@ import os
 import shutil
 from pprint import pprint
 
-from Misc import sortKey
+from Misc import sortKey, add_suffix
 
 
 class Params:
@@ -19,6 +19,7 @@ class Params:
         self.out_file = 'mfsf_log.txt'
         self.prefix = ''
         self.rename_to_subfolder = 0
+        self.subfolder_to_prefix = 1
 
 
 def main():
@@ -33,6 +34,7 @@ def main():
     include_folders = params.include_folders
     disable_rename = params.disable_rename
     rename_to_subfolder = params.rename_to_subfolder
+    subfolder_to_prefix = params.subfolder_to_prefix
     exceptions = params.exceptions
 
     dst_path = os.path.abspath(dst_path)
@@ -92,12 +94,14 @@ def main():
             dst_files = [f'{f}' for f in src_files]
         elif rename_to_subfolder:
             if n_files > 1:
-                print(f"multiple files found in {subfolder}: {src_files}")
+                print(f"skipping subfolder with multiple files: {subfolder}: {src_files}")
                 continue
             file_ext = os.path.splitext(src_files[0])[1]
             dst_files = [f'{subfolder}{file_ext}', ]
-        else:
+        elif subfolder_to_prefix:
             dst_files = [f'{subfolder}_{f}' for f in src_files]
+        else:
+            dst_files = [add_suffix(f, subfolder) for f in src_files]
 
         for i in range(n_files):
             src_path = os.path.join(subfolders_path, src_files[i])
