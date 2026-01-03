@@ -1,1 +1,2 @@
-ffmpeg -i %1 -vn -acodec copy %1.mp3
+@echo off
+python3 "%~dp0\..\videoToAudio.py" seq_name=%1 audio_ext=%2
