@@ -7,7 +7,8 @@ def main():
 
     last_resurrect_ln_path = os.path.join(tr_path, 'last')
     if os.path.exists(last_resurrect_ln_path):
-        os.remove(last_resurrect_ln_path)
+        print(f'removing {last_resurrect_ln_path}')
+        # os.remove(last_resurrect_ln_path)
 
     resurrect_files = [os.path.join(tr_path, k) for k in os.listdir(tr_path)
                        if k.startswith('tmux_resurrect_') and k.endswith('.txt')]
@@ -22,7 +23,8 @@ def main():
     for k, size_ in resurrect_files_size:
         size_ratio = float(size_) / largest_size
         if size_ratio < 0.5:
-            os.remove(k)
+            print(f'removing {k}')
+            # os.remove(k)
         else:
             resurrect_files_mtime.append((k, os.path.getmtime(k)))
 
@@ -30,7 +32,8 @@ def main():
 
     resurrect_files_mtime = sorted(resurrect_files_mtime, key=lambda x: x[1])
     newest_file = resurrect_files_mtime[-1][0]
-    os.symlink(newest_file[0], last_resurrect_ln_path)
+    print(f'newest_file: {newest_file}')
+    # os.symlink(newest_file[0], last_resurrect_ln_path)
 
 
 if __name__ == '__main__':
