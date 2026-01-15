@@ -33,7 +33,7 @@ def main():
     resurrect_files_mtime = sorted(resurrect_files_mtime, key=lambda x: x[1])
     newest_file = resurrect_files_mtime[-1][0]
     print(f'newest_file: {newest_file}')
-    os.symlink(newest_file[0], last_resurrect_ln_path)
+    os.symlink(newest_file, last_resurrect_ln_path)
 
 
 if __name__ == '__main__':
