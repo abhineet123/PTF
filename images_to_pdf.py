@@ -13,11 +13,14 @@ class Params:
 
 def main():
     params = paramparse.process(Params)
-    image_exts = ['jpg', 'bmp', 'png', 'tif']
+    image_exts = ['jpg', 'jpeg', 'bmp', 'png', 'tif', 'webp']
 
     image_paths = [
         os.path.join(params.src_path, k) for k in os.listdir(params.src_path) for _ext in image_exts if
         k.lower().endswith('.{}'.format(_ext))]
+
+    assert image_paths, "no images found"
+    
     n_images = len(image_paths)
 
     print('combining images into pdf {}'.format(image_paths))
