@@ -20,7 +20,7 @@ def main():
         k.lower().endswith('.{}'.format(_ext))]
 
     assert image_paths, "no images found"
-    
+
     n_images = len(image_paths)
 
     print('combining images into pdf {}'.format(image_paths))

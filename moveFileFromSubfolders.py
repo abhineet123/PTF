@@ -20,6 +20,14 @@ class Params:
         self.prefix = ''
         self.rename_to_subfolder = 0
         self.subfolder_to_prefix = 1
+        self.subfolder_to_suffix = 0
+
+
+def to_name(f):
+    return os.path.splitext(f)[0]
+
+def to_ext(f):
+    return os.path.splitext(f)[1]
 
 
 def main():
@@ -35,6 +43,7 @@ def main():
     disable_rename = params.disable_rename
     rename_to_subfolder = params.rename_to_subfolder
     subfolder_to_prefix = params.subfolder_to_prefix
+    subfolder_to_suffix = params.subfolder_to_suffix
     exceptions = params.exceptions
 
     dst_path = os.path.abspath(dst_path)
@@ -98,7 +107,11 @@ def main():
                 continue
             file_ext = os.path.splitext(src_files[0])[1]
             dst_files = [f'{subfolder}{file_ext}', ]
+        elif subfolder_to_suffix:
+            assert not subfolder_to_prefix, "both subfolder_to_suffix and subfolder_to_prefix cannot be on"
+            dst_files = [f'{to_name(f)}_{subfolder}{to_ext(f)}' for f in src_files]
         elif subfolder_to_prefix:
+            assert not subfolder_to_suffix, "both subfolder_to_suffix and subfolder_to_prefix cannot be on"
             dst_files = [f'{subfolder}_{f}' for f in src_files]
         else:
             dst_files = [add_suffix(f, subfolder) for f in src_files]

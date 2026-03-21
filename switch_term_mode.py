@@ -17,9 +17,7 @@ def main():
 
     json_dict = json.load(open(json_path, "r"))
 
-
-    for profile in json_dict['profiles']['list']:
-
+    for profile in json_dict['profiles']['list'] + [json_dict['profiles']['defaults'],]:
         try:
             color_scheme = profile['colorScheme']
         except KeyError:
