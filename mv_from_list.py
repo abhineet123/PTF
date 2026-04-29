@@ -3,8 +3,6 @@ import time
 import paramparse
 from datetime import datetime
 
-from Misc import sortKey
-
 
 def get_size(start_path='.'):
     total_size = 0
@@ -45,7 +43,7 @@ if __name__ == '__main__':
     if os.path.isdir(list_file):
         src_paths = [os.path.join(list_file, name) for name in os.listdir(list_file) if
                      os.path.isdir(os.path.join(list_file, name))]
-        src_paths.sort(key=sortKey)
+        src_paths.sort()
     else:
         src_paths = [x.strip() for x in open(list_file).readlines() if x.strip()
                      and not x.startswith('#')
