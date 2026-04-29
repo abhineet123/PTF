@@ -69,4 +69,4 @@ if __name__ == '__main__':
         mv_cmd = f'mv "{src_path}" "{dst_path}/"'
 
         print(f'\n{i + 1}/{n_src_paths} :: running: {mv_cmd}')
-        # os.system(mv_cmd)
+        os.system(mv_cmd)
