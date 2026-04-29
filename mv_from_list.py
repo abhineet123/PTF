@@ -39,11 +39,6 @@ if __name__ == '__main__':
     if not dst_path or not os.path.isdir(dst_path):
         raise IOError('dst_path is invalid: {}'.format(dst_path))
 
-    abs_dst_path = os.path.abspath(dst_path).replace(os.sep, '/')
-    print('abs_dst_path: {}'.format(abs_dst_path))
-    dst_drive = os.path.splitdrive(abs_dst_path)[0]
-    print('dst_drive: {}'.format(dst_drive))
-
     time_stamp = datetime.now().strftime("%y%m%d_%H%M%S")
     root_dir_name = ''
 
