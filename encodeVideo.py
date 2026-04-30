@@ -39,6 +39,7 @@ def main():
         'out_postfix': '',
         'add_headers': 0.0,
         'remove_border': 0,
+        'gif_sample': 10,
         'rotate': 0,
         'vid_exts': ['.mkv', '.mp4', '.avi', '.mjpg', '.wmv'],
         'img_exts': ['.jpg', '.png', '.jpeg', '.tif', '.bmp'],
@@ -69,6 +70,12 @@ def main():
     rotate = params['rotate']
     remove_border = params['remove_border']
     add_audio = params['add_audio']
+    gif_sample = params['gif_sample']
+
+    gif_mode = False
+    if ext == 'gif':
+        gif_mode = True
+        video_out = []
 
     height = width = 0
     if res:
@@ -206,7 +213,9 @@ def main():
             print('{} / {} :: Saving {}x{} output video to {}'.format(
                 src_id + 1, n_videos, dst_width, dst_height, dst_path))
 
-            if use_skv:
+            if gif_mode:
+                video_out = []
+            elif use_skv:
                 if use_skv == 1:
                     outputdict = {
                         '-vcodec': 'libx264',  # use the h.264 codec
@@ -250,7 +259,9 @@ def main():
                 header_img = imutils.rotate_bound(header_img, -180)
 
             for i in range(n_header_frames):
-                if use_skv:
+                if gif_mode:
+                    video_out.append(image[:, :, ::-1])
+                elif use_skv:
                     video_out.writeFrame(header_img[:, :, ::-1])  # write the frame as RGB not BGR
                 else:
                     video_out.write(header_img)
@@ -297,7 +308,9 @@ def main():
                 frames.append(image)
 
             if reverse != 1:
-                if use_skv:
+                if gif_mode:
+                    video_out.append(image[:, :, ::-1])
+                elif use_skv:
                     video_out.writeFrame(image[:, :, ::-1])  # write the frame as RGB not BGR
                 else:
                     video_out.write(image)
@@ -329,7 +342,12 @@ def main():
                 video_out.write(frame)
 
         if not combine:
-            if use_skv:
+            if gif_mode:
+                import imageio
+                video_out = video_out[::gif_sample]
+                print(f'saving {len(video_out)} images as gif : {dst_path}')
+                imageio.mimsave(dst_path, video_out)
+            elif use_skv:
                 video_out.close()  # close the writer
             else:
                 video_out.release()
@@ -350,7 +368,12 @@ def main():
             os.remove(src_path)
 
     if combine:
-        if use_skv:
+        if gif_mode:
+            import imageio
+            video_out = video_out[::gif_sample]
+            print(f'saving {len(video_out)} images as gif : {dst_path}')
+            imageio.mimsave(dst_path, video_out)
+        elif use_skv:
             video_out.close()  # close the writer
         else:
             video_out.release()
