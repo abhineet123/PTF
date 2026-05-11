@@ -50,7 +50,7 @@ def main():
 
         # 'codec': 'h264',
         # 'ext': 'mkv',
-        
+
         'out_postfix': '',
         'shuffle': 0,
         'reverse': 0,
@@ -172,7 +172,7 @@ def main():
 
         if shuffle:
             if shuffle > 1:
-                n_src_files = len(src_files)
+                print(f'shuffling images in groups of {shuffle}...')
                 assert n_src_files % shuffle == 0, "n_src_files must be divisible by the size of each shuffle group"
                 n_groups = n_src_files // shuffle
                 src_files_groups = []
@@ -184,6 +184,7 @@ def main():
                 random.shuffle(src_files_groups)
                 src_files = [x for xs in src_files_groups for x in xs]
             else:
+                print(f'shuffling images...')
                 random.shuffle(src_files)
 
         if reverse == 1:
