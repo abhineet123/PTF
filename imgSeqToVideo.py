@@ -126,6 +126,12 @@ def main():
     if recursive:
         print('searching for images recursively')
 
+    if shuffle:
+        if shuffle > 1:
+            print(f'shuffling images in groups of {shuffle}')
+        else:
+            print(f'shuffling images')
+
     if reverse == 1:
         print('Writing the reverse sequence')
     elif reverse == 2:
