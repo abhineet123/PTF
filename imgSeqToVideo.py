@@ -1,3 +1,5 @@
+import random
+
 import cv2
 import sys
 import time
@@ -39,11 +41,18 @@ def main():
         'width': 0,
         'height': 0,
         'fps': 30,
+
+        'codec': 'mp4v',
+        'ext': 'mp4',
+
         # 'codec': 'FFV1',
         # 'ext': 'avi',
-        'codec': 'h264',
-        'ext': 'mkv',
+
+        # 'codec': 'h264',
+        # 'ext': 'mkv',
+        
         'out_postfix': '',
+        'shuffle': 0,
         'reverse': 0,
         'move_src': 0,
         'use_skv': 0,
@@ -70,6 +79,7 @@ def main():
     codec = params['codec']
     ext = params['ext']
     out_postfix = params['out_postfix']
+    shuffle = params['shuffle']
     reverse = params['reverse']
     save_root_dir = params['save_root_dir']
     move_src = params['move_src']
@@ -159,6 +169,22 @@ def main():
             raise SystemError('No input frames found')
         src_files.sort(key=sortKey)
         print('n_src_files: {}'.format(n_src_files))
+
+        if shuffle:
+            if shuffle > 1:
+                n_src_files = len(src_files)
+                assert n_src_files % shuffle == 0, "n_src_files must be divisible by the size of each shuffle group"
+                n_groups = n_src_files // shuffle
+                src_files_groups = []
+                for group_id in range(n_groups):
+                    group_start_id = int(group_id*shuffle)
+                    group_end_id = int(group_start_id + shuffle)
+                    src_files_group = src_files[group_start_id:group_end_id]
+                    src_files_groups.append(src_files_group)
+                random.shuffle(src_files_groups)
+                src_files = [x for xs in src_files_groups for x in xs]
+            else:
+                random.shuffle(src_files)
 
         if reverse == 1:
             src_files = src_files[::-1]

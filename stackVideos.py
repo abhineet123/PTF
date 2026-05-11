@@ -40,6 +40,8 @@ class Params:
         self.start_id = 0
         self.width = 0
 
+        self.temporal = 0
+        self.repeat = 1
 
 def main():
     params = Params()
@@ -69,6 +71,8 @@ def main():
     resize_factor = params.resize_factor
     recursive = params.recursive
     out_size = params.out_size
+    temporal = params.temporal
+    repeat = params.repeat
 
     vid_exts = ['mkv', 'mp4', 'avi', 'mjpg', 'wmv']
     image_exts = ['jpg', 'bmp', 'png', 'tif']
@@ -237,10 +241,16 @@ def main():
         if frame_id <= start_id:
             break
 
-        out_img = stackImages(images, grid_size, borderless=borderless, preserve_order=preserve_order,
-                              annotations=annotations, ann_fmt=ann_fmt, only_height=only_height, sep_size=sep_size)
-        if resize_factor != 1:
-            out_img = cv2.resize(out_img, (0, 0), fx=resize_factor, fy=resize_factor)
+        if temporal:
+            out_imgs = [images, ]*repeat
+            out_imgs = [x for xs in out_imgs for x in xs]
+            out_img = out_imgs[0]
+        else:
+            out_img = stackImages(images, grid_size, borderless=borderless, preserve_order=preserve_order,
+                                  annotations=annotations, ann_fmt=ann_fmt, only_height=only_height, sep_size=sep_size)
+            if resize_factor != 1:
+                out_img = cv2.resize(out_img, (0, 0), fx=resize_factor, fy=resize_factor)
+            out_imgs = [out_img, ]
 
         if not vis_only:
             if video_out is None:
@@ -259,16 +269,18 @@ def main():
 
                 print('Saving {}x{} output video to {}'.format(dst_width, dst_height, dst_path))
 
-            video_out.write(out_img)
+            for out_img in out_imgs:
+                video_out.write(out_img)
 
         if show_img:
-            out_img_disp = resizeAR(out_img, 1920, 1080)
-            cv2.imshow(win_name, out_img_disp)
-            k = cv2.waitKey(1 - pause_after_frame) & 0xFF
-            if k == ord('q') or k == 27:
-                break
-            elif k == 32:
-                pause_after_frame = 1 - pause_after_frame
+            for out_img in out_imgs:
+                out_img_disp = resizeAR(out_img, 1920, 1080)
+                cv2.imshow(win_name, out_img_disp)
+                k = cv2.waitKey(1 - pause_after_frame) & 0xFF
+                if k == ord('q') or k == 27:
+                    break
+                elif k == 32:
+                    pause_after_frame = 1 - pause_after_frame
 
         sys.stdout.write('\rDone {:d}/{:d} frames '.format(frame_id - start_id, n_frames))
         sys.stdout.flush()
