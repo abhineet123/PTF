@@ -1,4 +1,5 @@
 #!/bin/bash
+git.exe pull origin master
 git.exe add --all .
 if [ "$#" -ne 1 ]; then
    git.exe commit
