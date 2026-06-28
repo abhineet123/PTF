@@ -34,10 +34,8 @@ processor.reset_all_prompts(inference_state)
 output = processor.set_text_prompt(state=inference_state, prompt="person")
 
 masks, boxes, scores = output["masks"], output["boxes"], output["scores"]
-
-for mask_id, mask in enumerate(masks):
-    mask_np = mask.detach().cpu().numpy()
-    Image.fromarray(mask_np).save(f"mask_{mask_id}.png")
+mask = masks.detach().cpu().numpy().squeeze()
+Image.fromarray(mask).save(f"mask.png")
 
 
 
