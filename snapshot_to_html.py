@@ -92,7 +92,7 @@ def main():
 
         print(f"{src_dir_id + 1}/{n_src_dirs} {src_dir}: {cmd}")
         os.system(cmd)
-        input("press any key")
+        # input("press any key")
 
     # input("press any key")
 
