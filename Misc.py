@@ -4005,6 +4005,22 @@ class CVConstants:
         2: cv2.LINE_AA,
     }
 
+def to_str(list_):
+    return "\n".join(list_)
+
+def copy_from_clipboard():
+    try:
+        import win32clipboard
+
+        win32clipboard.OpenClipboard()
+        in_txt = win32clipboard.GetClipboardData()
+    except BaseException as e:
+        print('GetClipboardData failed: {}'.format(e))
+        win32clipboard.CloseClipboard()
+        return None
+    win32clipboard.CloseClipboard()
+    return in_txt
+
 def resize_ar(src_img, width=0, height=0, return_factors=False,
               placement_type=0, only_border=0, only_shrink=0):
     src_height, src_width = src_img.shape[:2]

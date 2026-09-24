@@ -72,12 +72,11 @@ def main():
 
     in_txt = copy_from_clipboard()
 
-    in_txt=in_txt.rstrip()
+    in_txt = in_txt.rstrip()
 
     out_txt = f'			"args": "{in_txt}",\n'
 
     copy_to_clipboard(out_txt)
-
 
 
 if __name__ == '__main__':

@@ -47,8 +47,10 @@ def main():
             style_dir = os.path.dirname(gui_obj.attrib['path'])
             style_name = os.path.basename(gui_obj.attrib['path'])
             if style_name == params.dark_style:
+                print(f"changing {style_name} to {params.light_style}")
                 style_name = params.light_style
             else:
+                print(f"changing {style_name} to {params.dark_style}")
                 style_name = params.dark_style
 
             style_path = os.path.join(style_dir, style_name)
